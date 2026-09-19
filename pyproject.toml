@@ -39,8 +39,8 @@ dev = [
 sentry = "sentry.cli.main:cli"
 
 [project.urls]
-Homepage = "https://github.com/GodwillFoka/CYBERILLSEC-SENTRY"
-Repository = "https://github.com/GodwillFoka/CYBERILLSEC-SENTRY"
+Homepage = "https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY"
+Repository = "https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY"
 
 [build-system]
 requires = ["setuptools>=69.0"]

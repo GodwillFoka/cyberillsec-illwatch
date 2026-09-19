@@ -4,7 +4,7 @@
 > `CYBERILL-SENTRY — Cahier des Charges & Dossier d'Ingénierie v1.0.0`.
 > Le PDF d'origine est conservé dans [`pdf/SENTRY_Cahier_des_Charges.pdf`](pdf/SENTRY_Cahier_des_Charges.pdf).
 > En cas de divergence, **ce fichier Markdown fait foi** : il est celui que la CI, les revues de
-> code et les pull requests référencent.
+> code et les merge requests référencent.
 
 | | |
 |---|---|
@@ -14,7 +14,7 @@
 | **Destinataire** | Équipe d'ingénierie logicielle / développeurs en onboarding |
 | **Version** | v1.0.0 (Master Engineering Baseline) |
 | **Baseline** | Juillet – Septembre 2026 |
-| **Dépôt** | `github.com/GodwillFoka/CYBERILLSEC-SENTRY` |
+| **Dépôt** | `gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY` (voir [ADR-002](adr/ADR-002-hebergement-gitlab.md)) |
 | **Classification** | Interne CYBERILL — document fondateur de référence |
 | **Statut** | Approuvé pour développement |
 
@@ -142,7 +142,7 @@ le RSSI notifié.
 | **RSK-02** | Indisponibilité d'un flux externe | Élevée | Moyen | Majeur | Isoler chaque collecteur dans un worker indépendant : l'échec d'un flux ne doit jamais faire tomber les autres ni l'API. |
 | **RSK-03** | Explosion de la volumétrie des IOC | Moyenne | Élevé | Majeur | Cycle de vie strict des indicateurs (aging / TTL), indexation B-Tree et contrainte d'unicité pour déduplication immédiate. |
 | **RSK-04** | Dérive du périmètre (scope creep) | Moyenne | Élevé | Majeur | Périmètre v1.0 gelé sur les 44 tâches planifiées. Toute idée nouvelle part au backlog v2.0. |
-| **RSK-05** | Régression de code lors des itérations | Moyenne | Moyen | Modéré | Suite `pytest` bloquant tout merge via GitHub Actions si le taux de succès n'est pas de 100 %. |
+| **RSK-05** | Régression de code lors des itérations | Moyenne | Moyen | Modéré | Suite `pytest` bloquant tout merge via GitLab CI si le taux de succès n'est pas de 100 %. |
 
 ### 2.6 Analyse SWOAT
 

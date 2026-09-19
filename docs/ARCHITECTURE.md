@@ -137,7 +137,8 @@ chronologique).
 | Pas d'injection SQL | Aucune requête construite par concaténation ; ORM ou requêtes paramétrées |
 | Conteneur non privilégié | Utilisateur `sentry` UID 10001 dans l'image Docker |
 | Chiffrement en transit | TLS 1.3 exigé sur toute communication externe |
-| Dépendances surveillées | Dependabot hebdomadaire sur pip, mensuel sur Actions et Docker |
+| Dépendances surveillées | Renovate hebdomadaire ; scan de dépendances et détection de secrets GitLab à chaque pipeline |
+| Analyse statique | SAST GitLab à chaque pipeline |
 
 ## Ce qui n'est délibérément pas fait en v1.0
 

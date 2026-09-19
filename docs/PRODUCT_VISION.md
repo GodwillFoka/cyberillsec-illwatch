@@ -179,7 +179,7 @@ volume dépassera 100 000 événements par jour.
 
 ## Tome 9 — Gestion de projet
 
-Scrum en sprints de deux semaines, GitHub Projects, GitFlow. Équipe cible phase 1 : PO / lead dev
+Scrum en sprints de deux semaines, GitLab Boards, GitFlow. Équipe cible phase 1 : PO / lead dev
 seul. Équipe cible phase 7 : 15 à 20 personnes.
 
 Risques identifiés : abandon (atténué par la communauté), burn-out (atténué par un rythme durable),
@@ -190,7 +190,12 @@ concurrence (atténuée par la différenciation open source).
 ## Tome 10 — Communication & marketing
 
 Identité visuelle : Indigo `#20155C` + Orange `#E6681B`, logo bouclier « S », typographie Inter.
-Canaux : GitHub (continu), LinkedIn (2–3 par semaine), blog (1 par semaine), Discord, Telegram.
+Canaux : GitLab (continu), LinkedIn (2–3 par semaine), blog (1 par semaine), Discord, Telegram.
+
+> **Écart documenté.** Le PVD d'origine désignait GitHub comme canal principal. L'hébergement du
+> code a été déplacé sur GitLab pour cohérence avec le positionnement de souveraineté européenne —
+> voir [`adr/ADR-002-hebergement-gitlab.md`](adr/ADR-002-hebergement-gitlab.md), qui documente aussi
+> le coût de ce choix en découvrabilité auprès des contributeurs.
 
 ---
 
@@ -199,7 +204,7 @@ Canaux : GitHub (continu), LinkedIn (2–3 par semaine), blog (1 par semaine), D
 Licence MIT (permissive). Code of Conduct : Contributor Covenant v2.1. Standards : Ruff (PEP 8),
 mypy strict, Conventional Commits, couverture ≥ 80 %.
 
-Workflow contributeur : Fork → Branch → Code → Test → Commit → PR → Review → Merge.
+Workflow contributeur : Fork → Branch → Code → Test → Commit → MR → Review → Merge.
 
 ---
 

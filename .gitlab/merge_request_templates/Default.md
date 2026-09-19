@@ -2,6 +2,8 @@
 
 <!-- Pourquoi ce changement ? Quelle tâche du planning (Tx.y) ou quelle issue ? -->
 
+Closes #
+
 ## Changements
 
 <!-- Ce qui a été fait, en quelques puces -->
@@ -15,6 +17,8 @@
 - [ ] Aucune logique métier ajoutée dans `sentry/app/api/`
 - [ ] Un ADR a été ajouté si la décision est structurante
 
-## Écarts par rapport au Cahier des Charges
+## Écarts par rapport au cahier des charges
 
 <!-- Aucun, ou justification explicite -->
+
+/assign me

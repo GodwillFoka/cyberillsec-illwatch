@@ -1,12 +1,12 @@
 # Contribuer à SENTRY
 
 Merci de l'intérêt que vous portez au projet. Ce document décrit exactement ce qu'on attend d'une
-contribution — lisez-le avant d'ouvrir une pull request, il vous évitera un aller-retour.
+contribution — lisez-le avant d'ouvrir une merge request, il vous évitera un aller-retour.
 
 ## Installation de l'environnement
 
 ```bash
-git clone https://github.com/GodwillFoka/CYBERILLSEC-SENTRY.git
+git clone https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY.git
 cd CYBERILLSEC-SENTRY
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
@@ -45,7 +45,7 @@ docs(onboarding): update day-1 guide for docker compose setup
 
 ## Les quatre piliers de qualité
 
-Ils ne sont pas négociables et la CI les vérifie sur chaque PR.
+Ils ne sont pas négociables et la CI les vérifie sur chaque MR.
 
 **1. Typage strict.** Toute signature de fonction est typée. `mypy` tourne en mode strict.
 
@@ -72,7 +72,7 @@ porteuse d'un message exploitable.
 Un contrôleur d'API ne fait **jamais** de calcul métier ni de requête SQL complexe. Il valide les
 paramètres d'entrée, appelle la couche `sentry/modules/`, et retourne un schéma Pydantic.
 
-Si votre PR met de la logique métier dans `sentry/app/api/`, elle sera refusée — pas par sévérité,
+Si votre MR met de la logique métier dans `sentry/app/api/`, elle sera refusée — pas par sévérité,
 mais parce que cette logique devient alors intestable sans serveur HTTP.
 
 ## Cycle de contribution
@@ -83,16 +83,16 @@ mais parce que cette logique devient alors intestable sans serveur HTTP.
 4. **Tester** — écrire le test, puis `pytest -v`
 5. **Vérifier** — `ruff check . && ruff format --check . && mypy sentry`
 6. **Committer et pousser** — message Conventional Commits
-7. **Ouvrir la PR** vers `main`, en renseignant les critères de validation testés
+7. **Ouvrir la MR** vers `main`, en renseignant les critères de validation testés
 8. **Fusion** une fois la CI verte et la revue approuvée
 
-## Ce qui fait une bonne pull request
+## Ce qui fait une bonne merge request
 
-- Une seule préoccupation par PR. Une PR qui corrige un bug *et* refactorise trois modules sera
+- Une seule préoccupation par PR. Une MR qui corrige un bug *et* refactorise trois modules sera
   renvoyée en découpage.
 - La description explique le *pourquoi*, pas le *quoi* — le diff dit déjà le quoi.
 - Les décisions d'architecture structurantes passent par un ADR dans `docs/adr/` avant le code.
-- Une PR qui change le comportement du scoring ou de la machine d'état modifie aussi ses tests, et
+- Une MR qui change le comportement du scoring ou de la machine d'état modifie aussi ses tests, et
   la description justifie l'écart par rapport au Cahier des Charges.
 
 ## Signaler un bug

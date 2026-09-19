@@ -19,8 +19,16 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - CLI `sentry` : `version`, `config`, `db check`, `db init` (RF-03).
 - Endpoint `/health` avec diagnostic de connexion base de données.
 - Orchestration Docker Compose PostgreSQL 16 + Redis 7.2 et image applicative non privilégiée.
-- Pipeline CI GitHub Actions : ruff, mypy strict, pytest, seuil de couverture 80 %.
+- Pipeline CI GitLab en quatre étapes : qualité (ruff, mypy strict), tests (PostgreSQL et Redis
+  réels, seuil de couverture 80 %), build de l'image Docker, et analyses de sécurité natives
+  (SAST, détection de secrets, scan de dépendances).
+- Gabarits de merge request et d'issues GitLab, configuration Renovate.
 - Conversion Markdown versionnable du Cahier des Charges et du Product Vision Document.
+
+### Modifié
+- **Dépôt migré de GitHub vers GitLab**, qui devient la plateforme unique du projet
+  (voir `docs/adr/ADR-002-hebergement-gitlab.md`). Suppression de `.github/`, des workflows
+  GitHub Actions et de Dependabot ; mise à jour de toutes les références dans la documentation.
 
 ## [0.1.0] — à venir
 

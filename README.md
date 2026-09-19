@@ -6,10 +6,10 @@
 
 *CyberillSec — A CYBERILL Initiative*
 
-[![CI](https://github.com/GodwillFoka/CYBERILLSEC-SENTRY/actions/workflows/ci.yml/badge.svg)](https://github.com/GodwillFoka/CYBERILLSEC-SENTRY/actions/workflows/ci.yml)
+[![pipeline](https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY/badges/main/pipeline.svg)](https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY/-/pipelines)
+[![coverage](https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY/badges/main/coverage.svg)](https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY/-/pipelines)
 [![License: MIT](https://img.shields.io/badge/License-MIT-E6681B.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12+-20155C.svg)](https://www.python.org/)
-[![Coverage ≥ 80%](https://img.shields.io/badge/Coverage-%E2%89%A5%2080%25-20155C.svg)](#qualité)
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
 
@@ -117,7 +117,7 @@ FastAPI des débits de Go.
 **Prérequis :** Python 3.12+, Git, Docker & Docker Compose, un environnement Linux / macOS / WSL2.
 
 ```bash
-git clone https://github.com/GodwillFoka/CYBERILLSEC-SENTRY.git
+git clone https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY.git
 cd CYBERILLSEC-SENTRY
 
 python3.12 -m venv .venv && source .venv/bin/activate
@@ -153,7 +153,8 @@ Les commandes `sentry feeds`, `sentry cves`, `sentry incidents`, `sentry dashboa
 
 ```
 CYBERILLSEC-SENTRY/
-├── .github/workflows/      # Pipelines CI/CD GitHub Actions
+├── .gitlab-ci.yml          # Pipeline CI/CD (qualité, tests, build, sécurité)
+├── .gitlab/                # Gabarits de merge requests et d'issues
 ├── alembic/versions/       # Historique immuable des migrations SQL
 ├── docs/                   # Cahier des charges, vision, architecture, ADR
 ├── Rapport/                # Bilans hebdomadaires du jeudi
@@ -174,7 +175,7 @@ CYBERILLSEC-SENTRY/
 
 ## Qualité
 
-Quatre exigences non négociables, vérifiées par la CI sur chaque pull request :
+Quatre exigences non négociables, vérifiées par la CI sur chaque merge request :
 
 - **Typage strict** — `mypy --strict` sans exception ;
 - **Lint & format** — `ruff check .` et `ruff format .`, 100 caractères maximum par ligne ;
@@ -203,7 +204,7 @@ Au-delà de la v1.0 : assistant IA (LLM + RAG), multi-tenant et SSO, puis Cyberi
 ## Contribuer
 
 Les contributions sont bienvenues : développeurs, chercheurs, analystes SOC, technical writers.
-Lire [`CONTRIBUTING.md`](CONTRIBUTING.md) avant d'ouvrir une pull request, et
+Lire [`CONTRIBUTING.md`](CONTRIBUTING.md) avant d'ouvrir une merge request, et
 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) avant d'interagir avec la communauté.
 
 Signalement de vulnérabilité : [`SECURITY.md`](SECURITY.md) — **pas** via une issue publique.

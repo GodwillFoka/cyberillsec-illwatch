@@ -16,7 +16,7 @@ CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://github.com/GodwillFoka/CYBERILLSEC-SENTRY.git
+git clone https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY.git
 cd CYBERILLSEC-SENTRY
 
 # 2. Environnement virtuel isolé
@@ -52,7 +52,8 @@ Vérifie aussi <http://localhost:8000/health>, qui doit répondre `{"status":"ok
 
 ```
 CYBERILLSEC-SENTRY/
-├── .github/workflows/       Pipelines CI/CD GitHub Actions
+├── .gitlab-ci.yml           Pipeline CI/CD (qualité, tests, build, sécurité)
+├── .gitlab/                 Gabarits de merge requests et d'issues
 ├── alembic/
 │   └── versions/            Historique immuable des migrations SQL
 ├── docs/
@@ -141,7 +142,7 @@ docs(onboarding): update day-1 guide for docker compose setup
    git commit -m "feat(feeds): implement threat feed model and migration"
    git push origin feat/T2.1-threat-feed-model
    ```
-7. **Ouvrir la PR** vers `main` en renseignant les critères de validation testés
+7. **Ouvrir la MR** vers `main` en renseignant les critères de validation testés
 8. **Fusion** dès que la CI est verte et la revue approuvée
 
 ## 7. Commandes du quotidien

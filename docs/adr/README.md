@@ -7,6 +7,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | ADR | Titre | Statut |
 |---|---|---|
 | [001](ADR-001-scoring-composite.md) | Formule du score de risque composite | Accepté |
+| [002](ADR-002-hebergement-gitlab.md) | GitLab comme dépôt principal, abandon de GitHub | Accepté |
 
 ## Gabarit
 
