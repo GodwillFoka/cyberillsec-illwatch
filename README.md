@@ -6,8 +6,8 @@
 
 *CyberillSec — A CYBERILL Initiative*
 
-[![pipeline](https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY/badges/main/pipeline.svg)](https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY/-/pipelines)
-[![coverage](https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY/badges/main/coverage.svg)](https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY/-/pipelines)
+[![pipeline](https://gitlab.com/GodwillFoka/cyberillsec-sentry/badges/main/pipeline.svg)](https://gitlab.com/GodwillFoka/cyberillsec-sentry/-/pipelines)
+[![coverage](https://gitlab.com/GodwillFoka/cyberillsec-sentry/badges/main/coverage.svg)](https://gitlab.com/GodwillFoka/cyberillsec-sentry/-/pipelines)
 [![License: MIT](https://img.shields.io/badge/License-MIT-E6681B.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12+-20155C.svg)](https://www.python.org/)
 
@@ -117,8 +117,8 @@ FastAPI des débits de Go.
 **Prérequis :** Python 3.12+, Git, Docker & Docker Compose, un environnement Linux / macOS / WSL2.
 
 ```bash
-git clone https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY.git
-cd CYBERILLSEC-SENTRY
+git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
+cd cyberillsec-sentry
 
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install --upgrade pip
@@ -152,7 +152,7 @@ Les commandes `sentry feeds`, `sentry cves`, `sentry incidents`, `sentry dashboa
 ## Structure du dépôt
 
 ```
-CYBERILLSEC-SENTRY/
+cyberillsec-sentry/
 ├── .gitlab-ci.yml          # Pipeline CI/CD (qualité, tests, build, sécurité)
 ├── .gitlab/                # Gabarits de merge requests et d'issues
 ├── alembic/versions/       # Historique immuable des migrations SQL

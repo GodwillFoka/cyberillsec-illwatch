@@ -14,7 +14,7 @@
 | **Destinataire** | Équipe d'ingénierie logicielle / développeurs en onboarding |
 | **Version** | v1.0.0 (Master Engineering Baseline) |
 | **Baseline** | Juillet – Septembre 2026 |
-| **Dépôt** | `gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY` (voir [ADR-002](adr/ADR-002-hebergement-gitlab.md)) |
+| **Dépôt** | `gitlab.com/GodwillFoka/cyberillsec-sentry` (voir [ADR-002](adr/ADR-002-hebergement-gitlab.md)) |
 | **Classification** | Interne CYBERILL — document fondateur de référence |
 | **Statut** | Approuvé pour développement |
 

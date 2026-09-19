@@ -16,8 +16,8 @@ CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY.git
-cd CYBERILLSEC-SENTRY
+git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
+cd cyberillsec-sentry
 
 # 2. Environnement virtuel isolé
 python3.12 -m venv .venv
@@ -51,7 +51,7 @@ Vérifie aussi <http://localhost:8000/health>, qui doit répondre `{"status":"ok
 ## 3. Le dépôt, dossier par dossier
 
 ```
-CYBERILLSEC-SENTRY/
+cyberillsec-sentry/
 ├── .gitlab-ci.yml           Pipeline CI/CD (qualité, tests, build, sécurité)
 ├── .gitlab/                 Gabarits de merge requests et d'issues
 ├── alembic/

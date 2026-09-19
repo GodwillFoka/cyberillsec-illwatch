@@ -27,7 +27,7 @@ qui ouvre le README, et par tout auditeur qui instruit un dossier NIS 2.
 
 **GitLab devient le dépôt unique et principal du projet. GitHub est abandonné, sans miroir.**
 
-Dépôt de référence : `gitlab.com/GodwillFoka/CYBERILLSEC-SENTRY`.
+Dépôt de référence : `gitlab.com/GodwillFoka/cyberillsec-sentry`.
 
 ## Justification
 
