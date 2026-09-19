@@ -1,0 +1,35 @@
+# Architecture Decision Records
+
+Un ADR trace une décision structurante : son contexte, l'arbitrage rendu, sa justification et ses
+conséquences. On en écrit un quand la décision est coûteuse à revenir dessus, quand deux documents
+se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet dans six mois.
+
+| ADR | Titre | Statut |
+|---|---|---|
+| [001](ADR-001-scoring-composite.md) | Formule du score de risque composite | Accepté |
+
+## Gabarit
+
+```markdown
+# ADR-NNN — Titre
+
+- **Statut :** proposé / accepté / remplacé par ADR-XXX
+- **Date :** AAAA-MM-JJ
+- **Décideurs :**
+- **Concerne :** module, exigence
+
+## Contexte
+Ce qui force une décision. Les faits, pas les opinions.
+
+## Décision
+Ce qui est décidé, en une phrase affirmative.
+
+## Justification
+Pourquoi cette option plutôt que les autres. Les options écartées et leur raison.
+
+## Conséquences
+Positives et négatives. Les négatives sont obligatoires : une décision sans coût n'en est pas une.
+
+## Suivi
+Les actions ouvertes que cette décision crée.
+```

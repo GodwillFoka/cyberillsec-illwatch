@@ -1,0 +1,44 @@
+# Secrets & configuration locale
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+venv/
+.venv/
+env/
+
+# Tests & qualité
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Bases locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Outils & IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Données collectées / exports
+data/
+exports/
+logs/
+*.log
