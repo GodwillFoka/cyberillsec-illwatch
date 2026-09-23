@@ -126,9 +126,12 @@ pip install -e ".[dev]"
 
 cp .env.example .env          # puis renseigner SECRET_KEY et les clés API
 docker compose up -d          # PostgreSQL 16 + Redis 7
-alembic upgrade head          # migrations de schéma
+sentry db init                # migrations de schéma (alembic upgrade head)
+sentry seed                   # flux de référence publics
+sentry users create --username admin --email admin@example.org --role admin
 
-pytest                        # la suite doit passer à 100 %
+pytest                        # rapide, sur SQLite en mémoire
+DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5432/sentry pytest   # sur PostgreSQL réel
 uvicorn sentry.app.main:app --reload --port 8000
 ```
 
@@ -143,8 +146,17 @@ Guide pas à pas, y compris pour un développeur découvrant la cybersécurité 
 sentry version          # version et environnement
 sentry config           # configuration effective, secrets masqués
 sentry db check         # connectivité base de données
-sentry db init          # application des migrations
+sentry db init          # application de toutes les migrations
+sentry db upgrade [rev] # migration jusqu'à une révision (défaut : head)
+sentry db downgrade rev # retour arrière (confirmation demandée)
+sentry db current       # révision appliquée vs révision cible
+sentry seed             # données de référence, idempotent
+sentry users create     # création de compte (mot de passe saisi masqué, ≥ 12 caractères)
 ```
+
+Authentification : `POST /api/v1/auth/token` (flux OAuth2 *password*, formulaire
+`username` / `password`) renvoie un jeton Bearer JWT ; `GET /api/v1/users/me` renvoie le profil.
+Le bouton **Authorize** de Swagger (`/docs`) utilise directement ce flux.
 
 Les commandes `sentry feeds`, `sentry cves`, `sentry incidents`, `sentry dashboard show` et
 `sentry hunt` arrivent avec leurs modules respectifs (phases 2 à 6).

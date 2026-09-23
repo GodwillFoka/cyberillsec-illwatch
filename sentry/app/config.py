@@ -6,10 +6,14 @@ s'exécuter si la validation échoue (règle de gestion MOD-01).
 """
 
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import Field, field_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+DEFAULT_SECRET_KEY = "change-me-in-production"  # noqa: S105 - sentinelle refusée en prod
+INSECURE_SECRET_KEYS = frozenset({DEFAULT_SECRET_KEY, "changeme", "secret", "sentry"})
+MIN_PRODUCTION_SECRET_LENGTH = 32
 
 
 class Settings(BaseSettings):
@@ -48,7 +52,7 @@ class Settings(BaseSettings):
 
     # --- Sécurité ------------------------------------------------------------
     secret_key: str = Field(
-        default="change-me-in-production",
+        default=DEFAULT_SECRET_KEY,
         min_length=8,
         description="Clé de signature JWT — OBLIGATOIREMENT surchargée en production",
     )
@@ -72,10 +76,28 @@ class Settings(BaseSettings):
     # --- Scoring & alerting (§3.3.3 du CdC) ---------------------------------
     risk_alert_threshold: float = Field(default=75.0, ge=0, le=100)
 
-    @field_validator("secret_key")
-    @classmethod
-    def _reject_default_secret_in_prod(cls, v: str, info: object) -> str:
-        return v
+    @model_validator(mode="after")
+    def _enforce_production_safety(self) -> Self:
+        """Refuse de démarrer en production avec une configuration dangereuse.
+
+        La validation dépend de deux champs (`environment` et `secret_key`) :
+        elle doit donc s'exécuter une fois le modèle entièrement construit.
+        """
+        if not self.is_production:
+            return self
+        if self.secret_key in INSECURE_SECRET_KEYS:
+            raise ValueError(
+                "SECRET_KEY par défaut interdite en production. "
+                "Générez-en une : openssl rand -hex 32"
+            )
+        if len(self.secret_key) < MIN_PRODUCTION_SECRET_LENGTH:
+            raise ValueError(
+                f"SECRET_KEY trop courte pour la production "
+                f"({len(self.secret_key)} < {MIN_PRODUCTION_SECRET_LENGTH} caractères)."
+            )
+        if self.debug:
+            raise ValueError("DEBUG doit être désactivé en production.")
+        return self
 
     @property
     def is_production(self) -> bool:

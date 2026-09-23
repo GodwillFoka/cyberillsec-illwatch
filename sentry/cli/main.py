@@ -7,6 +7,8 @@ from rich.console import Console
 from rich.table import Table
 
 from sentry.app.config import get_settings
+from sentry.app.security import MIN_PASSWORD_LENGTH
+from sentry.shared.enums import UserRole
 
 console = Console()
 
@@ -71,10 +73,135 @@ def db_check() -> None:
         raise SystemExit(1)
 
 
+def _run_migration(action: str, revision: str) -> None:
+    """Exécute une opération Alembic et convertit toute erreur en code retour non nul."""
+    from sentry.app import migrations
+
+    try:
+        if action == "upgrade":
+            migrations.upgrade(revision)
+        else:
+            migrations.downgrade(revision)
+    except Exception as exc:  # noqa: BLE001 - diagnostic CLI, l'erreur est affichée puis propagée
+        console.print(f"[red]Échec de la migration :[/] {exc}")
+        raise SystemExit(1) from exc
+    console.print(f"[green]Migration {action} → {revision} appliquée.[/]")
+
+
 @db.command("init")
 def db_init() -> None:
-    """Applique toutes les migrations Alembic (équivalent `alembic upgrade head`)."""
-    console.print("[yellow]Exécutez :[/] alembic upgrade head")
+    """Initialise le schéma : applique toutes les migrations (alembic upgrade head)."""
+    _run_migration("upgrade", "head")
+
+
+@db.command("upgrade")
+@click.argument("revision", default="head")
+def db_upgrade(revision: str) -> None:
+    """Applique les migrations jusqu'à REVISION (défaut : head)."""
+    _run_migration("upgrade", revision)
+
+
+@db.command("downgrade")
+@click.argument("revision")
+@click.confirmation_option(prompt="Revenir en arrière peut détruire des données. Continuer ?")
+def db_downgrade(revision: str) -> None:
+    """Annule les migrations jusqu'à REVISION (ex. -1, base)."""
+    _run_migration("downgrade", revision)
+
+
+@db.command("current")
+def db_current() -> None:
+    """Affiche la révision appliquée et la révision cible."""
+    from sentry.app import migrations
+    from sentry.app.database import dispose_engine
+
+    async def _current() -> str | None:
+        try:
+            return await migrations.current_revision()
+        finally:
+            await dispose_engine()
+
+    try:
+        current = asyncio.run(_current())
+        head = migrations.head_revision()
+    except Exception as exc:  # noqa: BLE001 - diagnostic CLI
+        console.print(f"[red]Échec :[/] {exc}")
+        raise SystemExit(1) from exc
+
+    console.print(f"Révision appliquée : [cyan]{current or 'aucune (base vierge)'}[/]")
+    console.print(f"Révision cible     : [cyan]{head}[/]")
+    if current != head:
+        console.print("[yellow]Base en retard : exécutez `sentry db upgrade`.[/]")
+
+
+@cli.command()
+def seed() -> None:
+    """Insère les données de référence (flux publics sans clé). Idempotent."""
+    from sentry.app.database import dispose_engine, get_session_factory
+    from sentry.modules.foundation.seed import seed_reference_feeds
+
+    async def _seed() -> list[str]:
+        try:
+            async with get_session_factory()() as session:
+                created = await seed_reference_feeds(session)
+                await session.commit()
+                return created
+        finally:
+            await dispose_engine()
+
+    created = asyncio.run(_seed())
+    if created:
+        for name in created:
+            console.print(f"[green]+[/] {name}")
+    else:
+        console.print("Données de référence déjà présentes, rien à faire.")
+
+
+@cli.group()
+def users() -> None:
+    """Gestion des comptes utilisateurs."""
+
+
+@users.command("create")
+@click.option("--username", required=True, help="Identifiant de connexion.")
+@click.option("--email", required=True, help="Adresse e-mail.")
+@click.option(
+    "--role",
+    type=click.Choice([r.value for r in UserRole], case_sensitive=False),
+    default=UserRole.ANALYST.value,
+    show_default=True,
+)
+@click.password_option(
+    "--password",
+    help=f"Mot de passe (≥ {MIN_PASSWORD_LENGTH} caractères). Demandé si absent.",
+)
+def users_create(username: str, email: str, role: str, password: str) -> None:
+    """Crée un compte. Le mot de passe est saisi de façon masquée et confirmé."""
+    from sentry.app.database import dispose_engine, get_session_factory
+    from sentry.app.security import WeakPasswordError
+    from sentry.modules.foundation.users import UserAlreadyExistsError, create_user
+
+    async def _create() -> str:
+        try:
+            async with get_session_factory()() as session:
+                user = await create_user(
+                    session,
+                    username=username,
+                    email=email,
+                    password=password,
+                    role=UserRole(role.upper()),
+                )
+                await session.commit()
+                return user.username
+        finally:
+            await dispose_engine()
+
+    try:
+        created = asyncio.run(_create())
+    except (WeakPasswordError, UserAlreadyExistsError) as exc:
+        console.print(f"[red]Refusé :[/] {exc}")
+        raise SystemExit(1) from exc
+    console.print(f"[green]Compte créé :[/] {created} ({role.upper()})")
 
 
 if __name__ == "__main__":

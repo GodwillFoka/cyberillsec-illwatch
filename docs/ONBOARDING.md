@@ -34,11 +34,14 @@ cp .env.example .env
 # 5. Infrastructure locale
 docker compose up -d             # PostgreSQL 16 + Redis 7
 
-# 6. Migrations de schéma
-alembic upgrade head
+# 6. Migrations de schéma, données de référence et premier compte
+sentry db init
+sentry seed
+sentry users create --username admin --email admin@example.org --role admin
 
-# 7. Vérification
+# 7. Vérification — SQLite par défaut ; PostgreSQL si DATABASE_URL est exportée
 pytest
+DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5432/sentry pytest
 
 # 8. Serveur en rechargement automatique
 uvicorn sentry.app.main:app --reload --host 0.0.0.0 --port 8000
@@ -165,6 +168,7 @@ alembic upgrade head
 sentry version
 sentry config
 sentry db check
+sentry db current
 ```
 
 ## 8. Problèmes fréquents
@@ -172,8 +176,10 @@ sentry db check
 | Symptôme | Cause probable | Correctif |
 |---|---|---|
 | `connection refused` sur le port 5432 | Conteneurs non démarrés | `docker compose up -d` puis `docker compose ps` |
-| `Target database is not up to date` | Migrations en retard | `alembic upgrade head` |
+| `Target database is not up to date` | Migrations en retard | `sentry db upgrade` |
 | `ValidationError` au démarrage | `.env` absent ou incomplet | `cp .env.example .env` et renseigner `SECRET_KEY` |
+| `SECRET_KEY par défaut interdite en production` | `ENVIRONMENT=production` avec la clé d'exemple | `openssl rand -hex 32` → `SECRET_KEY` |
+| Tests `postgres` marqués *skipped* | `DATABASE_URL` non exportée : suite lancée sur SQLite | Exporter `DATABASE_URL` vers PostgreSQL |
 | Les tests passent en local, échouent en CI | Dépendance à un état local | Les tests doivent créer leurs propres données ; voir `tests/conftest.py` |
 | HTTP 429 depuis NVD | Rate limit sans clé API | Demander une clé sur nvd.nist.gov et renseigner `NVD_API_KEY` |
 

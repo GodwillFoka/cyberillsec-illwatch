@@ -7,7 +7,12 @@ déclarées : l'OpenAPI exposé reflète strictement ce qui fonctionne.
 
 from fastapi import APIRouter
 
+from sentry.app.api.v1 import auth
+
 api_router = APIRouter()
+
+# Phase 1 — MOD-01 : authentification
+api_router.include_router(auth.router)
 
 # Phase 2 — MOD-02 : from sentry.app.api.v1 import feeds, indicators
 # Phase 3 — MOD-03 : from sentry.app.api.v1 import cves

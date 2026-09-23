@@ -27,4 +27,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD curl -fsS http://localhost:8000/health || exit 1
 
-CMD ["uvicorn", "sentry.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Au démarrage : migrations Alembic jusqu'à head, puis service HTTP (critère M1).
+# Adapté à une instance unique ; en multi-réplicas, sortir la migration dans un job dédié.
+CMD ["sh", "-c", "sentry db upgrade && exec uvicorn sentry.app.main:app --host 0.0.0.0 --port 8000"]
