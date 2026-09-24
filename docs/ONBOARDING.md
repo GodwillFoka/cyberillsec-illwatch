@@ -41,7 +41,7 @@ sentry users create --username admin --email admin@example.org --role admin
 
 # 7. Vérification — SQLite par défaut ; PostgreSQL si DATABASE_URL est exportée
 pytest
-DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5432/sentry pytest
+DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5433/sentry pytest
 
 # 8. Serveur en rechargement automatique
 uvicorn sentry.app.main:app --reload --host 0.0.0.0 --port 8000
@@ -175,7 +175,7 @@ sentry db current
 
 | Symptôme | Cause probable | Correctif |
 |---|---|---|
-| `connection refused` sur le port 5432 | Conteneurs non démarrés | `docker compose up -d` puis `docker compose ps` |
+| `connection refused` sur le port 5433 | Conteneurs non démarrés | `docker compose up -d` puis `docker compose ps` |
 | `Target database is not up to date` | Migrations en retard | `sentry db upgrade` |
 | `ValidationError` au démarrage | `.env` absent ou incomplet | `cp .env.example .env` et renseigner `SECRET_KEY` |
 | `SECRET_KEY par défaut interdite en production` | `ENVIRONMENT=production` avec la clé d'exemple | `openssl rand -hex 32` → `SECRET_KEY` |

@@ -7,6 +7,10 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+## [0.1.0] — 2026-09-24
+
+Jalon M1 : squelette opérationnel validé (clôture de la phase 1 Foundation).
+
 ### Ajouté
 - Squelette applicatif complet conforme au §6.2 du Cahier des Charges (MOD-01).
 - Configuration Pydantic immuable validée au démarrage (RF-01).
@@ -42,12 +46,10 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - L'image Docker applique les migrations au démarrage avant de lancer l'API (critère M1).
 - `alembic.ini` : `version_path_separator` remplacé par `path_separator` (déprécié).
 - Tri des imports : le dossier local `alembic/` ne masque plus le paquet tiers pour `ruff`.
+- Port PostgreSQL hôte : `docker-compose.yml` expose 5433 ; `.env.example`, la valeur par défaut
+  de `DATABASE_URL` et la documentation pointaient encore vers 5432.
 
 ### Modifié
 - **Dépôt migré de GitHub vers GitLab**, qui devient la plateforme unique du projet
   (voir `docs/adr/ADR-002-hebergement-gitlab.md`). Suppression de `.github/`, des workflows
   GitHub Actions et de Dependabot ; mise à jour de toutes les références dans la documentation.
-
-## [0.1.0] — à venir
-
-Jalon M1 : squelette opérationnel validé.

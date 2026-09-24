@@ -131,7 +131,7 @@ sentry seed                   # flux de référence publics
 sentry users create --username admin --email admin@example.org --role admin
 
 pytest                        # rapide, sur SQLite en mémoire
-DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5432/sentry pytest   # sur PostgreSQL réel
+DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5433/sentry pytest   # sur PostgreSQL réel
 uvicorn sentry.app.main:app --reload --port 8000
 ```
 

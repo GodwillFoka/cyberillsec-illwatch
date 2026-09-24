@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     # --- Base de données -----------------------------------------------------
     # PostgreSQL 16 en cible ; SQLite/aiosqlite accepté pour les tests locaux.
     database_url: str = Field(
-        default="postgresql+asyncpg://sentry:sentry@localhost:5432/sentry",
+        default="postgresql+asyncpg://sentry:sentry@localhost:5433/sentry",
         description="DSN SQLAlchemy async",
     )
     database_echo: bool = False
