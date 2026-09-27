@@ -10,6 +10,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [002](ADR-002-hebergement-gitlab.md) | GitLab comme dépôt principal, abandon de GitHub | Accepté |
 | [003](ADR-003-authentification-phase-1.md) | Authentification JWT livrée dès la phase 1 | Accepté |
 | [004](ADR-004-recalage-planning.md) | Recalage du planning sur la fin réelle de la phase 1 | Proposé |
+| [005](ADR-005-cycle-de-vie-ioc.md) | Cycle de vie et déduplication des IOC | Proposé |
 
 ## Gabarit
 

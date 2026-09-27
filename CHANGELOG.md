@@ -17,7 +17,20 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   uniquement, pas d'identifiants, pas d'IP interne ni de nom local, formes numériques ambiguës
   refusées), retour à `PENDING` quand l'URL ou le format change.
 
+- **IOC (RF-07, RF-08, ADR-005)** : `POST /api/v1/indicators` (ingestion d'un lot de 1 000 IOC
+  au plus, rôles `ADMIN` et `ANALYST`), `GET /api/v1/indicators` (filtres `type`, `severity`,
+  `min_severity`, `feed_id`, `active`, `value`) et `GET /api/v1/indicators/{id}`. Déduplication
+  par `INSERT … ON CONFLICT DO UPDATE` : `hit_count`, `first_seen`/`last_seen`, sévérité maximale
+  et `expires_at` mis à jour selon l'ADR-005. RNF-PERF-02 vérifié (1 000 IOC < 5 s).
+- Normalisation des IOC étendue : formes désamorcées (`hxxps://`, `[.]`), point final DNS,
+  schéma et hôte d'URL en minuscules, port par défaut et fragment retirés, IP canonisées.
+- Tests d'intégrité du schéma : contraintes CHECK, `expires_at`, `ON DELETE SET NULL`, et
+  comparaison des CHECK entre modèle et base (non couverte par `alembic check`).
+
 ### Corrigé
+- **Modèle désynchronisé de la migration `a4973a3782e3`** : `Indicator.expires_at` et les quatre
+  contraintes CHECK n'étaient déclarés que dans la migration. `alembic check` signalait
+  « removed column 'indicators.expires_at' » et un test de M1 échouait sur `main`.
 - Couverture de tests sous-estimée : `coverage` ne suivait pas les greenlets de SQLAlchemy async
   (`concurrency = ["greenlet", "thread"]`).
 

@@ -162,6 +162,10 @@ Sources de flux (T2.2) : `GET /api/v1/feeds` et `GET /api/v1/feeds/{id}` pour to
 authentifié ; `POST`, `PATCH` et `DELETE` réservés au rôle `ADMIN`. Seules les URL HTTPS publiques
 sont acceptées.
 
+Indicateurs (IOC) : `GET /api/v1/indicators` et `GET /api/v1/indicators/{id}` pour tout
+utilisateur authentifié ; `POST /api/v1/indicators` (lot de 1 000 au plus) pour `ADMIN` et
+`ANALYST`. Règles de déduplication et d'expiration : `docs/adr/ADR-005-cycle-de-vie-ioc.md`.
+
 Les commandes `sentry feeds`, `sentry cves`, `sentry incidents`, `sentry dashboard show` et
 `sentry hunt` arrivent avec leurs modules respectifs (phases 2 à 6).
 
