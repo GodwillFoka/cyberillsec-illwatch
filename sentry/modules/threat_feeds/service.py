@@ -61,7 +61,7 @@ class FeedPage:
 # --- Validation ----------------------------------------------------------------
 
 
-def _is_internal_ip(host: str) -> bool:
+def is_internal_ip(host: str) -> bool:
     try:
         addr = ipaddress.ip_address(host)
     except ValueError:
@@ -114,7 +114,7 @@ def validate_feed_url(url: str) -> str:
         raise UnsafeFeedURLError("URL sans nom d'hôte.")
 
     host = hostname.rstrip(".").lower()
-    if _is_internal_ip(host):
+    if is_internal_ip(host):
         raise UnsafeFeedURLError("Adresse IP interne ou réservée interdite.")
     if host == "localhost" or host.endswith(_FORBIDDEN_HOST_SUFFIXES):
         raise UnsafeFeedURLError("Nom d'hôte local interdit.")

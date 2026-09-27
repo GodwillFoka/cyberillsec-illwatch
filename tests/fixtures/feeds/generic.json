@@ -1,0 +1,9 @@
+{
+  "data": [
+    {"ioc": "evil.example.com", "severity": "high", "threat": "phishing", "first_seen": "2026-09-26 10:00:00"},
+    {"indicator": "198.51.100.99", "tags": ["c2", "cobalt-strike"]},
+    "d41d8cd98f00b204e9800998ecf8427e",
+    {"comment": "pas d'IOC ici"},
+    42
+  ]
+}

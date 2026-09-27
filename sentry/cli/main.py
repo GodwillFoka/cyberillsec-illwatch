@@ -204,5 +204,14 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
     console.print(f"[green]Compte créé :[/] {created} ({role.upper()})")
 
 
+def _register_subcommands() -> None:
+    from sentry.cli.feeds import feeds
+
+    cli.add_command(feeds)
+
+
+_register_subcommands()
+
+
 if __name__ == "__main__":
     cli()

@@ -152,6 +152,10 @@ sentry db downgrade rev # retour arrière (confirmation demandée)
 sentry db current       # révision appliquée vs révision cible
 sentry seed             # données de référence, idempotent
 sentry users create     # création de compte (mot de passe saisi masqué, ≥ 12 caractères)
+sentry feeds list       # sources de flux et leur état
+sentry feeds add        # nouvelle source (HTTPS public, nom unique)
+sentry feeds fetch X    # collecte immédiate d'une source
+sentry feeds fetch-all  # collecte des sources échues (à planifier, ex. cron toutes les 15 min)
 ```
 
 Authentification : `POST /api/v1/auth/token` (flux OAuth2 *password*, formulaire

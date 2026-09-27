@@ -72,6 +72,9 @@ class Settings(BaseSettings):
     default_polling_interval: int = Field(default=3600, ge=60)
     http_timeout_seconds: float = Field(default=15.0, gt=0)
     http_max_retries: int = Field(default=3, ge=0, le=10)
+    # Taille maximale d'une réponse de flux : au-delà, la collecte est interrompue
+    # (protection mémoire contre un flux corrompu ou malveillant).
+    feed_max_bytes: int = Field(default=20 * 1024 * 1024, ge=1024)
 
     # --- Scoring & alerting (§3.3.3 du CdC) ---------------------------------
     risk_alert_threshold: float = Field(default=75.0, ge=0, le=100)

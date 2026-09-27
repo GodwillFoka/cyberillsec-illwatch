@@ -8,6 +8,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 ## [Non publié]
 
 ### Ajouté
+- **T2.3 — Collecteur de flux (UC-01)** : récupération HTTP sécurisée (revalidation de l'URL,
+  résolution DNS avec refus de toute adresse interne, redirections revalidées une à une, taille
+  plafonnée par `FEED_MAX_BYTES`), backoff exponentiel sur erreurs réseau et 5xx, report au cycle
+  suivant sur HTTP 429. Analyseurs CSV (en-têtes commentés abuse.ch), JSON et STIX 2.1. Chaque
+  flux est isolé : un échec passe le flux en `DEGRADED` sans bloquer les autres (RSK-02).
+- **T2.7 — CLI `sentry feeds`** : `list`, `add`, `fetch <nom|id>`, `fetch-all [--force]`. Code de
+  sortie non nul si une collecte échoue (planification cron / timer systemd).
 - **T2.2 — CRUD des sources de flux (RF-04)** : `GET/POST /api/v1/feeds`,
   `GET/PATCH/DELETE /api/v1/feeds/{id}`. Lecture pour tous les rôles authentifiés, écriture
   réservée aux `ADMIN`. Liste paginée (`limit` ≤ 200, `offset`) et filtrable (`is_active`,
