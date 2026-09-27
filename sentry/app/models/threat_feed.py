@@ -1,19 +1,47 @@
-"""Modèles ThreatFeed et Indicator — tables `threat_feeds` et `indicators`."""
+"""Modèles ThreatFeed et Indicator — tables `threat_feeds` et `indicators`.
+
+Les contraintes CHECK reprennent à l'identique celles de la migration
+`a4973a3782e3` : le modèle reste la source de vérité du schéma (Alembic
+compare les deux via `alembic check`), et les bases créées par
+`Base.metadata.create_all` (tests SQLite) appliquent les mêmes règles.
+"""
 
 from datetime import datetime
+from enum import StrEnum
 from uuid import UUID
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from sentry.app.database import Base, TimestampMixin, UUIDPrimaryKeyMixin
-from sentry.shared.enums import FeedStatus, Severity
+from sentry.shared.enums import FeedStatus, FeedType, IndicatorType, Severity
+
+
+def _in_enum(column: str, enum: type[StrEnum]) -> str:
+    """Expression SQL `colonne IN (...)` générée depuis l'énumération Python :
+    une seule source pour les valeurs autorisées."""
+    values = ", ".join(f"'{member.value}'" for member in enum)
+    return f"{column} IN ({values})"
 
 
 class ThreatFeed(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     """Source de renseignement distante — RF-04."""
 
     __tablename__ = "threat_feeds"
+    __table_args__ = (
+        CheckConstraint(_in_enum("feed_type", FeedType), name="ck_threat_feeds_feed_type"),
+        CheckConstraint(_in_enum("status", FeedStatus), name="ck_threat_feeds_status"),
+    )
 
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     url: Mapped[str] = mapped_column(String(500), nullable=False)
@@ -40,6 +68,8 @@ class Indicator(UUIDPrimaryKeyMixin, Base):
         UniqueConstraint("type", "value", name="uq_indicator_type_value"),
         Index("idx_indicators_type_val", "type", "value"),
         Index("idx_indicators_last_seen", "last_seen"),
+        CheckConstraint(_in_enum("type", IndicatorType), name="ck_indicators_type"),
+        CheckConstraint(_in_enum("severity", Severity), name="ck_indicators_severity"),
     )
 
     feed_id: Mapped[UUID | None] = mapped_column(
@@ -52,7 +82,10 @@ class Indicator(UUIDPrimaryKeyMixin, Base):
     hit_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    # Fin de validité opérationnelle : au-delà, l'IOC est « expiré » (plus utilisé pour la
+    # détection) mais conservé pour l'historique et les investigations. NULL = sans expiration.
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     feed: Mapped[ThreatFeed | None] = relationship(back_populates="indicators")
 
     def __repr__(self) -> str:
