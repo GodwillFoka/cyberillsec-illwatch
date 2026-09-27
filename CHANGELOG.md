@@ -7,6 +7,20 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté
+- **T2.2 — CRUD des sources de flux (RF-04)** : `GET/POST /api/v1/feeds`,
+  `GET/PATCH/DELETE /api/v1/feeds/{id}`. Lecture pour tous les rôles authentifiés, écriture
+  réservée aux `ADMIN`. Liste paginée (`limit` ≤ 200, `offset`) et filtrable (`is_active`,
+  `status`, `feed_type`), triée par nom.
+- Service `sentry/modules/threat_feeds/service.py`, partagé par l'API et la future CLI (T2.7) :
+  noms uniques sans tenir compte de la casse (409), URL de flux validée contre le SSRF (HTTPS
+  uniquement, pas d'identifiants, pas d'IP interne ni de nom local, formes numériques ambiguës
+  refusées), retour à `PENDING` quand l'URL ou le format change.
+
+### Corrigé
+- Couverture de tests sous-estimée : `coverage` ne suivait pas les greenlets de SQLAlchemy async
+  (`concurrency = ["greenlet", "thread"]`).
+
 ## [0.1.0] — 2026-09-24
 
 Jalon M1 : squelette opérationnel validé (clôture de la phase 1 Foundation).

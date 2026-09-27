@@ -158,6 +158,10 @@ Authentification : `POST /api/v1/auth/token` (flux OAuth2 *password*, formulaire
 `username` / `password`) renvoie un jeton Bearer JWT ; `GET /api/v1/users/me` renvoie le profil.
 Le bouton **Authorize** de Swagger (`/docs`) utilise directement ce flux.
 
+Sources de flux (T2.2) : `GET /api/v1/feeds` et `GET /api/v1/feeds/{id}` pour tout utilisateur
+authentifié ; `POST`, `PATCH` et `DELETE` réservés au rôle `ADMIN`. Seules les URL HTTPS publiques
+sont acceptées.
+
 Les commandes `sentry feeds`, `sentry cves`, `sentry incidents`, `sentry dashboard show` et
 `sentry hunt` arrivent avec leurs modules respectifs (phases 2 à 6).
 

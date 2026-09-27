@@ -85,6 +85,12 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-v --cov=sentry --cov-report=term-missing"
 
+[tool.coverage.run]
+# SQLAlchemy async exécute le code dans des greenlets : sans cette option, les
+# lignes qui suivent un `await` en base sont comptées à tort comme non couvertes.
+concurrency = ["greenlet", "thread"]
+source = ["sentry"]
+
 [tool.coverage.report]
 fail_under = 80
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
