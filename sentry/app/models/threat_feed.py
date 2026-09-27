@@ -52,7 +52,7 @@ class Indicator(UUIDPrimaryKeyMixin, Base):
     hit_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     feed: Mapped[ThreatFeed | None] = relationship(back_populates="indicators")
 
     def __repr__(self) -> str:
