@@ -170,8 +170,8 @@ Indicateurs (IOC) : `GET /api/v1/indicators` et `GET /api/v1/indicators/{id}` po
 utilisateur authentifié ; `POST /api/v1/indicators` (lot de 1 000 au plus) pour `ADMIN` et
 `ANALYST`. Règles de déduplication et d'expiration : `docs/adr/ADR-005-cycle-de-vie-ioc.md`.
 
-Les commandes `sentry feeds`, `sentry cves`, `sentry incidents`, `sentry dashboard show` et
-`sentry hunt` arrivent avec leurs modules respectifs (phases 2 à 6).
+Les commandes `sentry cves`, `sentry incidents`, `sentry dashboard show` et `sentry hunt`
+arrivent avec leurs modules respectifs (phases 3 à 6).
 
 ## Structure du dépôt
 
