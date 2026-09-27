@@ -131,7 +131,7 @@ sentry seed                   # flux de référence publics
 sentry users create --username admin --email admin@example.org --role admin
 
 pytest                        # rapide, sur SQLite en mémoire
-DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5433/sentry pytest   # sur PostgreSQL réel
+./scripts/ci-local.sh          # pipeline complet (base dédiée sentry_test)
 uvicorn sentry.app.main:app --reload --port 8000
 ```
 
@@ -209,6 +209,10 @@ pytest
 ```
 
 ## Feuille de route
+
+État au 27/09/2026 : **P1 livrée (`v0.1.0`)**, **P2 en cours** (CRUD des flux, ingestion
+dédupliquée des IOC). Les dates ci-dessous sont celles du Cahier des charges ; leur recalage est
+proposé dans [ADR-004](docs/adr/ADR-004-recalage-planning.md).
 
 | Phase | Fenêtre | Livrable | Jalon |
 |---|---|---|---|

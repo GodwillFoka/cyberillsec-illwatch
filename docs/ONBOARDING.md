@@ -41,7 +41,7 @@ sentry users create --username admin --email admin@example.org --role admin
 
 # 7. Vérification — SQLite par défaut ; PostgreSQL si DATABASE_URL est exportée
 pytest
-DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5433/sentry pytest
+./scripts/ci-local.sh   # pipeline complet sur la base dédiée sentry_test
 
 # 8. Serveur en rechargement automatique
 uvicorn sentry.app.main:app --reload --host 0.0.0.0 --port 8000
@@ -179,7 +179,8 @@ sentry db current
 | `Target database is not up to date` | Migrations en retard | `sentry db upgrade` |
 | `ValidationError` au démarrage | `.env` absent ou incomplet | `cp .env.example .env` et renseigner `SECRET_KEY` |
 | `SECRET_KEY par défaut interdite en production` | `ENVIRONMENT=production` avec la clé d'exemple | `openssl rand -hex 32` → `SECRET_KEY` |
-| Tests `postgres` marqués *skipped* | `DATABASE_URL` non exportée : suite lancée sur SQLite | Exporter `DATABASE_URL` vers PostgreSQL |
+| Tests `postgres` marqués *skipped* | `DATABASE_URL` non exportée : suite lancée sur SQLite | `./scripts/ci-local.sh` (base `sentry_test`) |
+| `Base « sentry » refusée` | `DATABASE_URL` pointe vers la base de travail | Utiliser une base dont le nom finit par `_test` |
 | Les tests passent en local, échouent en CI | Dépendance à un état local | Les tests doivent créer leurs propres données ; voir `tests/conftest.py` |
 | HTTP 429 depuis NVD | Rate limit sans clé API | Demander une clé sur nvd.nist.gov et renseigner `NVD_API_KEY` |
 

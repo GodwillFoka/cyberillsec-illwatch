@@ -5,11 +5,10 @@ Revises: c36227f04410
 Create Date: 2026-09-25 12:06:56.656591
 """
 
-from typing import Union
 from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
 revision: str = "a4973a3782e3"

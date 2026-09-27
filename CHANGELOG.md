@@ -28,6 +28,16 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   comparaison des CHECK entre modèle et base (non couverte par `alembic check`).
 
 ### Corrigé
+- **Protection des données de travail** : la documentation faisait lancer `pytest` sur la base
+  de travail, alors que les tests de migration en suppriment tout le schéma. La suite refuse
+  désormais toute base PostgreSQL dont le nom ne finit pas par `_test`, et repart d'un schéma
+  neuf à chaque session (une base de tests restée sur un ancien schéma faisait échouer la suite).
+- **Pipeline GitLab** : il ne tournait que sur `main`, les tags et les merge requests ; un push
+  de branche de fonctionnalité n'était jamais testé. Ajout des pipelines de branche (sans
+  doublon avec les merge requests) et d'un job `migrations` (montée, `alembic check`, descente,
+  remontée sur base vierge).
+- Script `scripts/ci-local.sh` : réplique locale du pipeline, à lancer avant chaque push.
+- Migration `a4973a3782e3` : import inutilisé retiré (aucun effet sur le schéma).
 - **Modèle désynchronisé de la migration `a4973a3782e3`** : `Indicator.expires_at` et les quatre
   contraintes CHECK n'étaient déclarés que dans la migration. `alembic check` signalait
   « removed column 'indicators.expires_at' » et un test de M1 échouait sur `main`.
