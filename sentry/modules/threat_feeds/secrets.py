@@ -1,0 +1,65 @@
+"""Secrets de flux : jamais en base, résolus au moment de la requête.
+
+Certaines sources imposent une clé dans l'URL même (abuse.ch URLhaus :
+`…/exports/<Auth-Key>/recent.csv`). Stocker cette URL telle quelle mettrait la clé
+dans `threat_feeds.url`, lisible par tous les rôles via `GET /api/v1/feeds` et
+recopiée dans les messages d'erreur.
+
+La base stocke donc un **gabarit** : `…/exports/{ABUSECH_AUTH_KEY}/recent.csv`.
+Le paramètre est remplacé par la valeur de l'environnement (`.env`) juste avant la
+requête, et toute valeur secrète est masquée dans les messages enregistrés.
+"""
+
+import re
+from urllib.parse import quote
+
+from sentry.app.config import Settings
+
+PLACEHOLDER_RE = re.compile(r"\{([A-Z][A-Z0-9_]*)\}")
+MASK = "***"
+
+
+class MissingFeedSecretError(ValueError):
+    """Le gabarit d'URL réclame un secret absent de la configuration."""
+
+
+KNOWN_PLACEHOLDERS = frozenset({"ABUSECH_AUTH_KEY"})
+
+
+def _available(settings: Settings) -> dict[str, str | None]:
+    key = settings.abusech_auth_key
+    return {"ABUSECH_AUTH_KEY": key.get_secret_value() if key is not None else None}
+
+
+def placeholders(url_template: str) -> list[str]:
+    return PLACEHOLDER_RE.findall(url_template)
+
+
+def resolve_feed_url(url_template: str, settings: Settings) -> str:
+    """Remplace chaque `{NOM}` par le secret configuré, encodé pour un chemin d'URL.
+
+    Raises:
+        MissingFeedSecretError: paramètre inconnu ou secret non configuré.
+    """
+    values = _available(settings)
+
+    def _substitute(match: re.Match[str]) -> str:
+        name = match.group(1)
+        if name not in values:
+            raise MissingFeedSecretError(f"Paramètre d'URL inconnu : {{{name}}}.")
+        value = values[name]
+        if not value:
+            raise MissingFeedSecretError(
+                f"Secret {name} non configuré : renseignez-le dans .env pour collecter ce flux."
+            )
+        return quote(value, safe="")
+
+    return PLACEHOLDER_RE.sub(_substitute, url_template)
+
+
+def mask_secrets(text: str, settings: Settings) -> str:
+    """Retire toute valeur secrète configurée d'un message (erreurs, journaux)."""
+    for value in _available(settings).values():
+        if value:
+            text = text.replace(value, MASK).replace(quote(value, safe=""), MASK)
+    return text

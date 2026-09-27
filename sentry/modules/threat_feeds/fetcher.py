@@ -31,6 +31,7 @@ import httpx
 
 from sentry import __version__
 from sentry.app.config import Settings, get_settings
+from sentry.modules.threat_feeds.secrets import MissingFeedSecretError, resolve_feed_url
 from sentry.modules.threat_feeds.service import (
     UnsafeFeedURLError,
     is_internal_ip,
@@ -164,6 +165,10 @@ async def fetch_feed_content(
         FetchError: tout autre échec, après épuisement des tentatives.
     """
     cfg = settings or get_settings()
+    try:
+        url = resolve_feed_url(url, cfg)
+    except MissingFeedSecretError as exc:
+        raise FetchError(str(exc)) from exc
     owns_client = client is None
     http = client or httpx.AsyncClient(
         timeout=cfg.http_timeout_seconds,

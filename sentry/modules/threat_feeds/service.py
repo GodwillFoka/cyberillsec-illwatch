@@ -26,6 +26,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sentry.app.models import ThreatFeed
+from sentry.modules.threat_feeds.secrets import KNOWN_PLACEHOLDERS, placeholders
 from sentry.shared.enums import FeedStatus, FeedType
 
 MIN_POLLING_INTERVAL = 60
@@ -130,6 +131,12 @@ def validate_feed_url(url: str) -> str:
         ):
             raise UnsafeFeedURLError("Nom d'hôte invalide.") from None
 
+    unknown = sorted(set(placeholders(candidate)) - KNOWN_PLACEHOLDERS)
+    if unknown:
+        raise UnsafeFeedURLError(
+            f"Paramètre d'URL inconnu : {', '.join('{' + u + '}' for u in unknown)}. "
+            f"Autorisés : {', '.join('{' + k + '}' for k in sorted(KNOWN_PLACEHOLDERS))}."
+        )
     return candidate
 
 

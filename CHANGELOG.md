@@ -35,6 +35,11 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   comparaison des CHECK entre modèle et base (non couverte par `alembic check`).
 
 ### Corrigé
+- **Flux URLhaus inutilisable** : abuse.ch exige désormais une clé (`Auth-Key`) dans l'URL de
+  téléchargement ; l'ancienne URL semée par `sentry seed` échouait. La base stocke un gabarit
+  (`…/exports/{ABUSECH_AUTH_KEY}/recent.csv`), la clé est lue dans `.env` au moment de la requête
+  et masquée dans tous les messages d'erreur. `sentry seed` corrige l'ancienne URL.
+- Échantillon Feodo aligné sur le format réel (en-tête CSV entre guillemets, non commenté).
 - **Protection des données de travail** : la documentation faisait lancer `pytest` sur la base
   de travail, alors que les tests de migration en suppriment tout le schéma. La suite refuse
   désormais toute base PostgreSQL dont le nom ne finit pas par `_test`, et repart d'un schéma

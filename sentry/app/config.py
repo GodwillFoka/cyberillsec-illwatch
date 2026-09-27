@@ -8,7 +8,7 @@ s'exécuter si la validation échoue (règle de gestion MOD-01).
 from functools import lru_cache
 from typing import Literal, Self
 
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_SECRET_KEY = "change-me-in-production"  # noqa: S105 - sentinelle refusée en prod
@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     # --- Connecteurs CTI externes (clés optionnelles) ------------------------
     nvd_api_key: str | None = None
     otx_api_key: str | None = None
+    # Clé abuse.ch (https://auth.abuse.ch/, gratuite) : exigée par URLhaus pour les
+    # téléchargements. Injectée dans les URL de flux via le gabarit {ABUSECH_AUTH_KEY}.
+    abusech_auth_key: SecretStr | None = None
 
     nvd_api_url: str = "https://services.nvd.nist.gov/rest/json/cves/2.0"
     kev_catalog_url: str = (

@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sentry.app.models import ThreatFeed
-from sentry.shared.enums import FeedType
+from sentry.shared.enums import FeedStatus, FeedType
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,7 +25,8 @@ class FeedSeed:
 REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
     FeedSeed(
         name="abuse.ch URLhaus — URL malveillantes récentes",
-        url="https://urlhaus.abuse.ch/downloads/csv_recent/",
+        # Depuis 2025, abuse.ch exige une clé (Auth-Key) dans l'URL de téléchargement.
+        url="https://urlhaus-api.abuse.ch/v2/files/exports/{ABUSECH_AUTH_KEY}/recent.csv",
         feed_type=FeedType.CSV,
         polling_interval=3600,
     ),
@@ -38,12 +39,32 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
 )
 
 
+# URL publiées par d'anciennes versions de `sentry seed` et devenues invalides :
+# remplacées au prochain `sentry seed`, sans toucher aux URL modifiées à la main.
+OBSOLETE_URLS: dict[str, str] = {
+    "https://urlhaus.abuse.ch/downloads/csv_recent/": (
+        "https://urlhaus-api.abuse.ch/v2/files/exports/{ABUSECH_AUTH_KEY}/recent.csv"
+    ),
+}
+
+
 async def seed_reference_feeds(session: AsyncSession) -> list[str]:
-    """Insère les flux de référence absents. Retourne les noms réellement créés."""
-    result = await session.execute(select(ThreatFeed.name))
-    existing = set(result.scalars().all())
+    """Insère les flux de référence absents et corrige les URL de référence obsolètes.
+
+    Retourne les noms des flux créés ou mis à jour.
+    """
+    result = await session.execute(select(ThreatFeed))
+    existing = {feed.name: feed for feed in result.scalars().all()}
 
     created: list[str] = []
+    for current in existing.values():
+        replacement = OBSOLETE_URLS.get(current.url)
+        if replacement is not None:
+            current.url = replacement
+            current.status = FeedStatus.PENDING
+            current.last_error = None
+            created.append(f"{current.name} (URL mise à jour)")
+
     for feed in REFERENCE_FEEDS:
         if feed.name in existing:
             continue

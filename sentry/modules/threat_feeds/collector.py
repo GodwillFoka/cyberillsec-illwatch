@@ -21,10 +21,12 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sentry.app.config import get_settings
 from sentry.app.models import ThreatFeed
 from sentry.modules.threat_feeds.fetcher import FetchError, RateLimitedError, fetch_feed_content
 from sentry.modules.threat_feeds.indicators import ingest_indicators
 from sentry.modules.threat_feeds.parsers import FeedParseError, parse_feed
+from sentry.modules.threat_feeds.secrets import mask_secrets
 from sentry.shared.enums import FeedStatus, FeedType
 
 MAX_ERROR_LENGTH = 1000
@@ -49,6 +51,11 @@ class CollectionReport:
     @property
     def succeeded(self) -> bool:
         return self.error is None
+
+
+def _safe_message(message: str) -> str:
+    """Message d'erreur stockable : secrets masqués, longueur bornée."""
+    return mask_secrets(message, get_settings())[:MAX_ERROR_LENGTH]
 
 
 def _as_utc(value: datetime | None) -> datetime | None:
@@ -102,14 +109,14 @@ async def collect_feed(
         feed.last_successful_run = clock()
         feed.last_error = None
     except RateLimitedError as exc:
-        report.error = feed.last_error = str(exc)[:MAX_ERROR_LENGTH]
+        report.error = feed.last_error = _safe_message(str(exc))
     except (FetchError, FeedParseError) as exc:
-        report.error = feed.last_error = str(exc)[:MAX_ERROR_LENGTH]
+        report.error = feed.last_error = _safe_message(str(exc))
         feed.status = FeedStatus.DEGRADED
     except Exception as exc:  # noqa: BLE001 - RSK-02 : un flux ne doit jamais bloquer les autres
-        report.error = feed.last_error = f"Erreur inattendue ({type(exc).__name__}) : {exc}"[
-            :MAX_ERROR_LENGTH
-        ]
+        report.error = feed.last_error = _safe_message(
+            f"Erreur inattendue ({type(exc).__name__}) : {exc}"
+        )
         feed.status = FeedStatus.DEGRADED
 
     report.status = FeedStatus(feed.status)

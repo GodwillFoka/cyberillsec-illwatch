@@ -35,7 +35,7 @@ def config() -> None:
     table.add_column("Clé", style="cyan", no_wrap=True)
     table.add_column("Valeur", style="white")
 
-    secret_keys = {"secret_key", "nvd_api_key", "otx_api_key"}
+    secret_keys = {"secret_key", "nvd_api_key", "otx_api_key", "abusech_auth_key"}
     for key, value in settings.model_dump().items():
         rendered = "••••••" if key in secret_keys and value else str(value)
         table.add_row(key, rendered)
