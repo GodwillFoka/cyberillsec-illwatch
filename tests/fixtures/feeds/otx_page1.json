@@ -1,0 +1,29 @@
+{
+  "count": 3,
+  "next": "https://otx.alienvault.com/api/v1/pulses/subscribed?limit=50&page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": "650000000000000000000001",
+      "name": "Campagne QakBot — infrastructure C2",
+      "modified": "2026-09-27T08:00:00.000000",
+      "created": "2026-09-20T08:00:00.000000",
+      "indicators": [
+        {"indicator": "203.0.113.10", "type": "IPv4", "created": "2026-09-26T10:00:00", "is_active": 1},
+        {"indicator": "c2-qakbot[.]example[.]net", "type": "hostname", "created": "2026-09-26T10:05:00", "is_active": 1},
+        {"indicator": "CVE-2026-0001", "type": "CVE", "created": "2026-09-26T10:05:00", "is_active": 1},
+        {"indicator": "198.51.100.0/24", "type": "CIDR", "created": "2026-09-26T10:05:00", "is_active": 1},
+        {"indicator": "203.0.113.99", "type": "IPv4", "created": "2026-09-26T10:05:00", "is_active": 0}
+      ]
+    },
+    {
+      "id": "650000000000000000000002",
+      "name": "Hameçonnage bancaire",
+      "modified": "2026-09-27T09:00:00.000000",
+      "indicators": [
+        {"indicator": "https://login-banque.example.org/verify", "type": "URL", "created": null, "is_active": 1},
+        {"indicator": "44d88612fea8a8f36de82e1278abb02f", "type": "FileHash-MD5", "created": "2026-09-25T00:00:00", "is_active": 1}
+      ]
+    }
+  ]
+}

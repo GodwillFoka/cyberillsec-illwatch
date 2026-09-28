@@ -300,6 +300,12 @@ def parse_stix(content: bytes, *, default_severity: Severity = Severity.MEDIUM) 
 def parse_feed(
     content: bytes, feed_type: FeedType, *, default_severity: Severity = Severity.MEDIUM
 ) -> ParseResult:
-    """Point d'entrée unique : aiguille selon le format déclaré du flux."""
+    """Point d'entrée unique : aiguille selon le format déclaré du flux.
+
+    OTX n'est pas un format de fichier mais une API paginée : voir `otx.fetch_otx`.
+    """
     parsers = {FeedType.CSV: parse_csv, FeedType.JSON: parse_json, FeedType.STIX: parse_stix}
-    return parsers[FeedType(feed_type)](content, default_severity=default_severity)
+    parser = parsers.get(FeedType(feed_type))
+    if parser is None:
+        raise FeedParseError(f"Format {feed_type} : collecté par son connecteur dédié.")
+    return parser(content, default_severity=default_severity)

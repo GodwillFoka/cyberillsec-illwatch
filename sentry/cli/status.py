@@ -52,6 +52,7 @@ def status() -> None:
     iocs.add_row("Total", str(state.iocs_total))
     iocs.add_row("Actifs (non expirés)", str(state.iocs_active))
     iocs.add_row("Issus de flux", str(state.iocs_from_feeds))
+    iocs.add_row("Confirmés par ≥ 2 sources", str(state.iocs_multi_source))
     for ioc_type, count in state.iocs_by_type.items():
         iocs.add_row(f"  {ioc_type}", str(count))
     console.print(iocs)

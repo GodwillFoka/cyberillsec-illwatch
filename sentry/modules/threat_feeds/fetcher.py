@@ -23,7 +23,7 @@ la source demande d'attendre, la collecte est reportée au cycle suivant.
 import asyncio
 import socket
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from email.utils import parsedate_to_datetime
 from urllib.parse import urljoin, urlsplit
 
@@ -124,18 +124,29 @@ async def _read_capped(response: httpx.Response, max_bytes: int) -> bytes:
 
 
 async def _single_attempt(
-    client: httpx.AsyncClient, url: str, resolver: Resolver, max_bytes: int
+    client: httpx.AsyncClient,
+    url: str,
+    resolver: Resolver,
+    max_bytes: int,
+    headers: Mapping[str, str] | None = None,
 ) -> bytes:
     current = url
+    origin = urlsplit(url).hostname
     for _ in range(MAX_REDIRECTS + 1):
         await _assert_public_destination(current, resolver)
         try:
-            async with client.stream("GET", current) as response:
+            async with client.stream("GET", current, headers=headers) as response:
                 if response.is_redirect:
                     location = response.headers.get("Location")
                     if not location:
                         raise FetchError(f"Redirection {response.status_code} sans Location.")
                     current = urljoin(current, location)
+                    # Des en-têtes d'authentification ne suivent jamais un changement d'hôte :
+                    # une redirection ne doit pas pouvoir exfiltrer une clé d'API.
+                    if headers and urlsplit(current).hostname != origin:
+                        raise UnsafeDestinationError(
+                            "Redirection vers un autre hôte refusée pour une requête authentifiée."
+                        )
                     continue
                 if response.status_code == 429:
                     raise RateLimitedError(_retry_after(response))
@@ -158,8 +169,12 @@ async def fetch_feed_content(
     client: httpx.AsyncClient | None = None,
     resolver: Resolver = resolve_host,
     sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+    headers: Mapping[str, str] | None = None,
 ) -> bytes:
     """Télécharge le contenu brut d'un flux, avec les garde-fous décrits en tête de module.
+
+    `headers` : en-têtes supplémentaires (ex. clé d'API OTX). Ils ne sont jamais
+    transmis à un autre hôte que celui de l'URL demandée.
 
     Raises:
         UnsafeDestinationError: destination interne ou URL non conforme.
@@ -181,7 +196,7 @@ async def fetch_feed_content(
         attempts = cfg.http_max_retries + 1
         for attempt in range(1, attempts + 1):
             try:
-                return await _single_attempt(http, url, resolver, cfg.feed_max_bytes)
+                return await _single_attempt(http, url, resolver, cfg.feed_max_bytes, headers)
             except _RetryableError as exc:
                 if attempt == attempts:
                     raise FetchError(f"{exc} ({attempts} tentatives).") from exc

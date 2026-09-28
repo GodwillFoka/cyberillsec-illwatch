@@ -12,9 +12,15 @@ Règles :
   **statut inchangé** : la source va bien, elle demande seulement d'attendre.
 - **Échéance** : un flux est dû si actif et jamais réussi, ou si son dernier succès date
   de plus de `polling_interval` secondes. Un flux en échec est donc retenté à chaque cycle.
+- **Exclusivité (T2.6)** : avec un verrou (`locks.py`), un flux déjà en cours de collecte
+  ailleurs est sauté, pas attendu.
+- **Traçabilité (UC-01 étape 8)** : chaque collecte écrit une ligne JSON
+  (`feed.collected`) : volumes, durée, erreur, pic mémoire du processus.
 """
 
-from collections.abc import Awaitable, Callable, Sequence
+import logging
+import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 
@@ -25,13 +31,19 @@ from sentry.app.config import get_settings
 from sentry.app.models import ThreatFeed
 from sentry.modules.threat_feeds.fetcher import FetchError, RateLimitedError, fetch_feed_content
 from sentry.modules.threat_feeds.indicators import ingest_indicators
-from sentry.modules.threat_feeds.parsers import FeedParseError, parse_feed
+from sentry.modules.threat_feeds.locks import FeedLock
+from sentry.modules.threat_feeds.otx import HeaderFetcher, fetch_otx
+from sentry.modules.threat_feeds.parsers import FeedParseError, ParseResult, parse_feed
 from sentry.modules.threat_feeds.secrets import mask_secrets
 from sentry.shared.enums import FeedStatus, FeedType
+from sentry.shared.logging import peak_rss_mb
 
 MAX_ERROR_LENGTH = 1000
 
-Fetcher = Callable[[str], Awaitable[bytes]]
+log = logging.getLogger("sentry.collector")
+
+# Appelable `fetch(url, headers=None) -> bytes` ; `fetch_feed_content` par défaut.
+Fetcher = HeaderFetcher
 
 
 @dataclass(slots=True)
@@ -46,6 +58,8 @@ class CollectionReport:
     updated: int = 0
     rejected: int = 0
     error: str | None = None
+    warning: str | None = None
+    duration_ms: int = 0
     rejected_samples: list[str] = field(default_factory=list)
 
     @property
@@ -91,10 +105,9 @@ async def collect_feed(
     report = CollectionReport(
         feed_id=str(feed.id), feed_name=feed.name, status=FeedStatus(feed.status)
     )
+    started = time.perf_counter()
     try:
-        content = await fetch(feed.url)
-        report.fetched_bytes = len(content)
-        parsed = parse_feed(content, FeedType(feed.feed_type))
+        parsed = await _fetch_and_parse(feed, fetch, report)
         report.parsed, report.skipped = len(parsed.observations), parsed.skipped
 
         async with session.begin_nested():
@@ -121,7 +134,52 @@ async def collect_feed(
 
     report.status = FeedStatus(feed.status)
     await session.flush()
+    report.duration_ms = int((time.perf_counter() - started) * 1000)
+    _log_report(feed, report)
     return report
+
+
+async def _fetch_and_parse(
+    feed: ThreatFeed, fetch: Fetcher, report: CollectionReport
+) -> ParseResult:
+    if FeedType(feed.feed_type) is FeedType.OTX:
+        outcome = await fetch_otx(
+            feed.url,
+            settings=get_settings(),
+            fetch=fetch,
+            since=_as_utc(feed.last_successful_run),
+        )
+        if outcome.truncated:
+            report.warning = (
+                f"Collecte OTX tronquée à {outcome.pages} pages : augmentez OTX_MAX_PAGES "
+                "pour ne pas manquer de pulses."
+            )
+        return outcome.parsed
+    content = await fetch(feed.url)
+    report.fetched_bytes = len(content)
+    return parse_feed(content, FeedType(feed.feed_type))
+
+
+def _log_report(feed: ThreatFeed, report: CollectionReport) -> None:
+    fields = {
+        "feed_id": report.feed_id,
+        "feed_name": report.feed_name,
+        "feed_type": str(feed.feed_type),
+        "status": str(report.status),
+        "succeeded": report.succeeded,
+        "duration_ms": report.duration_ms,
+        "fetched_bytes": report.fetched_bytes,
+        "parsed": report.parsed,
+        "skipped": report.skipped,
+        "inserted": report.inserted,
+        "updated": report.updated,
+        "rejected": report.rejected,
+        "error": report.error,
+        "warning": report.warning,
+        "peak_rss_mb": peak_rss_mb(),
+    }
+    level = logging.INFO if report.succeeded and not report.warning else logging.WARNING
+    log.log(level, "feed.collected", extra={"fields": fields})
 
 
 async def collect_due_feeds(
@@ -130,8 +188,13 @@ async def collect_due_feeds(
     force: bool = False,
     fetch: Fetcher = fetch_feed_content,
     clock: Callable[[], datetime] = lambda: datetime.now(UTC),
+    lock: FeedLock | None = None,
 ) -> list[CollectionReport]:
-    """Collecte tous les flux échus (ou tous les flux actifs si `force`), l'un après l'autre."""
+    """Collecte tous les flux échus (ou tous les flux actifs si `force`), l'un après l'autre.
+
+    Avec `lock`, un flux dont le verrou est déjà tenu (collecte en cours ailleurs) est
+    sauté et n'apparaît pas dans les rapports.
+    """
     now = clock()
     if force:
         feeds = (
@@ -142,9 +205,21 @@ async def collect_due_feeds(
     else:
         feeds = await due_feeds(session, now)
     reports = []
+    ttl = get_settings().collect_lock_ttl_seconds
     for feed in sorted(feeds, key=lambda f: f.name.lower()):
-        reports.append(await collect_feed(session, feed, fetch=fetch, clock=clock))
-        # Validation après chaque flux : un arrêt en cours de cycle ne perd que le flux
-        # en cours, et aucune transaction ne reste ouverte pendant tout le cycle.
-        await session.commit()
+        token = await lock.acquire(str(feed.id), ttl) if lock is not None else None
+        if lock is not None and token is None:
+            log.info(
+                "feed.skipped_locked",
+                extra={"fields": {"feed_id": str(feed.id), "feed_name": feed.name}},
+            )
+            continue
+        try:
+            reports.append(await collect_feed(session, feed, fetch=fetch, clock=clock))
+            # Validation après chaque flux : un arrêt en cours de cycle ne perd que le flux
+            # en cours, et aucune transaction ne reste ouverte pendant tout le cycle.
+            await session.commit()
+        finally:
+            if lock is not None and token is not None:
+                await lock.release(str(feed.id), token)
     return reports

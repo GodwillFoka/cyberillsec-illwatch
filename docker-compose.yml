@@ -50,6 +50,25 @@ services:
         condition: service_healthy
     profiles: ["full"]
 
+  # Planificateur de collecte (T2.6). Plusieurs répliques possibles : verrou Redis par flux.
+  worker:
+    build: .
+    container_name: sentry-worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sentry:sentry@postgres:5432/sentry
+      REDIS_URL: redis://redis:6379/0
+    entrypoint: ["sentry", "feeds", "worker"]
+    healthcheck:
+      disable: true  # le HEALTHCHECK de l'image vise l'API HTTP, absente ici
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles: ["full"]
+
 volumes:
   sentry_pgdata:
   sentry_redisdata:

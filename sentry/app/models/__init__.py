@@ -6,7 +6,7 @@ métamodèle via `Base.metadata`.
 
 from sentry.app.models.cve import CVE
 from sentry.app.models.incident import Incident, IncidentEvent
-from sentry.app.models.threat_feed import Indicator, ThreatFeed
+from sentry.app.models.threat_feed import Indicator, IndicatorSource, ThreatFeed
 from sentry.app.models.user import User
 
-__all__ = ["CVE", "Incident", "IncidentEvent", "Indicator", "ThreatFeed", "User"]
+__all__ = ["CVE", "Incident", "IncidentEvent", "Indicator", "IndicatorSource", "ThreatFeed", "User"]

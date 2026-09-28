@@ -146,6 +146,11 @@ def _conflict(exc: FeedNameConflictError) -> HTTPException:
     return HTTPException(status.HTTP_409_CONFLICT, detail=str(exc))
 
 
+def _unprocessable(exc: UnsafeFeedURLError) -> HTTPException:
+    """Règle croisée URL ↔ format (ex. flux OTX hors de l'API OTX)."""
+    return HTTPException(422, detail=str(exc))
+
+
 # --- Routes --------------------------------------------------------------------
 
 
@@ -197,6 +202,8 @@ async def create_feed(
         feed = await service.create_feed(session, **payload.model_dump())
     except FeedNameConflictError as exc:
         raise _conflict(exc) from None
+    except UnsafeFeedURLError as exc:
+        raise _unprocessable(exc) from None
     response.headers["Location"] = f"{get_settings().api_v1_prefix}{router.prefix}/{feed.id}"
     return FeedRead.model_validate(feed)
 
@@ -211,6 +218,8 @@ async def update_feed(
         raise _not_found(feed_id) from None
     except FeedNameConflictError as exc:
         raise _conflict(exc) from None
+    except UnsafeFeedURLError as exc:
+        raise _unprocessable(exc) from None
     return FeedRead.model_validate(feed)
 
 

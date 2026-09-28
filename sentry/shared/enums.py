@@ -19,11 +19,15 @@ class UserRole(StrEnum):
 
 
 class FeedType(StrEnum):
-    """Formats de flux supportés — RF-06."""
+    """Formats de flux supportés — RF-06.
+
+    `OTX` désigne l'API AlienVault OTX (pulses abonnés) : JSON paginé, clé en en-tête.
+    """
 
     JSON = "JSON"
     CSV = "CSV"
     STIX = "STIX"
+    OTX = "OTX"
 
 
 class FeedStatus(StrEnum):

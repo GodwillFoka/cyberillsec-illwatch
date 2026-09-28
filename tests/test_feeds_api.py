@@ -339,3 +339,39 @@ async def test_detail_d_erreur_reserve_aux_administrateurs(
         for body in (detail, listing):
             assert body["last_error"] is not None
             assert "10.0.0.8" not in body["last_error"]
+
+
+async def test_flux_otx_limite_a_l_api_otx(client: AsyncClient, auth_as: HeadersFactory) -> None:
+    """La clé OTX part en en-tête vers l'URL du flux : seule l'API OTX est admise."""
+    admin = await auth_as(UserRole.ADMIN)
+    otx = {"name": "OTX", "feed_type": "OTX"}
+    refused = await client.post(
+        FEEDS, json={**otx, "url": "https://collecte.example.org/pulses"}, headers=admin
+    )
+    assert refused.status_code == 422
+    assert "otx.alienvault.com" in refused.json()["detail"]
+
+    created = await client.post(
+        FEEDS,
+        json={**otx, "url": "https://otx.alienvault.com/api/v1/pulses/subscribed?limit=50"},
+        headers=admin,
+    )
+    assert created.status_code == 201, created.text
+    feed_id = created.json()["id"]
+
+    moved = await client.patch(
+        f"{FEEDS}/{feed_id}", json={"url": "https://collecte.example.org/p"}, headers=admin
+    )
+    assert moved.status_code == 422
+    kept = (await client.get(f"{FEEDS}/{feed_id}", headers=admin)).json()
+    assert kept["url"].startswith("https://otx.alienvault.com/")
+
+    csv = await client.post(
+        FEEDS,
+        json={"name": "CSV", "feed_type": "CSV", "url": "https://c.example.org/f"},
+        headers=admin,
+    )
+    converted = await client.patch(
+        f"{FEEDS}/{csv.json()['id']}", json={"feed_type": "OTX"}, headers=admin
+    )
+    assert converted.status_code == 422

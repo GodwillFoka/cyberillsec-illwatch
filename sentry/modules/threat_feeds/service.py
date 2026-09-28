@@ -35,6 +35,10 @@ MAX_NAME_LENGTH = 100  # threat_feeds.name VARCHAR(100)
 MAX_URL_LENGTH = 500  # threat_feeds.url VARCHAR(500)
 ALLOWED_URL_SCHEMES = frozenset({"https"})
 
+# L'API OTX reçoit la clé OTX_API_KEY en en-tête : un flux OTX ne peut viser que cet hôte,
+# sinon un administrateur (ou un compte ADMIN compromis) pourrait exfiltrer la clé.
+OTX_HOST = "otx.alienvault.com"
+
 _FORBIDDEN_HOST_SUFFIXES = (".localhost", ".local", ".internal", ".lan", ".home.arpa")
 _HOST_LABEL_RE = re.compile(r"^(?!-)[a-z0-9-]{1,63}(?<!-)$")
 
@@ -230,6 +234,18 @@ async def list_feeds(
     return FeedPage(items=result.scalars().all(), total=total or 0)
 
 
+def ensure_url_fits_type(url: str, feed_type: FeedType) -> None:
+    """Règles propres à un format : un flux OTX ne peut viser que l'API OTX officielle.
+
+    Raises:
+        UnsafeFeedURLError: URL incompatible avec le format déclaré.
+    """
+    if FeedType(feed_type) is FeedType.OTX and urlsplit(url).hostname != OTX_HOST:
+        raise UnsafeFeedURLError(
+            f"Un flux OTX doit viser https://{OTX_HOST}/ (la clé API y est envoyée)."
+        )
+
+
 async def create_feed(
     session: AsyncSession,
     *,
@@ -242,6 +258,7 @@ async def create_feed(
     """Enregistre une source. L'état de santé est fixé par le serveur (`PENDING`)."""
     clean_name = normalize_feed_name(name)
     clean_url = validate_feed_url(url)
+    ensure_url_fits_type(clean_url, feed_type)
     await _ensure_name_available(session, clean_name)
 
     feed = ThreatFeed(
@@ -274,6 +291,10 @@ async def update_feed(
     """
     feed = await get_feed(session, feed_id)
 
+    # Validation complète avant toute modification : un refus laisse l'objet intact.
+    clean_url = validate_feed_url(url) if url is not None else feed.url
+    ensure_url_fits_type(clean_url, FeedType(feed_type or feed.feed_type))
+
     if name is not None:
         clean_name = normalize_feed_name(name)
         if clean_name != feed.name:
@@ -282,7 +303,6 @@ async def update_feed(
 
     source_changed = False
     if url is not None:
-        clean_url = validate_feed_url(url)
         source_changed |= clean_url != feed.url
         feed.url = clean_url
     if feed_type is not None:

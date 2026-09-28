@@ -57,9 +57,18 @@ def resolve_feed_url(url_template: str, settings: Settings) -> str:
     return PLACEHOLDER_RE.sub(_substitute, url_template)
 
 
+def _all_secret_values(settings: Settings) -> list[str]:
+    """Tous les secrets de connecteurs, y compris ceux qui ne sont jamais dans une URL
+    (clé OTX, transmise en en-tête) : aucun ne doit apparaître dans un message stocké."""
+    values = [v for v in _available(settings).values() if v]
+    if settings.otx_api_key is not None and settings.otx_api_key.get_secret_value():
+        values.append(settings.otx_api_key.get_secret_value())
+    return values
+
+
 def mask_secrets(text: str, settings: Settings) -> str:
     """Retire toute valeur secrète configurée d'un message (erreurs, journaux)."""
-    for value in _available(settings).values():
+    for value in _all_secret_values(settings):
         if value:
             text = text.replace(value, MASK).replace(quote(value, safe=""), MASK)
     return text

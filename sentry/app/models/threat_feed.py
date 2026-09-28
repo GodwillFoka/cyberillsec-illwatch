@@ -1,9 +1,11 @@
-"""Modèles ThreatFeed et Indicator — tables `threat_feeds` et `indicators`.
+"""Modèles ThreatFeed, Indicator et IndicatorSource — flux, IOC et provenance.
 
-Les contraintes CHECK reprennent à l'identique celles de la migration
-`a4973a3782e3` : le modèle reste la source de vérité du schéma (Alembic
-compare les deux via `alembic check`), et les bases créées par
-`Base.metadata.create_all` (tests SQLite) appliquent les mêmes règles.
+Les contraintes CHECK reprennent à l'identique celles des migrations `a4973a3782e3`
+et `1f3dafc3008c` (format OTX). Le modèle reste la source de vérité du schéma ; comme
+`alembic check` ne compare pas le texte des CHECK, `test_schema_constraints` le fait.
+Les bases créées par `Base.metadata.create_all` (tests SQLite) appliquent les mêmes règles.
+
+`indicator_sources` (ADR-006) porte la provenance multi-sources des IOC.
 """
 
 from datetime import datetime
@@ -87,6 +89,41 @@ class Indicator(UUIDPrimaryKeyMixin, Base):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     feed: Mapped[ThreatFeed | None] = relationship(back_populates="indicators")
+    sources: Mapped[list["IndicatorSource"]] = relationship(
+        back_populates="indicator",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="IndicatorSource.first_seen",
+    )
 
     def __repr__(self) -> str:
         return f"<Indicator {self.type}:{self.value}>"
+
+
+class IndicatorSource(Base):
+    """Provenance multi-sources d'un IOC — ADR-006.
+
+    Une ligne par couple (IOC, flux) : quand et combien de fois *ce* flux a rapporté
+    *cet* IOC. `indicators.feed_id` reste la première source connue ; cette table dit
+    toutes les autres. Un IOC confirmé par trois sources indépendantes n'a pas le même
+    poids qu'un IOC isolé : c'est la donnée de base d'un futur score de confiance.
+    """
+
+    __tablename__ = "indicator_sources"
+    __table_args__ = (Index("idx_indicator_sources_feed", "feed_id"),)
+
+    indicator_id: Mapped[UUID] = mapped_column(
+        ForeignKey("indicators.id", ondelete="CASCADE"), primary_key=True
+    )
+    feed_id: Mapped[UUID] = mapped_column(
+        ForeignKey("threat_feeds.id", ondelete="CASCADE"), primary_key=True
+    )
+    first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    hit_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+    indicator: Mapped[Indicator] = relationship(back_populates="sources")
+    feed: Mapped[ThreatFeed] = relationship()
+
+    def __repr__(self) -> str:
+        return f"<IndicatorSource {self.indicator_id} ← {self.feed_id}>"

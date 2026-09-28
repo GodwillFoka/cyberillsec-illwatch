@@ -19,7 +19,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from sentry.app.api.deps import CurrentUser, DbSession, require_roles
-from sentry.app.models import User
+from sentry.app.models import Indicator, User
 from sentry.modules.threat_feeds import indicators as service
 from sentry.modules.threat_feeds.indicators import (
     MAX_BATCH_SIZE,
@@ -86,7 +86,22 @@ class IndicatorRead(BaseModel):
     last_seen: datetime
     expires_at: datetime | None
     is_active: bool
-    feed_id: UUID | None
+    feed_id: UUID | None = Field(description="Première source connue.")
+    source_count: int = Field(description="Nombre de flux distincts ayant rapporté l'IOC.")
+
+
+class IndicatorSourceRead(BaseModel):
+    feed_id: UUID
+    feed_name: str
+    first_seen: datetime
+    last_seen: datetime
+    hit_count: int
+
+
+class IndicatorDetail(IndicatorRead):
+    sources: list[IndicatorSourceRead] = Field(
+        description="Provenance : chaque flux ayant rapporté l'IOC (ADR-006)."
+    )
 
 
 class IndicatorPage(BaseModel):
@@ -96,17 +111,37 @@ class IndicatorPage(BaseModel):
     offset: int
 
 
-def _to_read(indicator: object, now: datetime) -> IndicatorRead:
-    expires_at = getattr(indicator, "expires_at", None)
-    if expires_at is not None and expires_at.tzinfo is None:  # SQLite rend des dates naïves
-        expires_at = expires_at.replace(tzinfo=UTC)
-    data = IndicatorRead.model_validate(
+def _utc(value: datetime) -> datetime:
+    return value if value.tzinfo is not None else value.replace(tzinfo=UTC)  # SQLite : naïf
+
+
+_COMPUTED = {"is_active", "source_count"}
+
+
+def _to_read(indicator: Indicator, now: datetime, source_count: int) -> IndicatorRead:
+    expires_at = indicator.expires_at
+    return IndicatorRead.model_validate(
         {
-            **{f: getattr(indicator, f) for f in IndicatorRead.model_fields if f != "is_active"},
-            "is_active": expires_at is None or expires_at > now,
+            **{f: getattr(indicator, f) for f in IndicatorRead.model_fields if f not in _COMPUTED},
+            "is_active": expires_at is None or _utc(expires_at) > now,
+            "source_count": source_count,
         }
     )
-    return data
+
+
+def _to_detail(indicator: Indicator, now: datetime) -> IndicatorDetail:
+    sources = [
+        IndicatorSourceRead(
+            feed_id=s.feed_id,
+            feed_name=s.feed.name,
+            first_seen=_utc(s.first_seen),
+            last_seen=_utc(s.last_seen),
+            hit_count=s.hit_count,
+        )
+        for s in indicator.sources
+    ]
+    base = _to_read(indicator, now, len(sources))
+    return IndicatorDetail(**base.model_dump(), sources=sources)
 
 
 # --- Routes --------------------------------------------------------------------
@@ -143,20 +178,26 @@ async def list_indicators(
         active=active,
         value=value,
     )
+    counts = await service.source_counts(session, [i.id for i in page.items])
     return IndicatorPage(
-        items=[_to_read(i, now) for i in page.items], total=page.total, limit=limit, offset=offset
+        items=[_to_read(i, now, counts.get(i.id, 0)) for i in page.items],
+        total=page.total,
+        limit=limit,
+        offset=offset,
     )
 
 
-@router.get("/{indicator_id}", response_model=IndicatorRead, summary="Consulter un IOC")
-async def read_indicator(indicator_id: UUID, session: DbSession, _: CurrentUser) -> IndicatorRead:
+@router.get(
+    "/{indicator_id}", response_model=IndicatorDetail, summary="Consulter un IOC et sa provenance"
+)
+async def read_indicator(indicator_id: UUID, session: DbSession, _: CurrentUser) -> IndicatorDetail:
     try:
         indicator = await service.get_indicator(session, indicator_id)
     except IndicatorNotFoundError:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"IOC {indicator_id} introuvable."
         ) from None
-    return _to_read(indicator, datetime.now(UTC))
+    return _to_detail(indicator, datetime.now(UTC))
 
 
 @router.post(

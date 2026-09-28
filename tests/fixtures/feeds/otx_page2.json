@@ -1,0 +1,16 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": "https://otx.alienvault.com/api/v1/pulses/subscribed?limit=50&page=1",
+  "results": [
+    {
+      "id": "650000000000000000000003",
+      "name": "Campagne QakBot — mise à jour",
+      "modified": "2026-09-27T10:00:00.000000",
+      "indicators": [
+        {"indicator": "203.0.113.10", "type": "IPv4", "created": "2026-09-27T09:00:00", "is_active": 1},
+        {"indicator": "phisher@example.com", "type": "email", "created": "2026-09-27T09:00:00", "is_active": 1}
+      ]
+    }
+  ]
+}

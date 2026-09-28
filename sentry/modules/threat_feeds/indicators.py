@@ -12,8 +12,9 @@ Sémantique des colonnes (fixée par l'ADR-005) :
 - ``expires_at`` : fin de validité opérationnelle, repoussée à chaque ré-observation.
   ``NULL`` = sans expiration. Un IOC expiré est **conservé** (historique, enquêtes),
   il est seulement exclu des vues « actives ».
-- ``feed_id`` : première source connue. Une seule colonne ne peut pas représenter
-  plusieurs sources ; la provenance multi-sources relève d'une table de liaison future.
+- ``feed_id`` : première source connue. La provenance complète est dans
+  ``indicator_sources`` (ADR-006) : une ligne par couple (IOC, flux) avec ses propres
+  ``first_seen``, ``last_seen`` et ``hit_count``.
 
 Déduplication : garantie par la contrainte ``UNIQUE (type, value)`` et appliquée par un
 ``INSERT … ON CONFLICT DO UPDATE`` groupé — une seule instruction SQL par paquet, sans
@@ -29,8 +30,9 @@ from uuid import UUID, uuid4
 from sqlalchemy import ColumnElement, and_, case, func, or_, select, tuple_
 from sqlalchemy.dialects import postgresql, sqlite
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from sentry.app.models import Indicator
+from sentry.app.models import Indicator, IndicatorSource
 from sentry.modules.threat_feeds.validators import InvalidIndicatorError, normalize_indicator
 from sentry.shared.enums import IndicatorType, Severity
 
@@ -170,17 +172,17 @@ def _rank(column: Any) -> ColumnElement[int]:
     )
 
 
-def _upsert_statement(dialect: str, values: list[dict[str, Any]]) -> Any:
+def _dialect_insert(dialect: str, model: Any, values: list[dict[str, Any]]) -> tuple[Any, Any, Any]:
+    """INSERT propre au dialecte, avec ses fonctions « plus grand / plus petit » scalaires."""
     if dialect == "postgresql":
-        stmt: Any = postgresql.insert(Indicator).values(values)
-        greatest: Any = func.greatest
-        least: Any = func.least
-    elif dialect == "sqlite":
-        stmt = sqlite.insert(Indicator).values(values)
-        greatest, least = func.max, func.min  # max()/min() scalaires à plusieurs arguments
-    else:  # pragma: no cover - seules les bases supportées par le projet
-        raise NotImplementedError(f"Dialecte non supporté : {dialect}")
+        return postgresql.insert(model).values(values), func.greatest, func.least
+    if dialect == "sqlite":  # max()/min() scalaires à plusieurs arguments
+        return sqlite.insert(model).values(values), func.max, func.min
+    raise NotImplementedError(f"Dialecte non supporté : {dialect}")  # pragma: no cover
 
+
+def _upsert_statement(dialect: str, values: list[dict[str, Any]]) -> Any:
+    stmt, greatest, least = _dialect_insert(dialect, Indicator, values)
     table, new = Indicator.__table__.c, stmt.excluded
     return stmt.on_conflict_do_update(
         index_elements=[table.type, table.value],
@@ -198,6 +200,19 @@ def _upsert_statement(dialect: str, values: list[dict[str, Any]]) -> Any:
             ),
             "feed_id": func.coalesce(table.feed_id, new.feed_id),
             "description": func.coalesce(table.description, new.description),
+        },
+    ).returning(table.id, table.type, table.value)
+
+
+def _source_upsert_statement(dialect: str, values: list[dict[str, Any]]) -> Any:
+    stmt, greatest, least = _dialect_insert(dialect, IndicatorSource, values)
+    table, new = IndicatorSource.__table__.c, stmt.excluded
+    return stmt.on_conflict_do_update(
+        index_elements=[table.indicator_id, table.feed_id],
+        set_={
+            "first_seen": least(table.first_seen, new.first_seen),
+            "last_seen": greatest(table.last_seen, new.last_seen),
+            "hit_count": table.hit_count + 1,
         },
     )
 
@@ -242,14 +257,34 @@ async def ingest_indicators(
             }
             for r in chunk
         ]
-        await session.execute(_upsert_statement(dialect, values))
+        ids = {
+            (str(t), str(v)): i
+            for i, t, v in (await session.execute(_upsert_statement(dialect, values))).all()
+        }
         result.updated += existing or 0
         result.inserted += len(chunk) - (existing or 0)
+
+        if feed_id is not None:
+            await session.execute(
+                _source_upsert_statement(
+                    dialect,
+                    [
+                        {
+                            "indicator_id": ids[(r.type.value, r.value)],
+                            "feed_id": feed_id,
+                            "first_seen": r.first_seen,
+                            "last_seen": r.last_seen,
+                            "hit_count": 1,
+                        }
+                        for r in chunk
+                    ],
+                )
+            )
 
     # L'UPSERT contourne l'ORM : les IOC déjà chargés en mémoire sont périmés. Seuls
     # ceux-là sont invalidés ; les autres objets de l'appelant restent intacts.
     for obj in list(session.identity_map.values()):
-        if isinstance(obj, Indicator):
+        if isinstance(obj, Indicator | IndicatorSource):
             session.expire(obj)
     return result
 
@@ -262,10 +297,28 @@ def is_active_clause(now: datetime) -> ColumnElement[bool]:
 
 
 async def get_indicator(session: AsyncSession, indicator_id: UUID) -> Indicator:
-    indicator = await session.get(Indicator, indicator_id, populate_existing=True)
+    """IOC avec sa provenance (`sources`) chargée."""
+    indicator = await session.get(
+        Indicator,
+        indicator_id,
+        populate_existing=True,
+        options=[selectinload(Indicator.sources).selectinload(IndicatorSource.feed)],
+    )
     if indicator is None:
         raise IndicatorNotFoundError(str(indicator_id))
     return indicator
+
+
+async def source_counts(session: AsyncSession, ids: Sequence[UUID]) -> dict[UUID, int]:
+    """Nombre de flux distincts ayant rapporté chaque IOC (une requête pour la page)."""
+    if not ids:
+        return {}
+    rows = await session.execute(
+        select(IndicatorSource.indicator_id, func.count())
+        .where(IndicatorSource.indicator_id.in_(ids))
+        .group_by(IndicatorSource.indicator_id)
+    )
+    return {indicator_id: int(count) for indicator_id, count in rows.all()}
 
 
 async def list_indicators(
@@ -294,8 +347,18 @@ async def list_indicators(
     if min_severity is not None:
         allowed = [s.value for s, r in SEVERITY_RANK.items() if r >= SEVERITY_RANK[min_severity]]
         conditions.append(Indicator.severity.in_(allowed))
-    if feed_id is not None:
-        conditions.append(Indicator.feed_id == feed_id)
+    if feed_id is not None:  # toute source ayant rapporté l'IOC, pas seulement la première
+        conditions.append(
+            or_(
+                Indicator.feed_id == feed_id,
+                select(IndicatorSource.indicator_id)
+                .where(
+                    IndicatorSource.indicator_id == Indicator.id,
+                    IndicatorSource.feed_id == feed_id,
+                )
+                .exists(),
+            )
+        )
     if active is not None:
         clause = is_active_clause(moment)
         conditions.append(clause if active else ~clause)

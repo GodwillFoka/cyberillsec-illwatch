@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import Indicator, ThreatFeed
+from sentry.app.models import Indicator, IndicatorSource, ThreatFeed
 from sentry.modules.threat_feeds.indicators import is_active_clause
 from sentry.shared.enums import FeedStatus, FeedType
 
@@ -34,6 +34,7 @@ class ProjectStatus:
     iocs_total: int = 0
     iocs_active: int = 0
     iocs_from_feeds: int = 0
+    iocs_multi_source: int = 0  # IOC confirmés par au moins deux flux distincts
     iocs_by_type: dict[str, int] = field(default_factory=dict)
     m2: list[Criterion] = field(default_factory=list)
 
@@ -65,13 +66,22 @@ async def compute_status(session: AsyncSession, now: datetime | None = None) -> 
         )
         or 0
     )
+    confirmed = (
+        select(IndicatorSource.indicator_id)
+        .group_by(IndicatorSource.indicator_id)
+        .having(func.count() >= 2)
+        .subquery()
+    )
+    status.iocs_multi_source = (
+        await session.scalar(select(func.count()).select_from(confirmed)) or 0
+    )
     rows = await session.execute(
         select(Indicator.type, func.count()).group_by(Indicator.type).order_by(Indicator.type)
     )
     status.iocs_by_type = {str(t): int(n) for t, n in rows.all()}
 
     healthy = [f for f in feeds if f.status == FeedStatus.HEALTHY]
-    otx = [f for f in healthy if "otx.alienvault.com" in f.url]
+    otx = [f for f in healthy if f.feed_type == FeedType.OTX]
     stix = [f for f in healthy if f.feed_type == FeedType.STIX]
     status.m2 = [
         Criterion(

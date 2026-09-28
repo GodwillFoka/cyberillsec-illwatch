@@ -97,3 +97,21 @@ def test_parcours_feeds(runner: CliRunner, monkeypatch: pytest.MonkeyPatch) -> N
 
     missing = runner.invoke(cli, ["feeds", "fetch", "inconnue"])
     assert missing.exit_code == 1
+
+
+def test_worker_un_cycle(runner: CliRunner, monkeypatch: pytest.MonkeyPatch) -> None:
+    async def fake_fetch(url: str, **_: object) -> bytes:
+        return (FIXTURES / "feodo_ipblocklist.csv").read_bytes()
+
+    monkeypatch.setattr(feeds_cli, "fetch_feed_content", fake_fetch)
+    added = runner.invoke(
+        cli,
+        ["feeds", "add", "--name", "Feodo", "--type", "csv", "--url", "https://f.example.org/x"],
+    )
+    assert added.exit_code == 0, added.output
+
+    result = runner.invoke(cli, ["feeds", "worker", "--tick", "5", "--max-cycles", "1"])
+    assert result.exit_code == 0, result.output
+    assert "arrêté après 1 cycle" in result.output
+    listing = runner.invoke(cli, ["feeds", "list"])
+    assert "HEALTHY" in listing.output
