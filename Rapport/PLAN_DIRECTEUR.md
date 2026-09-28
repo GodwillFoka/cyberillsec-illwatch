@@ -1,7 +1,11 @@
 # 🛡️ SENTRY — Plan directeur : état, tâches par étape, attentes et perspectives
 
-**Date :** 27/09/2026 · **Version courante :** `0.1.0` (M1) · **Branche de travail :**
-`feature/threat-feeds-indicators`
+**Date :** 27/09/2026, mis à jour le 28/09/2026 · **Version courante :** `0.1.0` (M1) ·
+**Branches de travail :** `feature/threat-feeds-indicators` (à fusionner), puis
+`feature/sprint3-ingestion`
+
+> **Mise à jour du 28/09.** Sprint 3 codé : voir `Rapport/BILAN_SPRINT_3.md` et
+> `Rapport/RAPPORT_GLOBAL.md`. État des tâches de l'étape 1 ci-dessous.
 
 Ce document sert de fil conducteur jusqu'à la v1.0. Chaque grande étape se termine par un
 **rapport de fin d'étape** dans `Rapport/`, à partir du gabarit de la section 4. Une étape n'est
@@ -102,6 +106,10 @@ automatique toutes les 15 min ; provenance multi-sources.
 | 1.7 | `last_error` réservé aux ADMIN dans l'API | P1 | test RBAC |
 | 1.8 | T2.10 TAXII 2.1 (collection publique) | P2 | une collection collectée |
 | 1.9 | Mesure mémoire sous collecte (RNF-MEM-01 ≤ 256 Mo) | P1 | mesure consignée |
+
+**État au 28/09 :** 1.3 ✅ · 1.4 ✅ (code ; constat avec votre clé) · 1.5 ✅ · 1.6 ✅ ·
+1.7 ✅ (`202c6aa`) · 1.9 🟡 (91 Mo sur 20 000 IOC synthétiques ; à refaire sur OTX réel) ·
+1.1, 1.2 et 1.8 : à votre main (clés, collecte réelle, choix d'une source STIX).
 
 **Attentes (critères M2 du Cahier des charges).** Collecteur OTX et flux STIX connectés ;
 déduplication fonctionnelle ; ≥ 500 IOC réels.

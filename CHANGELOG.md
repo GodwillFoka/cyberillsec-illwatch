@@ -7,6 +7,22 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Sprint 3 (M2 « Ingestion opérationnelle », branche `feature/sprint3-ingestion`)
+- **Provenance multi-sources (ADR-006)** : table `indicator_sources` (migration `1f3dafc3008c`,
+  reprise de l'existant). `GET /api/v1/indicators/{id}` renvoie `sources` (flux, dates et
+  compteur par source) ; la liste expose `source_count` ; le filtre `feed_id` couvre toutes les
+  sources. `sentry status` compte les IOC confirmés par au moins deux flux.
+- **T2.9 — Connecteur AlienVault OTX** : format de flux `OTX`, pulses abonnés paginés,
+  `modified_since` incrémental, plafond `OTX_MAX_PAGES`. Clé `OTX_API_KEY` en en-tête, envoyée
+  uniquement à `otx.alienvault.com` (refus 422 à l'enregistrement d'un flux OTX ailleurs).
+  Source OTX ajoutée à `sentry seed`.
+- **T2.6 — Planificateur** : `sentry feeds worker` et service `worker` dans Docker Compose
+  (profil `full`). Verrou Redis par flux, aussi utilisé par `fetch` et `fetch-all`.
+- **Journal JSON** (UC-01 étape 8) : une ligne `feed.collected` par collecte (volumes, durée,
+  erreur, avertissement, pic mémoire `peak_rss_mb`), `worker.cycle` par cycle.
+- Fetcher : en-têtes d'authentification jamais transmis lors d'une redirection vers un autre hôte.
+- Test de conformité des contraintes CHECK **après migration** (non couvert par `alembic check`).
+
 ### Ajouté
 - `sentry status` : avancement mesuré en base (schéma, santé des sources, IOC actifs/expirés
   par type, critères du jalon M2 cochés ou non).

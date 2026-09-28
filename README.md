@@ -146,8 +146,12 @@ Guide pas à pas, y compris pour un développeur découvrant la cybersécurité 
 |---|---|---|
 | Comptes et rôles | ✅ | `sentry users create`, `POST /api/v1/auth/token` |
 | Sources de flux | ✅ | `sentry feeds add/list`, `/api/v1/feeds` (ADMIN pour l'écriture) |
-| Collecte CSV / JSON / STIX 2.1 | ✅ | `sentry feeds fetch <nom>` ou `fetch-all` (à planifier par cron) |
+| Collecte CSV / JSON / STIX 2.1 | ✅ | `sentry feeds fetch <nom>` ou `fetch-all` |
+| Connecteur AlienVault OTX | ✅ | source de type `OTX`, clé `OTX_API_KEY` dans `.env` |
+| Collecte planifiée | ✅ | `sentry feeds worker` (verrou Redis par flux, plusieurs instances possibles) |
+| Journal de collecte JSON | ✅ | une ligne `feed.collected` par collecte sur la sortie d'erreur |
 | IOC dédupliqués, expiration | ✅ | `/api/v1/indicators` (lecture, soumission par lot) |
+| Provenance multi-sources | ✅ | `GET /api/v1/indicators/{id}` → `sources` ; `source_count` en liste |
 | Score de risque CVE | 🟡 | calcul prêt et testé ; collecte NVD/KEV/EPSS en phase 3 |
 | Incidents | 🟡 | machine d'état prête ; API en phase 4 |
 | Dashboard, threat hunting | ❌ | phases 5 et 6 |
@@ -174,7 +178,8 @@ sentry users create     # création de compte (mot de passe saisi masqué, ≥ 1
 sentry feeds list       # sources de flux et leur état
 sentry feeds add        # nouvelle source (HTTPS public, nom unique)
 sentry feeds fetch X    # collecte immédiate d'une source
-sentry feeds fetch-all  # collecte des sources échues (à planifier, ex. cron toutes les 15 min)
+sentry feeds fetch-all  # collecte des sources échues (usage ponctuel ou cron)
+sentry feeds worker     # planificateur intégré : collecte en continu (Ctrl+C / SIGTERM pour arrêter)
 sentry status           # avancement mesuré : schéma, sources, IOC, critères du jalon M2
 ```
 
@@ -188,7 +193,12 @@ sont acceptées.
 
 Indicateurs (IOC) : `GET /api/v1/indicators` et `GET /api/v1/indicators/{id}` pour tout
 utilisateur authentifié ; `POST /api/v1/indicators` (lot de 1 000 au plus) pour `ADMIN` et
-`ANALYST`. Règles de déduplication et d'expiration : `docs/adr/ADR-005-cycle-de-vie-ioc.md`.
+`ANALYST`. Règles de déduplication et d'expiration : `docs/adr/ADR-005-cycle-de-vie-ioc.md` ;
+provenance multi-sources : `docs/adr/ADR-006-provenance-multi-sources.md`.
+
+Collecte en production : `docker compose --profile full up -d` démarre l'API **et** le worker.
+Journal exploitable : `sentry feeds worker 2>> collecte.jsonl`, puis par exemple
+`jq 'select(.event=="feed.collected") | {feed_name, inserted, duration_ms}' collecte.jsonl`.
 
 Les commandes `sentry cves`, `sentry incidents`, `sentry dashboard show` et `sentry hunt`
 arrivent avec leurs modules respectifs (phases 3 à 6).
