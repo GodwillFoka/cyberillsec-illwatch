@@ -123,6 +123,18 @@ class FeedPage(BaseModel):
     offset: int
 
 
+REDACTED_ERROR = "Échec de la dernière collecte (détail réservé aux administrateurs)."
+
+
+def _for_viewer(feed: object, user: User) -> FeedRead:
+    """Le détail d'erreur d'un flux peut citer une adresse du réseau interne refusée
+    (protection SSRF) : il n'est montré en clair qu'aux administrateurs."""
+    read = FeedRead.model_validate(feed)
+    if read.last_error and user.role != UserRole.ADMIN:
+        return read.model_copy(update={"last_error": REDACTED_ERROR})
+    return read
+
+
 # --- Erreurs -------------------------------------------------------------------
 
 
@@ -140,7 +152,7 @@ def _conflict(exc: FeedNameConflictError) -> HTTPException:
 @router.get("", response_model=FeedPage, summary="Lister les sources de flux")
 async def list_feeds(
     session: DbSession,
-    _: CurrentUser,
+    user: CurrentUser,
     limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = DEFAULT_PAGE_SIZE,
     offset: Annotated[int, Query(ge=0)] = 0,
     is_active: bool | None = None,
@@ -156,7 +168,7 @@ async def list_feeds(
         feed_type=feed_type,
     )
     return FeedPage(
-        items=[FeedRead.model_validate(feed) for feed in page.items],
+        items=[_for_viewer(feed, user) for feed in page.items],
         total=page.total,
         limit=limit,
         offset=offset,
@@ -164,12 +176,12 @@ async def list_feeds(
 
 
 @router.get("/{feed_id}", response_model=FeedRead, summary="Consulter une source de flux")
-async def read_feed(feed_id: UUID, session: DbSession, _: CurrentUser) -> FeedRead:
+async def read_feed(feed_id: UUID, session: DbSession, user: CurrentUser) -> FeedRead:
     try:
         feed = await service.get_feed(session, feed_id)
     except FeedNotFoundError:
         raise _not_found(feed_id) from None
-    return FeedRead.model_validate(feed)
+    return _for_viewer(feed, user)
 
 
 @router.post(

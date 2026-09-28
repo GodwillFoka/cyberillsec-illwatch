@@ -1,8 +1,8 @@
 """Amorçage des données de référence — `sentry seed` (RF-03).
 
 Idempotent : relancer la commande ne crée aucun doublon. Seules des sources
-publiques, gratuites et sans clé d'API sont semées ; les connecteurs à clé
-(AlienVault OTX, NVD) sont configurés par variables d'environnement.
+publiques et gratuites sont semées. Les clés éventuelles (ABUSECH_AUTH_KEY pour
+URLhaus) ne sont jamais en base : elles sont lues dans l'environnement.
 """
 
 from dataclasses import dataclass

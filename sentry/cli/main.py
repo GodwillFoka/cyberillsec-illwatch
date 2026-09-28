@@ -136,7 +136,7 @@ def db_current() -> None:
 
 @cli.command()
 def seed() -> None:
-    """Insère les données de référence (flux publics sans clé). Idempotent."""
+    """Insère les sources de référence (abuse.ch) et corrige les URL obsolètes. Idempotent."""
     from sentry.app.database import dispose_engine, get_session_factory
     from sentry.modules.foundation.seed import seed_reference_feeds
 
@@ -206,8 +206,10 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
 
 def _register_subcommands() -> None:
     from sentry.cli.feeds import feeds
+    from sentry.cli.status import status
 
     cli.add_command(feeds)
+    cli.add_command(status)
 
 
 _register_subcommands()

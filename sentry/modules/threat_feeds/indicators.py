@@ -35,6 +35,7 @@ from sentry.modules.threat_feeds.validators import InvalidIndicatorError, normal
 from sentry.shared.enums import IndicatorType, Severity
 
 MAX_BATCH_SIZE = 1000
+MAX_REJECTION_SAMPLES = 100  # au-delà, seules les valeurs sont comptées (mémoire bornée)
 _CHUNK_SIZE = 500  # 500 lignes x 9 colonnes : loin des 32 767 paramètres de PostgreSQL
 
 # Durée de validité par défaut après la dernière observation (ADR-005). Les
@@ -85,7 +86,13 @@ class IngestResult:
     inserted: int = 0
     updated: int = 0
     duplicates_in_batch: int = 0
-    rejected: list[Rejection] = field(default_factory=list)
+    rejected_count: int = 0
+    rejected: list[Rejection] = field(default_factory=list)  # échantillon, MAX_REJECTION_SAMPLES
+
+    def reject(self, value: str, reason: str) -> None:
+        self.rejected_count += 1
+        if len(self.rejected) < MAX_REJECTION_SAMPLES:
+            self.rejected.append(Rejection(value, reason))
 
 
 @dataclass(slots=True)
@@ -123,12 +130,10 @@ def _prepare(
         try:
             ioc_type, value = normalize_indicator(obs.value)
         except InvalidIndicatorError as exc:
-            result.rejected.append(Rejection(obs.value, str(exc)))
+            result.reject(obs.value, str(exc))
             continue
         if obs.type is not None and IndicatorType(obs.type) is not ioc_type:
-            result.rejected.append(
-                Rejection(obs.value, f"Type annoncé {obs.type}, type détecté {ioc_type}.")
-            )
+            result.reject(obs.value, f"Type annoncé {obs.type}, type détecté {ioc_type}.")
             continue
 
         seen = obs.observed_at or now
@@ -257,7 +262,7 @@ def is_active_clause(now: datetime) -> ColumnElement[bool]:
 
 
 async def get_indicator(session: AsyncSession, indicator_id: UUID) -> Indicator:
-    indicator = await session.get(Indicator, indicator_id)
+    indicator = await session.get(Indicator, indicator_id, populate_existing=True)
     if indicator is None:
         raise IndicatorNotFoundError(str(indicator_id))
     return indicator

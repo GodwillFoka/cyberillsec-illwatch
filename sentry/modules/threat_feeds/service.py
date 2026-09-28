@@ -62,19 +62,30 @@ class FeedPage:
 # --- Validation ----------------------------------------------------------------
 
 
+_NAT64 = ipaddress.ip_network("64:ff9b::/96")
+
+
 def is_internal_ip(host: str) -> bool:
+    """Vrai pour toute adresse qui n'est pas routable publiquement sur Internet.
+
+    Liste blanche plutôt que liste noire : seule une adresse `is_global` est admise.
+    Cela couvre aussi les plages oubliées par `is_private`, dont 100.64.0.0/10 (CGNAT,
+    où Alibaba Cloud expose ses métadonnées en 100.100.100.200). Les adresses IPv4
+    embarquées dans de l'IPv6 (::ffff:a.b.c.d, NAT64 64:ff9b::/96, 6to4 2002::/16) sont
+    jugées sur l'adresse IPv4 qu'elles désignent réellement.
+    """
     try:
-        addr = ipaddress.ip_address(host)
+        addr: ipaddress.IPv4Address | ipaddress.IPv6Address = ipaddress.ip_address(host)
     except ValueError:
         return False
-    return (
-        addr.is_private
-        or addr.is_loopback
-        or addr.is_link_local
-        or addr.is_reserved
-        or addr.is_multicast
-        or addr.is_unspecified
-    )
+    if isinstance(addr, ipaddress.IPv6Address):
+        if addr.ipv4_mapped is not None:
+            addr = addr.ipv4_mapped
+        elif addr in _NAT64:
+            addr = ipaddress.IPv4Address(int(addr) & 0xFFFFFFFF)
+        elif addr.sixtofour is not None:
+            addr = addr.sixtofour
+    return not addr.is_global or addr.is_multicast
 
 
 def validate_feed_url(url: str) -> str:
@@ -183,7 +194,8 @@ async def _flush_or_conflict(
 
 
 async def get_feed(session: AsyncSession, feed_id: UUID) -> ThreatFeed:
-    feed = await session.get(ThreatFeed, feed_id)
+    # populate_existing : jamais d'objet partiellement périmé (colonnes recalculées par la base)
+    feed = await session.get(ThreatFeed, feed_id, populate_existing=True)
     if feed is None:
         raise FeedNotFoundError(str(feed_id))
     return feed

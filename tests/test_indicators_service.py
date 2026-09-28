@@ -170,3 +170,12 @@ async def test_performance_rnf_perf_02(db_session: AsyncSession) -> None:
     assert second.updated == 1000
     assert insert_duration < 5.0, insert_duration
     assert update_duration < 5.0, update_duration
+
+
+async def test_rejets_comptes_mais_echantillon_borne(db_session: AsyncSession) -> None:
+    from sentry.modules.threat_feeds.indicators import MAX_REJECTION_SAMPLES
+
+    garbage = [Observation(f"n'importe quoi {i}") for i in range(MAX_REJECTION_SAMPLES + 50)]
+    result = await ingest_indicators(db_session, garbage, now=T0)
+    assert result.rejected_count == MAX_REJECTION_SAMPLES + 50
+    assert len(result.rejected) == MAX_REJECTION_SAMPLES

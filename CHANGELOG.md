@@ -8,6 +8,9 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 ## [Non publié]
 
 ### Ajouté
+- `sentry status` : avancement mesuré en base (schéma, santé des sources, IOC actifs/expirés
+  par type, critères du jalon M2 cochés ou non).
+- Pipeline : tests exécutés sous Python 3.12 et 3.14.
 - **T2.3 — Collecteur de flux (UC-01)** : récupération HTTP sécurisée (revalidation de l'URL,
   résolution DNS avec refus de toute adresse interne, redirections revalidées une à une, taille
   plafonnée par `FEED_MAX_BYTES`), backoff exponentiel sur erreurs réseau et 5xx, report au cycle
@@ -35,6 +38,20 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   comparaison des CHECK entre modèle et base (non couverte par `alembic check`).
 
 ### Corrigé
+- **SSRF** : la détection d'adresses internes reposait sur `is_private`, qui ignore
+  100.64.0.0/10 (CGNAT, métadonnées Alibaba Cloud en 100.100.100.200) et les adresses IPv4
+  embarquées dans de l'IPv6 (NAT64 `64:ff9b::/96`, 6to4). Seules les adresses publiques
+  (`is_global`) sont désormais admises.
+- Détail des erreurs de collecte (`last_error`) réservé aux ADMIN : il peut citer une adresse
+  interne refusée.
+- `fetch-all` validait tous les flux en une seule transaction : un arrêt en cours de cycle perdait
+  tout. Validation après chaque flux.
+- Erreurs de protocole HTTP (connexion coupée) désormais retentées ; contenu corrompu signalé
+  proprement au lieu d'une « erreur inattendue ».
+- Liste des rejets d'ingestion bornée à 100 exemples (compteur exact conservé) : mémoire bornée
+  face à un flux corrompu.
+- Lecture d'un flux ou d'un IOC : rechargement systématique depuis la base (plantage possible sur
+  un objet modifié plus tôt dans la même session).
 - **Flux URLhaus inutilisable** : abuse.ch exige désormais une clé (`Auth-Key`) dans l'URL de
   téléchargement ; l'ancienne URL semée par `sentry seed` échouait. La base stocke un gabarit
   (`…/exports/{ABUSECH_AUTH_KEY}/recent.csv`), la clé est lue dans `.env` au moment de la requête

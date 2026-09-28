@@ -316,3 +316,26 @@ async def test_routes_documentees_dans_openapi(client: AsyncClient) -> None:
     paths = (await client.get("/openapi.json")).json()["paths"]
     assert set(paths[FEEDS]) == {"get", "post"}
     assert set(paths[f"{FEEDS}/{{feed_id}}"]) == {"get", "patch", "delete"}
+
+
+async def test_detail_d_erreur_reserve_aux_administrateurs(
+    client: AsyncClient, auth_as: HeadersFactory, db_session: AsyncSession
+) -> None:
+    """Un message d'erreur peut citer une IP interne refusée : ADMIN seulement."""
+    admin = await auth_as(UserRole.ADMIN)
+    feed = await _create(client, admin)
+    stored = await db_session.get(ThreatFeed, UUID(str(feed["id"])))
+    assert stored is not None
+    stored.last_error = "rebind.example résout vers une adresse interne (10.0.0.8)"
+    await db_session.flush()
+
+    as_admin = (await client.get(f"{FEEDS}/{feed['id']}", headers=admin)).json()
+    assert "10.0.0.8" in as_admin["last_error"]
+
+    for role in (UserRole.ANALYST, UserRole.VIEWER):
+        headers = await auth_as(role)
+        detail = (await client.get(f"{FEEDS}/{feed['id']}", headers=headers)).json()
+        listing = (await client.get(FEEDS, headers=headers)).json()["items"][0]
+        for body in (detail, listing):
+            assert body["last_error"] is not None
+            assert "10.0.0.8" not in body["last_error"]

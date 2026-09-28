@@ -75,6 +75,10 @@ typage:
 tests:
   extends: .python
   stage: tests
+  # 3.12 : version minimale supportée ; 3.14 : version des postes de développement.
+  parallel:
+    matrix:
+      - PYTHON_IMAGE: ["python:3.12-slim", "python:3.14-slim"]
   services:
     - name: postgres:16-alpine
       alias: postgres

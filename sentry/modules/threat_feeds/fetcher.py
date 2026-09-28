@@ -144,8 +144,10 @@ async def _single_attempt(
                 if response.status_code >= 400:
                     raise FetchError(f"HTTP {response.status_code} renvoyé par la source.")
                 return await _read_capped(response, max_bytes)
-        except (httpx.TimeoutException, httpx.NetworkError) as exc:
+        except httpx.TransportError as exc:  # délai, réseau, protocole, proxy : transitoire
             raise _RetryableError(f"{type(exc).__name__} : {exc}") from exc
+        except httpx.HTTPError as exc:  # ex. contenu compressé corrompu : pas de nouvel essai
+            raise FetchError(f"{type(exc).__name__} : {exc}") from exc
     raise FetchError(f"Plus de {MAX_REDIRECTS} redirections : abandon.")
 
 

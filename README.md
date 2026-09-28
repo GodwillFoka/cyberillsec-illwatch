@@ -140,6 +140,25 @@ Ouvrir <http://localhost:8000/docs> : la documentation Swagger interactive doit 
 Guide pas à pas, y compris pour un développeur découvrant la cybersécurité :
 [`docs/ONBOARDING.md`](docs/ONBOARDING.md).
 
+## Ce que SENTRY sait faire aujourd'hui
+
+| Domaine | Disponible | Comment |
+|---|---|---|
+| Comptes et rôles | ✅ | `sentry users create`, `POST /api/v1/auth/token` |
+| Sources de flux | ✅ | `sentry feeds add/list`, `/api/v1/feeds` (ADMIN pour l'écriture) |
+| Collecte CSV / JSON / STIX 2.1 | ✅ | `sentry feeds fetch <nom>` ou `fetch-all` (à planifier par cron) |
+| IOC dédupliqués, expiration | ✅ | `/api/v1/indicators` (lecture, soumission par lot) |
+| Score de risque CVE | 🟡 | calcul prêt et testé ; collecte NVD/KEV/EPSS en phase 3 |
+| Incidents | 🟡 | machine d'état prête ; API en phase 4 |
+| Dashboard, threat hunting | ❌ | phases 5 et 6 |
+
+## Mesurer l'avancement
+
+- **Sur les données** : `sentry status` — schéma, santé des sources, volume d'IOC et critères
+  du jalon M2 constatés en base (✔/✘).
+- **Sur le code** : `./scripts/ci-local.sh` — qualité, tests, couverture, migrations.
+- **Sur le planning** : `Rapport/PLAN_DIRECTEUR.md` — tâches par étape et critères de fin.
+
 ## CLI
 
 ```bash
@@ -156,6 +175,7 @@ sentry feeds list       # sources de flux et leur état
 sentry feeds add        # nouvelle source (HTTPS public, nom unique)
 sentry feeds fetch X    # collecte immédiate d'une source
 sentry feeds fetch-all  # collecte des sources échues (à planifier, ex. cron toutes les 15 min)
+sentry status           # avancement mesuré : schéma, sources, IOC, critères du jalon M2
 ```
 
 Authentification : `POST /api/v1/auth/token` (flux OAuth2 *password*, formulaire

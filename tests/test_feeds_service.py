@@ -107,3 +107,29 @@ async def test_changer_de_format_reinitialise_l_etat(db_session: AsyncSession) -
     changed = await service.update_feed(db_session, feed.id, feed_type=FeedType.STIX)
     assert changed.status == FeedStatus.PENDING
     assert changed.feed_type == FeedType.STIX
+
+
+@pytest.mark.parametrize(
+    "address",
+    [
+        "100.100.100.200",  # CGNAT : métadonnées Alibaba Cloud
+        "100.64.0.1",
+        "::ffff:127.0.0.1",  # IPv4 mappée
+        "64:ff9b::7f00:1",  # NAT64 → 127.0.0.1
+        "2002:a9fe:a9fe::1",  # 6to4 → 169.254.169.254
+        "fc00::1",  # IPv6 unique local
+        "192.0.2.10",  # documentation
+        "224.0.0.1",  # multicast
+    ],
+)
+def test_adresses_non_publiques_detectees(address: str) -> None:
+    from sentry.modules.threat_feeds.service import is_internal_ip
+
+    assert is_internal_ip(address)
+
+
+@pytest.mark.parametrize("address", ["8.8.8.8", "93.184.216.34", "2606:4700::1111"])
+def test_adresses_publiques_admises(address: str) -> None:
+    from sentry.modules.threat_feeds.service import is_internal_ip
+
+    assert not is_internal_ip(address)

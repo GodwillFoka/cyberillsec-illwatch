@@ -69,7 +69,8 @@ class IngestResponse(BaseModel):
     inserted: int
     updated: int
     duplicates_in_batch: int
-    rejected: list[RejectionOut]
+    rejected_count: int
+    rejected: list[RejectionOut] = Field(description="Échantillon (100 premiers rejets au plus).")
 
 
 class IndicatorRead(BaseModel):
@@ -187,5 +188,6 @@ async def ingest(payload: IngestRequest, session: DbSession, _: Contributor) -> 
         inserted=result.inserted,
         updated=result.updated,
         duplicates_in_batch=result.duplicates_in_batch,
+        rejected_count=result.rejected_count,
         rejected=[RejectionOut(value=r.value, reason=r.reason) for r in result.rejected],
     )

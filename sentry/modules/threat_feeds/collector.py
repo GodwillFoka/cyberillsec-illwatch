@@ -102,7 +102,7 @@ async def collect_feed(
                 session, parsed.observations, feed_id=feed.id, now=clock()
             )
         report.inserted, report.updated = result.inserted, result.updated
-        report.rejected = len(result.rejected)
+        report.rejected = result.rejected_count
         report.rejected_samples = [r.value for r in result.rejected[:5]]
 
         feed.status = FeedStatus.HEALTHY
@@ -144,4 +144,7 @@ async def collect_due_feeds(
     reports = []
     for feed in sorted(feeds, key=lambda f: f.name.lower()):
         reports.append(await collect_feed(session, feed, fetch=fetch, clock=clock))
+        # Validation après chaque flux : un arrêt en cours de cycle ne perd que le flux
+        # en cours, et aucune transaction ne reste ouverte pendant tout le cycle.
+        await session.commit()
     return reports

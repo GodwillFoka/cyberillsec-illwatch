@@ -120,3 +120,13 @@ def test_parcours_cli_complet() -> None:
         assert result.exit_code == 0
     finally:
         asyncio.run(_cleanup(username))
+
+
+def test_commande_status() -> None:
+    asyncio.run(_reset_schema())
+    runner = CliRunner()
+    assert runner.invoke(cli, ["db", "init"]).exit_code == 0
+    result = runner.invoke(cli, ["status"])
+    assert result.exit_code == 0, result.output
+    assert "à jour" in result.output
+    assert "Jalon M2" in result.output and "non atteint" in result.output

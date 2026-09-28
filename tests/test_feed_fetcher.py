@@ -210,3 +210,26 @@ async def test_retry_after_au_format_date() -> None:
     with pytest.raises(RateLimitedError) as info:
         await _fetch("https://feeds.example.org/limited", handler)
     assert 60 <= info.value.retry_after_seconds <= 90
+
+
+async def test_erreur_de_protocole_retentee() -> None:
+    attempts: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        attempts.append(1)
+        if len(attempts) == 1:
+            raise httpx.RemoteProtocolError("connexion fermée", request=request)
+        return httpx.Response(200, content=b"ok")
+
+    assert await _fetch("https://feeds.example.org/proto", handler) == b"ok"
+    assert len(attempts) == 2
+
+
+async def test_destination_cgnat_refusee() -> None:
+    async def resolver(host: str, port: int) -> list[str]:
+        return ["100.100.100.200"]
+
+    with pytest.raises(UnsafeDestinationError):
+        await fetch_feed_content(
+            "https://metadata.example.org/latest", settings=SETTINGS, resolver=resolver
+        )
