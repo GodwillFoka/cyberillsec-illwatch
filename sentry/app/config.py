@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     otx_api_key: SecretStr | None = None
     # Plafond de pages de 50 pulses lues par collecte OTX (mémoire et durée bornées).
     otx_max_pages: int = Field(default=20, ge=1, le=200)
+    # Identifiants TAXII 2.1 par hôte : "hote=utilisateur:motdepasse;hote2=…". Envoyés en
+    # Basic uniquement à l'hôte nommé. Valeur par défaut : accès invité public documenté
+    # de DigitalSide (https://osint.digitalside.it/taxiiserver.html).
+    taxii_auth: SecretStr = SecretStr("osint.digitalside.it=guest:guest")
+    taxii_max_pages: int = Field(default=20, ge=1, le=200)
     # Clé abuse.ch (https://auth.abuse.ch/, gratuite) : exigée par URLhaus pour les
     # téléchargements. Injectée dans les URL de flux via le gabarit {ABUSECH_AUTH_KEY}.
     abusech_auth_key: SecretStr | None = None

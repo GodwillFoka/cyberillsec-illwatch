@@ -17,6 +17,7 @@ from sentry.app.config import Settings
 
 PLACEHOLDER_RE = re.compile(r"\{([A-Z][A-Z0-9_]*)\}")
 MASK = "***"
+MIN_MASKED_LENGTH = 8
 
 
 class MissingFeedSecretError(ValueError):
@@ -60,10 +61,14 @@ def resolve_feed_url(url_template: str, settings: Settings) -> str:
 def _all_secret_values(settings: Settings) -> list[str]:
     """Tous les secrets de connecteurs, y compris ceux qui ne sont jamais dans une URL
     (clé OTX, transmise en en-tête) : aucun ne doit apparaître dans un message stocké."""
+    from sentry.modules.threat_feeds.taxii import taxii_secrets  # import tardif : cycle
+
     values = [v for v in _available(settings).values() if v]
     if settings.otx_api_key is not None and settings.otx_api_key.get_secret_value():
         values.append(settings.otx_api_key.get_secret_value())
-    return values
+    values.extend(taxii_secrets(settings))
+    # Un secret très court (ex. mot de passe invité « guest ») masquerait des mots ordinaires.
+    return [v for v in values if len(v) >= MIN_MASKED_LENGTH]
 
 
 def mask_secrets(text: str, settings: Settings) -> str:

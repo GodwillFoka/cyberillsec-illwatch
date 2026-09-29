@@ -35,6 +35,7 @@ from sentry.modules.threat_feeds.locks import FeedLock
 from sentry.modules.threat_feeds.otx import HeaderFetcher, fetch_otx
 from sentry.modules.threat_feeds.parsers import FeedParseError, ParseResult, parse_feed
 from sentry.modules.threat_feeds.secrets import mask_secrets
+from sentry.modules.threat_feeds.taxii import fetch_taxii
 from sentry.shared.enums import FeedStatus, FeedType
 from sentry.shared.logging import peak_rss_mb
 
@@ -155,6 +156,16 @@ async def _fetch_and_parse(
                 "pour ne pas manquer de pulses."
             )
         return outcome.parsed
+    if FeedType(feed.feed_type) is FeedType.TAXII:
+        parsed, pages, truncated = await fetch_taxii(
+            feed.url,
+            settings=get_settings(),
+            fetch=fetch,
+            since=_as_utc(feed.last_successful_run),
+        )
+        if truncated:
+            report.warning = f"Collecte TAXII tronquée à {pages} pages : augmentez TAXII_MAX_PAGES."
+        return parsed
     content = await fetch(feed.url)
     report.fetched_bytes = len(content)
     return parse_feed(content, FeedType(feed.feed_type))

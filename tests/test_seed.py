@@ -16,3 +16,19 @@ async def test_seed_est_idempotent(db_session: AsyncSession) -> None:
 
     count = await db_session.scalar(select(func.count()).select_from(ThreatFeed))
     assert count == len(REFERENCE_FEEDS)
+
+
+def test_sources_de_reference_conformes_aux_regles_de_l_api() -> None:
+    """Le seed écrit directement en base : ses URL doivent passer les mêmes contrôles
+    que celles saisies par un administrateur (SSRF, OTX limité à l'API OTX…)."""
+    from sentry.modules.threat_feeds.secrets import placeholders
+    from sentry.modules.threat_feeds.service import ensure_url_fits_type, validate_feed_url
+
+    for feed in REFERENCE_FEEDS:
+        url = feed.url
+        for name in placeholders(url):
+            url = url.replace("{" + name + "}", "cle")
+        assert validate_feed_url(url) == url, feed.name
+        ensure_url_fits_type(url, feed.feed_type)
+        assert len(feed.name) <= 100
+    assert len({f.name.lower() for f in REFERENCE_FEEDS}) == len(REFERENCE_FEEDS)

@@ -19,12 +19,13 @@ Formats reconnus :
 import csv
 import json
 import re
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
 from sentry.modules.threat_feeds.indicators import Observation
+from sentry.modules.threat_feeds.validators import InvalidIndicatorError, normalize_indicator
 from sentry.shared.enums import FeedType, Severity
 
 MAX_DESCRIPTION_LENGTH = 500
@@ -122,6 +123,38 @@ def _pick(columns: list[str], candidates: Iterable[str]) -> int | None:
     return None
 
 
+_SAMPLE_ROWS = 50
+
+
+def _is_ioc(value: str) -> bool:
+    try:
+        normalize_indicator(value)
+    except InvalidIndicatorError:
+        return False
+    return True
+
+
+def _value_column(header: list[str], rows: list[list[str]]) -> int | None:
+    """Colonne de l'IOC, choisie **sur le contenu** parmi les noms candidats.
+
+    Le nom seul ne suffit pas : C2IntelFeeds publie `#ip,ioc` où `ioc` contient
+    « Possible Cobaltstrike C2 IP » et l'IOC est dans `ip`. On retient la colonne candidate
+    dont les premières valeurs sont le plus souvent des IOC valides ; à égalité, l'ordre de
+    préférence de `_VALUE_COLUMNS` départage.
+    """
+    lowered = [c.strip().lower() for c in header]
+    candidates = [i for i, name in enumerate(lowered) if name in _VALUE_COLUMNS]
+    if len(candidates) <= 1:
+        return candidates[0] if candidates else None
+    sample = rows[:_SAMPLE_ROWS]
+
+    def score(idx: int) -> tuple[int, int]:
+        valid = sum(1 for row in sample if idx < len(row) and _is_ioc(row[idx]))
+        return valid, -_VALUE_COLUMNS.index(lowered[idx])
+
+    return max(candidates, key=score)
+
+
 def parse_csv(content: bytes, *, default_severity: Severity = Severity.MEDIUM) -> ParseResult:
     result = ParseResult()
     header: list[str] | None = None
@@ -141,22 +174,25 @@ def parse_csv(content: bytes, *, default_severity: Severity = Severity.MEDIUM) -
             continue
         data_lines.append(line)
 
-    rows: Iterator[list[str]] = csv.reader(data_lines)
+    rows = list(csv.reader(data_lines))
     if header is None:
-        first = next(rows, None)
-        if first is None:
+        if not rows:
             return result
-        if _pick(first, _VALUE_COLUMNS) is not None:
-            header = first
-        else:
-            rows = iter([first, *rows])
+        if _pick(rows[0], _VALUE_COLUMNS) is not None:
+            header, rows = rows[0], rows[1:]
 
     value_idx = date_idx = desc_idx = sev_idx = None
     if header is not None:
-        value_idx = _pick(header, _VALUE_COLUMNS)
+        value_idx = _value_column(header, rows)
         date_idx = _pick(header, _DATE_COLUMNS)
         desc_idx = _pick(header, _DESCRIPTION_COLUMNS)
         sev_idx = _pick(header, ("severity",))
+        if desc_idx is None:  # colonne candidate écartée (ex. `ioc` libellé) : description
+            lowered = [c.strip().lower() for c in header]
+            desc_idx = next(
+                (i for i, n in enumerate(lowered) if n in _VALUE_COLUMNS and i != value_idx),
+                None,
+            )
 
     for row in rows:
         if not row or not any(cell.strip() for cell in row):
@@ -263,7 +299,13 @@ def parse_stix(content: bytes, *, default_severity: Severity = Severity.MEDIUM) 
         objects = document
     else:
         raise FeedParseError("STIX : bundle attendu (`type: bundle`).")
+    return parse_stix_objects(objects, default_severity=default_severity)
 
+
+def parse_stix_objects(
+    objects: Iterable[Any], *, default_severity: Severity = Severity.MEDIUM
+) -> ParseResult:
+    """IOC d'une liste d'objets STIX 2.1 (bundle ou enveloppe TAXII)."""
     result = ParseResult()
     for obj in objects:
         if not isinstance(obj, dict):

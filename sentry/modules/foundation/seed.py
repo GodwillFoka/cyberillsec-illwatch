@@ -38,6 +38,39 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         feed_type=FeedType.CSV,
         polling_interval=3600,
     ),
+    # --- Sources publiques sans clé : de quoi constater M2 dès l'installation ------------
+    FeedSeed(
+        name="C2IntelFeeds — IP de serveurs C2 (30 j)",
+        # Colonnes `#ip,ioc` : l'IOC est `ip`, `ioc` est un libellé (choix par le contenu).
+        url="https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/IPC2s-30day.csv",
+        feed_type=FeedType.CSV,
+        polling_interval=6 * 3600,
+    ),
+    FeedSeed(
+        name="C2IntelFeeds — domaines de serveurs C2 (30 j)",
+        url=(
+            "https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/"
+            "domainC2s-30day-filter-abused.csv"
+        ),
+        feed_type=FeedType.CSV,
+        polling_interval=6 * 3600,
+    ),
+    FeedSeed(
+        name="DigitalSide — URL malveillantes (7 j)",
+        url="https://osint.digitalside.it/Threat-Intel/lists/latesturls.txt",
+        feed_type=FeedType.CSV,
+        polling_interval=6 * 3600,
+    ),
+    FeedSeed(
+        name="DigitalSide — IoC réseau STIX 2.1 (TAXII, 24 h)",
+        # Accès invité public (guest/guest), fourni par TAXII_AUTH par défaut.
+        url=(
+            "https://osint.digitalside.it/taxii2reports/collections/"
+            "c1f43330-103b-11ee-9ee3-4b022e286589/objects/"
+        ),
+        feed_type=FeedType.TAXII,
+        polling_interval=6 * 3600,
+    ),
     FeedSeed(
         name="AlienVault OTX — pulses abonnés",
         # Clé OTX_API_KEY envoyée en en-tête ; `modified_since` ajouté à chaque collecte.

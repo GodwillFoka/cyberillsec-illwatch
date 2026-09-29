@@ -82,7 +82,7 @@ async def compute_status(session: AsyncSession, now: datetime | None = None) -> 
 
     healthy = [f for f in feeds if f.status == FeedStatus.HEALTHY]
     otx = [f for f in healthy if f.feed_type == FeedType.OTX]
-    stix = [f for f in healthy if f.feed_type == FeedType.STIX]
+    stix = [f for f in healthy if f.feed_type in (FeedType.STIX, FeedType.TAXII)]
     status.m2 = [
         Criterion(
             f"≥ {M2_MIN_REAL_IOCS} IOC réels collectés",
@@ -95,6 +95,6 @@ async def compute_status(session: AsyncSession, now: datetime | None = None) -> 
             f"{len(healthy)} source(s) HEALTHY",
         ),
         Criterion("Collecteur AlienVault OTX connecté", bool(otx), f"{len(otx)} source OTX saine"),
-        Criterion("Flux STIX connecté", bool(stix), f"{len(stix)} source STIX saine"),
+        Criterion("Flux STIX connecté", bool(stix), f"{len(stix)} source STIX/TAXII saine"),
     ]
     return status

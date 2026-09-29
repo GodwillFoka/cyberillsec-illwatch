@@ -22,12 +22,14 @@ class FeedType(StrEnum):
     """Formats de flux supportés — RF-06.
 
     `OTX` désigne l'API AlienVault OTX (pulses abonnés) : JSON paginé, clé en en-tête.
+    `TAXII` désigne une collection TAXII 2.1 (objets STIX 2.1 paginés, `added_after`).
     """
 
     JSON = "JSON"
     CSV = "CSV"
     STIX = "STIX"
     OTX = "OTX"
+    TAXII = "TAXII"
 
 
 class FeedStatus(StrEnum):
