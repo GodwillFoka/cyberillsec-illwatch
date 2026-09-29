@@ -5,7 +5,7 @@ description = "SENTRY — Security Monitoring & Cyber Threat Intelligence Platfo
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-authors = [{ name = "Godwill FOKA", email = "contact@cyberill.com" }]
+authors = [{ name = "Godwill FOKA", email = "fokagodwill@gmail.com" }]
 keywords = ["cti", "threat-intelligence", "cve", "epss", "kev", "soc", "security"]
 
 dependencies = [
