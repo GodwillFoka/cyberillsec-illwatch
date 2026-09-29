@@ -92,7 +92,7 @@ def is_internal_ip(host: str) -> bool:
     return not addr.is_global or addr.is_multicast
 
 
-def validate_feed_url(url: str) -> str:
+def validate_feed_url(url: str, *, max_length: int = MAX_URL_LENGTH) -> str:
     """Valide et normalise l'URL d'un flux. Retourne l'URL nettoyée.
 
     Règles :
@@ -112,8 +112,8 @@ def validate_feed_url(url: str) -> str:
     candidate = url.strip()
     if not candidate:
         raise UnsafeFeedURLError("URL vide.")
-    if len(candidate) > MAX_URL_LENGTH:
-        raise UnsafeFeedURLError(f"URL trop longue (> {MAX_URL_LENGTH} caractères).")
+    if len(candidate) > max_length:
+        raise UnsafeFeedURLError(f"URL trop longue (> {max_length} caractères).")
 
     try:
         parts = urlsplit(candidate)

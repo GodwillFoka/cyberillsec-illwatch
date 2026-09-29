@@ -14,7 +14,7 @@ console = Console()
 
 @click.command()
 def status() -> None:
-    """Affiche l'état réel de l'instance : migrations, sources, IOC et critères du jalon M2."""
+    """Affiche l'état réel : migrations, sources, IOC, CVE et critères des jalons M2 et M3."""
     from sentry.app import migrations
     from sentry.app.database import dispose_engine, get_session_factory
     from sentry.modules.foundation.status import ProjectStatus, compute_status
@@ -68,3 +68,24 @@ def status() -> None:
     console.print(m2)
     verdict = "[green]atteint[/]" if state.m2_reached else "[yellow]non atteint[/]"
     console.print(f"Jalon M2 : {verdict}")
+
+    cves = Table(title="Vulnérabilités (CVE)", show_header=False)
+    cves.add_row("Total", str(state.cves_total))
+    for name in ("P0_CRITIQUE", "P1_ELEVE", "P2_MOYEN", "P3_FAIBLE"):
+        cves.add_row(f"  {name}", str(state.cves_by_priority.get(name, 0)))
+    cves.add_row("Catalogue KEV", str(state.cves_kev))
+    cves.add_row("Avec score EPSS", str(state.cves_with_epss))
+    cves.add_row("Alertes / non acquittées", f"{state.alerts_total} / {state.alerts_open}")
+    console.print(cves)
+
+    m3 = Table(title="Jalon M3 — Moteur CVE & alerting")
+    m3.add_column("Critère")
+    m3.add_column("État")
+    m3.add_column("Constat")
+    for criterion in state.m3:
+        m3.add_row(
+            criterion.label, "[green]✔[/]" if criterion.met else "[red]✘[/]", criterion.detail
+        )
+    console.print(m3)
+    verdict = "[green]atteint[/]" if state.m3_reached else "[yellow]non atteint[/]"
+    console.print(f"Jalon M3 : {verdict}")

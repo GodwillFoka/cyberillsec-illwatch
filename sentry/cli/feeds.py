@@ -321,14 +321,45 @@ def feeds_fetch_all(force: bool) -> None:
         raise SystemExit(1)
 
 
+async def _maybe_sync_cves(lock: FeedLock) -> None:
+    """Synchronisation CVE si elle est échue ; un seul worker à la fois (verrou)."""
+    from datetime import UTC, datetime
+
+    from sentry.app.database import get_session_factory
+    from sentry.cli.cves import run_cve_sync
+    from sentry.modules.cve_tracker.engine import cve_sync_due, mark_cve_sync_attempt
+
+    settings = get_settings()
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        if not await cve_sync_due(
+            session, interval_seconds=settings.cve_sync_interval_seconds, now=now
+        ):
+            return
+    # Le verrou couvre toute la synchronisation : NVD sans clé peut durer plusieurs minutes.
+    token = await lock.acquire("cve-sync", max(settings.collect_lock_ttl_seconds, 3600))
+    if token is None:
+        return
+    try:
+        async with get_session_factory()() as session:
+            await mark_cve_sync_attempt(session, now)
+            await session.commit()
+            await run_cve_sync(session, ("kev", "nvd", "epss"))
+            await session.commit()
+    finally:
+        await lock.release("cve-sync", token)
+
+
 async def run_worker(
     *,
     tick_seconds: int,
     max_cycles: int | None = None,
     lock: FeedLock | None = None,
     stop: asyncio.Event | None = None,
+    include_cves: bool = True,
 ) -> int:
-    """Boucle du planificateur : un cycle `collect_due_feeds` toutes les `tick_seconds`.
+    """Boucle du planificateur : un cycle `collect_due_feeds` toutes les `tick_seconds`,
+    et la synchronisation CVE toutes les `CVE_SYNC_INTERVAL_SECONDS` (si `include_cves`).
 
     Chaque cycle ouvre sa propre session (aucune transaction longue). Un cycle en échec
     (base indisponible…) est journalisé et retenté au cycle suivant : le worker ne meurt
@@ -351,6 +382,8 @@ async def run_worker(
                         session, fetch=fetch_feed_content, lock=active_lock
                     )
                     await session.commit()
+                if include_cves:
+                    await _maybe_sync_cves(active_lock)
                 collector.log.info(
                     "worker.cycle",
                     extra={
@@ -383,7 +416,13 @@ async def run_worker(
     help="Période de réveil en secondes (défaut : WORKER_TICK_SECONDS, 60).",
 )
 @click.option("--max-cycles", type=click.IntRange(min=1), default=None, hidden=True)
-def feeds_worker(tick: int | None, max_cycles: int | None) -> None:
+@click.option(
+    "--cves/--no-cves",
+    default=True,
+    show_default=True,
+    help="Inclure la synchronisation CVE (KEV, NVD, EPSS) toutes les CVE_SYNC_INTERVAL_SECONDS.",
+)
+def feeds_worker(tick: int | None, max_cycles: int | None, cves: bool) -> None:
     """Planificateur intégré : collecte en continu les sources échues (T2.6).
 
     Plusieurs workers peuvent tourner : le verrou Redis par flux empêche qu'un même flux
@@ -399,7 +438,9 @@ def feeds_worker(tick: int | None, max_cycles: int | None) -> None:
             # Windows : add_signal_handler n'existe pas, Ctrl+C lève KeyboardInterrupt.
             with contextlib.suppress(NotImplementedError):
                 loop.add_signal_handler(sig, stop.set)
-        return await run_worker(tick_seconds=tick_seconds, max_cycles=max_cycles, stop=stop)
+        return await run_worker(
+            tick_seconds=tick_seconds, max_cycles=max_cycles, stop=stop, include_cves=cves
+        )
 
     with contextlib.suppress(KeyboardInterrupt):
         cycles = asyncio.run(_main())

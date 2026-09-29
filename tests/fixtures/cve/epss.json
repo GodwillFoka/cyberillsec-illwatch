@@ -1,0 +1,7 @@
+{"status": "OK", "status-code": 200, "version": "1.0", "access": "public", "total": 4, "offset": 0, "limit": 100,
+ "data": [
+  {"cve": "CVE-2021-44228", "epss": "0.944240000", "percentile": "0.999970000", "date": "2026-09-28"},
+  {"cve": "CVE-2026-10001", "epss": "0.012000000", "percentile": "0.780000000", "date": "2026-09-28"},
+  {"cve": "CVE-2025-20003", "epss": "0.000430000", "percentile": "0.110000000", "date": "2026-09-28"},
+  {"cve": "CVE-2020-1472", "epss": "0.943000000", "percentile": "0.999800000", "date": "2026-09-28"}
+ ]}

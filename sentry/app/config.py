@@ -59,7 +59,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
 
     # --- Connecteurs CTI externes (clés optionnelles) ------------------------
-    nvd_api_key: str | None = None
+    # Clé NVD (https://nvd.nist.gov/developers/request-an-api-key, gratuite) : 50 requêtes
+    # par 30 s au lieu de 5. Envoyée en en-tête `apiKey`, jamais en base.
+    nvd_api_key: SecretStr | None = None
     # Clé AlienVault OTX (https://otx.alienvault.com/, gratuite) : envoyée en en-tête
     # X-OTX-API-KEY, uniquement vers otx.alienvault.com. Jamais en base.
     otx_api_key: SecretStr | None = None
@@ -95,8 +97,19 @@ class Settings(BaseSettings):
     # Période de réveil de `sentry feeds worker` (recherche des flux échus).
     worker_tick_seconds: int = Field(default=60, ge=5)
 
+    # --- Moteur CVE (phase 3, ADR-007) --------------------------------------
+    # Profondeur de la première synchronisation NVD (CVE modifiées depuis N jours) ;
+    # les CVE du catalogue KEV sont toujours importées, quelle que soit leur date.
+    nvd_initial_days: int = Field(default=30, ge=1, le=3650)
+    nvd_results_per_page: int = Field(default=500, ge=1, le=2000)
+    # Période de synchronisation CVE par le worker (KEV + NVD incrémental + EPSS).
+    cve_sync_interval_seconds: int = Field(default=6 * 3600, ge=600)
+
     # --- Scoring & alerting (§3.3.3 du CdC) ---------------------------------
     risk_alert_threshold: float = Field(default=75.0, ge=0, le=100)
+    # Webhook (Slack, Mattermost, Teams via passerelle…) appelé à chaque alerte. Configuré
+    # par l'exploitant dans `.env` : il peut viser un relais interne. Jamais journalisé.
+    alert_webhook_url: SecretStr | None = None
 
     @model_validator(mode="after")
     def _enforce_production_safety(self) -> Self:

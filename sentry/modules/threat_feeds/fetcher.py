@@ -39,6 +39,7 @@ from sentry.modules.threat_feeds.service import (
 )
 
 MAX_REDIRECTS = 3
+MAX_REQUEST_URL_LENGTH = 4000
 DEFAULT_RETRY_AFTER_SECONDS = 60
 USER_AGENT = f"SENTRY/{__version__} (CyberillSec Threat Intelligence Platform)"
 
@@ -82,7 +83,8 @@ async def assert_public_destination(url: str, resolver: Resolver = resolve_host)
     SSRF ne doit pas dépendre de la bibliothèque qui émet la requête.
     """
     try:
-        validate_feed_url(url)
+        # Longueur relâchée : ces URL ne sont pas stockées (pages suivantes, lots EPSS).
+        validate_feed_url(url, max_length=MAX_REQUEST_URL_LENGTH)
     except UnsafeFeedURLError as exc:
         raise UnsafeDestinationError(f"URL refusée : {exc}") from exc
 

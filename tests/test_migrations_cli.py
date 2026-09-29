@@ -137,7 +137,8 @@ async def _checks_in_db() -> dict[str, str]:
         rows = await conn.execute(
             text(
                 "SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint "
-                "WHERE contype = 'c' AND conrelid::regclass::text IN ('indicators', 'threat_feeds')"
+                "WHERE contype = 'c' AND conrelid::regclass::text "
+                "IN ('indicators', 'threat_feeds', 'cves')"
             )
         )
         found = {str(r[0]): str(r[1]) for r in rows.all()}
@@ -157,7 +158,7 @@ def test_contraintes_check_migrees_identiques_au_modele() -> None:
 
     declared = {
         c.name: str(c.sqltext)
-        for table in ("indicators", "threat_feeds")
+        for table in ("indicators", "threat_feeds", "cves")
         for c in Base.metadata.tables[table].constraints
         if c.__class__.__name__ == "CheckConstraint"
     }

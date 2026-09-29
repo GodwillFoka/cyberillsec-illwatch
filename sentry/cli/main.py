@@ -35,7 +35,14 @@ def config() -> None:
     table.add_column("Clé", style="cyan", no_wrap=True)
     table.add_column("Valeur", style="white")
 
-    secret_keys = {"secret_key", "nvd_api_key", "otx_api_key", "abusech_auth_key"}
+    secret_keys = {
+        "secret_key",
+        "nvd_api_key",
+        "otx_api_key",
+        "abusech_auth_key",
+        "taxii_auth",
+        "alert_webhook_url",
+    }
     for key, value in settings.model_dump().items():
         rendered = "••••••" if key in secret_keys and value else str(value)
         table.add_row(key, rendered)
@@ -205,10 +212,12 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
 
 
 def _register_subcommands() -> None:
+    from sentry.cli.cves import cves
     from sentry.cli.feeds import feeds
     from sentry.cli.status import status
     from sentry.cli.taxii import taxii
 
+    cli.add_command(cves)
     cli.add_command(feeds)
     cli.add_command(taxii)
     cli.add_command(status)

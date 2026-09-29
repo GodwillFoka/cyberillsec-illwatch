@@ -201,7 +201,9 @@ async def test_worker_survit_et_s_arrete() -> None:
     """Deux cycles : quelle que soit la base (vide ou absente), le worker ne meurt pas."""
     stream = io.StringIO()
     configure_logging("INFO", stream=stream)
-    cycles = await run_worker(tick_seconds=0, max_cycles=2, lock=LocalFeedLock())
+    cycles = await run_worker(
+        tick_seconds=0, max_cycles=2, lock=LocalFeedLock(), include_cves=False
+    )
     assert cycles == 2
     events = [json.loads(line)["event"] for line in stream.getvalue().splitlines()]
     assert len([e for e in events if e.startswith("worker.cycle")]) == 2
@@ -210,4 +212,6 @@ async def test_worker_survit_et_s_arrete() -> None:
 async def test_worker_arret_demande() -> None:
     stop = asyncio.Event()
     stop.set()
-    assert await run_worker(tick_seconds=60, stop=stop, lock=LocalFeedLock()) == 0
+    assert (
+        await run_worker(tick_seconds=60, stop=stop, lock=LocalFeedLock(), include_cves=False) == 0
+    )
