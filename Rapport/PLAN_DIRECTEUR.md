@@ -4,8 +4,9 @@
 **Branches de travail :** `feature/threat-feeds-indicators` (à fusionner), puis
 `feature/sprint3-ingestion`
 
-> **Mise à jour du 28/09.** Sprint 3 codé : voir `Rapport/BILAN_SPRINT_3.md` et
-> `Rapport/RAPPORT_GLOBAL.md`. État des tâches de l'étape 1 ci-dessous.
+> **Mise à jour du 29/09.** Clôture de M2 et phase 3 codées : voir
+> `Rapport/BILAN_M2_PHASE_3.md` et `Rapport/RAPPORT_GLOBAL.md`. Les étapes 1 et 2 ne restent
+> ouvertes que pour leur constat sur données réelles (`sentry status`).
 
 Ce document sert de fil conducteur jusqu'à la v1.0. Chaque grande étape se termine par un
 **rapport de fin d'étape** dans `Rapport/`, à partir du gabarit de la section 4. Une étape n'est
@@ -107,9 +108,8 @@ automatique toutes les 15 min ; provenance multi-sources.
 | 1.8 | T2.10 TAXII 2.1 (collection publique) | P2 | une collection collectée |
 | 1.9 | Mesure mémoire sous collecte (RNF-MEM-01 ≤ 256 Mo) | P1 | mesure consignée |
 
-**État au 28/09 :** 1.3 ✅ · 1.4 ✅ (code ; constat avec votre clé) · 1.5 ✅ · 1.6 ✅ ·
-1.7 ✅ (`202c6aa`) · 1.9 🟡 (91 Mo sur 20 000 IOC synthétiques ; à refaire sur OTX réel) ·
-1.1, 1.2 et 1.8 : à votre main (clés, collecte réelle, choix d'une source STIX).
+**État au 29/09 :** 1.3 à 1.7 ✅ · 1.8 ✅ (TAXII 2.1, DigitalSide invité) · 1.9 ✅ (120 Mo sur
+37 000 IOC réels) · 1.1 et 1.2 : à votre main (clé OTX, `sentry seed && sentry feeds fetch-all`).
 
 **Attentes (critères M2 du Cahier des charges).** Collecteur OTX et flux STIX connectés ;
 déduplication fonctionnelle ; ≥ 500 IOC réels.
@@ -129,6 +129,9 @@ déduplication fonctionnelle ; ≥ 500 IOC réels.
 | 2.5 | Alerting : CVE franchissant `RISK_ALERT_THRESHOLD` → alerte (journal + webhook) | P1 | alerte déclenchée en test |
 | 2.6 | CLI `sentry cves list / search / alert` | P1 | parcours CLI testé |
 | 2.7 | Cache Redis des réponses NVD (RSK-01) | P1 | 2ᵉ synchro sans appel redondant |
+
+**État au 29/09 :** 2.1 à 2.6 ✅ (ADR-007) · 2.7 cache Redis NVD : reporté, non nécessaire aux
+volumes mesurés · constat : `sentry cves sync` puis `sentry status` (critères M3).
 
 **Attentes M3.** NVD synchronisée, EPSS intégré, score vérifié par tests, alerte sur CVE critique.
 **Rapport de fin :** `Rapport/BILAN_PHASE_3.md` + `v0.3.0`.

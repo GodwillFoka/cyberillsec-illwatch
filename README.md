@@ -146,13 +146,16 @@ Guide pas à pas, y compris pour un développeur découvrant la cybersécurité 
 |---|---|---|
 | Comptes et rôles | ✅ | `sentry users create`, `POST /api/v1/auth/token` |
 | Sources de flux | ✅ | `sentry feeds add/list`, `/api/v1/feeds` (ADMIN pour l'écriture) |
-| Collecte CSV / JSON / STIX 2.1 | ✅ | `sentry feeds fetch <nom>` ou `fetch-all` |
+| Collecte CSV / JSON / STIX 2.1 / TAXII 2.1 | ✅ | `sentry feeds fetch <nom>` ou `fetch-all` |
+| Sources publiques prêtes à l'emploi | ✅ | `sentry seed` : 7 sources, dont 5 sans aucune clé |
 | Connecteur AlienVault OTX | ✅ | source de type `OTX`, clé `OTX_API_KEY` dans `.env` |
 | Collecte planifiée | ✅ | `sentry feeds worker` (verrou Redis par flux, plusieurs instances possibles) |
 | Journal de collecte JSON | ✅ | une ligne `feed.collected` par collecte sur la sortie d'erreur |
 | IOC dédupliqués, expiration | ✅ | `/api/v1/indicators` (lecture, soumission par lot) |
 | Provenance multi-sources | ✅ | `GET /api/v1/indicators/{id}` → `sources` ; `source_count` en liste |
-| Score de risque CVE | 🟡 | calcul prêt et testé ; collecte NVD/KEV/EPSS en phase 3 |
+| Moteur CVE (NVD, KEV, EPSS) | ✅ | `sentry cves sync`, `/api/v1/cves` ; synchro auto par le worker |
+| Score de risque et priorité SOC | ✅ | décomposition et historique : `sentry cves show`, `/api/v1/cves/{id}` |
+| Alertes CVE | ✅ | `/api/v1/alerts`, `sentry cves alerts`, webhook `ALERT_WEBHOOK_URL` |
 | Incidents | 🟡 | machine d'état prête ; API en phase 4 |
 | Dashboard, threat hunting | ❌ | phases 5 et 6 |
 
@@ -179,8 +182,12 @@ sentry feeds list       # sources de flux et leur état
 sentry feeds add        # nouvelle source (HTTPS public, nom unique)
 sentry feeds fetch X    # collecte immédiate d'une source
 sentry feeds fetch-all  # collecte des sources échues (usage ponctuel ou cron)
-sentry feeds worker     # planificateur intégré : collecte en continu (Ctrl+C / SIGTERM pour arrêter)
-sentry status           # avancement mesuré : schéma, sources, IOC, critères du jalon M2
+sentry feeds worker     # planificateur : flux en continu + CVE toutes les 6 h (Ctrl+C pour arrêter)
+sentry cves sync        # synchronisation KEV + NVD + EPSS, recalcul des scores, alertes
+sentry cves list        # CVE les plus risquées (--priority P0_CRITIQUE, --kev, --search …)
+sentry cves show ID     # décomposition du score, délai de remédiation, historique de priorité
+sentry cves alerts      # alertes non acquittées
+sentry status           # avancement mesuré : schéma, sources, IOC, CVE, critères M2 et M3
 ```
 
 Authentification : `POST /api/v1/auth/token` (flux OAuth2 *password*, formulaire
@@ -200,8 +207,13 @@ Collecte en production : `docker compose --profile full up -d` démarre l'API **
 Journal exploitable : `sentry feeds worker 2>> collecte.jsonl`, puis par exemple
 `jq 'select(.event=="feed.collected") | {feed_name, inserted, duration_ms}' collecte.jsonl`.
 
-Les commandes `sentry cves`, `sentry incidents`, `sentry dashboard show` et `sentry hunt`
-arrivent avec leurs modules respectifs (phases 3 à 6).
+Vulnérabilités : `GET /api/v1/cves` (tri par risque ; filtres `priority`, `min_score`, `is_kev`,
+`q`, `modified_since`) et `GET /api/v1/cves/{id}` (décomposition du score, historique) pour tout
+utilisateur authentifié ; `GET /api/v1/alerts` et `POST /api/v1/alerts/{id}/ack` (ADMIN, ANALYST).
+Règles de synchronisation et d'alerte : `docs/adr/ADR-007-moteur-cve.md`.
+
+Les commandes `sentry incidents`, `sentry dashboard show` et `sentry hunt` arrivent avec leurs
+modules respectifs (phases 4 à 6).
 
 ## Structure du dépôt
 
@@ -244,18 +256,19 @@ pytest
 
 ## Feuille de route
 
-État au 27/09/2026 : **P1 livrée (`v0.1.0`)**, **P2 en cours** (CRUD des flux, ingestion
-dédupliquée des IOC). Les dates ci-dessous sont celles du Cahier des charges ; leur recalage est
-proposé dans [ADR-004](docs/adr/ADR-004-recalage-planning.md).
+État au 29/09/2026 : **P1 livrée (`v0.1.0`)**, **P2 codée** (jalon M2 à constater sur données
+réelles avec `sentry status`), **P3 codée** (jalon M3 à constater). Dates recalées sur le
+démarrage réel du dépôt (21/09/2026), voir [ADR-004](docs/adr/ADR-004-recalage-planning.md) ;
+les dates du Cahier des charges figurent entre parenthèses.
 
-| Phase | Fenêtre | Livrable | Jalon |
+| Phase | Livrable | Jalon | État |
 |---|---|---|---|
-| P1 Foundation | J01–J07 | Squelette, CLI, Docker, CI | M1 — 05/08/2026 |
-| P2 Threat Feeds | J08–J21 | Collecteurs, IOC, déduplication | M2 — 19/08/2026 |
-| P3 CVE Tracker | J22–J35 | NVD, EPSS, KEV, scoring, alerting | M3 — 02/09/2026 |
-| P4 Incidents | J36–J49 | Machine d'état, timeline, liaisons | M4 — 16/09/2026 |
-| P5 SOC Dashboard | J50–J56 | Agrégation, exports, vue console | M5 — 23/09/2026 |
-| P6 Threat Hunting | J57–J63 | Moteur de règles, 5 règles v1.0 | **v1.0 — 30/09/2026** |
+| P1 Foundation | Squelette, CLI, Docker, CI | M1 (05/08) | ✅ `v0.1.0` le 24/09 |
+| P2 Threat Feeds | Collecteurs, IOC, déduplication | M2 — 08/10/2026 (19/08) | code ✅, constat en cours |
+| P3 CVE Tracker | NVD, EPSS, KEV, scoring, alerting | M3 — 22/10/2026 (02/09) | code ✅, constat en cours |
+| P4 Incidents | Machine d'état, timeline, liaisons | M4 — 05/11/2026 (16/09) | machine d'état prête |
+| P5 SOC Dashboard | Agrégation, exports, vue console | M5 — 12/11/2026 (23/09) | — |
+| P6 Threat Hunting | Moteur de règles, 5 règles v1.0 | **v1.0 — 19/11/2026** (30/09) | — |
 
 Au-delà de la v1.0 : assistant IA (LLM + RAG), multi-tenant et SSO, puis Cyberill TI Cloud.
 

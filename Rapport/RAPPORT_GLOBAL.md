@@ -1,108 +1,106 @@
 # 🛡️ SENTRY — Rapport global d'avancement
 
-**Date :** 28/09/2026 · **Version publiée :** `0.1.0` (M1) · **Version en préparation :** `0.2.0` (M2)
-**Périmètre :** du lancement du dépôt (21/09/2026) à la fin du Sprint 3
+**Date :** 29/09/2026 · **Version publiée :** `0.1.0` (M1) · **Versions en préparation :**
+`0.2.0` (M2) et `0.3.0` (M3)
+**Périmètre :** du lancement du dépôt (21/09/2026) à la phase 3 codée
 
 ---
 
 ## 1. En une phrase
 
-Le socle technique (phase 1) est clos, le module de collecte de renseignement (phase 2) est
-entièrement codé et testé mais **pas encore constaté sur données réelles ni fusionné dans `main`** ;
-les phases 3 à 6 n'ont que leurs briques de calcul. Le calendrier initial (v1.0 au 30/09/2026)
-est hors d'atteinte ; le calendrier recalé (v1.0 au 19/11/2026, ADR-004) reste tenable si M2 est
-constaté avant le 08/10.
+Les phases 1 à 3 sont codées et testées : SENTRY sait collecter du renseignement (7 sources,
+5 formats), dédupliquer les IOC avec leur provenance, suivre les CVE (NVD, KEV, EPSS), les
+prioriser et alerter. **Rien de cela n'est encore constaté sur données réelles ni fusionné dans
+`main` au-delà de M1** : c'est le travail de la semaine, et il est entre vos mains (push, clés,
+premier lancement).
 
 ## 2. Avancement par phase
 
-Pourcentage = part des tâches du plan directeur livrées **et testées**. Un jalon n'est « atteint »
-que constaté sur données (`sentry status`) ou en pipeline GitLab.
+Pourcentage = part des tâches du plan directeur livrées **et testées**. Un jalon n'est
+« atteint » que constaté par `sentry status` sur données réelles.
 
-| Phase | Périmètre | Code | Jalon | Avancement |
-|---|---|---|---|---|
-| P1 Foundation | Config, base, auth JWT, CLI, migrations, CI | ✅ | **M1 atteint** (tag `v0.1.0`, 24/09) | **100 %** |
-| P2 Threat Feeds | CRUD flux, collecte CSV/JSON/STIX/OTX, IOC, provenance, worker | ✅ | M2 non constaté | **≈ 85 %** |
-| P3 CVE Tracker | NVD, KEV, EPSS, score, alerting | 🟡 score composite seul | — | ≈ 15 % |
-| P4 Incidents | Machine d'état NIST, timeline, API | 🟡 machine d'état seule | — | ≈ 10 % |
-| P5 SOC Dashboard | Agrégations, exports | ❌ | — | 0 % |
-| P6 Threat Hunting | Moteur de règles | ❌ | — | 0 % |
-| **Global** (phases à poids égal) | | | | **≈ 35 %** |
+| Phase | Code | Jalon | Avancement |
+|---|---|---|---|
+| P1 Foundation | ✅ | **M1 atteint** (`v0.1.0`, 24/09) | **100 %** |
+| P2 Threat Feeds | ✅ | M2 à constater (clé OTX seule manquante) | **≈ 95 %** |
+| P3 CVE Tracker | ✅ | M3 à constater (première synchro) | **≈ 90 %** |
+| P4 Incidents | 🟡 machine d'état seule | — | ≈ 10 % |
+| P5 SOC Dashboard | ❌ | — | 0 % |
+| P6 Threat Hunting | ❌ | — | 0 % |
+| **Global** (phases à poids égal) | | | **≈ 49 %** |
 
-Confiance : moyenne. Le poids égal des phases est une convention ; pondéré par l'effort estimé
-du Cahier des charges, le résultat serait proche (P2 et P3 sont les plus lourdes). Les 15 % restants
-de P2 : données réelles (clés), source STIX (1.8), fusion dans `main`, tag `v0.2.0`.
+Confiance : moyenne. Les pourcentages de P2 et P3 comptent le constat sur données comme la part
+restante (5 à 10 %) ; si une source réelle ne se comporte pas comme sa documentation, il faudra
+un correctif, d'où l'écart entre P2 et P3 (P3 n'a jamais touché une vraie réponse NVD).
 
-## 3. Ce que SENTRY fait aujourd'hui (branche `feature/sprint3-ingestion`)
+## 3. Ce que SENTRY fait aujourd'hui (branche `feature/phase3-cve`)
 
-- Comptes, rôles ADMIN / ANALYST / VIEWER, jetons JWT, mots de passe Argon2id.
-- Sources de flux gérées par API et CLI, protégées contre le SSRF (HTTPS public, DNS vérifié,
-  redirections revalidées, taille bornée).
-- Collecte CSV, JSON, STIX 2.1 et AlienVault OTX ; secrets hors base, masqués dans les erreurs.
-- IOC normalisés et dédupliqués, expiration par type, provenance multi-sources.
-- Collecte planifiée (`sentry feeds worker`), verrou Redis par flux, journal JSON.
-- Mesure d'avancement sur données : `sentry status`.
-- Score de risque CVE (formule ADR-001) et machine d'état des incidents, prêts à brancher.
+- Comptes et rôles (ADMIN, ANALYST, VIEWER), JWT, Argon2id.
+- Sources de flux protégées contre le SSRF ; CSV, JSON, STIX 2.1, TAXII 2.1, OTX ; 7 sources de
+  référence dont 5 sans clé ; secrets hors base et masqués.
+- IOC normalisés, dédupliqués, expirés par type, avec provenance multi-sources.
+- Moteur CVE : NVD 2.0 incrémental, catalogue KEV, EPSS ; score composite recalculé à chaque
+  changement, priorité P0–P3 et délai de remédiation, historique d'audit.
+- Alertes au franchissement du seuil, webhook, acquittement.
+- Planificateur unique (`sentry feeds worker`) : flux en continu, CVE toutes les 6 h, verrou
+  Redis, journal JSON.
+- Mesure d'avancement : `sentry status` (critères M2 et M3).
 
 ## 4. Qualité
 
-| Indicateur | M1 (`v0.1.0`) | Aujourd'hui |
-|---|---|---|
-| Tests (PostgreSQL 16) | 95 | **289** |
-| Couverture | 94 % | **95,7 %** |
-| Routes API | 3 | 11 |
-| Commandes CLI | 9 | 15 |
-| Migrations | 1 | 3 |
-| ADR | 3 | 6 |
-| Lint, typage strict, `alembic check`, Python 3.12 + 3.14 | ✅ | ✅ |
-| Mémoire (collecte de 20 000 IOC) | — | pic 91 Mo (cible ≤ 256 Mo) |
+| Indicateur | M1 (`v0.1.0`) | 28/09 | Aujourd'hui |
+|---|---|---|---|
+| Tests (PostgreSQL 16, Python 3.12 et 3.14) | 95 | 289 | **326** |
+| Couverture | 94 % | 95,7 % | **≈ 95 %** |
+| Routes `/api/v1` | 3 | 10 | **14** |
+| Commandes CLI | 9 | 15 | **19** |
+| Migrations | 1 | 3 | **4** |
+| ADR | 3 | 6 | **7** |
+| Liste des CVE, P95 (30 000 CVE) | — | — | **8 ms** (cible 250 ms) |
+| Pic mémoire (ingestion de 37 000 IOC réels) | — | 91 Mo | **120 Mo** (cible 256 Mo) |
 
 ## 5. Écart au planning
 
-| Jalon | README (plan initial) | Plan recalé (ADR-004) | Constat au 28/09 |
+| Jalon | Plan initial | Plan recalé (ADR-004) | Constat au 29/09 |
 |---|---|---|---|
 | M1 Foundation | 05/08 | — | ✅ 24/09 |
-| M2 Threat Feeds | 19/08 | 08/10 | code prêt, à constater |
-| M3 CVE | 02/09 | 22/10 | — |
+| M2 Threat Feeds | 19/08 | 08/10 | code ✅, constat à faire |
+| M3 CVE | 02/09 | 22/10 | code ✅ (en avance de 3 semaines), constat à faire |
 | M4 Incidents | 16/09 | 05/11 | — |
 | M5 Dashboard | 23/09 | 12/11 | — |
 | v1.0 | 30/09 | 19/11 | — |
 
-Lecture franche : le plan initial supposait un démarrage début juillet ; le dépôt existe depuis le
-21/09. Le retard est un décalage de démarrage plus qu'une vélocité insuffisante : P1 et P2 ont
-été codées en huit jours. Le risque réel est ailleurs (section 7). Le tableau « Feuille de route »
-du README doit être aligné sur ADR-004 dès que vous l'acceptez.
+Le code est en avance sur le plan recalé ; l'intégration (push, CI GitLab, données réelles) est
+en retard sur le code. Le risque de planning s'est déplacé : il ne tient plus à la vitesse de
+développement, il tient au délai entre « codé » et « constaté ».
 
-## 6. État du dépôt GitLab
+## 6. État du dépôt
 
-- `main` = `3f9196f` (M1 + contraintes). **Aucun travail des sprints 2 et 3 n'y est.**
-- `origin/feature/threat-feeds-indicators` = `0ec2a6e`. Les 9 commits jusqu'à `202c6aa` sont dans
-  le bundle, pas encore poussés.
-- Sur votre poste : branche locale `security/feed-last-error` (à `2b0bfaf`) avec une
-  modification non commitée de `feeds.py` — cause des 15 tests en échec, et doublon de `202c6aa`.
-- Procédure de remise en ordre et de fusion : `ETAPES_POUSSER_SUR_MAIN.md` (livré à côté du bundle).
+- `main` (GitLab) = `3f9196f`.
+- Votre poste : `security/feed-last-error` = `87bcca6` (sprint 2 + correctifs + e-mail auteur).
+- Bundle `sentry-m2-phase3.bundle` : `feature/sprint3-m2` et `feature/phase3-cve`, construits sur
+  `87bcca6`. Procédure : `ETAPES_POUSSER_SUR_MAIN.md`.
 
 ## 7. Risques
 
 | Risque | Niveau | Parade |
 |---|---|---|
-| Travail non fusionné qui s'accumule (2 sprints hors `main`) | **Élevé** | Fusionner `202c6aa` aujourd'hui, puis le Sprint 3 par MR |
-| Copies de travail divergentes (Kali, OneDrive, bundles) | Élevé | Une seule copie de travail (Kali), OneDrive en lecture seule |
-| Dépendance aux API gratuites (abuse.ch, OTX, NVD) | Moyen | Connecteurs isolés, erreurs tracées, `sentry status` |
-| Périmètre (branding, documents annexes) | Moyen | Geler le périmètre v1.0 |
-| Sécurité avant exposition publique (force brute, DNS rebinding) | Moyen | Traités avant toute mise en ligne (étape 4) |
+| Écart entre code et constat (3 phases hors `main`) | **Élevé** | Fusionner cette semaine, lancer le worker 24 h |
+| Formats réels NVD / TAXII non éprouvés | Moyen | Premier `sentry cves sync` suivi de près ; sources isolées (une panne n'arrête pas les autres) |
+| Sources gratuites instables (DigitalSide, Feodo quasi vide, conditions abuse.ch) | Moyen | 7 sources ; `sentry status` signale les sources dégradées |
+| Sécurité avant exposition publique (force brute, DNS rebinding) | Moyen | Traités avant toute mise en ligne |
+| Copies de travail multiples (Kali, OneDrive, bundles) | Moyen | Une seule copie de travail, OneDrive en lecture |
 
 ## 8. Perspectives
 
-1. **Semaine 40 (29/09–04/10)** : fusion dans `main`, clés, collecte réelle 24 h, M2 constaté,
-   `v0.2.0`.
-2. **Semaines 41–42** : phase 3 (NVD 2.0, KEV, EPSS, recalcul du score, alerting). Le worker et
-   le journal JSON sont réutilisables tels quels.
-3. **Novembre** : incidents, dashboard, threat hunting, v1.0 le 19/11 si la cadence tient.
-4. **Au-delà** : score de confiance IOC fondé sur la provenance, assistant IA, multi-tenant.
+1. **Cette semaine** : fusion des deux branches, clés NVD et OTX, worker 24 h, M2 puis M3
+   constatés, tags `v0.2.0` et `v0.3.0`.
+2. **Octobre** : phase 4 (incidents, chronologie immuable, liaison aux alertes CVE et aux IOC).
+3. **Novembre** : dashboard SOC, threat hunting, v1.0 le 19/11.
+4. **Au-delà** : score de confiance IOC par provenance, rapprochement CVE ↔ IOC, assistant IA.
 
 ## 9. Décisions attendues de votre part
 
-1. Accepter ou amender ADR-004 (planning), ADR-005 (cycle de vie IOC), ADR-006 (provenance, OTX,
-   worker).
-2. Choisir une source STIX publique pour le critère M2 (ou un serveur TAXII, tâche 1.8).
-3. Protéger `main` sur GitLab (fusion par MR uniquement).
+1. Accepter ou amender ADR-004, 005, 006 et 007.
+2. Choisir le canal d'alerte (webhook).
+3. Protéger `main` sur GitLab (fusion par merge request uniquement).
