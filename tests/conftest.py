@@ -56,9 +56,20 @@ def _guard_against_non_test_database() -> None:
 def pytest_configure(config: pytest.Config) -> None:
     _guard_against_non_test_database()
     config.addinivalue_line("markers", "postgres: nécessite une base PostgreSQL réelle")
+    config.addinivalue_line(
+        "markers", "live: interroge de vraies sources sur Internet (SENTRY_LIVE_TESTS=1)"
+    )
+
+
+LIVE = os.environ.get("SENTRY_LIVE_TESTS") == "1"
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    if not LIVE:
+        skip_live = pytest.mark.skip(reason="tests réseau : SENTRY_LIVE_TESTS=1 pour les lancer")
+        for item in items:
+            if "live" in item.keywords:
+                item.add_marker(skip_live)
     if IS_POSTGRES:
         return
     skip = pytest.mark.skip(reason="DATABASE_URL ne pointe pas vers PostgreSQL")

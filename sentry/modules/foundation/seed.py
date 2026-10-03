@@ -5,6 +5,11 @@ publiques et gratuites sont semées. Les clés éventuelles (ABUSECH_AUTH_KEY po
 URLhaus, OTX_API_KEY pour AlienVault OTX) ne sont jamais en base : elles sont lues
 dans l'environnement. Sans clé, la source concernée passe en DEGRADED avec un message
 explicite au lieu de bloquer les autres.
+
+Chaque source a été **vérifiée avant intégration** (accès, format réel, présence d'IOC) ;
+le constat et sa date figurent en commentaire. Une source injoignable est semée
+**inactive** : elle reste documentée et se réactive par `sentry feeds enable`, après une
+sonde réussie (`sentry feeds probe`).
 """
 
 from dataclasses import dataclass
@@ -22,6 +27,7 @@ class FeedSeed:
     url: str
     feed_type: FeedType
     polling_interval: int
+    is_active: bool = True
 
 
 REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
@@ -56,20 +62,44 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         polling_interval=6 * 3600,
     ),
     FeedSeed(
-        name="DigitalSide — URL malveillantes (7 j)",
-        url="https://osint.digitalside.it/Threat-Intel/lists/latesturls.txt",
+        name="IPsum — IP malveillantes (≥ 5 listes noires)",
+        # Agrégat quotidien de 30+ listes publiques (licence Unlicense). Niveau 5 : IP vues
+        # sur au moins 5 listes, faux positifs rares. Vérifié le 03/10/2026 : 4 372 IP.
+        url="https://raw.githubusercontent.com/stamparm/ipsum/master/levels/5.txt",
         feed_type=FeedType.CSV,
+        polling_interval=12 * 3600,
+    ),
+    FeedSeed(
+        name="RedEye — indicateurs de menace STIX 2.1 (TAXII)",
+        # Jeton gratuit (inscription par e-mail) : TAXII_AUTH=feeds.redeyesecurity.com=bearer:…
+        # IP, URL, domaines, hashs en indicateurs STIX ; 100 requêtes / h par jeton.
+        url=(
+            "https://feeds.redeyesecurity.com/taxii2/feed/collections/"
+            "redeye-threat-indicators/objects/"
+        ),
+        feed_type=FeedType.TAXII,
         polling_interval=6 * 3600,
     ),
     FeedSeed(
+        name="DigitalSide — URL malveillantes (7 j)",
+        # Injoignable le 03/10/2026 (délai de connexion dépassé depuis deux réseaux) : semée
+        # inactive. Réactiver après `sentry feeds probe` réussie.
+        url="https://osint.digitalside.it/Threat-Intel/lists/latesturls.txt",
+        feed_type=FeedType.CSV,
+        polling_interval=6 * 3600,
+        is_active=False,
+    ),
+    FeedSeed(
         name="DigitalSide — IoC réseau STIX 2.1 (TAXII, 24 h)",
-        # Accès invité public (guest/guest), fourni par TAXII_AUTH par défaut.
+        # Accès invité public (guest/guest, TAXII_AUTH par défaut). Même hôte que ci-dessus :
+        # injoignable le 03/10/2026, semée inactive.
         url=(
             "https://osint.digitalside.it/taxii2reports/collections/"
             "c1f43330-103b-11ee-9ee3-4b022e286589/objects/"
         ),
         feed_type=FeedType.TAXII,
         polling_interval=6 * 3600,
+        is_active=False,
     ),
     FeedSeed(
         name="AlienVault OTX — pulses abonnés",
@@ -116,6 +146,7 @@ async def seed_reference_feeds(session: AsyncSession) -> list[str]:
                 url=feed.url,
                 feed_type=feed.feed_type,
                 polling_interval=feed.polling_interval,
+                is_active=feed.is_active,
             )
         )
         created.append(feed.name)

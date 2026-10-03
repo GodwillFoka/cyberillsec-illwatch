@@ -75,7 +75,12 @@ async def resolve_host(host: str, port: int) -> list[str]:
     return sorted({str(info[4][0]) for info in infos})
 
 
-async def _assert_public_destination(url: str, resolver: Resolver) -> None:
+async def assert_public_destination(url: str, resolver: Resolver = resolve_host) -> None:
+    """Refuse une URL non conforme ou dont **une** des adresses résolues n'est pas publique.
+
+    Partagée par tous les clients HTTP de SENTRY (fetcher maison, client TAXII) : la règle
+    SSRF ne doit pas dépendre de la bibliothèque qui émet la requête.
+    """
     try:
         validate_feed_url(url)
     except UnsafeFeedURLError as exc:
@@ -97,7 +102,12 @@ async def _assert_public_destination(url: str, resolver: Resolver) -> None:
 
 
 def _retry_after(response: httpx.Response) -> int:
-    header = response.headers.get("Retry-After", "").strip()
+    return retry_after_seconds(response.headers.get("Retry-After", ""))
+
+
+def retry_after_seconds(raw: str) -> int:
+    """Délai demandé par un en-tête `Retry-After` (secondes ou date HTTP)."""
+    header = raw.strip()
     if header.isdigit():
         return int(header)
     if header:
@@ -133,7 +143,7 @@ async def _single_attempt(
     current = url
     origin = urlsplit(url).hostname
     for _ in range(MAX_REDIRECTS + 1):
-        await _assert_public_destination(current, resolver)
+        await assert_public_destination(current, resolver)
         try:
             async with client.stream("GET", current, headers=headers) as response:
                 if response.is_redirect:

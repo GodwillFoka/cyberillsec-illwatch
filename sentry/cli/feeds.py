@@ -5,6 +5,8 @@
     sentry feeds fetch <nom|id>        # collecte immédiate d'une source
     sentry feeds fetch-all [--force]   # sources échues (toutes les actives avec --force)
     sentry feeds worker [--tick 60]    # planificateur intégré : collecte en continu
+    sentry feeds probe <nom|url>       # collecte d'essai sans écriture (source joignable ?)
+    sentry feeds enable|disable <nom>  # activer / suspendre une source
 
 Code de sortie de `fetch` / `fetch-all` : 0 si toutes les collectes demandées réussissent,
 1 sinon. Une planification externe (cron, systemd timer) peut donc alerter sur un échec.
@@ -171,6 +173,90 @@ async def _find_feed(session: AsyncSession, reference: str) -> ThreatFeed | None
         select(ThreatFeed).where(func.lower(ThreatFeed.name) == reference.strip().lower())
     )
     return result.scalar_one_or_none()
+
+
+@feeds.command("probe")
+@click.argument("reference")
+@click.option(
+    "--type",
+    "feed_type",
+    type=click.Choice([t.value for t in FeedType], case_sensitive=False),
+    default=None,
+    help="Format, obligatoire si REFERENCE est une URL.",
+)
+def feeds_probe(reference: str, feed_type: str | None) -> None:
+    """Vérifie qu'une source répond et produit des IOC, sans rien écrire en base.
+
+    REFERENCE : nom ou identifiant d'une source enregistrée, ou URL (avec --type).
+    Code de sortie 0 si la source est exploitable, 1 sinon.
+    """
+    from sentry.modules.threat_feeds.probe import probe_source
+
+    async def _target(session: AsyncSession) -> tuple[str, FeedType] | None:
+        feed = await _find_feed(session, reference)
+        return None if feed is None else (feed.url, FeedType(feed.feed_type))
+
+    if reference.startswith(("https://", "http://")):
+        if feed_type is None:
+            raise click.BadParameter("--type est obligatoire avec une URL.", param_hint="--type")
+        target: tuple[str, FeedType] | None = (reference, FeedType(feed_type.upper()))
+    else:
+        target = _run(_target)
+    if target is None:
+        console.print(f"[red]Source introuvable :[/] {reference}")
+        raise SystemExit(1)
+
+    report = asyncio.run(probe_source(target[0], target[1], settings=get_settings()))
+    table = Table(title=f"Sonde — {target[1]}", show_header=False)
+    table.add_row("URL", target[0])
+    table.add_row("Joignable", "[green]oui[/]" if report.reachable else "[red]non[/]")
+    table.add_row("Durée", f"{report.duration_ms} ms")
+    table.add_row("Pages lues", f"{report.pages}{' (tronqué)' if report.truncated else ''}")
+    table.add_row("Observations / ignorées", f"{report.observations} / {report.skipped}")
+    table.add_row(
+        "IOC valides par type", ", ".join(f"{k}: {v}" for k, v in report.by_type.items()) or "aucun"
+    )
+    table.add_row("Valeurs rejetées", str(report.rejected))
+    if report.samples:
+        table.add_row("Exemples", ", ".join(report.samples))
+    console.print(table)
+    if report.error:
+        console.print(f"[red]✗[/] {report.error}")
+    if report.usable:
+        console.print("[green]✔ Source exploitable.[/]")
+    else:
+        if report.reachable and not report.error:
+            console.print("[yellow]! Source joignable mais sans IOC exploitable.[/]")
+        raise SystemExit(1)
+
+
+def _set_active(reference: str, active: bool) -> None:
+    async def _toggle(session: AsyncSession) -> ThreatFeed | None:
+        feed = await _find_feed(session, reference)
+        if feed is not None:
+            await service.update_feed(session, feed.id, is_active=active)
+        return feed
+
+    feed = _run(_toggle)
+    if feed is None:
+        console.print(f"[red]Source introuvable :[/] {reference}")
+        raise SystemExit(1)
+    state = "[green]activée[/]" if active else "[yellow]suspendue[/]"
+    console.print(f"{feed.name} : {state}")
+
+
+@feeds.command("enable")
+@click.argument("reference")
+def feeds_enable(reference: str) -> None:
+    """Active la collecte d'une source (nom ou identifiant)."""
+    _set_active(reference, True)
+
+
+@feeds.command("disable")
+@click.argument("reference")
+def feeds_disable(reference: str) -> None:
+    """Suspend la collecte d'une source sans la supprimer (historique conservé)."""
+    _set_active(reference, False)
 
 
 class _Busy:

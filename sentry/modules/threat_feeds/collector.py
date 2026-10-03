@@ -157,10 +157,14 @@ async def _fetch_and_parse(
             )
         return outcome.parsed
     if FeedType(feed.feed_type) is FeedType.TAXII:
+        settings = get_settings()
+        # Production (fetcher par défaut) : client taxii2-client. Un fetcher injecté (tests)
+        # ou TAXII_CLIENT=builtin conserve le transport maison, mêmes garde-fous.
+        use_library = fetch is fetch_feed_content and settings.taxii_client == "library"
         parsed, pages, truncated = await fetch_taxii(
             feed.url,
-            settings=get_settings(),
-            fetch=fetch,
+            settings=settings,
+            fetch=None if use_library else fetch,
             since=_as_utc(feed.last_successful_run),
         )
         if truncated:

@@ -207,8 +207,10 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
 def _register_subcommands() -> None:
     from sentry.cli.feeds import feeds
     from sentry.cli.status import status
+    from sentry.cli.taxii import taxii
 
     cli.add_command(feeds)
+    cli.add_command(taxii)
     cli.add_command(status)
 
 

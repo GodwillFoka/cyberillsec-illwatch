@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     # de DigitalSide (https://osint.digitalside.it/taxiiserver.html).
     taxii_auth: SecretStr = SecretStr("osint.digitalside.it=guest:guest")
     taxii_max_pages: int = Field(default=20, ge=1, le=200)
+    # Client TAXII : `library` = taxii2-client (OASIS, défaut) ; `builtin` = transport HTTP
+    # maison (async), repli si un serveur sort des clous de la bibliothèque.
+    taxii_client: Literal["library", "builtin"] = "library"
     # Clé abuse.ch (https://auth.abuse.ch/, gratuite) : exigée par URLhaus pour les
     # téléchargements. Injectée dans les URL de flux via le gabarit {ABUSECH_AUTH_KEY}.
     abusech_auth_key: SecretStr | None = None

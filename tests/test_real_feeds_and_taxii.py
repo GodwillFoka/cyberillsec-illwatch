@@ -23,6 +23,7 @@ from sentry.modules.threat_feeds.secrets import mask_secrets
 from sentry.modules.threat_feeds.taxii import (
     TAXII_MEDIA_TYPE,
     TaxiiConfigError,
+    TaxiiCredential,
     fetch_taxii,
     parse_envelope,
     parse_taxii_auth,
@@ -106,13 +107,20 @@ class _Server:
 
 
 def test_identifiants_par_hote() -> None:
-    assert parse_taxii_auth("a.example=u:p;b.example=v:w:x") == {
-        "a.example": ("u", "p"),
-        "b.example": ("v", "w:x"),
-    }
+    creds = parse_taxii_auth(
+        "a.example=u:p;b.example=v:w:x;c.example=bearer:JETON;"
+        "d.example=header:x-api-key:CLE;e.example=basic:bearer:secret"
+    )
+    assert creds["a.example"] == TaxiiCredential("basic", "p", user="u")
+    assert creds["b.example"] == TaxiiCredential("basic", "w:x", user="v")
+    assert creds["c.example"].headers() == {"Authorization": "Bearer JETON"}
+    assert creds["d.example"].headers() == {"x-api-key": "CLE"}
+    # Préfixe explicite `basic:` : un utilisateur nommé « bearer » reste possible.
+    assert creds["e.example"] == TaxiiCredential("basic", "secret", user="bearer")
     assert parse_taxii_auth("") == {}
-    with pytest.raises(TaxiiConfigError):
-        parse_taxii_auth("sans-egal")
+    for invalid in ("sans-egal", "h.example=", "h.example=sans-deux-points"):
+        with pytest.raises(TaxiiConfigError):
+            parse_taxii_auth(invalid)
 
 
 def test_enveloppe() -> None:

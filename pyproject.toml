@@ -26,6 +26,7 @@ dependencies = [
     "pyjwt>=2.9.0",
     "pwdlib[argon2]>=0.2.1",
     "python-multipart>=0.0.9",
+    "taxii2-client==2.3.0",
 ]
 
 [project.optional-dependencies]
@@ -36,6 +37,7 @@ dev = [
     "ruff>=0.5.0",
     "mypy>=1.10.0",
     "types-redis",
+    "types-requests",
 ]
 
 [project.scripts]
@@ -79,6 +81,11 @@ warn_return_any = true
 disallow_untyped_defs = true
 plugins = ["pydantic.mypy"]
 exclude = ["alembic/", "tests/"]
+
+[[tool.mypy.overrides]]
+# taxii2-client ne publie pas d'annotations de types.
+module = ["taxii2client", "taxii2client.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
