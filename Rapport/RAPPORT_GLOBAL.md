@@ -1,106 +1,169 @@
 # 🛡️ SENTRY — Rapport global d'avancement
 
-**Date :** 29/09/2026 · **Version publiée :** `0.1.0` (M1) · **Versions en préparation :**
-`0.2.0` (M2) et `0.3.0` (M3)
-**Périmètre :** du lancement du dépôt (21/09/2026) à la phase 3 codée
+**Date :** 03/10/2026 · **Version publiée :** `0.1.0` (M1) · **Candidate :** `1.0.0-rc` sur
+`feature/phases-4-6`
+**Périmètre :** du lancement du dépôt (21/09/2026) au code complet des six modules
 
 ---
 
 ## 1. En une phrase
 
-Les phases 1 à 3 sont codées et testées : SENTRY sait collecter du renseignement (7 sources,
-5 formats), dédupliquer les IOC avec leur provenance, suivre les CVE (NVD, KEV, EPSS), les
-prioriser et alerter. **Rien de cela n'est encore constaté sur données réelles ni fusionné dans
-`main` au-delà de M1** : c'est le travail de la semaine, et il est entre vos mains (push, clés,
-premier lancement).
+Les six modules de SENTRY sont codés, intégrés et testés (388 tests sur PostgreSQL 16, 94 % de
+couverture, `mypy --strict` propre) ; **seul M1 est fusionné dans `main` et constaté**. Le reste
+du chemin vers la v1.0 tient à trois choses hors code : fusionner trois branches, obtenir deux
+clés gratuites (RedEye, OTX), faire tourner le worker sur données réelles.
 
 ## 2. Avancement par phase
 
-Pourcentage = part des tâches du plan directeur livrées **et testées**. Un jalon n'est
-« atteint » que constaté par `sentry status` sur données réelles.
+Deux colonnes distinctes, parce qu'elles mesurent deux choses différentes : **Code** = tâches du
+plan directeur livrées et testées ; **Jalon** = critère constaté par `sentry status` sur données
+réelles.
 
-| Phase | Code | Jalon | Avancement |
+| Phase | Code | Jalon | Reste à faire |
 |---|---|---|---|
-| P1 Foundation | ✅ | **M1 atteint** (`v0.1.0`, 24/09) | **100 %** |
-| P2 Threat Feeds | ✅ | M2 à constater (clé OTX seule manquante) | **≈ 95 %** |
-| P3 CVE Tracker | ✅ | M3 à constater (première synchro) | **≈ 90 %** |
-| P4 Incidents | 🟡 machine d'état seule | — | ≈ 10 % |
-| P5 SOC Dashboard | ❌ | — | 0 % |
-| P6 Threat Hunting | ❌ | — | 0 % |
-| **Global** (phases à poids égal) | | | **≈ 49 %** |
+| P1 Foundation | 100 % | ✅ **M1 atteint** (`v0.1.0`, 24/09) | — |
+| P2 Threat Feeds | 100 % | à constater | clé OTX, jeton RedEye, worker 24 h |
+| P3 CVE Tracker | 100 % | à constater | clé NVD, première synchro complète |
+| P4 Incidents | ≈ 85 % | à constater | 3.6 liste d'exclusion des faux positifs |
+| P5 SOC Dashboard | ≈ 70 % | à constater | séries 7 j, HTTPS, en-têtes, préproduction |
+| P6 Threat Hunting | ≈ 75 % | à constater | guide de déploiement, audit de sécurité final |
+| **Global code** (phases à poids égal) | **≈ 88 %** | **1 / 6** | |
 
-Confiance : moyenne. Les pourcentages de P2 et P3 comptent le constat sur données comme la part
-restante (5 à 10 %) ; si une source réelle ne se comporte pas comme sa documentation, il faudra
-un correctif, d'où l'écart entre P2 et P3 (P3 n'a jamais touché une vraie réponse NVD).
+Confiance : élevée sur le code (vérifié par la CI locale, deux versions de Python) ; moyenne sur
+le temps restant, qui dépend de la tenue des sources gratuites et du comportement réel de NVD et
+de RedEye, jamais éprouvés contre leurs vraies réponses.
 
-## 3. Ce que SENTRY fait aujourd'hui (branche `feature/phase3-cve`)
+## 3. Ce qui est fait, module par module
 
-- Comptes et rôles (ADMIN, ANALYST, VIEWER), JWT, Argon2id.
-- Sources de flux protégées contre le SSRF ; CSV, JSON, STIX 2.1, TAXII 2.1, OTX ; 7 sources de
-  référence dont 5 sans clé ; secrets hors base et masqués.
-- IOC normalisés, dédupliqués, expirés par type, avec provenance multi-sources.
-- Moteur CVE : NVD 2.0 incrémental, catalogue KEV, EPSS ; score composite recalculé à chaque
-  changement, priorité P0–P3 et délai de remédiation, historique d'audit.
-- Alertes au franchissement du seuil, webhook, acquittement.
-- Planificateur unique (`sentry feeds worker`) : flux en continu, CVE toutes les 6 h, verrou
-  Redis, journal JSON.
-- Mesure d'avancement : `sentry status` (critères M2 et M3).
+### MOD-01 Foundation
+- Configuration Pydantic validée au démarrage, secrets uniquement dans `.env`, masqués partout.
+- PostgreSQL 16 en async (SQLAlchemy 2 + asyncpg), 6 migrations Alembic, 14 tables, contraintes
+  CHECK nommées.
+- Comptes et rôles (ADMIN, ANALYST, VIEWER), JWT, Argon2id ; limitation des tentatives de
+  connexion (5 par compte, 20 par IP sur 15 min, Redis avec repli local, réponse 429 +
+  `Retry-After`).
+- CLI Click + Rich (34 commandes) ; `sentry status` mesure les jalons sur la base réelle.
 
-## 4. Qualité
+### MOD-02 Threat Feeds
+- Formats : CSV, JSON, texte, STIX 2.1, TAXII 2.1, AlienVault OTX.
+- Client TAXII sur `taxii2-client` 2.3.0, **durci** : redirections interdites, délai, taille de
+  réponse plafonnée, contrôle SSRF, authentification par hôte exact (basic, bearer, en-tête),
+  pagination plafonnée, `added_after` incrémental.
+- Protection SSRF sur toute URL de source (résolution DNS + refus des plages privées).
+- IOC normalisés, dédupliqués, expirés selon leur type, provenance multi-sources.
+- Sources vérifiées avant intégration (`sentry taxii discover`, `sentry feeds probe`).
 
-| Indicateur | M1 (`v0.1.0`) | 28/09 | Aujourd'hui |
-|---|---|---|---|
-| Tests (PostgreSQL 16, Python 3.12 et 3.14) | 95 | 289 | **326** |
-| Couverture | 94 % | 95,7 % | **≈ 95 %** |
-| Routes `/api/v1` | 3 | 10 | **14** |
-| Commandes CLI | 9 | 15 | **19** |
-| Migrations | 1 | 3 | **4** |
-| ADR | 3 | 6 | **7** |
-| Liste des CVE, P95 (30 000 CVE) | — | — | **8 ms** (cible 250 ms) |
-| Pic mémoire (ingestion de 37 000 IOC réels) | — | 91 Mo | **120 Mo** (cible 256 Mo) |
+### MOD-03 CVE Tracker
+- NVD 2.0 incrémental, catalogue CISA KEV, FIRST EPSS.
+- Score composite déterministe 0–100 (ADR-001), recalculé à chaque changement d'entrée,
+  priorité P0–P3 et délai de remédiation, historique d'audit des scores.
+- Alertes au franchissement de seuil, webhook, acquittement.
 
-## 5. Écart au planning
+### MOD-04 Incidents
+- Machine d'état NIST SP 800-61 à 6 étapes ; transition interdite → 409 ; post-mortem
+  obligatoire à la clôture.
+- Chronologie **immuable garantie par la base** (trigger plpgsql) et par l'ORM.
+- Liaisons incident ↔ IOC et incident ↔ CVE ; ouverture depuis une alerte, idempotente.
 
-| Jalon | Plan initial | Plan recalé (ADR-004) | Constat au 29/09 |
+### MOD-05 SOC Dashboard
+- Synthèse temps réel, activité des dernières 24 h, console Rich.
+- Exports JSON et CSV en flux (mémoire constante), CSV protégé contre l'injection de formules.
+
+### MOD-06 Threat Hunting
+- Six règles (Tor, DNS dynamique, DGA par entropie de Shannon, IP ransomware, CVE exploitable ×
+  inventaire, IOC connu) ; chasse sur observables ou sur la base.
+- Sessions et correspondances enregistrées ; une règle en échec n'arrête pas les autres.
+- Chasse planifiée par le worker unique (flux, CVE et chasse sous un même verrou Redis).
+
+## 4. Méthodes utilisées
+
+| Méthode | Application dans SENTRY |
+|---|---|
+| Clean Architecture | couches strictes clients → contrôleurs → services → accès aux données ; logique métier sans dépendance HTTP, testable seule |
+| Décisions tracées (ADR) | 10 ADR : scoring, hébergement, auth, recalage du planning, cycle de vie IOC, provenance, moteur CVE, incidents, hunting, client TAXII |
+| Tests d'abord sur le risque | tests contre un vrai PostgreSQL (pas de SQLite de substitution) ; faux serveurs HTTP pour TAXII/NVD ; tests réels isolés par marqueur `live` |
+| Sécurité dès la conception | SSRF, secrets hors base, Argon2id, limitation de débit, CWE-1236, immutabilité par trigger, revue des régressions introduites par une bibliothèque tierce |
+| Qualité outillée | `ruff` (lint + format), `mypy --strict`, couverture ≥ 80 % imposée, matrice Python 3.12 / 3.14 |
+| Intégration continue GitLab | qualité, tests, migrations aller-retour, image Docker, SAST, détection de secrets, analyse de dépendances |
+| Vérifier avant d'intégrer | chaque source de renseignement sondée avant d'entrer dans le seed |
+| Pilotage par jalons constatés | un jalon n'est « atteint » que mesuré par `sentry status` sur données réelles |
+| Branches de fonctionnalité + MR | aucune écriture directe sur `main` ; livraison par bundles Git avec procédure |
+
+## 5. Qualité
+
+| Indicateur | M1 (24/09) | 29/09 | **03/10** | Cible |
+|---|---|---|---|---|
+| Tests | 95 | 326 | **388** | — |
+| Couverture | 94 % | ≈ 95 % | **94 %** | ≥ 80 % |
+| Routes `/api/v1` | 3 | 14 | **28** | — |
+| Commandes CLI | 9 | 19 | **34** | — |
+| Tables / migrations | — / 1 | 10 / 4 | **14 / 6** | — |
+| ADR | 3 | 7 | **10** | — |
+| Liste des CVE, P95 (30 000 CVE) | — | 8 ms | 8 ms | 250 ms |
+| Pic mémoire (37 000 IOC réels) | — | 120 Mo | 120 Mo | 256 Mo |
+
+## 6. Écart au planning
+
+| Jalon | Plan initial | Plan recalé (ADR-004) | Constat au 03/10 |
 |---|---|---|---|
 | M1 Foundation | 05/08 | — | ✅ 24/09 |
 | M2 Threat Feeds | 19/08 | 08/10 | code ✅, constat à faire |
-| M3 CVE | 02/09 | 22/10 | code ✅ (en avance de 3 semaines), constat à faire |
-| M4 Incidents | 16/09 | 05/11 | — |
-| M5 Dashboard | 23/09 | 12/11 | — |
-| v1.0 | 30/09 | 19/11 | — |
+| M3 CVE | 02/09 | 22/10 | code ✅, constat à faire |
+| M4 Incidents | 16/09 | 05/11 | code ✅ (≈ 5 semaines d'avance) |
+| M5 Dashboard | 23/09 | 12/11 | code partiel |
+| v1.0 | 30/09 | 19/11 | code partiel |
 
-Le code est en avance sur le plan recalé ; l'intégration (push, CI GitLab, données réelles) est
-en retard sur le code. Le risque de planning s'est déplacé : il ne tient plus à la vitesse de
-développement, il tient au délai entre « codé » et « constaté ».
+Le développement a rattrapé et dépassé le plan recalé. Le goulot est désormais l'intégration :
+trois branches empilées hors `main`, aucune donnée réelle en base de préproduction.
 
-## 6. État du dépôt
+## 7. État du dépôt
 
-- `main` (GitLab) = `3f9196f`.
-- Votre poste : `security/feed-last-error` = `87bcca6` (sprint 2 + correctifs + e-mail auteur).
-- Bundle `sentry-m2-phase3.bundle` : `feature/sprint3-m2` et `feature/phase3-cve`, construits sur
-  `87bcca6`. Procédure : `ETAPES_POUSSER_SUR_MAIN.md`.
+- `main` (GitLab) : M1.
+- Votre poste : `feature/sprint3-m2` = `cb74ae7` (= `9402bb1` + dossier `Bubble/`).
+- Bundle `sentry-v1-candidate.bundle` (prérequis `9402bb1`) : `feature/taxii-v2`,
+  `feature/phase3-cve-v2`, `feature/phases-4-6`. Procédure : `ETAPES_POUSSER_SUR_MAIN.md`.
 
-## 7. Risques
+## 8. Risques
 
 | Risque | Niveau | Parade |
 |---|---|---|
-| Écart entre code et constat (3 phases hors `main`) | **Élevé** | Fusionner cette semaine, lancer le worker 24 h |
-| Formats réels NVD / TAXII non éprouvés | Moyen | Premier `sentry cves sync` suivi de près ; sources isolées (une panne n'arrête pas les autres) |
-| Sources gratuites instables (DigitalSide, Feodo quasi vide, conditions abuse.ch) | Moyen | 7 sources ; `sentry status` signale les sources dégradées |
-| Sécurité avant exposition publique (force brute, DNS rebinding) | Moyen | Traités avant toute mise en ligne |
-| Copies de travail multiples (Kali, OneDrive, bundles) | Moyen | Une seule copie de travail, OneDrive en lecture |
+| Écart entre code et constat (5 phases hors `main`) | **Élevé** | fusion cette semaine, worker 24 h |
+| Une seule source STIX/TAXII exploitable, sous jeton | Moyen | jeton RedEye ; OTX en complément ; client prêt pour CrowdSec si budget |
+| Formats réels NVD / RedEye non éprouvés | Moyen | tests `live` + `sentry feeds probe` avant activation |
+| Exposition publique sans HTTPS ni en-têtes | Moyen | tâche 4.5 avant toute mise en ligne |
+| Faux positifs DGA non mesurés | Faible | calibration sur un corpus réel (Tranco + DGArchive) |
+| Copies de travail multiples (Kali, OneDrive, bundles) | Moyen | une seule copie de travail sous Git |
 
-## 8. Perspectives
+## 9. Lignes à venir
 
-1. **Cette semaine** : fusion des deux branches, clés NVD et OTX, worker 24 h, M2 puis M3
-   constatés, tags `v0.2.0` et `v0.3.0`.
-2. **Octobre** : phase 4 (incidents, chronologie immuable, liaison aux alertes CVE et aux IOC).
-3. **Novembre** : dashboard SOC, threat hunting, v1.0 le 19/11.
-4. **Au-delà** : score de confiance IOC par provenance, rapprochement CVE ↔ IOC, assistant IA.
+**Court terme (d'ici la v1.0, 19/11)**
+1. Fusion, clés, worker 24 h ; M2 et M3 constatés, tags `v0.2.0`, `v0.3.0`.
+2. Liste d'exclusion des faux positifs reliée aux incidents (3.6) → `v0.4.0`.
+3. Séries 7 jours glissants, HTTPS (reverse proxy), en-têtes de sécurité, préproduction sur VPS
+   européen 7 jours (4.2, 4.5, 4.6) → `v0.5.0`.
+4. Guide de déploiement, audit de sécurité final (`pip-audit`, SAST, revue des ADR) → `v1.0.0`.
 
-## 9. Décisions attendues de votre part
+**Après la v1.0**
+- Score de confiance des IOC selon leur provenance et leur ancienneté.
+- Rapprochement CVE ↔ IOC ↔ actifs via CPE (remplace l'appariement par mots de RULE-05).
+- Règles de chasse au format Sigma ; import YARA.
+- Export STIX 2.1 et serveur TAXII sortant (SENTRY devient producteur de renseignement).
+- Assistant IA (LLM + RAG) pour résumer bulletins et incidents.
+- Multi-tenant et SSO (OIDC), puis Cyberill TI Cloud hébergé en UE.
 
-1. Accepter ou amender ADR-004, 005, 006 et 007.
-2. Choisir le canal d'alerte (webhook).
+## 10. Perspectives
+
+SENTRY vise un créneau réel : un outil CTI que peuvent faire tourner une PME, une ETI ou une
+collectivité, dans moins de 256 Mo, sans licence à 40 000 € ni cluster à 16 Go. Les obligations
+NIS 2 et DORA (veille active, notification sous 24 à 72 h) créent la demande ; la chronologie
+immuable des incidents et le score déterministe répondent directement à l'exigence de
+justification devant un auditeur. La condition pour que cette promesse tienne est de prouver
+le fonctionnement sur données réelles pendant au moins sept jours consécutifs : c'est l'objet
+des prochaines semaines.
+
+## 11. Décisions attendues de votre part
+
+1. Accepter ou amender ADR-008, 009 et 010.
+2. Demander le jeton RedEye et la clé OTX.
 3. Protéger `main` sur GitLab (fusion par merge request uniquement).
+4. Choisir l'hébergeur de préproduction (VPS UE).
