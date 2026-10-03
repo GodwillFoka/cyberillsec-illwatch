@@ -6,6 +6,9 @@
 
 ---
 
+> **Mis à jour par l'audit du 03/10 après fusion :** `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`
+> fait foi pour l'état de `main` (validation réelle, sécurité, dette).
+
 ## 1. En une phrase
 
 Les six modules de SENTRY sont codés, intégrés et testés (388 tests sur PostgreSQL 16, 94 % de

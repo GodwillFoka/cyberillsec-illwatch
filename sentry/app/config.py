@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     # --- Application ---------------------------------------------------------
     app_name: str = "SENTRY"
-    app_version: str = "0.1.0"
+    app_version: str = "0.1.1"
     environment: Literal["development", "staging", "production"] = "development"
     debug: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"

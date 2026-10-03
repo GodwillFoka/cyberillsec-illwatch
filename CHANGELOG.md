@@ -7,6 +7,20 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+## [0.1.1] — 2026-10-03 — Baseline M1–M6 intégrée
+
+### Corrigé
+- `mypy --strict` échouait avec SQLAlchemy 2.0 (`Select` à deux paramètres de type, valide
+  seulement en 2.1) : annotation `Executable`, valide sur les deux versions.
+
+### Ajouté
+- `scripts/scenario_soc.py` : test d'acceptation SOC de bout en bout contre une instance réelle
+  (40 vérifications, latences mesurées).
+- `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md` : audit global de `main` (Git, CI, migrations,
+  validation réelle M2–M6, sécurité, dette, risques).
+- `docs/ROADMAP.md` : trajectoire M7 → M11 et critères de sortie.
+
+
 ### Ajouté — Phase 6 (v1.0 « Threat Hunting »)
 - Moteur de règles déterministe, catalogue RULE-01 à RULE-06 (Tor, DNS dynamique, DGA,
   ransomware, CVE exploitables sur l'inventaire, IOC connu) ; chasse sur observables soumis ou sur

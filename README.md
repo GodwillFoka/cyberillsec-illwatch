@@ -67,12 +67,12 @@ bloquer, qu'est-ce qui a changé, et la preuve de ce qui a été fait.
 
 | Module | Ce qu'il fait | État |
 |---|---|---|
-| **MOD-01 Foundation** | Configuration validée au démarrage, PostgreSQL + Alembic, JWT + Argon2id, rôles ADMIN / ANALYST / VIEWER, limitation des tentatives de connexion | ✅ `v0.1.0` |
-| **MOD-02 Threat Feeds** | 5 formats de flux, client TAXII 2.1 `taxii2-client` durci, connecteur OTX, sonde de source avant intégration, déduplication, expiration par type, provenance multi-sources, worker planifié avec verrou Redis | ✅ codé |
-| **MOD-03 CVE Tracker** | NVD 2.0 incrémental, catalogue KEV, EPSS, score composite recalculé à chaque changement, historique de priorité, alertes + webhook | ✅ codé |
-| **MOD-04 Incidents** | Cycle NIST SP 800-61 à 6 états, chronologie immuable (ORM + déclencheur PostgreSQL), liens IOC/CVE, incident depuis une alerte | ✅ codé |
-| **MOD-05 SOC Dashboard** | Synthèse temps réel, activité 24 h, MTTR, exports CSV RFC 4180 / JSON RFC 8259 protégés contre l'injection CSV | ✅ codé |
-| **MOD-06 Threat Hunting** | 6 règles déterministes, chasse sur observables ou sur la base, sessions enregistrées, chasse planifiée | ✅ codé |
+| **MOD-01 Foundation** | Configuration validée au démarrage, PostgreSQL + Alembic, JWT + Argon2id, rôles ADMIN / ANALYST / VIEWER, limitation des tentatives de connexion | ✅ opérationnel |
+| **MOD-02 Threat Feeds** | 5 formats de flux, client TAXII 2.1 `taxii2-client` durci, connecteur OTX, sonde de source avant intégration, déduplication, expiration par type, provenance multi-sources, worker planifié avec verrou Redis | ✅ intégré · validé sur 3 sources réelles |
+| **MOD-03 CVE Tracker** | NVD 2.0 incrémental, catalogue KEV, EPSS, score composite recalculé à chaque changement, historique de priorité, alertes + webhook | ✅ intégré · KEV réel validé, NVD/EPSS à constater |
+| **MOD-04 Incidents** | Cycle NIST SP 800-61 à 6 états, chronologie immuable (ORM + déclencheur PostgreSQL), liens IOC/CVE, incident depuis une alerte | ✅ intégré · scénario réel validé |
+| **MOD-05 SOC Dashboard** | Synthèse temps réel, activité 24 h, MTTR, exports CSV RFC 4180 / JSON RFC 8259 protégés contre l'injection CSV | ✅ intégré · scénario réel validé |
+| **MOD-06 Threat Hunting** | 6 règles déterministes, chasse sur observables ou sur la base, sessions enregistrées, chasse planifiée | ✅ intégré · scénario réel validé |
 
 « Codé » signifie : implémenté, testé, intégré au pipeline. Un jalon n'est déclaré **atteint**
 que lorsque `sentry status` le constate sur données réelles.
@@ -157,6 +157,8 @@ protéger.
 | Migrations | 6, vérifiées montée → `alembic check` → descente → remontée à chaque pipeline |
 | Liste des CVE, P95 (30 000 CVE) | **8 ms** (cible 250 ms) |
 | Ingestion réelle (37 000 IOC) | 24 s, pic mémoire **120 Mo** (cible 256 Mo) |
+| Scénario SOC de bout en bout (`scripts/scenario_soc.py`) | **40/40** sur données réelles, latence médiane des appels incidents 12 ms |
+| Chasse sur 3 867 IOC réels | **27 ms** |
 
 Pipeline GitLab : qualité (lint, typage) → tests (matrice 3.12 / 3.14 + migrations sur base
 vierge) → build de l'image Docker → sécurité (SAST, secrets, dépendances). `scripts/ci-local.sh`
@@ -250,18 +252,23 @@ cyberillsec-sentry/
 
 ## Feuille de route
 
-| Phase | Livrable | Jalon cible | État |
-|---|---|---|---|
-| P1 Foundation | Socle, CLI, Docker, CI | M1 | ✅ atteint (`v0.1.0`) |
-| P2 Threat Feeds | Collecte, IOC, TAXII, OTX | M2 — 08/10/2026 | code ✅, constat sur données |
-| P3 CVE Tracker | NVD, KEV, EPSS, score, alertes | M3 — 22/10/2026 | code ✅, constat sur données |
-| P4 Incidents | Cycle NIST, chronologie, liens | M4 — 05/11/2026 | code ✅ |
-| P5 SOC Dashboard | Synthèse, activité, exports | M5 — 12/11/2026 | code ✅ |
-| P6 Threat Hunting | Moteur, règles, sessions | **v1.0 — 19/11/2026** | code ✅ |
+Les six modules sont **intégrés dans `main`** et validés de bout en bout sur données réelles
+(audit du 03/10/2026 : [`Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`](Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md)).
+La suite vise une plateforme **déployable et démontrable** :
 
-**Au-delà de la v1.0 :** interface web du tableau de bord, import de règles Sigma, inventaire
-d'actifs CPE, score de confiance des IOC par provenance, assistant d'analyse (LLM + RAG sur la base
-CTI), multi-tenant et SSO, puis **Cyberill TI Cloud** (offre hébergée en UE).
+| Étape | Objectif | État |
+|---|---|---|
+| M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés (`v0.1.1`) |
+| **M7** | Production Hardening : audit append-only, en-têtes, readiness, dépendances verrouillées | 🔄 en cours |
+| M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif | ⏳ |
+| M9 | SOC Operations : triage L1/L2/L3, faux positifs, séries temporelles | ⏳ |
+| M10 | CTI Intelligence : acteurs, campagnes, MITRE ATT&CK, export STIX | ⏳ |
+| M11 | Observability & Deployment : Prometheus, Grafana, staging → production | ⏳ |
+| **v0.2.0** | Production Candidate | ⏳ |
+
+Critères de sortie de chaque jalon : [`docs/ROADMAP.md`](docs/ROADMAP.md). Au-delà : assistant
+d'analyse (LLM + RAG sur la base CTI), multi-tenant et SSO, puis **Cyberill TI Cloud** (offre
+hébergée en UE).
 
 ## Ce que ce projet démontre
 

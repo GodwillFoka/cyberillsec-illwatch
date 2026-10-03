@@ -6,6 +6,7 @@
 | [`PRODUCT_VISION.md`](PRODUCT_VISION.md) | Vision stratégique : marché, concurrence, roadmap long terme, vision 2035. |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Comment le code est organisé et pourquoi. Décisions structurantes, flux de données, sécurité. |
 | [`ONBOARDING.md`](ONBOARDING.md) | Guide Day-1 : installation, structure du dépôt, standards, première tâche. |
+| [`ROADMAP.md`](ROADMAP.md) | Trajectoire M7 → M11 vers la v0.2.0 « Production Candidate », critères de sortie. |
 | [`adr/`](adr/) | Architecture Decision Records — décisions tracées avec leur contexte et leurs conséquences. |
 | [`pdf/`](pdf/) | Documents fondateurs d'origine, conservés tels quels. |
 

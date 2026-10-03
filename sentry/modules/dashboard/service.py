@@ -22,8 +22,9 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Executable
 
 from sentry.app.models import (
     CVE,
@@ -79,11 +80,14 @@ def _utc(value: datetime | None) -> datetime | None:
     return value.replace(tzinfo=UTC)
 
 
-async def _grouped(session: AsyncSession, statement: Select[Any, Any]) -> dict[str, int]:
+# `Executable` plutôt que `Select[...]` : l'arité générique de `Select` change entre
+# SQLAlchemy 2.0 (un paramètre) et 2.1 (paramètres variadiques) ; mypy --strict doit
+# passer sur les deux (poste Kali en 2.0, CI en 2.1).
+async def _grouped(session: AsyncSession, statement: Executable) -> dict[str, int]:
     return {str(key): int(count) for key, count in (await session.execute(statement)).all()}
 
 
-async def _count(session: AsyncSession, statement: Select[Any]) -> int:
+async def _count(session: AsyncSession, statement: Executable) -> int:
     return int(await session.scalar(statement) or 0)
 
 
