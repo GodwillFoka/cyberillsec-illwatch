@@ -7,7 +7,7 @@ déclarées : l'OpenAPI exposé reflète strictement ce qui fonctionne.
 
 from fastapi import APIRouter
 
-from sentry.app.api.v1 import auth, cves, feeds, incidents, indicators
+from sentry.app.api.v1 import auth, cves, dashboard, feeds, incidents, indicators
 
 api_router = APIRouter()
 
@@ -25,5 +25,7 @@ api_router.include_router(cves.alerts_router)
 # Phase 4 — MOD-04 : gestion d'incidents (RF-17 à RF-20)
 api_router.include_router(incidents.router)
 api_router.include_router(incidents.alert_router)
-# Phase 5 — MOD-05 : from sentry.app.api.v1 import dashboard
+
+# Phase 5 — MOD-05 : tableau de bord SOC (RF-21 à RF-24)
+api_router.include_router(dashboard.router)
 # Phase 6 — MOD-06 : from sentry.app.api.v1 import hunting

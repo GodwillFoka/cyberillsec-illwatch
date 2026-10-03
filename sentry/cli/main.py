@@ -213,12 +213,14 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
 
 def _register_subcommands() -> None:
     from sentry.cli.cves import cves
+    from sentry.cli.dashboard import dashboard
     from sentry.cli.feeds import feeds
     from sentry.cli.incidents import incidents
     from sentry.cli.status import status
     from sentry.cli.taxii import taxii
 
     cli.add_command(cves)
+    cli.add_command(dashboard)
     cli.add_command(feeds)
     cli.add_command(incidents)
     cli.add_command(taxii)
