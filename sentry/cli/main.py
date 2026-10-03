@@ -186,6 +186,7 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
     """Crée un compte. Le mot de passe est saisi de façon masquée et confirmé."""
     from sentry.app.database import dispose_engine, get_session_factory
     from sentry.app.security import WeakPasswordError
+    from sentry.modules.foundation.audit import cli_actor, record_in_session
     from sentry.modules.foundation.users import UserAlreadyExistsError, create_user
 
     async def _create() -> str:
@@ -197,6 +198,14 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
                     email=email,
                     password=password,
                     role=UserRole(role.upper()),
+                )
+                await record_in_session(
+                    session,
+                    "user.create",
+                    actor_name=cli_actor(),
+                    target_type="user",
+                    target_id=user.id,
+                    detail={"username": user.username, "role": user.role},
                 )
                 await session.commit()
                 return user.username
@@ -212,6 +221,7 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
 
 
 def _register_subcommands() -> None:
+    from sentry.cli.audit import audit
     from sentry.cli.cves import cves
     from sentry.cli.dashboard import dashboard
     from sentry.cli.feeds import feeds
@@ -220,6 +230,7 @@ def _register_subcommands() -> None:
     from sentry.cli.status import status
     from sentry.cli.taxii import taxii
 
+    cli.add_command(audit)
     cli.add_command(cves)
     cli.add_command(dashboard)
     cli.add_command(feeds)

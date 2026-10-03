@@ -16,7 +16,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 
-from sentry.app.api.deps import CurrentUser, DbSession, require_roles
+from sentry.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from sentry.app.config import get_settings
 from sentry.app.models import HuntingSession, User
 from sentry.modules.threat_feeds.fetcher import fetch_feed_content
@@ -109,7 +109,7 @@ async def rules(_: CurrentUser) -> list[RuleRead]:
     status_code=status.HTTP_201_CREATED,
     summary="Lancer une session de chasse (RF-27)",
 )
-async def run(payload: HuntRequest, session: DbSession, user: Hunter) -> HuntDetail:
+async def run(payload: HuntRequest, session: DbSession, user: Hunter, audit: Audit) -> HuntDetail:
     try:
         hunt = await engine.run_hunt(
             session,
@@ -122,6 +122,18 @@ async def run(payload: HuntRequest, session: DbSession, user: Hunter) -> HuntDet
         )
     except ValueError as exc:  # règle inconnue, limites
         raise HTTPException(422, detail=str(exc)) from None
+    await audit.record(
+        "hunt.run",
+        actor=user,
+        target_type="hunt",
+        target_id=hunt.id,
+        detail={
+            "rules": hunt.rules,
+            "observables": hunt.observables_count,
+            "matches": hunt.matches_count,
+            "status": hunt.status,
+        },
+    )
     return _detail(await engine.get_hunt(session, hunt.id))
 
 

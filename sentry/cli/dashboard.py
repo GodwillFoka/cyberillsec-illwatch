@@ -131,7 +131,19 @@ def dashboard_export(dataset: str, fmt: str, output: Path) -> None:
     kind = Dataset(dataset)
 
     async def _rows(session: AsyncSession) -> list[dict[str, Any]]:
-        return [row async for row in export_rows(session, kind)]
+        from sentry.modules.foundation.audit import cli_actor, record_in_session
+
+        rows = [row async for row in export_rows(session, kind)]
+        await record_in_session(
+            session,
+            "data.export",
+            actor_name=cli_actor(),
+            target_type="dataset",
+            target_id=kind.value,
+            detail={"format": fmt, "rows": len(rows)},
+        )
+        await session.commit()
+        return rows
 
     rows = _run(_rows)
     if fmt == "json":

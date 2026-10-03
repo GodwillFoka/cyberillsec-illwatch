@@ -20,7 +20,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from sentry.app.api.deps import CurrentUser, DbSession, require_roles
+from sentry.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from sentry.app.config import get_settings
 from sentry.app.models import User
 from sentry.modules.threat_feeds import service
@@ -33,7 +33,7 @@ from sentry.modules.threat_feeds.service import (
     FeedNotFoundError,
     UnsafeFeedURLError,
 )
-from sentry.shared.enums import FeedStatus, FeedType, UserRole
+from sentry.shared.enums import AuditOutcome, FeedStatus, FeedType, UserRole
 
 router = APIRouter(prefix="/feeds", tags=["flux de menaces"])
 
@@ -196,30 +196,59 @@ async def read_feed(feed_id: UUID, session: DbSession, user: CurrentUser) -> Fee
     summary="Enregistrer une source de flux (ADMIN)",
 )
 async def create_feed(
-    payload: FeedCreate, session: DbSession, _: AdminUser, response: Response
+    payload: FeedCreate, session: DbSession, admin: AdminUser, response: Response, audit: Audit
 ) -> FeedRead:
     try:
         feed = await service.create_feed(session, **payload.model_dump())
     except FeedNameConflictError as exc:
         raise _conflict(exc) from None
     except UnsafeFeedURLError as exc:
+        await audit.record(
+            "feed.create",
+            AuditOutcome.FAILURE,
+            actor=admin,
+            detail={"reason": "unsafe_url", "url": str(payload.url), "error": str(exc)},
+        )
         raise _unprocessable(exc) from None
+    await audit.record(
+        "feed.create",
+        actor=admin,
+        target_type="feed",
+        target_id=feed.id,
+        detail={"name": feed.name, "url": feed.url, "feed_type": feed.feed_type},
+    )
     response.headers["Location"] = f"{get_settings().api_v1_prefix}{router.prefix}/{feed.id}"
     return FeedRead.model_validate(feed)
 
 
 @router.patch("/{feed_id}", response_model=FeedRead, summary="Modifier une source (ADMIN)")
 async def update_feed(
-    feed_id: UUID, payload: FeedUpdate, session: DbSession, _: AdminUser
+    feed_id: UUID, payload: FeedUpdate, session: DbSession, admin: AdminUser, audit: Audit
 ) -> FeedRead:
+    changes = payload.model_dump(exclude_unset=True)
     try:
-        feed = await service.update_feed(session, feed_id, **payload.model_dump(exclude_unset=True))
+        feed = await service.update_feed(session, feed_id, **changes)
     except FeedNotFoundError:
         raise _not_found(feed_id) from None
     except FeedNameConflictError as exc:
         raise _conflict(exc) from None
     except UnsafeFeedURLError as exc:
+        await audit.record(
+            "feed.update",
+            AuditOutcome.FAILURE,
+            actor=admin,
+            target_type="feed",
+            target_id=feed_id,
+            detail={"reason": "unsafe_url", "error": str(exc)},
+        )
         raise _unprocessable(exc) from None
+    await audit.record(
+        "feed.update",
+        actor=admin,
+        target_type="feed",
+        target_id=feed.id,
+        detail={key: str(value) for key, value in changes.items()},
+    )
     return FeedRead.model_validate(feed)
 
 
@@ -233,9 +262,12 @@ async def update_feed(
         '`{"is_active": false}`.'
     ),
 )
-async def delete_feed(feed_id: UUID, session: DbSession, _: AdminUser) -> Response:
+async def delete_feed(
+    feed_id: UUID, session: DbSession, admin: AdminUser, audit: Audit
+) -> Response:
     try:
         await service.delete_feed(session, feed_id)
     except FeedNotFoundError:
         raise _not_found(feed_id) from None
+    await audit.record("feed.delete", actor=admin, target_type="feed", target_id=feed_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     # --- API -----------------------------------------------------------------
     api_v1_prefix: str = "/api/v1"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    # Documentation interactive (/docs, /redoc, /openapi.json). Par défaut : exposée hors
+    # production, masquée en production (surface d'attaque, inventaire des routes).
+    docs_enabled: bool | None = None
+    # En-tête HSTS : par défaut en production uniquement (l'API y est servie derrière TLS).
+    hsts_enabled: bool | None = None
 
     # --- Sécurité ------------------------------------------------------------
     secret_key: str = Field(
@@ -141,11 +146,23 @@ class Settings(BaseSettings):
             )
         if self.debug:
             raise ValueError("DEBUG doit être désactivé en production.")
+        if "*" in self.cors_origins:
+            raise ValueError(
+                "CORS_ORIGINS='*' interdit en production : les requêtes portent un jeton."
+            )
         return self
 
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @property
+    def expose_docs(self) -> bool:
+        return not self.is_production if self.docs_enabled is None else self.docs_enabled
+
+    @property
+    def send_hsts(self) -> bool:
+        return self.is_production if self.hsts_enabled is None else self.hsts_enabled
 
 
 @lru_cache(maxsize=1)

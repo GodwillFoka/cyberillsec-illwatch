@@ -95,3 +95,11 @@ class HuntStatus(StrEnum):
 class HuntTrigger(StrEnum):
     MANUAL = "MANUAL"
     SCHEDULED = "SCHEDULED"
+
+
+class AuditOutcome(StrEnum):
+    """Issue d'une action consignée au journal d'audit — M7 (ADR-011)."""
+
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"  # tentative invalide (mauvais mot de passe, entrée refusée)
+    DENIED = "DENIED"  # refus de sécurité (limitation de débit, droits insuffisants)

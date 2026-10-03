@@ -229,7 +229,8 @@ def test_migration_provenance_reprend_les_ioc_existants() -> None:
 
 
 def test_chronologie_immuable_meme_en_sql_direct() -> None:
-    """RF-19 : le déclencheur PostgreSQL refuse UPDATE et DELETE sur incident_events."""
+    """RF-19 + M7 : les déclencheurs refusent UPDATE, DELETE et TRUNCATE sur la chronologie
+    des incidents et sur le journal d'audit."""
 
     asyncio.run(_reset_schema())
     migrations.upgrade("head")
@@ -241,6 +242,8 @@ def test_chronologie_immuable_meme_en_sql_direct() -> None:
             "INSERT INTO incident_events (id, incident_id, event_type, message, created_at) "
             "VALUES ('00000000-0000-0000-0000-0000000000b1', "
             "'00000000-0000-0000-0000-0000000000a1', 'CREATED', 'ouvert', now())",
+            "INSERT INTO audit_events (id, occurred_at, action, outcome) VALUES "
+            "('00000000-0000-0000-0000-0000000000c1', now(), 'auth.login', 'SUCCESS')",
         )
     )
     try:
@@ -255,11 +258,17 @@ def _assert_immutable() -> None:
     for statement in (
         "UPDATE incident_events SET message = 'falsifié'",
         "DELETE FROM incident_events",
+        "TRUNCATE incident_events",  # M7 : un déclencheur de ligne ne voyait pas TRUNCATE
+        "TRUNCATE incidents CASCADE",
+        "UPDATE audit_events SET outcome = 'FAILURE'",
+        "DELETE FROM audit_events",
+        "TRUNCATE audit_events",
     ):
         with pytest.raises(DBAPIError, match="immuable"):
             asyncio.run(_exec(statement))
     rows = asyncio.run(_exec("SELECT message FROM incident_events"))
     assert rows == [("ouvert",)]
+    assert asyncio.run(_exec("SELECT outcome FROM audit_events")) == [("SUCCESS",)]
     with pytest.raises(DBAPIError, match="ck_incidents_severity"):
         asyncio.run(
             _exec(

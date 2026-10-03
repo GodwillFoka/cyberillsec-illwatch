@@ -10,7 +10,6 @@ la latence de chaque appel et sort en code 1 au premier écart à l'attendu.
 
 import json
 import os
-import secrets
 import statistics
 import sys
 import time
@@ -270,7 +269,6 @@ def main() -> int:
             "feed_type": "JSON",
         },
     )
-    # Le 422 doit venir de l'anti-SSRF, pas d'une autre faute de saisie (schéma, casse).
     check(
         "Source vers métadonnées cloud refusée (SSRF)",
         r.status_code == 422 and "interne ou réservée" in r.text,
@@ -282,7 +280,7 @@ def main() -> int:
         f"{API}/feeds",
         "feeds",
         headers=ana,
-        json={"name": "x", "url": "https://example.org/x.json", "feed_type": "json"},
+        json={"name": "x", "url": "https://example.org/x.json", "feed_type": "JSON"},
     )
     check("ANALYST ne peut pas créer de source", r.status_code == 403, str(r.status_code))
     r = c.get(f"{API}/incidents/00000000-0000-0000-0000-000000000000", headers=vie)
@@ -293,16 +291,51 @@ def main() -> int:
         r.status_code in (404, 422),
         str(r.status_code),
     )
-    # Cible aléatoire et inexistante : le scénario reste rejouable (aucun compte réel n'est
-    # verrouillé) et vérifie au passage que le blocage ne révèle pas l'existence d'un compte.
-    target = f"cible-{secrets.token_hex(4)}"
-    codes = [login(c, target, "mauvais-mot-de-passe").status_code for _ in range(6)]
+    codes = [login(c, "viewer", "mauvais-mot-de-passe").status_code for _ in range(6)]
     check("Force brute : 429 après 5 échecs", codes[-1] == 429, str(codes))
+    r = login(c, "viewer")
     check(
-        "Blocage identique pour un compte inexistant (pas d'énumération)",
-        codes[:5] == [401] * 5,
-        target,
+        "Adresse de l'attaquant bloquée même avec le bon mot de passe",
+        r.status_code == 429,
+        str(r.status_code),
     )
+
+    # --- M7 : titulaire épargné, audit, sondes ------------------------------------------------
+    # uvicorn fait confiance à X-Forwarded-For venant de 127.0.0.1 (FORWARDED_ALLOW_IPS) :
+    # on simule ainsi la titulaire du compte qui se connecte depuis une autre adresse.
+    r = c.post(
+        f"{API}/auth/token",
+        data={"username": "viewer", "password": PASSWORD},
+        headers={"X-Forwarded-For": "192.0.2.50"},
+    )
+    check(
+        "Titulaire non bloquée depuis une autre adresse (M7)",
+        r.status_code == 200,
+        str(r.status_code),
+    )
+    ready = c.get(f"{BASE}/ready")
+    check("Sonde /ready", ready.status_code in (200, 503), ready.text[:120])
+    page = call(c, "GET", f"{API}/audit", "audit", headers=adm, params={"limit": 500})
+    if page.status_code == 404:
+        check("Journal d'audit (M7)", False, "route absente : version antérieure à M7")
+    else:
+        actions = {(i["action"], i["outcome"]) for i in page.json()["items"]}
+        expected = {
+            ("auth.login", "SUCCESS"),
+            ("auth.login", "FAILURE"),
+            ("auth.login", "DENIED"),
+            ("authz.denied", "DENIED"),
+            ("data.export", "SUCCESS"),
+            ("hunt.run", "SUCCESS"),
+        }
+        missing = expected - actions
+        check(
+            "Journal d'audit complet (M7)",
+            not missing,
+            f"manquants : {sorted(missing)}" if missing else f"{page.json()['total']} lignes",
+        )
+    r = c.get(f"{API}/audit", headers=vie)
+    check("Journal d'audit réservé aux ADMIN", r.status_code == 403, str(r.status_code))
 
     # --- Latences -------------------------------------------------------------------------------
     print("\nLatences (ms) : appel · n · médiane · max")

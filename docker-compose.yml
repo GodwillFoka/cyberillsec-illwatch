@@ -8,8 +8,10 @@ services:
       POSTGRES_USER: sentry
       POSTGRES_PASSWORD: sentry
       POSTGRES_DB: sentry
+    # Écoute locale uniquement (M7) : sur un poste Kali relié à un réseau, la base ne doit pas
+    # être joignable depuis le LAN avec le mot de passe de développement.
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - sentry_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +25,9 @@ services:
     container_name: sentry-redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
+    # Redis sans mot de passe en développement : écoute locale uniquement (M7).
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - sentry_redisdata:/data
     healthcheck:
@@ -42,7 +45,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://sentry:sentry@postgres:5432/sentry
       REDIS_URL: redis://redis:6379/0
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       postgres:
         condition: service_healthy

@@ -10,12 +10,15 @@ from sentry.app.api.health import router as health_router
 from sentry.app.api.v1.router import api_router
 from sentry.app.config import get_settings
 from sentry.app.database import dispose_engine
+from sentry.app.middleware import SecurityMiddleware, unhandled_error
+from sentry.shared.logging import configure_logging
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Cycle de vie applicatif : validation de la configuration puis nettoyage."""
-    get_settings()  # échoue tôt et bruyamment si la config est invalide (MOD-01)
+    settings = get_settings()  # échoue tôt et bruyamment si la config est invalide (MOD-01)
+    configure_logging(settings.log_level)  # journal JSON : accès, audit, erreurs (M7)
     yield
     await dispose_engine()
 
@@ -33,9 +36,9 @@ def create_app() -> FastAPI:
             "et threat hunting."
         ),
         version=settings.app_version,
-        docs_url="/docs",
-        redoc_url="/redoc",
-        openapi_url="/openapi.json",
+        docs_url="/docs" if settings.expose_docs else None,
+        redoc_url="/redoc" if settings.expose_docs else None,
+        openapi_url="/openapi.json" if settings.expose_docs else None,
         lifespan=lifespan,
     )
 
@@ -46,6 +49,11 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Ajouté en dernier : enveloppe CORS, donc ses en-têtes et son identifiant de requête
+    # couvrent aussi les réponses de pré-vérification et les erreurs.
+    app.add_middleware(SecurityMiddleware, hsts=settings.send_hsts)
+    app.add_exception_handler(Exception, unhandled_error)
 
     app.include_router(health_router)
     app.include_router(api_router, prefix=settings.api_v1_prefix)

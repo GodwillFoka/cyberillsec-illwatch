@@ -17,7 +17,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 
-from sentry.app.api.deps import CurrentUser, DbSession, require_roles
+from sentry.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from sentry.app.models import CVE, User
 from sentry.modules.cve_tracker import queries
 from sentry.modules.cve_tracker.alerts import AlertNotFoundError, acknowledge
@@ -205,11 +205,18 @@ async def list_alerts(
 @alerts_router.post(
     "/{alert_id}/ack", response_model=AlertRead, summary="Acquitter une alerte (ADMIN, ANALYST)"
 )
-async def ack_alert(alert_id: UUID, session: DbSession, user: Responder) -> AlertRead:
+async def ack_alert(alert_id: UUID, session: DbSession, user: Responder, audit: Audit) -> AlertRead:
     try:
         alert = await acknowledge(session, alert_id, user.id)
     except AlertNotFoundError:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"Alerte {alert_id} introuvable."
         ) from None
+    await audit.record(
+        "alert.ack",
+        actor=user,
+        target_type="alert",
+        target_id=alert_id,
+        detail={"cve_id": alert.cve_id},
+    )
     return AlertRead.model_validate(alert)
