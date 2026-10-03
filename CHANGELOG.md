@@ -7,6 +7,88 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Sprint 3 (M2 « Ingestion opérationnelle », branche `feature/sprint3-ingestion`)
+- **Provenance multi-sources (ADR-006)** : table `indicator_sources` (migration `1f3dafc3008c`,
+  reprise de l'existant). `GET /api/v1/indicators/{id}` renvoie `sources` (flux, dates et
+  compteur par source) ; la liste expose `source_count` ; le filtre `feed_id` couvre toutes les
+  sources. `sentry status` compte les IOC confirmés par au moins deux flux.
+- **T2.9 — Connecteur AlienVault OTX** : format de flux `OTX`, pulses abonnés paginés,
+  `modified_since` incrémental, plafond `OTX_MAX_PAGES`. Clé `OTX_API_KEY` en en-tête, envoyée
+  uniquement à `otx.alienvault.com` (refus 422 à l'enregistrement d'un flux OTX ailleurs).
+  Source OTX ajoutée à `sentry seed`.
+- **T2.6 — Planificateur** : `sentry feeds worker` et service `worker` dans Docker Compose
+  (profil `full`). Verrou Redis par flux, aussi utilisé par `fetch` et `fetch-all`.
+- **Journal JSON** (UC-01 étape 8) : une ligne `feed.collected` par collecte (volumes, durée,
+  erreur, avertissement, pic mémoire `peak_rss_mb`), `worker.cycle` par cycle.
+- Fetcher : en-têtes d'authentification jamais transmis lors d'une redirection vers un autre hôte.
+- Test de conformité des contraintes CHECK **après migration** (non couvert par `alembic check`).
+
+### Ajouté
+- `sentry status` : avancement mesuré en base (schéma, santé des sources, IOC actifs/expirés
+  par type, critères du jalon M2 cochés ou non).
+- Pipeline : tests exécutés sous Python 3.12 et 3.14.
+- **T2.3 — Collecteur de flux (UC-01)** : récupération HTTP sécurisée (revalidation de l'URL,
+  résolution DNS avec refus de toute adresse interne, redirections revalidées une à une, taille
+  plafonnée par `FEED_MAX_BYTES`), backoff exponentiel sur erreurs réseau et 5xx, report au cycle
+  suivant sur HTTP 429. Analyseurs CSV (en-têtes commentés abuse.ch), JSON et STIX 2.1. Chaque
+  flux est isolé : un échec passe le flux en `DEGRADED` sans bloquer les autres (RSK-02).
+- **T2.7 — CLI `sentry feeds`** : `list`, `add`, `fetch <nom|id>`, `fetch-all [--force]`. Code de
+  sortie non nul si une collecte échoue (planification cron / timer systemd).
+- **T2.2 — CRUD des sources de flux (RF-04)** : `GET/POST /api/v1/feeds`,
+  `GET/PATCH/DELETE /api/v1/feeds/{id}`. Lecture pour tous les rôles authentifiés, écriture
+  réservée aux `ADMIN`. Liste paginée (`limit` ≤ 200, `offset`) et filtrable (`is_active`,
+  `status`, `feed_type`), triée par nom.
+- Service `sentry/modules/threat_feeds/service.py`, partagé par l'API et la future CLI (T2.7) :
+  noms uniques sans tenir compte de la casse (409), URL de flux validée contre le SSRF (HTTPS
+  uniquement, pas d'identifiants, pas d'IP interne ni de nom local, formes numériques ambiguës
+  refusées), retour à `PENDING` quand l'URL ou le format change.
+
+- **IOC (RF-07, RF-08, ADR-005)** : `POST /api/v1/indicators` (ingestion d'un lot de 1 000 IOC
+  au plus, rôles `ADMIN` et `ANALYST`), `GET /api/v1/indicators` (filtres `type`, `severity`,
+  `min_severity`, `feed_id`, `active`, `value`) et `GET /api/v1/indicators/{id}`. Déduplication
+  par `INSERT … ON CONFLICT DO UPDATE` : `hit_count`, `first_seen`/`last_seen`, sévérité maximale
+  et `expires_at` mis à jour selon l'ADR-005. RNF-PERF-02 vérifié (1 000 IOC < 5 s).
+- Normalisation des IOC étendue : formes désamorcées (`hxxps://`, `[.]`), point final DNS,
+  schéma et hôte d'URL en minuscules, port par défaut et fragment retirés, IP canonisées.
+- Tests d'intégrité du schéma : contraintes CHECK, `expires_at`, `ON DELETE SET NULL`, et
+  comparaison des CHECK entre modèle et base (non couverte par `alembic check`).
+
+### Corrigé
+- **SSRF** : la détection d'adresses internes reposait sur `is_private`, qui ignore
+  100.64.0.0/10 (CGNAT, métadonnées Alibaba Cloud en 100.100.100.200) et les adresses IPv4
+  embarquées dans de l'IPv6 (NAT64 `64:ff9b::/96`, 6to4). Seules les adresses publiques
+  (`is_global`) sont désormais admises.
+- Détail des erreurs de collecte (`last_error`) réservé aux ADMIN : il peut citer une adresse
+  interne refusée.
+- `fetch-all` validait tous les flux en une seule transaction : un arrêt en cours de cycle perdait
+  tout. Validation après chaque flux.
+- Erreurs de protocole HTTP (connexion coupée) désormais retentées ; contenu corrompu signalé
+  proprement au lieu d'une « erreur inattendue ».
+- Liste des rejets d'ingestion bornée à 100 exemples (compteur exact conservé) : mémoire bornée
+  face à un flux corrompu.
+- Lecture d'un flux ou d'un IOC : rechargement systématique depuis la base (plantage possible sur
+  un objet modifié plus tôt dans la même session).
+- **Flux URLhaus inutilisable** : abuse.ch exige désormais une clé (`Auth-Key`) dans l'URL de
+  téléchargement ; l'ancienne URL semée par `sentry seed` échouait. La base stocke un gabarit
+  (`…/exports/{ABUSECH_AUTH_KEY}/recent.csv`), la clé est lue dans `.env` au moment de la requête
+  et masquée dans tous les messages d'erreur. `sentry seed` corrige l'ancienne URL.
+- Échantillon Feodo aligné sur le format réel (en-tête CSV entre guillemets, non commenté).
+- **Protection des données de travail** : la documentation faisait lancer `pytest` sur la base
+  de travail, alors que les tests de migration en suppriment tout le schéma. La suite refuse
+  désormais toute base PostgreSQL dont le nom ne finit pas par `_test`, et repart d'un schéma
+  neuf à chaque session (une base de tests restée sur un ancien schéma faisait échouer la suite).
+- **Pipeline GitLab** : il ne tournait que sur `main`, les tags et les merge requests ; un push
+  de branche de fonctionnalité n'était jamais testé. Ajout des pipelines de branche (sans
+  doublon avec les merge requests) et d'un job `migrations` (montée, `alembic check`, descente,
+  remontée sur base vierge).
+- Script `scripts/ci-local.sh` : réplique locale du pipeline, à lancer avant chaque push.
+- Migration `a4973a3782e3` : import inutilisé retiré (aucun effet sur le schéma).
+- **Modèle désynchronisé de la migration `a4973a3782e3`** : `Indicator.expires_at` et les quatre
+  contraintes CHECK n'étaient déclarés que dans la migration. `alembic check` signalait
+  « removed column 'indicators.expires_at' » et un test de M1 échouait sur `main`.
+- Couverture de tests sous-estimée : `coverage` ne suivait pas les greenlets de SQLAlchemy async
+  (`concurrency = ["greenlet", "thread"]`).
+
 ## [0.1.0] — 2026-09-24
 
 Jalon M1 : squelette opérationnel validé (clôture de la phase 1 Foundation).

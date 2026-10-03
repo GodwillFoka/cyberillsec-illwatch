@@ -2,7 +2,7 @@
 
 import ipaddress
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlsplit, urlunsplit
 
 from sentry.shared.enums import IndicatorType
 
@@ -70,19 +70,60 @@ def detect_indicator_type(value: str) -> IndicatorType:
     raise InvalidIndicatorError(f"Type d'indicateur non reconnu pour : {value!r}")
 
 
+# Formes « désamorcées » (defanged) courantes dans les bulletins CTI, pour qu'un IOC
+# copié depuis un rapport (`hxxps://evil[.]com`) ne soit pas cliquable par erreur.
+_DEFANG_REPLACEMENTS = (("[.]", "."), ("(.)", "."), ("{.}", "."), ("[:]", ":"), ("[@]", "@"))
+_DEFANG_SCHEMES = {"hxxp://": "http://", "hxxps://": "https://"}
+_DEFAULT_PORTS = {"http": 80, "https": 443}
+
+
+def refang(value: str) -> str:
+    """Rétablit la forme exploitable d'un IOC désamorcé (`hxxps://evil[.]com` → `https://evil.com`)."""
+    result = value
+    for defanged, plain in _DEFANG_REPLACEMENTS:
+        result = result.replace(defanged, plain)
+    lowered = result.lower()
+    for defanged, plain in _DEFANG_SCHEMES.items():
+        if lowered.startswith(defanged):
+            return plain + result[len(defanged) :]
+    return result
+
+
+def _normalize_url(url: str) -> str:
+    """Schéma et hôte en minuscules (insensibles à la casse selon la RFC 3986), port par
+    défaut et fragment retirés. Le chemin et la requête gardent leur casse : ils sont
+    sensibles à la casse côté serveur."""
+    parts = urlsplit(url)
+    scheme = parts.scheme.lower()
+    host = (parts.hostname or "").rstrip(".")
+    netloc = f"[{host}]" if ":" in host else host
+    if parts.port is not None and parts.port != _DEFAULT_PORTS.get(scheme):
+        netloc = f"{netloc}:{parts.port}"
+    if parts.username is not None:
+        userinfo = parts.username + (f":{parts.password}" if parts.password is not None else "")
+        netloc = f"{userinfo}@{netloc}"
+    return urlunsplit((scheme, netloc, parts.path or "/", parts.query, ""))
+
+
 def normalize_indicator(value: str) -> tuple[IndicatorType, str]:
     """Retourne le couple (type, valeur normalisée) prêt pour la déduplication.
 
-    La normalisation garantit qu'une même entité observée sous deux graphies
-    (casse différente, espaces) ne crée pas deux lignes distinctes en base.
+    La normalisation garantit qu'une même entité observée sous plusieurs graphies
+    (casse, espaces, forme désamorcée, point final DNS, notation IP) ne crée pas
+    plusieurs lignes en base : `Example.COM`, `example.com.` et `example[.]com`
+    deviennent tous `example.com`.
     """
-    candidate = value.strip()
+    candidate = refang(value.strip())
+    if candidate.endswith(".") and "://" not in candidate:
+        candidate = candidate.rstrip(".")
     ioc_type = detect_indicator_type(candidate)
 
     if ioc_type in (IndicatorType.DOMAIN, IndicatorType.EMAIL):
         return ioc_type, candidate.lower()
     if ioc_type in (IndicatorType.HASH_MD5, IndicatorType.HASH_SHA1, IndicatorType.HASH_SHA256):
         return ioc_type, candidate.lower()
-    if ioc_type is IndicatorType.IPV6:
+    if ioc_type in (IndicatorType.IPV4, IndicatorType.IPV6):
         return ioc_type, str(ipaddress.ip_address(candidate))
+    if ioc_type is IndicatorType.URL:
+        return ioc_type, _normalize_url(candidate)
     return ioc_type, candidate

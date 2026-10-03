@@ -1,0 +1,11 @@
+################################################################
+# abuse.ch Feodo Tracker Botnet C2 IP Blocklist (CSV)          #
+# Last updated: 2026-09-27 10:00:00 UTC                        #
+#                                                              #
+# Terms Of Use: https://feodotracker.abuse.ch/blocklist/       #
+# For questions please contact feodotracker [at] abuse.ch      #
+################################################################
+"first_seen_utc","dst_ip","dst_port","c2_status","last_online","malware"
+"2026-09-20 08:12:44","203.0.113.50","443","online","2026-09-27","QakBot"
+"2026-09-21 17:40:02","203.0.113.51","8080","online","2026-09-27","Emotet"
+"2026-09-22 03:05:19","2001:db8:0:0:0:0:0:77","443","offline","2026-09-25","Pikabot"

@@ -8,7 +8,7 @@ s'exécuter si la validation échoue (règle de gestion MOD-01).
 from functools import lru_cache
 from typing import Literal, Self
 
-from pydantic import Field, model_validator
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_SECRET_KEY = "change-me-in-production"  # noqa: S105 - sentinelle refusée en prod
@@ -60,7 +60,22 @@ class Settings(BaseSettings):
 
     # --- Connecteurs CTI externes (clés optionnelles) ------------------------
     nvd_api_key: str | None = None
-    otx_api_key: str | None = None
+    # Clé AlienVault OTX (https://otx.alienvault.com/, gratuite) : envoyée en en-tête
+    # X-OTX-API-KEY, uniquement vers otx.alienvault.com. Jamais en base.
+    otx_api_key: SecretStr | None = None
+    # Plafond de pages de 50 pulses lues par collecte OTX (mémoire et durée bornées).
+    otx_max_pages: int = Field(default=20, ge=1, le=200)
+    # Identifiants TAXII 2.1 par hôte : "hote=utilisateur:motdepasse;hote2=…". Envoyés en
+    # Basic uniquement à l'hôte nommé. Valeur par défaut : accès invité public documenté
+    # de DigitalSide (https://osint.digitalside.it/taxiiserver.html).
+    taxii_auth: SecretStr = SecretStr("osint.digitalside.it=guest:guest")
+    taxii_max_pages: int = Field(default=20, ge=1, le=200)
+    # Client TAXII : `library` = taxii2-client (OASIS, défaut) ; `builtin` = transport HTTP
+    # maison (async), repli si un serveur sort des clous de la bibliothèque.
+    taxii_client: Literal["library", "builtin"] = "library"
+    # Clé abuse.ch (https://auth.abuse.ch/, gratuite) : exigée par URLhaus pour les
+    # téléchargements. Injectée dans les URL de flux via le gabarit {ABUSECH_AUTH_KEY}.
+    abusech_auth_key: SecretStr | None = None
 
     nvd_api_url: str = "https://services.nvd.nist.gov/rest/json/cves/2.0"
     kev_catalog_url: str = (
@@ -72,6 +87,13 @@ class Settings(BaseSettings):
     default_polling_interval: int = Field(default=3600, ge=60)
     http_timeout_seconds: float = Field(default=15.0, gt=0)
     http_max_retries: int = Field(default=3, ge=0, le=10)
+    # Taille maximale d'une réponse de flux : au-delà, la collecte est interrompue
+    # (protection mémoire contre un flux corrompu ou malveillant).
+    feed_max_bytes: int = Field(default=20 * 1024 * 1024, ge=1024)
+    # Durée de vie d'un verrou de collecte (Redis) : doit dépasser la plus longue collecte.
+    collect_lock_ttl_seconds: int = Field(default=900, ge=60)
+    # Période de réveil de `sentry feeds worker` (recherche des flux échus).
+    worker_tick_seconds: int = Field(default=60, ge=5)
 
     # --- Scoring & alerting (§3.3.3 du CdC) ---------------------------------
     risk_alert_threshold: float = Field(default=75.0, ge=0, le=100)

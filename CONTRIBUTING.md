@@ -12,8 +12,8 @@ python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env
 docker compose up -d
-alembic upgrade head
-pytest
+sentry db init
+./scripts/ci-local.sh   # pipeline complet sur la base dédiée sentry_test
 ```
 
 ## Stratégie de branches

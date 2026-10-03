@@ -66,3 +66,29 @@ def test_normalisation_ipv6_canonique() -> None:
 )
 def test_detection_des_plages_privees(value: str, expected: bool) -> None:
     assert is_private_ip(value) is expected
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("Example.COM.", (IndicatorType.DOMAIN, "example.com")),
+        ("evil[.]example[.]com", (IndicatorType.DOMAIN, "evil.example.com")),
+        (
+            "hxxps://Evil.Example.com:443/Payload.EXE#x",
+            (IndicatorType.URL, "https://evil.example.com/Payload.EXE"),
+        ),
+        ("HTTP://evil.example.com:8080", (IndicatorType.URL, "http://evil.example.com:8080/")),
+        ("https://evil.example.com/a?Q=1", (IndicatorType.URL, "https://evil.example.com/a?Q=1")),
+        ("198.51.100[.]7", (IndicatorType.IPV4, "198.51.100.7")),
+        ("Attacker[@]Evil.example.com", (IndicatorType.EMAIL, "attacker@evil.example.com")),
+    ],
+)
+def test_normalisation_des_graphies_equivalentes(
+    raw: str, expected: tuple[IndicatorType, str]
+) -> None:
+    assert normalize_indicator(raw) == expected
+
+
+def test_graphies_equivalentes_convergent_vers_une_seule_cle() -> None:
+    variants = ["Example.COM", "example.com", "EXAMPLE.COM", "example.com.", "example[.]com"]
+    assert {normalize_indicator(v) for v in variants} == {(IndicatorType.DOMAIN, "example.com")}

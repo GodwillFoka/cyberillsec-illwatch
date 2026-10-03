@@ -35,7 +35,7 @@ def config() -> None:
     table.add_column("Clé", style="cyan", no_wrap=True)
     table.add_column("Valeur", style="white")
 
-    secret_keys = {"secret_key", "nvd_api_key", "otx_api_key"}
+    secret_keys = {"secret_key", "nvd_api_key", "otx_api_key", "abusech_auth_key"}
     for key, value in settings.model_dump().items():
         rendered = "••••••" if key in secret_keys and value else str(value)
         table.add_row(key, rendered)
@@ -136,7 +136,7 @@ def db_current() -> None:
 
 @cli.command()
 def seed() -> None:
-    """Insère les données de référence (flux publics sans clé). Idempotent."""
+    """Insère les sources de référence (abuse.ch) et corrige les URL obsolètes. Idempotent."""
     from sentry.app.database import dispose_engine, get_session_factory
     from sentry.modules.foundation.seed import seed_reference_feeds
 
@@ -202,6 +202,19 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
         console.print(f"[red]Refusé :[/] {exc}")
         raise SystemExit(1) from exc
     console.print(f"[green]Compte créé :[/] {created} ({role.upper()})")
+
+
+def _register_subcommands() -> None:
+    from sentry.cli.feeds import feeds
+    from sentry.cli.status import status
+    from sentry.cli.taxii import taxii
+
+    cli.add_command(feeds)
+    cli.add_command(taxii)
+    cli.add_command(status)
+
+
+_register_subcommands()
 
 
 if __name__ == "__main__":

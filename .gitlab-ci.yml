@@ -18,14 +18,17 @@ variables:
 default:
   interruptible: true
 
-# Le pipeline tourne sur les merge requests et sur les branches par défaut,
-# sans jamais se dédoubler (pattern officiel GitLab).
+# Le pipeline tourne sur chaque push de branche, sur les merge requests et sur
+# les tags, sans jamais se dédoubler (pattern officiel GitLab « branch pipelines
+# puis MR pipelines ») : une branche de fonctionnalité est testée dès son premier
+# push, avant même l'ouverture de la merge request.
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
     - if: $CI_COMMIT_TAG
-    - when: never
 
 .python:
   image: $PYTHON_IMAGE
@@ -72,6 +75,10 @@ typage:
 tests:
   extends: .python
   stage: tests
+  # 3.12 : version minimale supportée ; 3.14 : version des postes de développement.
+  parallel:
+    matrix:
+      - PYTHON_IMAGE: ["python:3.12-slim", "python:3.14-slim"]
   services:
     - name: postgres:16-alpine
       alias: postgres
@@ -98,6 +105,28 @@ tests:
         coverage_format: cobertura
         path: coverage.xml
     expire_in: 1 week
+
+# Cohérence ORM ↔ migrations ↔ PostgreSQL, sur une base vierge : montée
+# complète, comparaison modèle/schéma, descente complète, remontée. C'est ce
+# job qui aurait signalé l'oubli de `expires_at` dans le modèle.
+migrations:
+  extends: .python
+  stage: tests
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+  variables:
+    POSTGRES_USER: sentry
+    POSTGRES_PASSWORD: sentry
+    POSTGRES_DB: sentry_migrations
+    POSTGRES_HOST_AUTH_METHOD: trust
+    DATABASE_URL: "postgresql+asyncpg://sentry:sentry@postgres:5432/sentry_migrations"
+    SECRET_KEY: "ci-secret-key-not-for-production"
+  script:
+    - alembic upgrade head
+    - alembic check
+    - alembic downgrade base
+    - alembic upgrade head
 
 # ---------------------------------------------------------------------------
 # Étape 3 — Build : l'image doit se construire et la CLI répondre

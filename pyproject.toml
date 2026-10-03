@@ -5,7 +5,7 @@ description = "SENTRY — Security Monitoring & Cyber Threat Intelligence Platfo
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-authors = [{ name = "Godwill FOKA", email = "contact@cyberill.com" }]
+authors = [{ name = "Godwill FOKA", email = "fokagodwill@gmail.com" }]
 keywords = ["cti", "threat-intelligence", "cve", "epss", "kev", "soc", "security"]
 
 dependencies = [
@@ -26,6 +26,7 @@ dependencies = [
     "pyjwt>=2.9.0",
     "pwdlib[argon2]>=0.2.1",
     "python-multipart>=0.0.9",
+    "taxii2-client==2.3.0",
 ]
 
 [project.optional-dependencies]
@@ -36,6 +37,7 @@ dev = [
     "ruff>=0.5.0",
     "mypy>=1.10.0",
     "types-redis",
+    "types-requests",
 ]
 
 [project.scripts]
@@ -80,10 +82,21 @@ disallow_untyped_defs = true
 plugins = ["pydantic.mypy"]
 exclude = ["alembic/", "tests/"]
 
+[[tool.mypy.overrides]]
+# taxii2-client ne publie pas d'annotations de types.
+module = ["taxii2client", "taxii2client.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-v --cov=sentry --cov-report=term-missing"
+
+[tool.coverage.run]
+# SQLAlchemy async exécute le code dans des greenlets : sans cette option, les
+# lignes qui suivent un `await` en base sont comptées à tort comme non couvertes.
+concurrency = ["greenlet", "thread"]
+source = ["sentry"]
 
 [tool.coverage.report]
 fail_under = 80

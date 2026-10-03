@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--5d0092c5-5f74-4287-9642-33f4c354e56d",
+  "objects": [
+    {"type": "identity", "spec_version": "2.1", "id": "identity--1", "name": "CERT exemple"},
+    {"type": "indicator", "spec_version": "2.1", "id": "indicator--1",
+     "name": "C2 QakBot", "pattern_type": "stix", "valid_from": "2026-09-25T12:00:00Z",
+     "pattern": "[ipv4-addr:value = '192.0.2.200']"},
+    {"type": "indicator", "spec_version": "2.1", "id": "indicator--2",
+     "name": "Charge utile", "pattern_type": "stix", "valid_from": "2026-09-26T08:30:00Z",
+     "pattern": "[file:hashes.'SHA-256' = 'E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855'] OR [domain-name:value = 'Update-Check.Example.org']"},
+    {"type": "indicator", "spec_version": "2.1", "id": "indicator--3",
+     "name": "Révoqué", "pattern_type": "stix", "revoked": true,
+     "pattern": "[ipv4-addr:value = '192.0.2.201']"},
+    {"type": "indicator", "spec_version": "2.1", "id": "indicator--4",
+     "name": "Règle YARA", "pattern_type": "yara", "pattern": "rule x { condition: true }"},
+    {"type": "url", "spec_version": "2.1", "id": "url--1", "value": "https://phish.example.com/login?id=A1"},
+    {"type": "malware", "spec_version": "2.1", "id": "malware--1", "name": "QakBot", "is_family": true}
+  ]
+}

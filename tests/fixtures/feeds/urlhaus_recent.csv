@@ -1,0 +1,11 @@
+################################################################
+# abuse.ch URLhaus Database Dump (CSV - recent URLs only)       #
+# Last updated: 2026-09-27 10:05:03 (UTC)                      #
+#                                                              #
+# Terms Of Use: https://urlhaus.abuse.ch/api/                  #
+################################################################
+# id,dateadded,url,url_status,last_online,threat,tags,urlhaus_link,reporter
+"3310101","2026-09-27 10:01:11","http://198.51.100.23:40125/i","online","2026-09-27 10:01:11","malware_download","elf,mozi","https://urlhaus.abuse.ch/url/3310101/","geenensp"
+"3310100","2026-09-27 09:58:42","hxxps://Payload.Example.net/drop/Stage2.EXE","online","2026-09-27 09:58:42","malware_download","exe,AsyncRAT","https://urlhaus.abuse.ch/url/3310100/","abuse_ch"
+"3310099","2026-09-27 09:55:00","https://payload.example.net:443/drop/Stage2.EXE","offline","","malware_download","exe","https://urlhaus.abuse.ch/url/3310099/","abuse_ch"
+"3310098","2026-09-27 09:51:30","not a url at all","online","","malware_download","","https://urlhaus.abuse.ch/url/3310098/","x"

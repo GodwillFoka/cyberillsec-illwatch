@@ -1,0 +1,34 @@
+#######################################################################
+# The list contains uniques URLs collected over                       #
+# the last 7 days by OSINT.digitalside.it                             #
+# The list is released without any warranty to the end users.         #
+# INFO: info@digitalside.it                                           #
+# PGP key ID: 30B31BDA                                                #
+# PGP fingerprint: 0B4C F801 E8FF E9A3 A602  D2C7 9C36 93B2 30B3 1BDA #
+# Every link reported should be considered harmefull and should       #
+# result in an unwanted malware download. Use this file carefully    #
+# Generated at: 2024-10-18 09:07:30                                   #
+#######################################################################
+http://100.42.189.107/bot.amd64
+http://100.42.189.107/bot.arm
+http://100.42.189.107/bot.arm64
+http://100.42.189.107/bot.mips
+http://100.42.189.107/bot.mips64
+http://100.42.189.107/bot.mips64le
+http://100.42.189.107/bot.mipsle
+http://100.42.189.107/bot.ppc64
+http://100.42.189.107/bot.ppc64le
+http://100.42.189.107/bot.riscv64
+http://100.42.189.107/bot.x86
+http://101.108.100.235:36107/bin.sh
+http://101.108.100.235:36107/i
+http://101.108.100.235:36107/Mozi.m
+http://101.108.102.4:38954/bin.sh
+http://101.108.106.255:46327/i
+http://101.108.109.14:39092/bin.sh
+http://101.108.11.231:50095/i
+http://101.108.128.101:36318/i
+http://101.108.13.132:36107/bin.sh
+http://101.108.13.132:36107/i
+http://101.108.133.193:56961/bin.sh
+http://101.108.133.193:56961/i

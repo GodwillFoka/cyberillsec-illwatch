@@ -131,7 +131,7 @@ sentry seed                   # flux de référence publics
 sentry users create --username admin --email admin@example.org --role admin
 
 pytest                        # rapide, sur SQLite en mémoire
-DATABASE_URL=postgresql+asyncpg://sentry:sentry@localhost:5433/sentry pytest   # sur PostgreSQL réel
+./scripts/ci-local.sh          # pipeline complet (base dédiée sentry_test)
 uvicorn sentry.app.main:app --reload --port 8000
 ```
 
@@ -139,6 +139,29 @@ Ouvrir <http://localhost:8000/docs> : la documentation Swagger interactive doit 
 
 Guide pas à pas, y compris pour un développeur découvrant la cybersécurité :
 [`docs/ONBOARDING.md`](docs/ONBOARDING.md).
+
+## Ce que SENTRY sait faire aujourd'hui
+
+| Domaine | Disponible | Comment |
+|---|---|---|
+| Comptes et rôles | ✅ | `sentry users create`, `POST /api/v1/auth/token` |
+| Sources de flux | ✅ | `sentry feeds add/list`, `/api/v1/feeds` (ADMIN pour l'écriture) |
+| Collecte CSV / JSON / STIX 2.1 | ✅ | `sentry feeds fetch <nom>` ou `fetch-all` |
+| Connecteur AlienVault OTX | ✅ | source de type `OTX`, clé `OTX_API_KEY` dans `.env` |
+| Collecte planifiée | ✅ | `sentry feeds worker` (verrou Redis par flux, plusieurs instances possibles) |
+| Journal de collecte JSON | ✅ | une ligne `feed.collected` par collecte sur la sortie d'erreur |
+| IOC dédupliqués, expiration | ✅ | `/api/v1/indicators` (lecture, soumission par lot) |
+| Provenance multi-sources | ✅ | `GET /api/v1/indicators/{id}` → `sources` ; `source_count` en liste |
+| Score de risque CVE | 🟡 | calcul prêt et testé ; collecte NVD/KEV/EPSS en phase 3 |
+| Incidents | 🟡 | machine d'état prête ; API en phase 4 |
+| Dashboard, threat hunting | ❌ | phases 5 et 6 |
+
+## Mesurer l'avancement
+
+- **Sur les données** : `sentry status` — schéma, santé des sources, volume d'IOC et critères
+  du jalon M2 constatés en base (✔/✘).
+- **Sur le code** : `./scripts/ci-local.sh` — qualité, tests, couverture, migrations.
+- **Sur le planning** : `Rapport/PLAN_DIRECTEUR.md` — tâches par étape et critères de fin.
 
 ## CLI
 
@@ -152,14 +175,33 @@ sentry db downgrade rev # retour arrière (confirmation demandée)
 sentry db current       # révision appliquée vs révision cible
 sentry seed             # données de référence, idempotent
 sentry users create     # création de compte (mot de passe saisi masqué, ≥ 12 caractères)
+sentry feeds list       # sources de flux et leur état
+sentry feeds add        # nouvelle source (HTTPS public, nom unique)
+sentry feeds fetch X    # collecte immédiate d'une source
+sentry feeds fetch-all  # collecte des sources échues (usage ponctuel ou cron)
+sentry feeds worker     # planificateur intégré : collecte en continu (Ctrl+C / SIGTERM pour arrêter)
+sentry status           # avancement mesuré : schéma, sources, IOC, critères du jalon M2
 ```
 
 Authentification : `POST /api/v1/auth/token` (flux OAuth2 *password*, formulaire
 `username` / `password`) renvoie un jeton Bearer JWT ; `GET /api/v1/users/me` renvoie le profil.
 Le bouton **Authorize** de Swagger (`/docs`) utilise directement ce flux.
 
-Les commandes `sentry feeds`, `sentry cves`, `sentry incidents`, `sentry dashboard show` et
-`sentry hunt` arrivent avec leurs modules respectifs (phases 2 à 6).
+Sources de flux (T2.2) : `GET /api/v1/feeds` et `GET /api/v1/feeds/{id}` pour tout utilisateur
+authentifié ; `POST`, `PATCH` et `DELETE` réservés au rôle `ADMIN`. Seules les URL HTTPS publiques
+sont acceptées.
+
+Indicateurs (IOC) : `GET /api/v1/indicators` et `GET /api/v1/indicators/{id}` pour tout
+utilisateur authentifié ; `POST /api/v1/indicators` (lot de 1 000 au plus) pour `ADMIN` et
+`ANALYST`. Règles de déduplication et d'expiration : `docs/adr/ADR-005-cycle-de-vie-ioc.md` ;
+provenance multi-sources : `docs/adr/ADR-006-provenance-multi-sources.md`.
+
+Collecte en production : `docker compose --profile full up -d` démarre l'API **et** le worker.
+Journal exploitable : `sentry feeds worker 2>> collecte.jsonl`, puis par exemple
+`jq 'select(.event=="feed.collected") | {feed_name, inserted, duration_ms}' collecte.jsonl`.
+
+Les commandes `sentry cves`, `sentry incidents`, `sentry dashboard show` et `sentry hunt`
+arrivent avec leurs modules respectifs (phases 3 à 6).
 
 ## Structure du dépôt
 
@@ -201,6 +243,10 @@ pytest
 ```
 
 ## Feuille de route
+
+État au 27/09/2026 : **P1 livrée (`v0.1.0`)**, **P2 en cours** (CRUD des flux, ingestion
+dédupliquée des IOC). Les dates ci-dessous sont celles du Cahier des charges ; leur recalage est
+proposé dans [ADR-004](docs/adr/ADR-004-recalage-planning.md).
 
 | Phase | Fenêtre | Livrable | Jalon |
 |---|---|---|---|

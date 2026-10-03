@@ -120,3 +120,97 @@ def test_parcours_cli_complet() -> None:
         assert result.exit_code == 0
     finally:
         asyncio.run(_cleanup(username))
+
+
+def test_commande_status() -> None:
+    asyncio.run(_reset_schema())
+    runner = CliRunner()
+    assert runner.invoke(cli, ["db", "init"]).exit_code == 0
+    result = runner.invoke(cli, ["status"])
+    assert result.exit_code == 0, result.output
+    assert "à jour" in result.output
+    assert "Jalon M2" in result.output and "non atteint" in result.output
+
+
+async def _checks_in_db() -> dict[str, str]:
+    async with get_engine().connect() as conn:
+        rows = await conn.execute(
+            text(
+                "SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint "
+                "WHERE contype = 'c' AND conrelid::regclass::text IN ('indicators', 'threat_feeds')"
+            )
+        )
+        found = {str(r[0]): str(r[1]) for r in rows.all()}
+    await dispose_engine()
+    return found
+
+
+def test_contraintes_check_migrees_identiques_au_modele() -> None:
+    """`alembic check` ignore le texte des CHECK : comparaison faite ici, après migration.
+
+    C'est ce test qui signale une valeur d'énumération ajoutée au code (ex. `OTX`) sans
+    la migration correspondante.
+    """
+    asyncio.run(_reset_schema())
+    migrations.upgrade("head")
+    in_db = asyncio.run(_checks_in_db())
+
+    declared = {
+        c.name: str(c.sqltext)
+        for table in ("indicators", "threat_feeds")
+        for c in Base.metadata.tables[table].constraints
+        if c.__class__.__name__ == "CheckConstraint"
+    }
+    assert set(declared) == set(in_db)
+    for name, expression in declared.items():
+        allowed = {v.strip(" '") for v in expression.split("(", 1)[1].rstrip(")").split(",")}
+        quoted = {v.split("'")[1] for v in in_db[name].split("ARRAY[", 1)[-1].split(",")}
+        assert allowed == quoted, (name, allowed, quoted)
+
+
+async def _exec(*statements: str) -> list[tuple[object, ...]]:
+    async with get_engine().begin() as conn:
+        result: list[tuple[object, ...]] = []
+        for statement in statements:
+            cursor = await conn.execute(text(statement))
+            if cursor.returns_rows:
+                result = [tuple(r) for r in cursor.all()]
+    await dispose_engine()
+    return result
+
+
+def test_migration_provenance_reprend_les_ioc_existants() -> None:
+    """1f3dafc3008c recopie `indicators.feed_id` dans `indicator_sources`, et refuse de
+    redescendre tant qu'un flux OTX existe (aucune suppression implicite)."""
+    asyncio.run(_reset_schema())
+    migrations.upgrade("a4973a3782e3")
+    asyncio.run(
+        _exec(
+            "INSERT INTO threat_feeds (id, name, url, feed_type, polling_interval, is_active, "
+            "status, created_at, updated_at) VALUES ('00000000-0000-0000-0000-00000000f001', "
+            "'Feodo', 'https://f.example.org/x', 'CSV', 3600, true, 'HEALTHY', now(), now())",
+            "INSERT INTO indicators (id, feed_id, type, value, severity, hit_count, first_seen, "
+            "last_seen) VALUES ('00000000-0000-0000-0000-00000000e001', "
+            "'00000000-0000-0000-0000-00000000f001', 'IPV4', '203.0.113.7', 'HIGH', 4, "
+            "now() - interval '3 days', now())",
+        )
+    )
+
+    migrations.upgrade("head")
+    rows = asyncio.run(_exec("SELECT feed_id::text, hit_count FROM indicator_sources"))
+    assert rows == [("00000000-0000-0000-0000-00000000f001", 4)]
+
+    asyncio.run(
+        _exec(
+            "INSERT INTO threat_feeds (id, name, url, feed_type, polling_interval, is_active, "
+            "status, created_at, updated_at) VALUES ('00000000-0000-0000-0000-00000000f002', "
+            "'OTX', 'https://otx.alienvault.com/api/v1/pulses/subscribed', 'OTX', 3600, true, "
+            "'PENDING', now(), now())"
+        )
+    )
+    with pytest.raises(RuntimeError, match="flux OTX"):
+        migrations.downgrade("a4973a3782e3")
+
+    asyncio.run(_exec("DELETE FROM threat_feeds WHERE feed_type = 'OTX'"))
+    migrations.downgrade("a4973a3782e3")
+    asyncio.run(_reset_schema())
