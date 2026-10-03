@@ -15,12 +15,16 @@ from sentry.app.models import (
     CVE,
     CollectorState,
     CVEAlert,
+    HuntingMatch,
+    HuntingSession,
+    Incident,
+    IncidentEvent,
     Indicator,
     IndicatorSource,
     ThreatFeed,
 )
 from sentry.modules.threat_feeds.indicators import is_active_clause
-from sentry.shared.enums import FeedStatus, FeedType
+from sentry.shared.enums import FeedStatus, FeedType, HuntStatus, IncidentEventType, IncidentStatus
 
 M2_MIN_REAL_IOCS = 500
 M2_MIN_HEALTHY_SOURCES = 3
@@ -54,6 +58,7 @@ class ProjectStatus:
     alerts_total: int = 0
     alerts_open: int = 0
     m3: list[Criterion] = field(default_factory=list)
+    later: list[Criterion] = field(default_factory=list)  # jalons M4 (incidents), M6 (hunting)
 
     @property
     def m2_reached(self) -> bool:
@@ -119,7 +124,49 @@ async def compute_status(session: AsyncSession, now: datetime | None = None) -> 
         Criterion("Flux STIX connecté", bool(stix), f"{len(stix)} source STIX/TAXII saine"),
     ]
     await _compute_m3(session, status, moment)
+    await _compute_later(session, status)
     return status
+
+
+async def _compute_later(session: AsyncSession, status: ProjectStatus) -> None:
+    """M4 et M6 constatés sur données : un cycle d'incident complet, une chasse aboutie."""
+    closed = (
+        await session.scalar(
+            select(func.count())
+            .select_from(Incident)
+            .where(Incident.status == IncidentStatus.CLOTURE)
+        )
+        or 0
+    )
+    transitions = (
+        await session.scalar(
+            select(func.count())
+            .select_from(IncidentEvent)
+            .where(IncidentEvent.event_type == IncidentEventType.STATUS_CHANGE)
+        )
+        or 0
+    )
+    hunts = (
+        await session.scalar(
+            select(func.count())
+            .select_from(HuntingSession)
+            .where(HuntingSession.status == HuntStatus.TERMINEE)
+        )
+        or 0
+    )
+    hunt_matches = await session.scalar(select(func.count()).select_from(HuntingMatch)) or 0
+    status.later = [
+        Criterion(
+            "M4 — Incident mené jusqu'à CLOTURE",
+            closed >= 1,
+            f"{closed} incident(s) clos, {transitions} transition(s) tracée(s)",
+        ),
+        Criterion(
+            "M6 — Session de chasse terminée avec correspondances",
+            hunts >= 1 and hunt_matches >= 1,
+            f"{hunts} session(s) terminée(s), {hunt_matches} correspondance(s)",
+        ),
+    ]
 
 
 async def _compute_m3(session: AsyncSession, status: ProjectStatus, moment: datetime) -> None:

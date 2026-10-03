@@ -202,7 +202,11 @@ async def test_worker_survit_et_s_arrete() -> None:
     stream = io.StringIO()
     configure_logging("INFO", stream=stream)
     cycles = await run_worker(
-        tick_seconds=0, max_cycles=2, lock=LocalFeedLock(), include_cves=False
+        tick_seconds=0,
+        max_cycles=2,
+        lock=LocalFeedLock(),
+        include_cves=False,
+        include_hunting=False,
     )
     assert cycles == 2
     events = [json.loads(line)["event"] for line in stream.getvalue().splitlines()]
@@ -213,5 +217,12 @@ async def test_worker_arret_demande() -> None:
     stop = asyncio.Event()
     stop.set()
     assert (
-        await run_worker(tick_seconds=60, stop=stop, lock=LocalFeedLock(), include_cves=False) == 0
+        await run_worker(
+            tick_seconds=60,
+            stop=stop,
+            lock=LocalFeedLock(),
+            include_cves=False,
+            include_hunting=False,
+        )
+        == 0
     )

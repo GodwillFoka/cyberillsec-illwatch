@@ -89,3 +89,13 @@ def status() -> None:
     console.print(m3)
     verdict = "[green]atteint[/]" if state.m3_reached else "[yellow]non atteint[/]"
     console.print(f"Jalon M3 : {verdict}")
+
+    later = Table(title="Jalons M4 et M6 — Incidents et threat hunting")
+    later.add_column("Critère")
+    later.add_column("État")
+    later.add_column("Constat")
+    for criterion in state.later:
+        later.add_row(
+            criterion.label, "[green]✔[/]" if criterion.met else "[red]✘[/]", criterion.detail
+        )
+    console.print(later)

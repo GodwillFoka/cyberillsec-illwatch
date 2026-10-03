@@ -111,7 +111,7 @@ def test_worker_un_cycle(runner: CliRunner, monkeypatch: pytest.MonkeyPatch) -> 
     assert added.exit_code == 0, added.output
 
     result = runner.invoke(
-        cli, ["feeds", "worker", "--tick", "5", "--max-cycles", "1", "--no-cves"]
+        cli, ["feeds", "worker", "--tick", "5", "--max-cycles", "1", "--no-cves", "--no-hunt"]
     )
     assert result.exit_code == 0, result.output
     assert "arrêté après 1 cycle" in result.output

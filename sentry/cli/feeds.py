@@ -350,6 +350,37 @@ async def _maybe_sync_cves(lock: FeedLock) -> None:
         await lock.release("cve-sync", token)
 
 
+async def _maybe_hunt(lock: FeedLock) -> None:
+    """Chasse planifiée sur la base d'IOC (RF-27), une fois par HUNT_INTERVAL_SECONDS."""
+    from datetime import UTC, datetime
+
+    from sentry.app.database import get_session_factory
+    from sentry.modules.threat_hunting import engine
+    from sentry.shared.enums import HuntTrigger
+
+    settings = get_settings()
+    if settings.hunt_interval_seconds == 0:
+        return
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        if not await engine.hunt_due(
+            session, interval_seconds=settings.hunt_interval_seconds, now=now
+        ):
+            return
+    token = await lock.acquire("hunt", settings.collect_lock_ttl_seconds)
+    if token is None:
+        return
+    try:
+        async with get_session_factory()() as session:
+            await engine.mark_hunt_attempt(session, now)
+            await engine.run_hunt(
+                session, settings=settings, fetch=fetch_feed_content, trigger=HuntTrigger.SCHEDULED
+            )
+            await session.commit()
+    finally:
+        await lock.release("hunt", token)
+
+
 async def run_worker(
     *,
     tick_seconds: int,
@@ -357,6 +388,7 @@ async def run_worker(
     lock: FeedLock | None = None,
     stop: asyncio.Event | None = None,
     include_cves: bool = True,
+    include_hunting: bool = True,
 ) -> int:
     """Boucle du planificateur : un cycle `collect_due_feeds` toutes les `tick_seconds`,
     et la synchronisation CVE toutes les `CVE_SYNC_INTERVAL_SECONDS` (si `include_cves`).
@@ -384,6 +416,8 @@ async def run_worker(
                     await session.commit()
                 if include_cves:
                     await _maybe_sync_cves(active_lock)
+                if include_hunting:
+                    await _maybe_hunt(active_lock)
                 collector.log.info(
                     "worker.cycle",
                     extra={
@@ -420,9 +454,15 @@ async def run_worker(
     "--cves/--no-cves",
     default=True,
     show_default=True,
-    help="Inclure la synchronisation CVE (KEV, NVD, EPSS) toutes les CVE_SYNC_INTERVAL_SECONDS.",
+    help="Synchronisation CVE (KEV, NVD, EPSS) toutes les CVE_SYNC_INTERVAL_SECONDS.",
 )
-def feeds_worker(tick: int | None, max_cycles: int | None, cves: bool) -> None:
+@click.option(
+    "--hunt/--no-hunt",
+    default=True,
+    show_default=True,
+    help="Chasse planifiée sur la base d'IOC toutes les HUNT_INTERVAL_SECONDS.",
+)
+def feeds_worker(tick: int | None, max_cycles: int | None, cves: bool, hunt: bool) -> None:
     """Planificateur intégré : collecte en continu les sources échues (T2.6).
 
     Plusieurs workers peuvent tourner : le verrou Redis par flux empêche qu'un même flux
@@ -439,7 +479,11 @@ def feeds_worker(tick: int | None, max_cycles: int | None, cves: bool) -> None:
             with contextlib.suppress(NotImplementedError):
                 loop.add_signal_handler(sig, stop.set)
         return await run_worker(
-            tick_seconds=tick_seconds, max_cycles=max_cycles, stop=stop, include_cves=cves
+            tick_seconds=tick_seconds,
+            max_cycles=max_cycles,
+            stop=stop,
+            include_cves=cves,
+            include_hunting=hunt,
         )
 
     with contextlib.suppress(KeyboardInterrupt):

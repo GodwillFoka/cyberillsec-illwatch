@@ -105,6 +105,12 @@ class Settings(BaseSettings):
     # Période de synchronisation CVE par le worker (KEV + NVD incrémental + EPSS).
     cve_sync_interval_seconds: int = Field(default=6 * 3600, ge=600)
 
+    # --- Threat hunting (phase 6, ADR-009) ----------------------------------
+    # Liste officielle des relais de sortie Tor (RULE-01), texte, une IP par ligne.
+    tor_exit_list_url: str = "https://check.torproject.org/torbulkexitlist"
+    # Chasse planifiée sur la base d'IOC par le worker (s) ; 0 = désactivée.
+    hunt_interval_seconds: int = Field(default=24 * 3600, ge=0)
+
     # --- Scoring & alerting (§3.3.3 du CdC) ---------------------------------
     risk_alert_threshold: float = Field(default=75.0, ge=0, le=100)
     # Webhook (Slack, Mattermost, Teams via passerelle…) appelé à chaque alerte. Configuré
