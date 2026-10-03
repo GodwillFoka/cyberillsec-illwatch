@@ -7,7 +7,9 @@ CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te
 
 ## 1. Prérequis
 
-- Linux (Ubuntu 22.04+ ou Debian 12), macOS, ou WSL2 sous Windows
+- Linux (Kali Linux, Ubuntu 22.04+ ou Debian 12), macOS, ou WSL2 sous Windows
+- Kali Linux : `sudo apt install -y docker.io docker-compose python3-venv` puis
+  `sudo usermod -aG docker $USER` et reconnexion
 - Python 3.12 ou supérieur — `python3 --version`
 - Git — `git --version`
 - Docker et Docker Compose — `docker compose version`
@@ -183,6 +185,9 @@ sentry db current
 | `Base « sentry » refusée` | `DATABASE_URL` pointe vers la base de travail | Utiliser une base dont le nom finit par `_test` |
 | Les tests passent en local, échouent en CI | Dépendance à un état local | Les tests doivent créer leurs propres données ; voir `tests/conftest.py` |
 | HTTP 429 depuis NVD | Rate limit sans clé API | Demander une clé sur nvd.nist.gov et renseigner `NVD_API_KEY` |
+| Une source reste `DEGRADED` | Hôte injoignable, clé absente ou format changé | `sentry feeds probe <nom>` : joignable ? identifiants acceptés ? IOC produits ? |
+| HTTP 429 sur `/auth/token` | 5 échecs de connexion en 15 min | Attendre 15 min (`LOGIN_WINDOW_SECONDS`) ou vider la clé Redis `sentry:login:user:<nom>` |
+| Tests réseau marqués *skipped* | Tests `live` désactivés par défaut | `SENTRY_LIVE_TESTS=1 pytest tests/test_live_sources.py --no-cov` |
 
 ## 9. Bilan hebdomadaire
 

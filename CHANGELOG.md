@@ -7,7 +7,36 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
-### Ajouté — Phase 3 (M3 « Moteur CVE & alerting », branche `feature/phase3-cve`)
+### Ajouté — Phase 6 (v1.0 « Threat Hunting »)
+- Moteur de règles déterministe, catalogue RULE-01 à RULE-06 (Tor, DNS dynamique, DGA,
+  ransomware, CVE exploitables sur l'inventaire, IOC connu) ; chasse sur observables soumis ou sur
+  la base ; sessions et correspondances enregistrées ; chasse planifiée par le worker.
+- API `/api/v1/hunting/rules|sessions` ; CLI `sentry hunt rules|run|show`. ADR-009.
+
+### Ajouté — Phase 5 (M5 « Dashboard & reporting »)
+- `/api/v1/dashboard/summary|recent|export` ; `sentry dashboard show|export` ; MTTR ; exports
+  CSV RFC 4180 / JSON RFC 8259 diffusés en flux, protégés contre l'injection CSV.
+
+### Ajouté — Phase 4 (M4 « Gestion des incidents »)
+- Service, API `/api/v1/incidents` et CLI `sentry incidents` ; chronologie immuable (ORM et
+  déclencheur PostgreSQL) ; liens IOC/CVE ; incident ouvert depuis une alerte CVE. ADR-008.
+
+### Ajouté — TAXII 2.1 réel et sources vérifiées
+- Backend `taxii2-client` 2.3.0 durci (SSRF, redirections refusées, délai, taille, erreurs
+  typées), Basic / Bearer / en-tête par hôte, `TAXII_CLIENT=library|builtin`. ADR-010.
+- `sentry taxii discover`, `sentry feeds probe`, `sentry feeds enable|disable`.
+- Seed vérifié : IPsum (sans clé), RedEye TAXII (jeton gratuit) ; DigitalSide injoignable → inactif.
+- Tests réseau réels opt-in (`SENTRY_LIVE_TESTS=1`).
+
+### Sécurité
+- Limitation des tentatives de connexion (compte et adresse IP, Redis partagé, repli mémoire).
+- `.dockerignore` : contexte de build sans `.env`, `.git` ni environnement virtuel.
+
+### Corrigé
+- Bundles Git (≈ 480 Ko) versionnés par erreur : retirés et ignorés.
+- Numéros d'exigence RF-15 / RF-16 du moteur CVE.
+
+### Ajouté — Phase 3 (M3 « Moteur CVE & alerting »)
 - **NVD 2.0** : synchronisation initiale (catalogue KEV + CVE modifiées depuis
   `NVD_INITIAL_DAYS`) puis incrémentale (fenêtres `lastModStartDate` de 120 j, curseur en base),
   pagination, débit respecté (6 s sans clé, 0,6 s avec `NVD_API_KEY`). CVSS v3.1 → v3.0 → v4.0 ;

@@ -113,39 +113,49 @@ plutôt que depuis `alembic.ini` — pour qu'il n'existe qu'une seule source de 
 
 ## Modèle de données
 
-Six tables, détaillées en DDL au [§4.4 du Cahier des charges](CAHIER_DES_CHARGES.md#44-modèle-relationnel).
+Quatorze tables, créées par six migrations (`alembic/versions/`). Les contraintes métier sont
+portées par la base (CHECK sur chaque énumération, clés étrangères, unicité), pas seulement par
+le code : une écriture SQL directe ne peut pas créer un état incohérent.
 
 ```
-users ──────┬──< incidents ──< incident_events
-            └──< incident_events (author)
+users ──┬──< incidents ──┬──< incident_events        (immuable : déclencheur PostgreSQL)
+        │                ├──< incident_indicators >── indicators
+        │                └──< incident_cves ──────>── cves
+        └──< hunting_sessions ──< hunting_matches ──> indicators | cves
 
-threat_feeds ──< indicators
+threat_feeds ──< indicators ──< indicator_sources >── threat_feeds   (provenance, ADR-006)
 
-cves  (autonome en v1.0 ; tables de liaison incidents↔IOC/CVE en phase 4)
+cves ──< cve_priority_history          cves ──< cve_alerts ──> incidents.source_alert_id
+collector_state                        (curseurs NVD, ligne de base des alertes, cadences)
 ```
 
-Index critiques : `idx_indicators_type_val` (déduplication), `idx_indicators_last_seen` (aging),
-`idx_cves_risk_score` (tri du dashboard), `idx_incident_events_timeline` (reconstruction
-chronologique).
+Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_last_seen`
+(expiration), `idx_cves_risk_score` et `idx_cves_priority` (tri et filtres du moteur CVE),
+`idx_incident_events_timeline` (chronologie), `idx_incidents_status_severity` (tableau de bord).
 
 ## Sécurité
 
 | Mesure | Mise en œuvre |
 |---|---|
-| Aucun secret dans le code | Configuration Pydantic depuis l'environnement ; `.env` ignoré par git |
-| Validation stricte des entrées | Pydantic v2 sur toutes les frontières d'API |
+| Aucun secret dans le code ni en base | Configuration Pydantic depuis l'environnement ; gabarits d'URL et en-têtes ; masquage dans erreurs et journaux |
+| SSRF | Liste blanche d'adresses publiques, DNS vérifié avant chaque requête, redirections revalidées (httpx) ou refusées (taxii2-client) — `threat_feeds/fetcher.py`, `taxii.py` |
+| Réponses hostiles | Taille plafonnée lue en flux, délai par requête, backoff, 429 respecté |
+| Authentification | JWT HS256, Argon2id, rôle relu en base, 5 échecs par compte / 20 par IP → 429 (`app/throttle.py`) |
+| Validation stricte des entrées | Pydantic v2 (`extra="forbid"`) sur toutes les frontières d'API |
 | Pas d'injection SQL | Aucune requête construite par concaténation ; ORM ou requêtes paramétrées |
-| Conteneur non privilégié | Utilisateur `sentry` UID 10001 dans l'image Docker |
-| Chiffrement en transit | TLS 1.3 exigé sur toute communication externe |
-| Dépendances surveillées | Renovate hebdomadaire ; scan de dépendances et détection de secrets GitLab à chaque pipeline |
-| Analyse statique | SAST GitLab à chaque pipeline |
+| Intégrité de l'audit | Chronologie d'incident immuable (ORM + déclencheur PostgreSQL) |
+| Injection CSV | Cellules exportées neutralisées (`dashboard/service.py`) |
+| Conteneur non privilégié | Utilisateur `sentry` UID 10001 ; `.dockerignore` excluant `.env` et `.git` |
+| Dépendances surveillées | Renovate ; SAST, secrets et dépendances analysés à chaque pipeline |
 
 ## Ce qui n'est délibérément pas fait en v1.0
 
 - **Pas de microservices.** Le monolithe modulaire tient jusqu'à 100 000 événements/jour. Découper
   avant d'en avoir besoin coûterait la simplicité de déploiement, qui est un argument produit.
 - **Pas d'Elasticsearch.** PostgreSQL avec des index adaptés couvre les besoins de recherche de la
-  v1.0. C'est précisément la lourdeur des alternatives que SENTRY cherche à éviter.
-- **Pas d'IHM lourde.** API et CLI d'abord ; le dashboard SOC de la phase 5 est une vue console
-  `rich` plus des endpoints d'agrégation.
+  v1.0 (P95 de 8 ms sur 30 000 CVE). C'est la lourdeur des alternatives que SENTRY évite.
+- **Pas d'IHM web.** API et CLI d'abord ; le tableau de bord SOC est une vue console `rich` plus des
+  endpoints d'agrégation et d'export. Une interface web est la première évolution après la v1.0.
+- **Pas de moteur Sigma complet.** Les règles de chasse portent sur des observables, pas sur des
+  journaux structurés : six règles déterministes suffisent (ADR-009).
 - **Pas de facteur CWE dans le scoring.** Voir [ADR-001](adr/ADR-001-scoring-composite.md).
