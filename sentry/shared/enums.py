@@ -63,7 +63,11 @@ class IncidentStatus(StrEnum):
 
 
 class IncidentEventType(StrEnum):
+    """Événements de la chronologie immuable d'un incident — RF-19."""
+
+    CREATED = "CREATED"
     STATUS_CHANGE = "STATUS_CHANGE"
+    ASSIGNED = "ASSIGNED"
     COMMENT = "COMMENT"
     IOC_ATTACHED = "IOC_ATTACHED"
     CVE_ATTACHED = "CVE_ATTACHED"
