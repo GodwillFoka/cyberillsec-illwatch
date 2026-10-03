@@ -137,7 +137,9 @@ async def _checks_in_db() -> dict[str, str]:
         rows = await conn.execute(
             text(
                 "SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint "
-                "WHERE contype = 'c' AND conrelid::regclass::text IN ('indicators', 'threat_feeds')"
+                "WHERE contype = 'c' AND conrelid::regclass::text "
+                "IN ('indicators', 'threat_feeds', 'cves', 'incidents', 'incident_events', "
+                "'hunting_sessions', 'hunting_matches')"
             )
         )
         found = {str(r[0]): str(r[1]) for r in rows.all()}
@@ -157,7 +159,15 @@ def test_contraintes_check_migrees_identiques_au_modele() -> None:
 
     declared = {
         c.name: str(c.sqltext)
-        for table in ("indicators", "threat_feeds")
+        for table in (
+            "indicators",
+            "threat_feeds",
+            "cves",
+            "incidents",
+            "incident_events",
+            "hunting_sessions",
+            "hunting_matches",
+        )
         for c in Base.metadata.tables[table].constraints
         if c.__class__.__name__ == "CheckConstraint"
     }
@@ -169,13 +179,15 @@ def test_contraintes_check_migrees_identiques_au_modele() -> None:
 
 
 async def _exec(*statements: str) -> list[tuple[object, ...]]:
-    async with get_engine().begin() as conn:
-        result: list[tuple[object, ...]] = []
-        for statement in statements:
-            cursor = await conn.execute(text(statement))
-            if cursor.returns_rows:
-                result = [tuple(r) for r in cursor.all()]
-    await dispose_engine()
+    result: list[tuple[object, ...]] = []
+    try:
+        async with get_engine().begin() as conn:
+            for statement in statements:
+                cursor = await conn.execute(text(statement))
+                if cursor.returns_rows:
+                    result = [tuple(r) for r in cursor.all()]
+    finally:  # même en cas d'erreur SQL : le moteur ne doit pas survivre à sa boucle
+        await dispose_engine()
     return result
 
 
@@ -214,3 +226,45 @@ def test_migration_provenance_reprend_les_ioc_existants() -> None:
     asyncio.run(_exec("DELETE FROM threat_feeds WHERE feed_type = 'OTX'"))
     migrations.downgrade("a4973a3782e3")
     asyncio.run(_reset_schema())
+
+
+def test_chronologie_immuable_meme_en_sql_direct() -> None:
+    """RF-19 : le déclencheur PostgreSQL refuse UPDATE et DELETE sur incident_events."""
+
+    asyncio.run(_reset_schema())
+    migrations.upgrade("head")
+    asyncio.run(
+        _exec(
+            "INSERT INTO incidents (id, title, description, severity, status, created_at, "
+            "updated_at) VALUES ('00000000-0000-0000-0000-0000000000a1', 't', 'd', 'LOW', "
+            "'NOUVEAU', now(), now())",
+            "INSERT INTO incident_events (id, incident_id, event_type, message, created_at) "
+            "VALUES ('00000000-0000-0000-0000-0000000000b1', "
+            "'00000000-0000-0000-0000-0000000000a1', 'CREATED', 'ouvert', now())",
+        )
+    )
+    try:
+        _assert_immutable()
+    finally:
+        asyncio.run(_reset_schema())
+
+
+def _assert_immutable() -> None:
+    from sqlalchemy.exc import DBAPIError
+
+    for statement in (
+        "UPDATE incident_events SET message = 'falsifié'",
+        "DELETE FROM incident_events",
+    ):
+        with pytest.raises(DBAPIError, match="immuable"):
+            asyncio.run(_exec(statement))
+    rows = asyncio.run(_exec("SELECT message FROM incident_events"))
+    assert rows == [("ouvert",)]
+    with pytest.raises(DBAPIError, match="ck_incidents_severity"):
+        asyncio.run(
+            _exec(
+                "INSERT INTO incidents (id, title, description, severity, status, created_at, "
+                "updated_at) VALUES (gen_random_uuid(), 't', 'd', 'URGENT', 'NOUVEAU', now(), "
+                "now())"
+            )
+        )

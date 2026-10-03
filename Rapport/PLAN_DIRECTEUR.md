@@ -1,11 +1,17 @@
 # 🛡️ SENTRY — Plan directeur : état, tâches par étape, attentes et perspectives
 
-**Date :** 27/09/2026, mis à jour le 28/09/2026 · **Version courante :** `0.1.0` (M1) ·
+**Date :** 27/09/2026, mis à jour le 03/10/2026 · **Version courante :** `0.1.0` (M1) ·
 **Branches de travail :** `feature/threat-feeds-indicators` (à fusionner), puis
 `feature/sprint3-ingestion`
 
-> **Mise à jour du 28/09.** Sprint 3 codé : voir `Rapport/BILAN_SPRINT_3.md` et
-> `Rapport/RAPPORT_GLOBAL.md`. État des tâches de l'étape 1 ci-dessous.
+> **Mise à jour du 29/09.** Clôture de M2 et phase 3 codées : voir
+> `Rapport/BILAN_M2_PHASE_3.md` et `Rapport/RAPPORT_GLOBAL.md`. Les étapes 1 et 2 ne restent
+> ouvertes que pour leur constat sur données réelles (`sentry status`).
+
+> **Mise à jour du 03/10.** Backend TAXII 2.1 réel (`taxii2-client` 2.3.0, durci) et phases 4,
+> 5 et 6 codées sur `feature/phases-4-6` : 388 tests, couverture 94 %. Voir
+> `Rapport/BILAN_TAXII_PHASES_4_6.md`. Les étapes 3 à 5 restent ouvertes sur les tâches
+> marquées ❌ ou ◐ ci-dessous et sur leur constat en préproduction.
 
 Ce document sert de fil conducteur jusqu'à la v1.0. Chaque grande étape se termine par un
 **rapport de fin d'étape** dans `Rapport/`, à partir du gabarit de la section 4. Une étape n'est
@@ -107,9 +113,8 @@ automatique toutes les 15 min ; provenance multi-sources.
 | 1.8 | T2.10 TAXII 2.1 (collection publique) | P2 | une collection collectée |
 | 1.9 | Mesure mémoire sous collecte (RNF-MEM-01 ≤ 256 Mo) | P1 | mesure consignée |
 
-**État au 28/09 :** 1.3 ✅ · 1.4 ✅ (code ; constat avec votre clé) · 1.5 ✅ · 1.6 ✅ ·
-1.7 ✅ (`202c6aa`) · 1.9 🟡 (91 Mo sur 20 000 IOC synthétiques ; à refaire sur OTX réel) ·
-1.1, 1.2 et 1.8 : à votre main (clés, collecte réelle, choix d'une source STIX).
+**État au 29/09 :** 1.3 à 1.7 ✅ · 1.8 ✅ (TAXII 2.1, DigitalSide invité) · 1.9 ✅ (120 Mo sur
+37 000 IOC réels) · 1.1 et 1.2 : à votre main (clé OTX, `sentry seed && sentry feeds fetch-all`).
 
 **Attentes (critères M2 du Cahier des charges).** Collecteur OTX et flux STIX connectés ;
 déduplication fonctionnelle ; ≥ 500 IOC réels.
@@ -130,6 +135,9 @@ déduplication fonctionnelle ; ≥ 500 IOC réels.
 | 2.6 | CLI `sentry cves list / search / alert` | P1 | parcours CLI testé |
 | 2.7 | Cache Redis des réponses NVD (RSK-01) | P1 | 2ᵉ synchro sans appel redondant |
 
+**État au 29/09 :** 2.1 à 2.6 ✅ (ADR-007) · 2.7 cache Redis NVD : reporté, non nécessaire aux
+volumes mesurés · constat : `sentry cves sync` puis `sentry status` (critères M3).
+
 **Attentes M3.** NVD synchronisée, EPSS intégré, score vérifié par tests, alerte sur CVE critique.
 **Rapport de fin :** `Rapport/BILAN_PHASE_3.md` + `v0.3.0`.
 
@@ -140,12 +148,12 @@ déduplication fonctionnelle ; ≥ 500 IOC réels.
 
 | # | Tâche | Prio | Critère de fin |
 |---|---|---|---|
-| 3.1 | `/api/v1/incidents` (création, transitions validées par la machine d'état) | P0 | transitions interdites → 409 |
-| 3.2 | Chronologie immuable garantie **par la base** (trigger refusant UPDATE/DELETE) | P0 | test PostgreSQL |
-| 3.3 | Liaisons incidents ↔ IOC / CVE (tables de liaison) | P0 | liaison bidirectionnelle testée |
-| 3.4 | Clôture exigeant un résumé post-mortem | P0 | déjà en logique, exposé en API |
-| 3.5 | CLI `sentry incidents list / create / close` | P1 | parcours testé |
-| 3.6 | Gestion des faux positifs d'IOC (liste d'exclusion), liée aux incidents | P1 | un IOC exclu n'apparaît plus comme actif |
+| 3.1 ✅ | `/api/v1/incidents` (création, transitions validées par la machine d'état) | P0 | transitions interdites → 409 |
+| 3.2 ✅ | Chronologie immuable garantie **par la base** (trigger refusant UPDATE/DELETE) | P0 | test PostgreSQL |
+| 3.3 ✅ | Liaisons incidents ↔ IOC / CVE (tables de liaison) | P0 | liaison bidirectionnelle testée |
+| 3.4 ✅ | Clôture exigeant un résumé post-mortem | P0 | déjà en logique, exposé en API |
+| 3.5 ✅ | CLI `sentry incidents list / create / close` | P1 | parcours testé |
+| 3.6 ❌ | Gestion des faux positifs d'IOC (liste d'exclusion), liée aux incidents | P1 | un IOC exclu n'apparaît plus comme actif |
 
 **Rapport de fin :** `Rapport/BILAN_PHASE_4.md` + `v0.4.0`.
 
@@ -155,12 +163,12 @@ déduplication fonctionnelle ; ≥ 500 IOC réels.
 
 | # | Tâche | Prio | Critère de fin |
 |---|---|---|---|
-| 4.1 | `/api/v1/dashboard/summary` : IOC actifs, CVE P0/P1, incidents ouverts, santé des flux | P0 | métriques exactes (tests sur jeu connu) |
-| 4.2 | Menaces des dernières 24 h ; historique 7 jours glissants | P0 | séries correctes |
-| 4.3 | `sentry dashboard show` (console Rich) | P1 | rendu testé |
-| 4.4 | Exports JSON / CSV | P1 | formats validés |
-| 4.5 | Durcissement avant exposition : limitation `/auth/token`, HTTPS, en-têtes de sécurité | P0 | tests + revue |
-| 4.6 | Environnement de préproduction (VPS UE) + collecte continue 7 jours | P1 | données réelles sur 7 jours |
+| 4.1 ✅ | `/api/v1/dashboard/summary` : IOC actifs, CVE P0/P1, incidents ouverts, santé des flux | P0 | métriques exactes (tests sur jeu connu) |
+| 4.2 ◐ | Menaces des dernières 24 h ✅ ; historique 7 jours glissants ❌ | P0 | séries correctes |
+| 4.3 ✅ | `sentry dashboard show` (console Rich) | P1 | rendu testé |
+| 4.4 ✅ | Exports JSON / CSV | P1 | formats validés |
+| 4.5 ◐ | Durcissement avant exposition : limitation `/auth/token` ✅, HTTPS ❌, en-têtes de sécurité ❌ | P0 | tests + revue |
+| 4.6 ❌ | Environnement de préproduction (VPS UE) + collecte continue 7 jours | P1 | données réelles sur 7 jours |
 
 **Rapport de fin :** `Rapport/BILAN_PHASE_5.md` + `v0.5.0`.
 
@@ -168,12 +176,12 @@ déduplication fonctionnelle ; ≥ 500 IOC réels.
 
 | # | Tâche | Prio | Critère de fin |
 |---|---|---|---|
-| 5.1 | Moteur de règles par motifs (RF-25) | P0 | règles évaluées sur les IOC |
-| 5.2 | 5 règles opérationnelles (RF-26) | P0 | 5 règles testées |
-| 5.3 | `/api/v1/hunt/rules`, `/hunt/run`, résultats persistés (RF-27, RF-28) | P0 | session enregistrée |
-| 5.4 | CLI `sentry hunt run / list-rules / results` | P1 | parcours testé |
-| 5.5 | Documentation utilisateur, guide de déploiement, notes de version | P0 | relus |
-| 5.6 | Audit de sécurité final (dépendances, SAST, revue des ADR) | P0 | aucun finding haut |
+| 5.1 ✅ | Moteur de règles par motifs (RF-25) | P0 | règles évaluées sur les IOC |
+| 5.2 ✅ | 5 règles opérationnelles (RF-26) — 6 livrées | P0 | 5 règles testées |
+| 5.3 ✅ | `/api/v1/hunt/rules`, `/hunt/run`, résultats persistés (RF-27, RF-28) | P0 | session enregistrée |
+| 5.4 ✅ | CLI `sentry hunt run / list-rules / results` | P1 | parcours testé |
+| 5.5 ◐ | Documentation utilisateur, guide de déploiement, notes de version | P0 | relus |
+| 5.6 ❌ | Audit de sécurité final (dépendances, SAST, revue des ADR) | P0 | aucun finding haut |
 
 **Attentes v1.0.** 6 modules intégrés, couverture ≥ 80 %, documentation à jour, tag `v1.0.0`.
 **Rapport de fin :** `Rapport/BILAN_V1.md`.

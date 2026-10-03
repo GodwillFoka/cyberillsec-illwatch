@@ -67,6 +67,9 @@ def _all_secret_values(settings: Settings) -> list[str]:
     if settings.otx_api_key is not None and settings.otx_api_key.get_secret_value():
         values.append(settings.otx_api_key.get_secret_value())
     values.extend(taxii_secrets(settings))
+    for secret in (settings.nvd_api_key, settings.alert_webhook_url):
+        if secret is not None and secret.get_secret_value():
+            values.append(secret.get_secret_value())
     # Un secret très court (ex. mot de passe invité « guest ») masquerait des mots ordinaires.
     return [v for v in values if len(v) >= MIN_MASKED_LENGTH]
 

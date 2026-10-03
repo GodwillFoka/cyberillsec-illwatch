@@ -35,7 +35,14 @@ def config() -> None:
     table.add_column("Clé", style="cyan", no_wrap=True)
     table.add_column("Valeur", style="white")
 
-    secret_keys = {"secret_key", "nvd_api_key", "otx_api_key", "abusech_auth_key"}
+    secret_keys = {
+        "secret_key",
+        "nvd_api_key",
+        "otx_api_key",
+        "abusech_auth_key",
+        "taxii_auth",
+        "alert_webhook_url",
+    }
     for key, value in settings.model_dump().items():
         rendered = "••••••" if key in secret_keys and value else str(value)
         table.add_row(key, rendered)
@@ -136,7 +143,7 @@ def db_current() -> None:
 
 @cli.command()
 def seed() -> None:
-    """Insère les sources de référence (abuse.ch) et corrige les URL obsolètes. Idempotent."""
+    """Insère les sources de référence vérifiées et corrige les URL obsolètes. Idempotent."""
     from sentry.app.database import dispose_engine, get_session_factory
     from sentry.modules.foundation.seed import seed_reference_feeds
 
@@ -205,11 +212,19 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
 
 
 def _register_subcommands() -> None:
+    from sentry.cli.cves import cves
+    from sentry.cli.dashboard import dashboard
     from sentry.cli.feeds import feeds
+    from sentry.cli.hunt import hunt
+    from sentry.cli.incidents import incidents
     from sentry.cli.status import status
     from sentry.cli.taxii import taxii
 
+    cli.add_command(cves)
+    cli.add_command(dashboard)
     cli.add_command(feeds)
+    cli.add_command(hunt)
+    cli.add_command(incidents)
     cli.add_command(taxii)
     cli.add_command(status)
 

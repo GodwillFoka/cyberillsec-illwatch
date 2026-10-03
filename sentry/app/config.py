@@ -57,9 +57,14 @@ class Settings(BaseSettings):
         description="Clé de signature JWT — OBLIGATOIREMENT surchargée en production",
     )
     access_token_expire_minutes: int = 60
+    # Force brute : échecs de connexion tolérés par identifiant sur la fenêtre (secondes).
+    login_max_failures: int = Field(default=5, ge=1, le=100)
+    login_window_seconds: int = Field(default=900, ge=60)
 
     # --- Connecteurs CTI externes (clés optionnelles) ------------------------
-    nvd_api_key: str | None = None
+    # Clé NVD (https://nvd.nist.gov/developers/request-an-api-key, gratuite) : 50 requêtes
+    # par 30 s au lieu de 5. Envoyée en en-tête `apiKey`, jamais en base.
+    nvd_api_key: SecretStr | None = None
     # Clé AlienVault OTX (https://otx.alienvault.com/, gratuite) : envoyée en en-tête
     # X-OTX-API-KEY, uniquement vers otx.alienvault.com. Jamais en base.
     otx_api_key: SecretStr | None = None
@@ -95,8 +100,25 @@ class Settings(BaseSettings):
     # Période de réveil de `sentry feeds worker` (recherche des flux échus).
     worker_tick_seconds: int = Field(default=60, ge=5)
 
+    # --- Moteur CVE (phase 3, ADR-007) --------------------------------------
+    # Profondeur de la première synchronisation NVD (CVE modifiées depuis N jours) ;
+    # les CVE du catalogue KEV sont toujours importées, quelle que soit leur date.
+    nvd_initial_days: int = Field(default=30, ge=1, le=3650)
+    nvd_results_per_page: int = Field(default=500, ge=1, le=2000)
+    # Période de synchronisation CVE par le worker (KEV + NVD incrémental + EPSS).
+    cve_sync_interval_seconds: int = Field(default=6 * 3600, ge=600)
+
+    # --- Threat hunting (phase 6, ADR-009) ----------------------------------
+    # Liste officielle des relais de sortie Tor (RULE-01), texte, une IP par ligne.
+    tor_exit_list_url: str = "https://check.torproject.org/torbulkexitlist"
+    # Chasse planifiée sur la base d'IOC par le worker (s) ; 0 = désactivée.
+    hunt_interval_seconds: int = Field(default=24 * 3600, ge=0)
+
     # --- Scoring & alerting (§3.3.3 du CdC) ---------------------------------
     risk_alert_threshold: float = Field(default=75.0, ge=0, le=100)
+    # Webhook (Slack, Mattermost, Teams via passerelle…) appelé à chaque alerte. Configuré
+    # par l'exploitant dans `.env` : il peut viser un relais interne. Jamais journalisé.
+    alert_webhook_url: SecretStr | None = None
 
     @model_validator(mode="after")
     def _enforce_production_safety(self) -> Self:

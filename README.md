@@ -9,7 +9,9 @@
 [![pipeline](https://gitlab.com/GodwillFoka/cyberillsec-sentry/badges/main/pipeline.svg)](https://gitlab.com/GodwillFoka/cyberillsec-sentry/-/pipelines)
 [![coverage](https://gitlab.com/GodwillFoka/cyberillsec-sentry/badges/main/coverage.svg)](https://gitlab.com/GodwillFoka/cyberillsec-sentry/-/pipelines)
 [![License: MIT](https://img.shields.io/badge/License-MIT-E6681B.svg)](LICENSE)
-[![Python 3.12+](https://img.shields.io/badge/Python-3.12+-20155C.svg)](https://www.python.org/)
+[![Python 3.12 | 3.14](https://img.shields.io/badge/Python-3.12%20%7C%203.14-20155C.svg)](https://www.python.org/)
+[![mypy strict](https://img.shields.io/badge/mypy-strict-20155C.svg)](pyproject.toml)
+[![STIX/TAXII 2.1](https://img.shields.io/badge/STIX%2FTAXII-2.1-E6681B.svg)](https://oasis-open.github.io/cti-documentation/)
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
 
@@ -17,259 +19,277 @@
 
 ---
 
+## En 30 secondes
+
+SENTRY est une plateforme de **Cyber Threat Intelligence** open source qui fait le travail
+répétitif d'un analyste SOC — collecter, dédupliquer, prioriser, corréler — pour qu'il ne garde
+que les décisions :
+
+- **collecte** en continu le renseignement public : CSV, JSON, STIX 2.1, **TAXII 2.1**,
+  AlienVault OTX, NVD 2.0, CISA KEV, FIRST EPSS ;
+- **normalise et déduplique** les indicateurs de compromission (IOC) en gardant leur provenance ;
+- **priorise** chaque vulnérabilité sur un **score déterministe de 0 à 100** fondé sur
+  l'exploitation réelle, et alerte quand une CVE franchit le seuil ;
+- **pilote la réponse** : incidents NIST SP 800-61 à chronologie **immuable**, ouverts en un clic
+  depuis une alerte ;
+- **chasse** les menaces dans les journaux d'une organisation (Tor, DNS dynamique, DGA,
+  infrastructures ransomware, CVE exploitables sur l'inventaire) ;
+- **expose** tout cela par une API REST (30 routes), une CLI riche (34 commandes) et un tableau
+  de bord SOC, dans **moins de 256 Mo de mémoire**.
+
 ## Le problème
 
-Un analyste SOC passe 60 à 70 % de son temps à recopier des indicateurs entre une dizaine d'outils,
-à lire des bulletins illisibles et à trier des alertes en double. Les plateformes commerciales qui
-résolvent ce problème (Recorded Future, Mandiant Advantage, CrowdStrike Falcon Intelligence) coûtent
-entre 40 000 € et 150 000 € par an — hors d'atteinte des PME, ETI et organisations publiques
-régionales. Les alternatives open source existantes demandent des clusters de 16 Go de RAM au
-démarrage.
+Un analyste SOC passe 60 à 70 % de son temps à recopier des indicateurs entre une dizaine
+d'outils, à lire des bulletins illisibles et à trier des alertes en double. Les plateformes
+commerciales qui résolvent ce problème coûtent de **40 000 à 150 000 € par an** — hors de portée
+des PME, des ETI et des collectivités. Les plateformes open source complètes exigent une
+infrastructure lourde : OpenCTI, par exemple, demande au minimum **8 Go de RAM pour la plateforme
+et 8 Go pour son moteur de recherche**, plus Redis, RabbitMQ et un stockage objet¹.
 
-Pendant ce temps, les attaquants exploitent les vulnérabilités publiées en moins de 48 heures, et
-NIS 2 et DORA imposent une veille active avec notification sous 24 à 72 heures.
+Pendant ce temps, les attaquants exploitent une vulnérabilité publiée en moins de 48 heures, et
+**NIS 2** et **DORA** imposent une veille active et une notification d'incident sous 24 à 72 h.
 
 ## La réponse
 
-SENTRY est un cerveau CTI centralisé, léger et 100 % open source (MIT) :
+| | Plateformes commerciales | Plateformes open source complètes | **SENTRY** |
+|---|---|---|---|
+| Coût annuel | 40 à 150 k€ | 0 € (hors infrastructure) | **0 €** |
+| Licence | Propriétaire | AGPL / Apache | **MIT** |
+| Infrastructure | SaaS hors UE le plus souvent | ≥ 16 Go de RAM, 4 à 5 services | **< 256 Mo, PostgreSQL + Redis** |
+| Priorisation CVE par l'exploitation réelle | Oui | Via connecteurs | **Native (KEV + EPSS + exploit)** |
+| Souveraineté | Variable | Auto-hébergé | **Auto-hébergé, UE** |
 
-1. **Collecte** automatiquement le renseignement sur les menaces (NVD, CISA KEV, FIRST EPSS,
-   AlienVault OTX, flux STIX/JSON/CSV).
-2. **Normalise** ces données hétérogènes dans un modèle unique et dédupliqué.
-3. **Score** chaque vulnérabilité sur une échelle déterministe de 0 à 100 combinant sévérité
-   technique, probabilité d'exploitation, exploitation avérée et campagnes actives.
-4. **Expose** le tout via une API REST, une CLI riche et un dashboard SOC — pour décider d'une
-   remédiation en quelques secondes au lieu de plusieurs heures.
+SENTRY ne cherche pas à remplacer un graphe de connaissances CTI complet : il donne à une
+équipe de 1 à 10 personnes ce dont elle a besoin **le lundi matin** — quoi patcher d'abord, quoi
+bloquer, qu'est-ce qui a changé, et la preuve de ce qui a été fait.
 
-Empreinte mémoire cible en régime nominal : **< 256 Mo**. Hébergement européen, souveraineté des
-données.
+## Fonctionnalités
 
-| Critère | CrowdStrike | Recorded Future | MISP | OpenCTI | **SENTRY** |
-|---|---|---|---|---|---|
-| Open source | Non | Non | AGPL | Apache | **MIT** |
-| Dashboard SOC | Oui | Partiel | Non | Non | **Natif** |
-| Scoring composite | Oui | Oui | Non | Non | **Oui** |
-| Coût annuel | 50–100 k$ | 30–200 k$ | 0 $ | 0 $ | **0 $** |
-| Hébergement UE | Non | Non | Oui | Oui | **Oui** |
+| Module | Ce qu'il fait | État |
+|---|---|---|
+| **MOD-01 Foundation** | Configuration validée au démarrage, PostgreSQL + Alembic, JWT + Argon2id, rôles ADMIN / ANALYST / VIEWER, limitation des tentatives de connexion | ✅ `v0.1.0` |
+| **MOD-02 Threat Feeds** | 5 formats de flux, client TAXII 2.1 `taxii2-client` durci, connecteur OTX, sonde de source avant intégration, déduplication, expiration par type, provenance multi-sources, worker planifié avec verrou Redis | ✅ codé |
+| **MOD-03 CVE Tracker** | NVD 2.0 incrémental, catalogue KEV, EPSS, score composite recalculé à chaque changement, historique de priorité, alertes + webhook | ✅ codé |
+| **MOD-04 Incidents** | Cycle NIST SP 800-61 à 6 états, chronologie immuable (ORM + déclencheur PostgreSQL), liens IOC/CVE, incident depuis une alerte | ✅ codé |
+| **MOD-05 SOC Dashboard** | Synthèse temps réel, activité 24 h, MTTR, exports CSV RFC 4180 / JSON RFC 8259 protégés contre l'injection CSV | ✅ codé |
+| **MOD-06 Threat Hunting** | 6 règles déterministes, chasse sur observables ou sur la base, sessions enregistrées, chasse planifiée | ✅ codé |
 
-## Scoring de risque composite
+« Codé » signifie : implémenté, testé, intégré au pipeline. Un jalon n'est déclaré **atteint**
+que lorsque `sentry status` le constate sur données réelles.
+
+## Score de risque composite
 
 Le cœur de SENTRY. Pour chaque CVE :
 
 ```
-R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + KEV × 25 + Exploit × 10 + Attaque × 10)
+R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + KEV × 25 + Exploit × 10 + Ransomware × 10)
 ```
 
-| Composante | Domaine | Contribution max |
+| Composante | Source | Contribution max |
 |---|---|---|
-| CVSS v3.1 — sévérité technique brute | 0.0 – 10.0 | 30 |
-| EPSS — probabilité d'exploitation à 30 j | 0.0 – 1.0 | 25 |
-| CISA KEV — exploitation formellement prouvée | 0 / 1 | 25 |
-| Exploit public / PoC documenté | 0 / 1 | 10 |
-| Campagne ransomware confirmée | 0 / 1 | 10 |
+| CVSS v3.1 — sévérité technique | NVD 2.0 | 30 |
+| EPSS — probabilité d'exploitation à 30 jours | FIRST | 25 |
+| Exploitation avérée | CISA KEV | 25 |
+| Exploit public documenté | Références NVD « Exploit » | 10 |
+| Campagne ransomware confirmée | CISA KEV | 10 |
 
-Grille de décision SOC : **R ≥ 80** → P0, patch sous 24 h · **60 ≤ R < 80** → P1, patch sous 7 j ·
-**40 ≤ R < 60** → P2, patch sous 30 j · **R < 40** → P3, maintenance standard.
-
-Conséquence assumée : une CVSS 10.0 sans exploitation observée plafonne à 30 et ne réveille personne
-la nuit. C'est l'exploitation réelle qui pilote la priorité, pas la sévérité théorique.
+**R ≥ 80** → P0, patch sous 24 h · **60 ≤ R < 80** → P1, 7 j · **40 ≤ R < 60** → P2, 30 j ·
+**R < 40** → P3. Une CVSS 10.0 sans exploitation observée plafonne à 30 et ne réveille personne
+la nuit : c'est l'exploitation réelle qui pilote la priorité. Chaque point est justifiable
+(`GET /api/v1/cves/{id}` → `breakdown` et `history`) — voir [ADR-001](docs/adr/ADR-001-scoring-composite.md).
 
 ## Architecture
 
-Six modules cohésifs et faiblement couplés, en couches strictes (Clean Architecture) :
-
+```mermaid
+flowchart LR
+    subgraph Sources publiques
+        A[CSV / JSON / STIX]:::src
+        B[TAXII 2.1]:::src
+        C[AlienVault OTX]:::src
+        D[NVD 2.0 · KEV · EPSS]:::src
+    end
+    subgraph SENTRY
+        W[Worker planifié<br/>verrou Redis]
+        F[Fetcher durci<br/>SSRF · taille · délai]
+        N[Normalisation<br/>déduplication]
+        S[Score composite<br/>alerting]
+        I[Incidents<br/>chronologie immuable]
+        H[Threat hunting]
+        DB[(PostgreSQL 16)]
+    end
+    A & B & C & D --> F
+    W --> F --> N --> DB
+    D --> S --> DB
+    DB --> I & H
+    DB --> API[API REST · CLI · Dashboard]
+    classDef src fill:#20155C,color:#fff
 ```
-  [CLIENTS]        CLI (Click)              API REST (FastAPI)
-                        │                            │
-  [CONTROLLERS]    sentry/cli/               sentry/app/api/
-                        └─────────────┬─────────────┘
-                                      ▼
-  [SERVICES]                  sentry/modules/
-                    (logique métier pure, collecteurs, scoring)
-                                      ▼
-  [DATA ACCESS]        sentry/app/database.py · sentry/app/models/
-                                      ▼
-  [PERSISTENCE]             PostgreSQL 16 · Redis 7
-```
 
-| Module | Périmètre |
+Clean Architecture en couches strictes : les contrôleurs (API FastAPI, CLI Click) ne contiennent
+aucune logique métier ; tout passe par `sentry/modules/`, testable sans HTTP ni base. Détail :
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) et les [10 décisions d'architecture](docs/adr/).
+
+## Sécurité par conception
+
+Une plateforme de sécurité qui télécharge des données hostiles doit être la première à s'en
+protéger.
+
+| Risque | Mesure |
 |---|---|
-| **MOD-01** Foundation | Configuration, base SQL, authentification, CLI, migrations Alembic |
-| **MOD-02** Threat Feeds | Collecte multi-sources, normalisation, moteur IOC, déduplication, aging |
-| **MOD-03** CVE Tracker | NVD 2.0, CISA KEV, FIRST EPSS, scoring composite, alerting |
-| **MOD-04** Incidents | Machine d'état à 6 étapes (NIST SP 800-61), timeline immuable |
-| **MOD-05** SOC Dashboard | Agrégation analytique, métriques temps réel, exports JSON/CSV |
-| **MOD-06** Threat Hunting | Moteur de pattern-matching, règles de corrélation |
+| **SSRF** (une URL de flux qui vise le réseau interne) | Liste blanche d'adresses publiques (`is_global`, CGNAT, NAT64, 6to4), résolution DNS vérifiée avant chaque requête, redirections revalidées ou refusées |
+| Réponse hostile (taille, lenteur) | Lecture en flux plafonnée, délai par requête, backoff exponentiel, 429 respecté |
+| Fuite de secrets | Clés jamais en base (gabarits `{ABUSECH_AUTH_KEY}`, en-têtes), masquées dans erreurs et journaux, identifiants TAXII attachés à un seul hôte |
+| Force brute | 5 échecs par compte / 20 par IP en 15 min → 429 avant toute vérification du mot de passe |
+| Falsification de l'historique | Chronologie d'incident refusant `UPDATE`/`DELETE` jusque dans PostgreSQL (déclencheur) |
+| Injection CSV (CWE-1236) | Cellules exportées commençant par `= + - @` neutralisées |
+| Élévation de privilèges | RBAC sur chaque route d'écriture, rôle relu en base à chaque requête |
+| Chaîne d'approvisionnement | SAST, détection de secrets et analyse des dépendances à chaque pipeline ; Renovate |
+| Conteneur | Utilisateur non privilégié (UID 10001), contexte de build sans `.env` |
 
-Détail complet : [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+## Qualité et mesures
 
-## Stack
+| Indicateur | Valeur |
+|---|---|
+| Tests automatisés | **≈ 390**, sur PostgreSQL 16 réel, Python 3.12 **et** 3.14 |
+| Couverture | **≈ 94 %** (seuil bloquant : 80 %) |
+| Typage | `mypy --strict`, 0 erreur sur 69 modules |
+| Lint / format | `ruff`, 0 erreur |
+| Migrations | 6, vérifiées montée → `alembic check` → descente → remontée à chaque pipeline |
+| Liste des CVE, P95 (30 000 CVE) | **8 ms** (cible 250 ms) |
+| Ingestion réelle (37 000 IOC) | 24 s, pic mémoire **120 Mo** (cible 256 Mo) |
 
-Python 3.12+ · FastAPI · SQLAlchemy 2.0 async + asyncpg · PostgreSQL 16 · Alembic · Redis 7.2 ·
-Pydantic v2 · httpx · Click + Rich · Pytest · Docker Compose.
+Pipeline GitLab : qualité (lint, typage) → tests (matrice 3.12 / 3.14 + migrations sur base
+vierge) → build de l'image Docker → sécurité (SAST, secrets, dépendances). `scripts/ci-local.sh`
+le reproduit en local avant chaque push.
 
-Le choix de Python n'est pas un défaut : l'intégralité des standards CTI mondiaux (STIX, TAXII,
-bindings YARA, parsers Sigma) y est développée en priorité, et Pydantic v2 (cœur Rust) rapproche
-FastAPI des débits de Go.
+## Stack technique
+
+**Python 3.12+** · **FastAPI** · **Pydantic v2** · **SQLAlchemy 2.0 async** + asyncpg ·
+**PostgreSQL 16** · **Alembic** · **Redis 7.2** · httpx · **taxii2-client** (OASIS) · Click + Rich ·
+Pytest · Docker Compose · GitLab CI.
+
+Python est le langage de l'écosystème CTI (STIX, TAXII, YARA, Sigma) ; Pydantic v2 (cœur Rust)
+et l'asynchrone de bout en bout donnent un débit largement suffisant dans un seul processus.
 
 ## Démarrage rapide
 
-**Prérequis :** Python 3.12+, Git, Docker & Docker Compose, un environnement Linux / macOS / WSL2.
+**Prérequis :** Python 3.12+, Git, Docker et Docker Compose. Développé sur **Kali Linux**
+(Python 3.14) et vérifié en CI sous Python 3.12 et 3.14 ; compatible Debian/Ubuntu, macOS, WSL2.
 
 ```bash
 git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
 cd cyberillsec-sentry
-
-python3.12 -m venv .venv && source .venv/bin/activate
-pip install --upgrade pip
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-cp .env.example .env          # puis renseigner SECRET_KEY et les clés API
-docker compose up -d          # PostgreSQL 16 + Redis 7
-sentry db init                # migrations de schéma (alembic upgrade head)
-sentry seed                   # flux de référence publics
+cp .env.example .env               # SECRET_KEY : openssl rand -hex 32
+docker compose up -d postgres redis
+sentry db init && sentry seed      # schéma + sources de référence vérifiées
 sentry users create --username admin --email admin@example.org --role admin
 
-pytest                        # rapide, sur SQLite en mémoire
-./scripts/ci-local.sh          # pipeline complet (base dédiée sentry_test)
-uvicorn sentry.app.main:app --reload --port 8000
+./scripts/ci-local.sh              # pipeline complet en local
+uvicorn sentry.app.main:app --reload --port 8000   # http://localhost:8000/docs
 ```
 
-Ouvrir <http://localhost:8000/docs> : la documentation Swagger interactive doit s'afficher.
+Sur **Kali Linux** : `sudo apt install -y docker.io docker-compose python3-venv`, puis
+`sudo usermod -aG docker $USER` et reconnexion (si `docker compose` est absent, la commande
+s'écrit `docker-compose`). Guide pas à pas, y compris pour un développeur qui
+découvre la cybersécurité : [`docs/ONBOARDING.md`](docs/ONBOARDING.md).
 
-Guide pas à pas, y compris pour un développeur découvrant la cybersécurité :
-[`docs/ONBOARDING.md`](docs/ONBOARDING.md).
-
-## Ce que SENTRY sait faire aujourd'hui
-
-| Domaine | Disponible | Comment |
-|---|---|---|
-| Comptes et rôles | ✅ | `sentry users create`, `POST /api/v1/auth/token` |
-| Sources de flux | ✅ | `sentry feeds add/list`, `/api/v1/feeds` (ADMIN pour l'écriture) |
-| Collecte CSV / JSON / STIX 2.1 | ✅ | `sentry feeds fetch <nom>` ou `fetch-all` |
-| Connecteur AlienVault OTX | ✅ | source de type `OTX`, clé `OTX_API_KEY` dans `.env` |
-| Collecte planifiée | ✅ | `sentry feeds worker` (verrou Redis par flux, plusieurs instances possibles) |
-| Journal de collecte JSON | ✅ | une ligne `feed.collected` par collecte sur la sortie d'erreur |
-| IOC dédupliqués, expiration | ✅ | `/api/v1/indicators` (lecture, soumission par lot) |
-| Provenance multi-sources | ✅ | `GET /api/v1/indicators/{id}` → `sources` ; `source_count` en liste |
-| Score de risque CVE | 🟡 | calcul prêt et testé ; collecte NVD/KEV/EPSS en phase 3 |
-| Incidents | 🟡 | machine d'état prête ; API en phase 4 |
-| Dashboard, threat hunting | ❌ | phases 5 et 6 |
-
-## Mesurer l'avancement
-
-- **Sur les données** : `sentry status` — schéma, santé des sources, volume d'IOC et critères
-  du jalon M2 constatés en base (✔/✘).
-- **Sur le code** : `./scripts/ci-local.sh` — qualité, tests, couverture, migrations.
-- **Sur le planning** : `Rapport/PLAN_DIRECTEUR.md` — tâches par étape et critères de fin.
-
-## CLI
+## Utilisation
 
 ```bash
-sentry version          # version et environnement
-sentry config           # configuration effective, secrets masqués
-sentry db check         # connectivité base de données
-sentry db init          # application de toutes les migrations
-sentry db upgrade [rev] # migration jusqu'à une révision (défaut : head)
-sentry db downgrade rev # retour arrière (confirmation demandée)
-sentry db current       # révision appliquée vs révision cible
-sentry seed             # données de référence, idempotent
-sentry users create     # création de compte (mot de passe saisi masqué, ≥ 12 caractères)
-sentry feeds list       # sources de flux et leur état
-sentry feeds add        # nouvelle source (HTTPS public, nom unique)
-sentry feeds fetch X    # collecte immédiate d'une source
-sentry feeds fetch-all  # collecte des sources échues (usage ponctuel ou cron)
-sentry feeds worker     # planificateur intégré : collecte en continu (Ctrl+C / SIGTERM pour arrêter)
-sentry status           # avancement mesuré : schéma, sources, IOC, critères du jalon M2
+# Renseignement
+sentry feeds probe <nom|url> --type TAXII   # vérifier qu'une source répond et porte des IOC
+sentry taxii discover https://attack-taxii.mitre.org/taxii2/
+sentry feeds fetch-all --force
+sentry feeds worker                          # flux en continu, CVE toutes les 6 h, chasse quotidienne
+
+# Vulnérabilités
+sentry cves sync && sentry cves list --priority P0_CRITIQUE
+sentry cves show CVE-2021-44228              # décomposition du score
+
+# Réponse
+sentry incidents from-alert <alerte>         # incident pré-rempli depuis une alerte CVE
+sentry incidents move <id> CONFINEMENT --note "Poste isolé"
+
+# Chasse et pilotage
+sentry hunt run --observables proxy.txt --asset FortiOS
+sentry dashboard show
+sentry dashboard export cves --format csv -o cves.csv
+sentry status                                # jalons constatés sur données réelles
 ```
 
-Authentification : `POST /api/v1/auth/token` (flux OAuth2 *password*, formulaire
-`username` / `password`) renvoie un jeton Bearer JWT ; `GET /api/v1/users/me` renvoie le profil.
-Le bouton **Authorize** de Swagger (`/docs`) utilise directement ce flux.
+| API (`/api/v1`) | Rôle requis en écriture |
+|---|---|
+| `auth/token`, `users/me` | — |
+| `feeds`, `indicators` | ADMIN (flux), ADMIN / ANALYST (IOC) |
+| `cves`, `alerts` | ADMIN / ANALYST (acquittement) |
+| `incidents` | ADMIN / ANALYST |
+| `dashboard/summary`, `dashboard/recent`, `dashboard/export` | lecture |
+| `hunting/rules`, `hunting/sessions` | ADMIN / ANALYST (lancer une chasse) |
 
-Sources de flux (T2.2) : `GET /api/v1/feeds` et `GET /api/v1/feeds/{id}` pour tout utilisateur
-authentifié ; `POST`, `PATCH` et `DELETE` réservés au rôle `ADMIN`. Seules les URL HTTPS publiques
-sont acceptées.
-
-Indicateurs (IOC) : `GET /api/v1/indicators` et `GET /api/v1/indicators/{id}` pour tout
-utilisateur authentifié ; `POST /api/v1/indicators` (lot de 1 000 au plus) pour `ADMIN` et
-`ANALYST`. Règles de déduplication et d'expiration : `docs/adr/ADR-005-cycle-de-vie-ioc.md` ;
-provenance multi-sources : `docs/adr/ADR-006-provenance-multi-sources.md`.
-
-Collecte en production : `docker compose --profile full up -d` démarre l'API **et** le worker.
-Journal exploitable : `sentry feeds worker 2>> collecte.jsonl`, puis par exemple
-`jq 'select(.event=="feed.collected") | {feed_name, inserted, duration_ms}' collecte.jsonl`.
-
-Les commandes `sentry cves`, `sentry incidents`, `sentry dashboard show` et `sentry hunt`
-arrivent avec leurs modules respectifs (phases 3 à 6).
+Documentation interactive : `/docs` (Swagger) et `/redoc`.
 
 ## Structure du dépôt
 
 ```
 cyberillsec-sentry/
-├── .gitlab-ci.yml          # Pipeline CI/CD (qualité, tests, build, sécurité)
-├── .gitlab/                # Gabarits de merge requests et d'issues
-├── alembic/versions/       # Historique immuable des migrations SQL
-├── docs/                   # Cahier des charges, vision, architecture, ADR
-├── Rapport/                # Bilans hebdomadaires du jeudi
+├── .gitlab-ci.yml          # Pipeline : qualité, tests 3.12/3.14, migrations, image, sécurité
+├── alembic/versions/       # 6 migrations, historique immuable
+├── docs/                   # Cahier des charges, vision, architecture, 10 ADR
+├── Rapport/                # Bilans d'étape et rapport global
+├── scripts/ci-local.sh     # Réplique locale du pipeline
 ├── sentry/
-│   ├── app/
-│   │   ├── api/            # Contrôleurs et routes REST
-│   │   ├── models/         # Modèles relationnels SQLAlchemy
-│   │   ├── config.py       # Configuration Pydantic validée au démarrage
-│   │   ├── database.py     # Moteur et sessions asynchrones
-│   │   └── main.py         # Point d'entrée FastAPI
+│   ├── app/                # API FastAPI, modèles, configuration, sécurité
 │   ├── cli/                # Commandes Click
-│   ├── modules/            # Modules métier (threat_feeds, cve_tracker, …)
-│   └── shared/             # Énumérations et utilitaires transverses
-├── tests/                  # Suite Pytest
-├── docker-compose.yml
-└── pyproject.toml
-```
-
-## Qualité
-
-Quatre exigences non négociables, vérifiées par la CI sur chaque merge request :
-
-- **Typage strict** — `mypy --strict` sans exception ;
-- **Lint & format** — `ruff check .` et `ruff format .`, 100 caractères maximum par ligne ;
-- **Tests** — toute route ou fonction de calcul est accompagnée de son test ; couverture ≥ 80 % ;
-- **Exceptions** — jamais de `except: pass` ; chaque exception est tracée et typée.
-
-```bash
-ruff check . && ruff format --check .
-mypy sentry
-pytest
+│   ├── modules/            # threat_feeds, cve_tracker, incidents, dashboard, threat_hunting
+│   └── shared/             # Énumérations, journal JSON
+└── tests/                  # ≈ 390 tests, fixtures tirées de sources réelles
 ```
 
 ## Feuille de route
 
-État au 27/09/2026 : **P1 livrée (`v0.1.0`)**, **P2 en cours** (CRUD des flux, ingestion
-dédupliquée des IOC). Les dates ci-dessous sont celles du Cahier des charges ; leur recalage est
-proposé dans [ADR-004](docs/adr/ADR-004-recalage-planning.md).
-
-| Phase | Fenêtre | Livrable | Jalon |
+| Phase | Livrable | Jalon cible | État |
 |---|---|---|---|
-| P1 Foundation | J01–J07 | Squelette, CLI, Docker, CI | M1 — 05/08/2026 |
-| P2 Threat Feeds | J08–J21 | Collecteurs, IOC, déduplication | M2 — 19/08/2026 |
-| P3 CVE Tracker | J22–J35 | NVD, EPSS, KEV, scoring, alerting | M3 — 02/09/2026 |
-| P4 Incidents | J36–J49 | Machine d'état, timeline, liaisons | M4 — 16/09/2026 |
-| P5 SOC Dashboard | J50–J56 | Agrégation, exports, vue console | M5 — 23/09/2026 |
-| P6 Threat Hunting | J57–J63 | Moteur de règles, 5 règles v1.0 | **v1.0 — 30/09/2026** |
+| P1 Foundation | Socle, CLI, Docker, CI | M1 | ✅ atteint (`v0.1.0`) |
+| P2 Threat Feeds | Collecte, IOC, TAXII, OTX | M2 — 08/10/2026 | code ✅, constat sur données |
+| P3 CVE Tracker | NVD, KEV, EPSS, score, alertes | M3 — 22/10/2026 | code ✅, constat sur données |
+| P4 Incidents | Cycle NIST, chronologie, liens | M4 — 05/11/2026 | code ✅ |
+| P5 SOC Dashboard | Synthèse, activité, exports | M5 — 12/11/2026 | code ✅ |
+| P6 Threat Hunting | Moteur, règles, sessions | **v1.0 — 19/11/2026** | code ✅ |
 
-Au-delà de la v1.0 : assistant IA (LLM + RAG), multi-tenant et SSO, puis Cyberill TI Cloud.
+**Au-delà de la v1.0 :** interface web du tableau de bord, import de règles Sigma, inventaire
+d'actifs CPE, score de confiance des IOC par provenance, assistant d'analyse (LLM + RAG sur la base
+CTI), multi-tenant et SSO, puis **Cyberill TI Cloud** (offre hébergée en UE).
+
+## Ce que ce projet démontre
+
+- **Architecture logicielle** : Clean Architecture, asynchrone de bout en bout, décisions
+  tracées en ADR avec leurs coûts assumés.
+- **Ingénierie de la sécurité** : modèle de menace appliqué au code (SSRF, injection CSV, force
+  brute, fuite de secrets, falsification d'audit), défense en profondeur jusqu'à la base.
+- **Cyber Threat Intelligence** : STIX 2.1, TAXII 2.1, KEV, EPSS, CVSS, NIST SP 800-61,
+  heuristiques de détection (DGA, DNS dynamique, Tor), conformité NIS 2 / DORA.
+- **Données** : modèle relationnel contraint (CHECK, déclencheurs), upserts groupés, migrations
+  réversibles, performances mesurées.
+- **DevSecOps** : typage strict, ≈ 94 % de couverture, pipeline multi-versions, analyses de
+  sécurité, réplique locale du pipeline.
+- **Conduite de projet** : cahier des charges, plan directeur, bilans d'étape, mesure de
+  l'avancement sur les données plutôt que sur les déclarations.
 
 ## Contribuer
 
-Les contributions sont bienvenues : développeurs, chercheurs, analystes SOC, technical writers.
-Lire [`CONTRIBUTING.md`](CONTRIBUTING.md) avant d'ouvrir une merge request, et
-[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) avant d'interagir avec la communauté.
-
-Signalement de vulnérabilité : [`SECURITY.md`](SECURITY.md) — **pas** via une issue publique.
+Contributions bienvenues : développeurs, chercheurs, analystes SOC, rédacteurs techniques. Lire
+[`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+Vulnérabilité : [`SECURITY.md`](SECURITY.md) — **pas** d'issue publique.
 
 ## Licence
 
 [MIT](LICENSE) © CYBERILL — Godwill FOKA, Berlin.
+
+¹ [Documentation de déploiement OpenCTI](https://docs.opencti.io/latest/deployment/overview/)
+(consultée le 03/10/2026).
 
 ---
 

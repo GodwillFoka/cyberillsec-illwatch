@@ -1,0 +1,16 @@
+# Contexte de build minimal : ni environnements locaux, ni historique, ni secrets.
+.git
+.venv
+.venv-*
+**/__pycache__
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.coverage*
+htmlcov
+*.bundle
+.env
+.env.*
+!.env.example
+Rapport
+docs/pdf

@@ -7,6 +7,62 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Phase 6 (v1.0 « Threat Hunting »)
+- Moteur de règles déterministe, catalogue RULE-01 à RULE-06 (Tor, DNS dynamique, DGA,
+  ransomware, CVE exploitables sur l'inventaire, IOC connu) ; chasse sur observables soumis ou sur
+  la base ; sessions et correspondances enregistrées ; chasse planifiée par le worker.
+- API `/api/v1/hunting/rules|sessions` ; CLI `sentry hunt rules|run|show`. ADR-009.
+
+### Ajouté — Phase 5 (M5 « Dashboard & reporting »)
+- `/api/v1/dashboard/summary|recent|export` ; `sentry dashboard show|export` ; MTTR ; exports
+  CSV RFC 4180 / JSON RFC 8259 diffusés en flux, protégés contre l'injection CSV.
+
+### Ajouté — Phase 4 (M4 « Gestion des incidents »)
+- Service, API `/api/v1/incidents` et CLI `sentry incidents` ; chronologie immuable (ORM et
+  déclencheur PostgreSQL) ; liens IOC/CVE ; incident ouvert depuis une alerte CVE. ADR-008.
+
+### Ajouté — TAXII 2.1 réel et sources vérifiées
+- Backend `taxii2-client` 2.3.0 durci (SSRF, redirections refusées, délai, taille, erreurs
+  typées), Basic / Bearer / en-tête par hôte, `TAXII_CLIENT=library|builtin`. ADR-010.
+- `sentry taxii discover`, `sentry feeds probe`, `sentry feeds enable|disable`.
+- Seed vérifié : IPsum (sans clé), RedEye TAXII (jeton gratuit) ; DigitalSide injoignable → inactif.
+- Tests réseau réels opt-in (`SENTRY_LIVE_TESTS=1`).
+
+### Sécurité
+- Limitation des tentatives de connexion (compte et adresse IP, Redis partagé, repli mémoire).
+- `.dockerignore` : contexte de build sans `.env`, `.git` ni environnement virtuel.
+
+### Corrigé
+- Bundles Git (≈ 480 Ko) versionnés par erreur : retirés et ignorés.
+- Numéros d'exigence RF-15 / RF-16 du moteur CVE.
+
+### Ajouté — Phase 3 (M3 « Moteur CVE & alerting »)
+- **NVD 2.0** : synchronisation initiale (catalogue KEV + CVE modifiées depuis
+  `NVD_INITIAL_DAYS`) puis incrémentale (fenêtres `lastModStartDate` de 120 j, curseur en base),
+  pagination, débit respecté (6 s sans clé, 0,6 s avec `NVD_API_KEY`). CVSS v3.1 → v3.0 → v4.0 ;
+  exploit public déduit des références NVD ; CVE rejetées ignorées.
+- **CISA KEV** (ransomware, échéance, action requise ; retraits appliqués) et **FIRST EPSS**
+  (score + percentile, lots de 100).
+- **Recalcul** du score composite et de la priorité à chaque changement ; historique
+  `cve_priority_history` ; migration `5d7ee876e4ef`.
+- **API** : `GET /api/v1/cves`, `GET /api/v1/cves/{id}` (décomposition du score, historique),
+  `GET /api/v1/alerts`, `POST /api/v1/alerts/{id}/ack`.
+- **Alertes** au franchissement de `RISK_ALERT_THRESHOLD` (ligne de base sans alerte à la
+  première synchro), webhook `ALERT_WEBHOOK_URL`, 5 tentatives.
+- **CLI** `sentry cves sync | list | show | alerts` ; le worker synchronise les CVE toutes les
+  `CVE_SYNC_INTERVAL_SECONDS` ; `sentry status` affiche les critères M3.
+- ADR-007.
+
+### Ajouté — Clôture M2 (branche `feature/sprint3-m2`)
+- **TAXII 2.1** (tâche 1.8) : format `TAXII`, pagination `more`/`next`, `added_after`,
+  identifiants par hôte `TAXII_AUTH` (accès invité DigitalSide par défaut).
+- `sentry seed` : sources publiques sans clé (C2IntelFeeds IP et domaines, DigitalSide URL et
+  TAXII) ; 3 sources saines et ≥ 500 IOC atteignables sans inscription.
+
+### Corrigé — Clôture M2
+- CSV : la colonne IOC est choisie sur le contenu. C2IntelFeeds (`#ip,ioc`) était rejeté à
+  100 % car la colonne `ioc` contient un libellé.
+
 ### Ajouté — Sprint 3 (M2 « Ingestion opérationnelle », branche `feature/sprint3-ingestion`)
 - **Provenance multi-sources (ADR-006)** : table `indicator_sources` (migration `1f3dafc3008c`,
   reprise de l'existant). `GET /api/v1/indicators/{id}` renvoie `sources` (flux, dates et

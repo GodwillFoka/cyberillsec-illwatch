@@ -63,7 +63,11 @@ class IncidentStatus(StrEnum):
 
 
 class IncidentEventType(StrEnum):
+    """Événements de la chronologie immuable d'un incident — RF-19."""
+
+    CREATED = "CREATED"
     STATUS_CHANGE = "STATUS_CHANGE"
+    ASSIGNED = "ASSIGNED"
     COMMENT = "COMMENT"
     IOC_ATTACHED = "IOC_ATTACHED"
     CVE_ATTACHED = "CVE_ATTACHED"
@@ -77,3 +81,17 @@ class RiskPriority(StrEnum):
     P1_ELEVE = "P1_ELEVE"
     P2_MOYEN = "P2_MOYEN"
     P3_FAIBLE = "P3_FAIBLE"
+
+
+class HuntStatus(StrEnum):
+    """Session de threat hunting — RF-27."""
+
+    EN_COURS = "EN_COURS"
+    TERMINEE = "TERMINEE"
+    PARTIELLE = "PARTIELLE"  # au moins une règle en échec, les autres exécutées
+    ECHEC = "ECHEC"
+
+
+class HuntTrigger(StrEnum):
+    MANUAL = "MANUAL"
+    SCHEDULED = "SCHEDULED"

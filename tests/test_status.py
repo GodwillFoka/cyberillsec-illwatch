@@ -58,3 +58,34 @@ async def test_criteres_m2_atteints(db_session: AsyncSession) -> None:
     assert state.iocs_active == 500  # l'IP observée il y a 60 j a expiré (30 j)
     assert state.iocs_by_type == {"DOMAIN": 500, "IPV4": 1}
     assert state.m2_reached
+
+
+async def test_jalons_m4_m6(db_session: AsyncSession) -> None:
+    from sentry.app.config import Settings
+    from sentry.modules.incidents import service as incidents
+    from sentry.modules.threat_hunting import engine
+    from sentry.shared.enums import IncidentStatus, Severity
+
+    before = await compute_status(db_session, now=NOW)
+    assert [c.met for c in before.later] == [False, False]
+
+    incident = await incidents.create_incident(
+        db_session, title="x", description="x", severity=Severity.LOW, author_id=None
+    )
+    for target in ("ANALYSE", "CONFINEMENT", "ERADICATION", "RECUPERATION"):
+        await incidents.transition(db_session, incident.id, IncidentStatus(target), author_id=None)
+    await incidents.transition(
+        db_session, incident.id, IncidentStatus.CLOTURE, author_id=None, closure_summary="ok"
+    )
+
+    async def no_tor(url: str) -> bytes:
+        return b""
+
+    await engine.run_hunt(
+        db_session,
+        settings=Settings(secret_key="k" * 64),
+        fetch=no_tor,
+        observables=["c2.duckdns.org"],
+    )
+    after = await compute_status(db_session, now=NOW)
+    assert [c.met for c in after.later] == [True, True]

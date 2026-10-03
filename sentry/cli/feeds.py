@@ -321,14 +321,77 @@ def feeds_fetch_all(force: bool) -> None:
         raise SystemExit(1)
 
 
+async def _maybe_sync_cves(lock: FeedLock) -> None:
+    """Synchronisation CVE si elle est échue ; un seul worker à la fois (verrou)."""
+    from datetime import UTC, datetime
+
+    from sentry.app.database import get_session_factory
+    from sentry.cli.cves import run_cve_sync
+    from sentry.modules.cve_tracker.engine import cve_sync_due, mark_cve_sync_attempt
+
+    settings = get_settings()
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        if not await cve_sync_due(
+            session, interval_seconds=settings.cve_sync_interval_seconds, now=now
+        ):
+            return
+    # Le verrou couvre toute la synchronisation : NVD sans clé peut durer plusieurs minutes.
+    token = await lock.acquire("cve-sync", max(settings.collect_lock_ttl_seconds, 3600))
+    if token is None:
+        return
+    try:
+        async with get_session_factory()() as session:
+            await mark_cve_sync_attempt(session, now)
+            await session.commit()
+            await run_cve_sync(session, ("kev", "nvd", "epss"))
+            await session.commit()
+    finally:
+        await lock.release("cve-sync", token)
+
+
+async def _maybe_hunt(lock: FeedLock) -> None:
+    """Chasse planifiée sur la base d'IOC (RF-27), une fois par HUNT_INTERVAL_SECONDS."""
+    from datetime import UTC, datetime
+
+    from sentry.app.database import get_session_factory
+    from sentry.modules.threat_hunting import engine
+    from sentry.shared.enums import HuntTrigger
+
+    settings = get_settings()
+    if settings.hunt_interval_seconds == 0:
+        return
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        if not await engine.hunt_due(
+            session, interval_seconds=settings.hunt_interval_seconds, now=now
+        ):
+            return
+    token = await lock.acquire("hunt", settings.collect_lock_ttl_seconds)
+    if token is None:
+        return
+    try:
+        async with get_session_factory()() as session:
+            await engine.mark_hunt_attempt(session, now)
+            await engine.run_hunt(
+                session, settings=settings, fetch=fetch_feed_content, trigger=HuntTrigger.SCHEDULED
+            )
+            await session.commit()
+    finally:
+        await lock.release("hunt", token)
+
+
 async def run_worker(
     *,
     tick_seconds: int,
     max_cycles: int | None = None,
     lock: FeedLock | None = None,
     stop: asyncio.Event | None = None,
+    include_cves: bool = True,
+    include_hunting: bool = True,
 ) -> int:
-    """Boucle du planificateur : un cycle `collect_due_feeds` toutes les `tick_seconds`.
+    """Boucle du planificateur : un cycle `collect_due_feeds` toutes les `tick_seconds`,
+    et la synchronisation CVE toutes les `CVE_SYNC_INTERVAL_SECONDS` (si `include_cves`).
 
     Chaque cycle ouvre sa propre session (aucune transaction longue). Un cycle en échec
     (base indisponible…) est journalisé et retenté au cycle suivant : le worker ne meurt
@@ -351,6 +414,10 @@ async def run_worker(
                         session, fetch=fetch_feed_content, lock=active_lock
                     )
                     await session.commit()
+                if include_cves:
+                    await _maybe_sync_cves(active_lock)
+                if include_hunting:
+                    await _maybe_hunt(active_lock)
                 collector.log.info(
                     "worker.cycle",
                     extra={
@@ -383,7 +450,19 @@ async def run_worker(
     help="Période de réveil en secondes (défaut : WORKER_TICK_SECONDS, 60).",
 )
 @click.option("--max-cycles", type=click.IntRange(min=1), default=None, hidden=True)
-def feeds_worker(tick: int | None, max_cycles: int | None) -> None:
+@click.option(
+    "--cves/--no-cves",
+    default=True,
+    show_default=True,
+    help="Synchronisation CVE (KEV, NVD, EPSS) toutes les CVE_SYNC_INTERVAL_SECONDS.",
+)
+@click.option(
+    "--hunt/--no-hunt",
+    default=True,
+    show_default=True,
+    help="Chasse planifiée sur la base d'IOC toutes les HUNT_INTERVAL_SECONDS.",
+)
+def feeds_worker(tick: int | None, max_cycles: int | None, cves: bool, hunt: bool) -> None:
     """Planificateur intégré : collecte en continu les sources échues (T2.6).
 
     Plusieurs workers peuvent tourner : le verrou Redis par flux empêche qu'un même flux
@@ -399,7 +478,13 @@ def feeds_worker(tick: int | None, max_cycles: int | None) -> None:
             # Windows : add_signal_handler n'existe pas, Ctrl+C lève KeyboardInterrupt.
             with contextlib.suppress(NotImplementedError):
                 loop.add_signal_handler(sig, stop.set)
-        return await run_worker(tick_seconds=tick_seconds, max_cycles=max_cycles, stop=stop)
+        return await run_worker(
+            tick_seconds=tick_seconds,
+            max_cycles=max_cycles,
+            stop=stop,
+            include_cves=cves,
+            include_hunting=hunt,
+        )
 
     with contextlib.suppress(KeyboardInterrupt):
         cycles = asyncio.run(_main())

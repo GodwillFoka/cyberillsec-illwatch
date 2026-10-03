@@ -12,6 +12,10 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [004](ADR-004-recalage-planning.md) | Recalage du planning sur la fin réelle de la phase 1 | Proposé |
 | [005](ADR-005-cycle-de-vie-ioc.md) | Cycle de vie et déduplication des IOC | Proposé |
 | [006](ADR-006-provenance-multi-sources.md) | Provenance multi-sources, OTX et collecte planifiée | Proposé |
+| [007](ADR-007-moteur-cve.md) | Moteur CVE : sources, recalcul, ligne de base des alertes | Proposé |
+| [008](ADR-008-incidents.md) | Incidents : chronologie immuable, incident issu d'une alerte | Proposé |
+| [009](ADR-009-threat-hunting.md) | Threat hunting : règles déterministes, deux modes, sessions | Proposé |
+| [010](ADR-010-client-taxii.md) | Client TAXII 2.1 : taxii2-client durci, transport maison en repli | Proposé |
 
 ## Gabarit
 
