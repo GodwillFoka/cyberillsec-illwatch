@@ -42,3 +42,9 @@ data/
 exports/
 logs/
 *.log
+
+# Livraisons Git hors dépôt (bundles, copies de travail)
+*.bundle
+Bubble/
+patches/
+.venv-*/
