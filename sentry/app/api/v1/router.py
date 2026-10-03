@@ -18,7 +18,7 @@ api_router.include_router(auth.router)
 api_router.include_router(feeds.router)
 api_router.include_router(indicators.router)
 
-# Phase 3 — MOD-03 : moteur CVE (RF-14) et alertes (RF-15)
+# Phase 3 — MOD-03 : moteur CVE (RF-11 à RF-15) et alertes (RF-16)
 api_router.include_router(cves.router)
 api_router.include_router(cves.alerts_router)
 # Phase 4 — MOD-04 : from sentry.app.api.v1 import incidents

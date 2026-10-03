@@ -1,4 +1,4 @@
-"""Routes du moteur CVE — `/api/v1/cves` et `/api/v1/alerts` (RF-14, RF-15, tâche 2.4).
+"""Routes du moteur CVE — `/api/v1/cves` et `/api/v1/alerts` (RF-14, RF-15, RF-16, tâche 2.4).
 
 | Opération                          | ADMIN | ANALYST | VIEWER |
 |------------------------------------|:-----:|:-------:|:------:|

@@ -89,7 +89,7 @@ class CVEPriorityChange(UUIDPrimaryKeyMixin, Base):
 
 
 class CVEAlert(UUIDPrimaryKeyMixin, Base):
-    """Alerte : une CVE a franchi le seuil de risque (RF-15)."""
+    """Alerte : une CVE a franchi le seuil de risque (RF-16)."""
 
     __tablename__ = "cve_alerts"
     __table_args__ = (Index("idx_cve_alerts_created", "created_at"),)

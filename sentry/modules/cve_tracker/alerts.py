@@ -1,4 +1,4 @@
-"""Livraison et acquittement des alertes CVE — tâche 2.5 (RF-15).
+"""Livraison et acquittement des alertes CVE — tâche 2.5 (RF-16).
 
 Une alerte est d'abord **enregistrée** (`cve_alerts`, ligne de journal `cve.alert`), puis
 livrée au webhook configuré (`ALERT_WEBHOOK_URL`). Une livraison échouée est retentée aux

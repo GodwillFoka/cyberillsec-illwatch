@@ -3,7 +3,7 @@
 - **Statut :** proposé
 - **Date :** 2026-09-29
 - **Décideurs :** à valider par le porteur du projet
-- **Concerne :** MOD-03, RF-14, RF-15, RNF-PERF-01, tables `cves`, `cve_priority_history`,
+- **Concerne :** MOD-03, RF-11 à RF-16, RNF-PERF-01, tables `cves`, `cve_priority_history`,
   `cve_alerts`, `collector_state`, `sentry/modules/cve_tracker/`
 
 ## Contexte
