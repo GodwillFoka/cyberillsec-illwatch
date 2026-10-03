@@ -26,6 +26,7 @@ from sqlalchemy.pool import NullPool, StaticPool  # noqa: E402
 from sentry.app.config import get_settings  # noqa: E402
 from sentry.app.database import Base, get_db  # noqa: E402
 from sentry.app.main import create_app  # noqa: E402
+from sentry.app.throttle import LocalCounter, LoginThrottle, get_login_throttle  # noqa: E402
 
 TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 IS_POSTGRES = TEST_DATABASE_URL.startswith("postgresql")
@@ -146,6 +147,9 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield db_session
 
     app.dependency_overrides[get_db] = _override_get_db
+    # Limiteur de connexion propre à chaque test : aucun compteur partagé entre tests.
+    throttle = LoginThrottle(LocalCounter(), max_failures=5, window=900)
+    app.dependency_overrides[get_login_throttle] = lambda: throttle
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as http_client:

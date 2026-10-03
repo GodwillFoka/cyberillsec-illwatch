@@ -57,6 +57,9 @@ class Settings(BaseSettings):
         description="Clé de signature JWT — OBLIGATOIREMENT surchargée en production",
     )
     access_token_expire_minutes: int = 60
+    # Force brute : échecs de connexion tolérés par identifiant sur la fenêtre (secondes).
+    login_max_failures: int = Field(default=5, ge=1, le=100)
+    login_window_seconds: int = Field(default=900, ge=60)
 
     # --- Connecteurs CTI externes (clés optionnelles) ------------------------
     # Clé NVD (https://nvd.nist.gov/developers/request-an-api-key, gratuite) : 50 requêtes

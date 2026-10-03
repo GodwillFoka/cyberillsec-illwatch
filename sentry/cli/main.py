@@ -143,7 +143,7 @@ def db_current() -> None:
 
 @cli.command()
 def seed() -> None:
-    """Insère les sources de référence (abuse.ch) et corrige les URL obsolètes. Idempotent."""
+    """Insère les sources de référence vérifiées et corrige les URL obsolètes. Idempotent."""
     from sentry.app.database import dispose_engine, get_session_factory
     from sentry.modules.foundation.seed import seed_reference_feeds
 
