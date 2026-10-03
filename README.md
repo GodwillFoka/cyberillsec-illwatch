@@ -34,7 +34,7 @@ que les décisions :
   depuis une alerte ;
 - **chasse** les menaces dans les journaux d'une organisation (Tor, DNS dynamique, DGA,
   infrastructures ransomware, CVE exploitables sur l'inventaire) ;
-- **expose** tout cela par une API REST (30 routes), une CLI riche (34 commandes) et un tableau
+- **expose** tout cela par une API REST (33 opérations), une CLI riche (35 commandes) et un tableau
   de bord SOC, dans **moins de 256 Mo de mémoire**.
 
 ## Le problème
@@ -139,11 +139,13 @@ protéger.
 | **SSRF** (une URL de flux qui vise le réseau interne) | Liste blanche d'adresses publiques (`is_global`, CGNAT, NAT64, 6to4), résolution DNS vérifiée avant chaque requête, redirections revalidées ou refusées |
 | Réponse hostile (taille, lenteur) | Lecture en flux plafonnée, délai par requête, backoff exponentiel, 429 respecté |
 | Fuite de secrets | Clés jamais en base (gabarits `{ABUSECH_AUTH_KEY}`, en-têtes), masquées dans erreurs et journaux, identifiants TAXII attachés à un seul hôte |
-| Force brute | 5 échecs par compte / 20 par IP en 15 min → 429 avant toute vérification du mot de passe |
-| Falsification de l'historique | Chronologie d'incident refusant `UPDATE`/`DELETE` jusque dans PostgreSQL (déclencheur) |
+| Force brute | 429 avant toute vérification du mot de passe : 5 échecs d'une adresse sur un compte, 50 sur un compte (botnet), 20 d'une adresse (pulvérisation) — sans verrouiller le titulaire légitime |
+| Falsification de l'historique | Chronologie d'incident et journal d'audit refusant `UPDATE`, `DELETE` et `TRUNCATE` jusque dans PostgreSQL (déclencheurs) |
+| Répudiation | Journal d'audit : connexions, refus d'accès, administration, exports, chasse — acteur, IP, `X-Request-ID` |
+| Exposition HTTP | CSP `default-src 'none'`, `nosniff`, `X-Frame-Options`, `no-store`, HSTS et `/docs` masqué en production, erreurs 500 sans détail interne |
 | Injection CSV (CWE-1236) | Cellules exportées commençant par `= + - @` neutralisées |
 | Élévation de privilèges | RBAC sur chaque route d'écriture, rôle relu en base à chaque requête |
-| Chaîne d'approvisionnement | SAST, détection de secrets et analyse des dépendances à chaque pipeline ; Renovate |
+| Chaîne d'approvisionnement | Versions figées (`constraints.txt`) pour la CI, l'image et le poste ; SAST, secrets et dépendances analysés à chaque pipeline ; Renovate |
 | Conteneur | Utilisateur non privilégié (UID 10001), contexte de build sans `.env` |
 
 ## Qualité et mesures
@@ -182,7 +184,7 @@ et l'asynchrone de bout en bout donnent un débit largement suffisant dans un se
 git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
 cd cyberillsec-sentry
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -c constraints.txt -e ".[dev]"   # mêmes versions que la CI et l'image
 
 cp .env.example .env               # SECRET_KEY : openssl rand -hex 32
 docker compose up -d postgres redis
@@ -191,12 +193,15 @@ sentry users create --username admin --email admin@example.org --role admin
 
 ./scripts/ci-local.sh              # pipeline complet en local
 uvicorn sentry.app.main:app --reload --port 8000   # http://localhost:8000/docs
+curl -s localhost:8000/ready       # base joignable, schéma à jour, Redis
+python scripts/scenario_soc.py     # test d'acceptation SOC de bout en bout
 ```
 
 Sur **Kali Linux** : `sudo apt install -y docker.io docker-compose python3-venv`, puis
 `sudo usermod -aG docker $USER` et reconnexion (si `docker compose` est absent, la commande
 s'écrit `docker-compose`). Guide pas à pas, y compris pour un développeur qui
-découvre la cybersécurité : [`docs/ONBOARDING.md`](docs/ONBOARDING.md).
+découvre la cybersécurité : [`docs/ONBOARDING.md`](docs/ONBOARDING.md). Exploitation (sondes,
+journaux, audit, sauvegardes, reverse proxy) : [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 ## Utilisation
 
@@ -220,6 +225,10 @@ sentry hunt run --observables proxy.txt --asset FortiOS
 sentry dashboard show
 sentry dashboard export cves --format csv -o cves.csv
 sentry status                                # jalons constatés sur données réelles
+
+# Sécurité et exploitation (M7)
+sentry audit list --action auth. --outcome FAILURE --since 24
+scripts/backup.sh                            # sauvegarde vérifiée, rotation
 ```
 
 | API (`/api/v1`) | Rôle requis en écriture |
@@ -230,6 +239,7 @@ sentry status                                # jalons constatés sur données r�
 | `incidents` | ADMIN / ANALYST |
 | `dashboard/summary`, `dashboard/recent`, `dashboard/export` | lecture |
 | `hunting/rules`, `hunting/sessions` | ADMIN / ANALYST (lancer une chasse) |
+| `audit` | ADMIN (lecture seule) |
 
 Documentation interactive : `/docs` (Swagger) et `/redoc`.
 
@@ -259,7 +269,7 @@ La suite vise une plateforme **déployable et démontrable** :
 | Étape | Objectif | État |
 |---|---|---|
 | M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés (`v0.1.1`) |
-| **M7** | Production Hardening : audit append-only, en-têtes, readiness, dépendances verrouillées | 🔄 en cours |
+| **M7** | Production Hardening : audit append-only, en-têtes, readiness, dépendances figées, sauvegardes | 🔄 lot 1 livré, lots 2–3 à venir |
 | M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif | ⏳ |
 | M9 | SOC Operations : triage L1/L2/L3, faux positifs, séries temporelles | ⏳ |
 | M10 | CTI Intelligence : acteurs, campagnes, MITRE ATT&CK, export STIX | ⏳ |

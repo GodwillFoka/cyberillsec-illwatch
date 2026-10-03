@@ -113,15 +113,16 @@ plutôt que depuis `alembic.ini` — pour qu'il n'existe qu'une seule source de 
 
 ## Modèle de données
 
-Quatorze tables, créées par six migrations (`alembic/versions/`). Les contraintes métier sont
+Quinze tables, créées par sept migrations (`alembic/versions/`). Les contraintes métier sont
 portées par la base (CHECK sur chaque énumération, clés étrangères, unicité), pas seulement par
 le code : une écriture SQL directe ne peut pas créer un état incohérent.
 
 ```
-users ──┬──< incidents ──┬──< incident_events        (immuable : déclencheur PostgreSQL)
+users ──┬──< incidents ──┬──< incident_events        (immuable : UPDATE/DELETE/TRUNCATE refusés)
         │                ├──< incident_indicators >── indicators
         │                └──< incident_cves ──────>── cves
-        └──< hunting_sessions ──< hunting_matches ──> indicators | cves
+        ├──< hunting_sessions ──< hunting_matches ──> indicators | cves
+        └──< audit_events                             (journal d'audit, ajout seul — ADR-011)
 
 threat_feeds ──< indicators ──< indicator_sources >── threat_feeds   (provenance, ADR-006)
 
@@ -140,13 +141,16 @@ Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_la
 | Aucun secret dans le code ni en base | Configuration Pydantic depuis l'environnement ; gabarits d'URL et en-têtes ; masquage dans erreurs et journaux |
 | SSRF | Liste blanche d'adresses publiques, DNS vérifié avant chaque requête, redirections revalidées (httpx) ou refusées (taxii2-client) — `threat_feeds/fetcher.py`, `taxii.py` |
 | Réponses hostiles | Taille plafonnée lue en flux, délai par requête, backoff, 429 respecté |
-| Authentification | JWT HS256, Argon2id, rôle relu en base, 5 échecs par compte / 20 par IP → 429 (`app/throttle.py`) |
+| Authentification | JWT HS256, Argon2id, rôle relu en base ; 429 après 5 échecs compte × IP, 50 par compte, 20 par IP (`app/throttle.py`) |
 | Validation stricte des entrées | Pydantic v2 (`extra="forbid"`) sur toutes les frontières d'API |
 | Pas d'injection SQL | Aucune requête construite par concaténation ; ORM ou requêtes paramétrées |
-| Intégrité de l'audit | Chronologie d'incident immuable (ORM + déclencheur PostgreSQL) |
+| Intégrité de l'audit | Chronologie d'incident et journal d'audit en ajout seul : ORM + déclencheurs PostgreSQL refusant `UPDATE`, `DELETE` et `TRUNCATE` (ADR-011) |
+| Traçabilité | `audit_events` : connexions, refus d'accès, administration, exports, chasse ; `X-Request-ID` relie réponse, accès et audit (`app/middleware.py`, `foundation/audit.py`) |
+| Couche HTTP | `nosniff`, `X-Frame-Options`, CSP `default-src 'none'` et `no-store` sur l'API, HSTS en production, 500 JSON sans détail interne |
+| Exploitation | `/health` (vivacité) et `/ready` (base + schéma), sauvegarde vérifiée et restauration (`docs/OPERATIONS.md`) |
 | Injection CSV | Cellules exportées neutralisées (`dashboard/service.py`) |
 | Conteneur non privilégié | Utilisateur `sentry` UID 10001 ; `.dockerignore` excluant `.env` et `.git` |
-| Dépendances surveillées | Renovate ; SAST, secrets et dépendances analysés à chaque pipeline |
+| Dépendances surveillées et figées | `constraints.txt` partagé par la CI, l'image et le poste ; Renovate ; SAST, secrets et dépendances analysés à chaque pipeline |
 
 ## Ce qui n'est délibérément pas fait en v1.0
 

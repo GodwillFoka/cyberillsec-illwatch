@@ -7,6 +7,27 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M7 Production Hardening, lot 1 (ADR-011)
+- Journal d'audit `audit_events` en ajout seul : connexions (réussies, échouées, bloquées),
+  refus d'accès, administration des sources, soumission d'IOC, acquittement, chasse, exports,
+  création de compte. `GET /api/v1/audit` (ADMIN), `sentry audit list`.
+- Middleware de sécurité : `X-Request-ID`, `nosniff`, `X-Frame-Options`, CSP et `no-store` sur
+  l'API, HSTS en production, journal d'accès JSON ; erreurs 500 en JSON sans détail interne.
+- Sonde `/ready` (base, schéma à la head Alembic, Redis) ; `HEAD` sur `/health` et `/ready`.
+- `docs/OPERATIONS.md`, `scripts/backup.sh`, `scripts/restore.sh` (vérification, SHA-256,
+  rotation) ; `constraints.txt` partagé par la CI, l'image et le poste.
+
+### Modifié
+- Limitation des connexions par couple compte × IP (5), par compte (50), par IP (20) : un
+  tiers ne peut plus verrouiller le titulaire légitime en 5 essais.
+- Production : `/docs` masqué par défaut (`DOCS_ENABLED`), `CORS_ORIGINS=*` refusé.
+- Ports Compose liés à `127.0.0.1` ; uvicorn lancé avec `--proxy-headers --no-server-header`.
+
+### Sécurité
+- `TRUNCATE` refusé sur `incident_events` et `audit_events` (déclencheurs d'instruction) : la
+  chronologie « immuable » pouvait être vidée d'une instruction (audit du 03/10/2026).
+
+
 ## [0.1.1] — 2026-10-03 — Baseline M1–M6 intégrée
 
 ### Corrigé

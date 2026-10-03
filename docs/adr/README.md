@@ -16,6 +16,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [008](ADR-008-incidents.md) | Incidents : chronologie immuable, incident issu d'une alerte | Proposé |
 | [009](ADR-009-threat-hunting.md) | Threat hunting : règles déterministes, deux modes, sessions | Proposé |
 | [010](ADR-010-client-taxii.md) | Client TAXII 2.1 : taxii2-client durci, transport maison en repli | Proposé |
+| [011](ADR-011-durcissement-production.md) | Durcissement de production : audit append-only, couche HTTP, limitation compte × IP | Proposé |
 
 ## Gabarit
 
