@@ -89,3 +89,29 @@ async def test_jalons_m4_m6(db_session: AsyncSession) -> None:
     )
     after = await compute_status(db_session, now=NOW)
     assert [c.met for c in after.later] == [True, True]
+
+
+async def test_alerte_epss_perime(db_session: AsyncSession) -> None:
+    from sentry.app.models import CVE, CollectorState
+
+    db_session.add(
+        CVE(
+            id="CVE-2021-44228",
+            description="Log4Shell",
+            is_kev=True,
+            has_ransomware_campaign=True,
+            published_date=NOW,
+            last_modified_date=NOW,
+        )
+    )
+    await db_session.flush()
+    never = await compute_status(db_session, now=NOW)
+    assert any("EPSS jamais synchronisé" in w for w in never.warnings)
+
+    db_session.add(CollectorState(name="epss", items=1, last_success_at=NOW - timedelta(hours=72)))
+    await db_session.flush()
+    stale = await compute_status(db_session, now=NOW)
+    assert any("non synchronisé depuis 72 h" in w for w in stale.warnings)
+
+    fresh = await compute_status(db_session, now=NOW - timedelta(hours=60))
+    assert fresh.warnings == []

@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sentry.app import database
 from sentry.app.api.health import get_redis_probe
 from sentry.app.config import Settings, get_settings
 from sentry.app.database import get_db
@@ -19,6 +20,7 @@ from sentry.app.migrations import head_revision
 
 STRONG_KEY = "k" * 48
 PROD_REDIS = "redis://:Xk29-long-random@localhost:6379/0"
+PROD_DB = "postgresql+asyncpg://sentry_app:Zq7-long-random@localhost:5432/sentry_test"
 
 
 # --- En-têtes et identifiant de requête ------------------------------------------------------
@@ -134,10 +136,13 @@ async def test_health_accepte_head(client: AsyncClient) -> None:
 
 @pytest.fixture
 def production_env() -> Iterator[None]:
-    saved = {k: os.environ.get(k) for k in ("ENVIRONMENT", "SECRET_KEY", "REDIS_URL")}
+    saved = {
+        k: os.environ.get(k) for k in ("ENVIRONMENT", "SECRET_KEY", "REDIS_URL", "DATABASE_URL")
+    }
     os.environ["ENVIRONMENT"] = "production"
     os.environ["SECRET_KEY"] = STRONG_KEY
     os.environ["REDIS_URL"] = PROD_REDIS
+    os.environ["DATABASE_URL"] = PROD_DB
     get_settings.cache_clear()
     try:
         yield
@@ -148,6 +153,10 @@ def production_env() -> Iterator[None]:
             else:
                 os.environ[key] = value
         get_settings.cache_clear()
+        # Le moteur global a pu être créé avec l'URL de production fictive : l'oublier, sinon
+        # les tests suivants (CLI) se connecteraient avec cet identifiant.
+        database._engine = None
+        database._session_factory = None
 
 
 @pytest.mark.usefixtures("production_env")
@@ -166,9 +175,15 @@ def test_production_refuse_cors_ouvert() -> None:
             environment="production",
             secret_key=STRONG_KEY,
             redis_url=PROD_REDIS,
+            database_url=PROD_DB,
             cors_origins=["*"],
         )
-    prod = {"environment": "production", "secret_key": STRONG_KEY, "redis_url": PROD_REDIS}
+    prod = {
+        "environment": "production",
+        "secret_key": STRONG_KEY,
+        "redis_url": PROD_REDIS,
+        "database_url": PROD_DB,
+    }
     assert Settings(**prod).expose_docs is False  # type: ignore[arg-type]
     assert Settings(environment="development").expose_docs is True
     assert Settings(**prod, docs_enabled=True).expose_docs  # type: ignore[arg-type]

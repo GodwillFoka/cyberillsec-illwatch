@@ -148,6 +148,30 @@ image-docker:
   script:
     - docker build -t sentry:$CI_COMMIT_SHORT_SHA .
     - docker run --rm --entrypoint sentry sentry:$CI_COMMIT_SHORT_SHA version
+    # M7 lot 3 : l'image est publiée sous son SHA dans le registre du projet pour que
+    # container_scanning l'analyse. Registre désactivé : avertissement, pas d'échec du build.
+    - |
+      if echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"; then
+        docker tag sentry:$CI_COMMIT_SHORT_SHA "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+        docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" || echo "AVERTISSEMENT : push refusé, analyse d'image impossible"
+      else
+        echo "AVERTISSEMENT : registre GitLab indisponible, analyse d'image impossible"
+      fi
+
+# Les deux fichiers Compose (développement et production) doivent rester valides : une
+# variable mal nommée dans l'overlay de production ne se découvrirait sinon qu'au déploiement.
+compose-config:
+  stage: build
+  image: docker:26-cli
+  variables:
+    SECRET_KEY: ci-dummy
+    POSTGRES_PASSWORD: ci-dummy
+    POSTGRES_APP_PASSWORD: ci-dummy
+    REDIS_PASSWORD: ci-dummy
+  script:
+    - touch .env
+    - docker compose -f docker-compose.yml config -q
+    - docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full config -q
 
 # Publication vers le registre de conteneurs GitLab, uniquement sur tag.
 publication-image:
@@ -178,6 +202,7 @@ include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
   - template: Security/SAST.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
 
 dependency_scanning:
   stage: securite
@@ -187,3 +212,12 @@ secret_detection:
 
 sast:
   stage: securite
+
+# M7 lot 3 : vulnérabilités de l'image (paquets système et Python). Non bloquant tant que le
+# registre n'est pas confirmé actif sur le projet ; à rendre bloquant pour les CRITICAL ensuite.
+container_scanning:
+  stage: securite
+  needs: ["image-docker"]
+  variables:
+    CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  allow_failure: true

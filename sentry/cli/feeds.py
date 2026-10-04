@@ -381,6 +381,57 @@ async def _maybe_hunt(lock: FeedLock) -> None:
         await lock.release("hunt", token)
 
 
+HOUSEKEEPING_STATE = "housekeeping"
+HOUSEKEEPING_INTERVAL_SECONDS = 24 * 3600
+
+
+async def _maybe_housekeeping(lock: FeedLock) -> None:
+    """Une fois par jour : purge des sessions périmées, contrôle de fraîcheur d'EPSS (M7 lot 3)."""
+    from datetime import UTC, datetime, timedelta
+
+    from sentry.app.database import get_session_factory
+    from sentry.app.models import CollectorState
+    from sentry.modules.foundation.sessions import purge_refresh_tokens
+    from sentry.modules.foundation.status import epss_staleness
+
+    settings = get_settings()
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        state = await session.get(CollectorState, HOUSEKEEPING_STATE)
+        last = None if state is None else state.last_success_at
+        if last is not None and last.tzinfo is None:
+            last = last.replace(tzinfo=UTC)
+        if last is not None and now - last < timedelta(seconds=HOUSEKEEPING_INTERVAL_SECONDS):
+            return
+    token = await lock.acquire(HOUSEKEEPING_STATE, settings.collect_lock_ttl_seconds)
+    if token is None:
+        return
+    try:
+        async with get_session_factory()() as session:
+            purged = await purge_refresh_tokens(session, now=now)
+            stale, age = await epss_staleness(session, now)
+            state = await session.get(CollectorState, HOUSEKEEPING_STATE)
+            if state is None:
+                state = CollectorState(name=HOUSEKEEPING_STATE, items=0)
+                session.add(state)
+            state.last_success_at = now
+            state.items = purged
+            await session.commit()
+        collector.log.info("worker.housekeeping", extra={"fields": {"sessions_purged": purged}})
+        if stale:
+            collector.log.warning(
+                "cve.epss_stale",
+                extra={
+                    "fields": {
+                        "age_hours": None if age is None else round(age.total_seconds() / 3600),
+                        "impact": "score plafonné à 75 : aucune CVE ne peut atteindre P0",
+                    }
+                },
+            )
+    finally:
+        await lock.release(HOUSEKEEPING_STATE, token)
+
+
 async def run_worker(
     *,
     tick_seconds: int,
@@ -418,6 +469,7 @@ async def run_worker(
                     await _maybe_sync_cves(active_lock)
                 if include_hunting:
                     await _maybe_hunt(active_lock)
+                await _maybe_housekeeping(active_lock)
                 collector.log.info(
                     "worker.cycle",
                     extra={

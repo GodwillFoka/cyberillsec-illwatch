@@ -7,7 +7,7 @@ s'exécuter si la validation échoue (règle de gestion MOD-01).
 
 from functools import lru_cache
 from typing import Literal, Self
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -16,6 +16,7 @@ DEFAULT_SECRET_KEY = "change-me-in-production"  # noqa: S105 - sentinelle refus�
 INSECURE_SECRET_KEYS = frozenset({DEFAULT_SECRET_KEY, "changeme", "secret", "sentry"})
 MIN_PRODUCTION_SECRET_LENGTH = 32
 INSECURE_REDIS_PASSWORDS = frozenset({"sentry-dev-redis", "redis", "password", "changeme"})
+INSECURE_DB_PASSWORDS = frozenset({"sentry", "sentry-app-dev", "postgres", "password", "changeme"})
 
 
 class Settings(BaseSettings):
@@ -183,6 +184,14 @@ class Settings(BaseSettings):
         previous = self.secret_key_previous
         if previous is not None and len(previous.get_secret_value()) < MIN_PRODUCTION_SECRET_LENGTH:
             raise ValueError("SECRET_KEY_PREVIOUS trop courte pour la production.")
+        db_password = unquote(urlsplit(self.database_url).password or "")
+        if self.database_url.startswith("postgresql") and (
+            not db_password or db_password in INSECURE_DB_PASSWORDS
+        ):
+            raise ValueError(
+                "DATABASE_URL sans mot de passe ou avec un mot de passe de développement "
+                "interdit en production."
+            )
         redis_password = urlsplit(self.redis_url).password
         if not redis_password or redis_password in INSECURE_REDIS_PASSWORDS:
             raise ValueError(

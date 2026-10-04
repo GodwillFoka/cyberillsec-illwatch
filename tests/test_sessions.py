@@ -200,7 +200,11 @@ def test_url_masquee() -> None:
 
 
 def test_production_exige_un_mot_de_passe_redis() -> None:
-    base = {"environment": "production", "secret_key": KEY_A}
+    base = {
+        "environment": "production",
+        "secret_key": KEY_A,
+        "database_url": "postgresql+asyncpg://app:Zq7-long-random@db:5432/sentry",
+    }
     with pytest.raises(ValidationError, match="REDIS_URL"):
         Settings(_env_file=None, redis_url="redis://redis:6379/0", **base)  # type: ignore[arg-type]
     with pytest.raises(ValidationError, match="REDIS_URL"):
@@ -370,3 +374,23 @@ def test_mot_de_passe_encode_dans_l_url_de_migration(monkeypatch: pytest.MonkeyP
         assert url == "postgresql+asyncpg://app:p%3Aw%21@db:5432/sentry_test"
     finally:
         get_settings.cache_clear()
+
+
+async def test_purge_des_sessions_perimees(db_session: AsyncSession) -> None:
+    from sentry.modules.foundation.sessions import purge_refresh_tokens, revoke_user_sessions
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    user = await create_user(
+        db_session,
+        username=f"purge-{uuid4().hex[:6]}",
+        email=f"{uuid4().hex[:6]}@x.test",
+        password=PASSWORD,
+    )
+    old = datetime.now(UTC) - timedelta(days=60)
+    await issue_refresh_token(db_session, user, settings=settings, now=old)  # expiré il y a 53 j
+    await issue_refresh_token(db_session, user, settings=settings)  # actif : conservé
+    revoked, _ = await issue_refresh_token(db_session, user, settings=settings)
+    await revoke_user_sessions(db_session, user.id, now=datetime.now(UTC))  # révoqué récemment
+    assert await purge_refresh_tokens(db_session) == 1
+    remaining = (await db_session.execute(select(RefreshToken))).scalars().all()
+    assert len(remaining) == 2 and revoked.token  # le récent reste, pour enquête

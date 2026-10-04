@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sentry.app.config import Settings
@@ -165,3 +165,20 @@ async def logout(session: AsyncSession, token: str, *, now: datetime | None = No
         return None
     await revoke_family(session, row.family_id, "logout", now=now)
     return row.user_id
+
+
+async def purge_refresh_tokens(
+    session: AsyncSession, *, now: datetime | None = None, retention_days: int = 30
+) -> int:
+    """Supprime les jetons expirés ou révoqués depuis plus de `retention_days` jours.
+
+    La rétention garde de quoi enquêter sur un rejeu récent (familles, adresses IP) ; au-delà,
+    le journal d'audit (`auth.refresh`, `auth.logout`) reste la trace durable.
+    """
+    limit = (now or datetime.now(UTC)) - timedelta(days=retention_days)
+    result = await session.execute(
+        delete(RefreshToken).where(
+            or_(RefreshToken.expires_at < limit, RefreshToken.revoked_at < limit)
+        )
+    )
+    return int(getattr(result, "rowcount", 0) or 0)
