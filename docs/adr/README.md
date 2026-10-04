@@ -17,6 +17,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [009](ADR-009-threat-hunting.md) | Threat hunting : règles déterministes, deux modes, sessions | Proposé |
 | [010](ADR-010-client-taxii.md) | Client TAXII 2.1 : taxii2-client durci, transport maison en repli | Proposé |
 | [011](ADR-011-durcissement-production.md) | Durcissement de production : audit append-only, couche HTTP, limitation compte × IP | Proposé |
+| [012](ADR-012-roles-sessions.md) | Rôles PostgreSQL séparés, sessions révocables, rotation de clé, Redis protégé | Proposé |
 
 ## Gabarit
 

@@ -113,7 +113,7 @@ plutôt que depuis `alembic.ini` — pour qu'il n'existe qu'une seule source de 
 
 ## Modèle de données
 
-Quinze tables, créées par sept migrations (`alembic/versions/`). Les contraintes métier sont
+Seize tables, créées par huit migrations (`alembic/versions/`). Les contraintes métier sont
 portées par la base (CHECK sur chaque énumération, clés étrangères, unicité), pas seulement par
 le code : une écriture SQL directe ne peut pas créer un état incohérent.
 
@@ -122,7 +122,8 @@ users ──┬──< incidents ──┬──< incident_events        (immuab
         │                ├──< incident_indicators >── indicators
         │                └──< incident_cves ──────>── cves
         ├──< hunting_sessions ──< hunting_matches ──> indicators | cves
-        └──< audit_events                             (journal d'audit, ajout seul — ADR-011)
+        ├──< audit_events                             (journal d'audit, ajout seul — ADR-011)
+        └──< refresh_tokens                           (sessions révocables — ADR-012)
 
 threat_feeds ──< indicators ──< indicator_sources >── threat_feeds   (provenance, ADR-006)
 
@@ -141,7 +142,8 @@ Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_la
 | Aucun secret dans le code ni en base | Configuration Pydantic depuis l'environnement ; gabarits d'URL et en-têtes ; masquage dans erreurs et journaux |
 | SSRF | Liste blanche d'adresses publiques, DNS vérifié avant chaque requête, redirections revalidées (httpx) ou refusées (taxii2-client) — `threat_feeds/fetcher.py`, `taxii.py` |
 | Réponses hostiles | Taille plafonnée lue en flux, délai par requête, backoff, 429 respecté |
-| Authentification | JWT HS256, Argon2id, rôle relu en base ; 429 après 5 échecs compte × IP, 50 par compte, 20 par IP (`app/throttle.py`) |
+| Authentification | JWT HS256 de 15 min avec `kid` (rotation de clé sans déconnexion), Argon2id, rôle relu en base ; jeton de rafraîchissement opaque, rotatif, lignée révoquée au rejeu ; 429 après 5 échecs compte × IP, 50 par compte, 20 par IP |
+| Moindre privilège en base | Rôle applicatif sans droit de structure, `SELECT/INSERT` seulement sur les tables en ajout seul ; migrations par le rôle propriétaire (`app/db_roles.py`, ADR-012) |
 | Validation stricte des entrées | Pydantic v2 (`extra="forbid"`) sur toutes les frontières d'API |
 | Pas d'injection SQL | Aucune requête construite par concaténation ; ORM ou requêtes paramétrées |
 | Intégrité de l'audit | Chronologie d'incident et journal d'audit en ajout seul : ORM + déclencheurs PostgreSQL refusant `UPDATE`, `DELETE` et `TRUNCATE` (ADR-011) |

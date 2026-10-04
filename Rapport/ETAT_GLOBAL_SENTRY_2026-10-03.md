@@ -234,3 +234,21 @@ Détail et critères de sortie : `docs/ROADMAP.md`.
 5. **Nettoyer** : `git stash drop` ×3 (contenu intégré ou corrigé), supprimer les branches
    locales fusionnées (`git branch --merged main`).
 6. **Fusionner `feature/m7-production-hardening`** (lot 1) après revue.
+
+---
+
+## 17. Mise à jour du 04/10/2026
+
+M7 lots 1 et 2 sont codés et vérifiés sur `feature/m7-production-hardening` (bilans
+`BILAN_M7_LOT1.md`, `BILAN_M7_LOT2.md`). Les écarts ✘ du § 7 sont fermés, y compris la limite
+« le propriétaire des tables peut supprimer un déclencheur » : l'application se connecte
+désormais avec un rôle sans droit de structure.
+
+| Ligne du § 3 | Avant | Après le 04/10 |
+|---|---|---|
+| M3 INTÉGRÉ | ◐ (KEV seul) | ◐+ : KEV réel + CVSS NVD réel des 1 733 CVE KEV (import hors ligne) ; EPSS toujours à constater |
+| M6 INTÉGRÉ | RULE-01 non testée | RULE-01 validée sur 1 746 relais Tor réels |
+| Image Docker | jamais construite hors GitLab | construite et exécutée en production (base de substitution) |
+
+Nouveau constat (§ 4 du bilan du lot 2) : **sans EPSS, aucune CVE ne peut être P0**. À traiter
+par ADR en M8.

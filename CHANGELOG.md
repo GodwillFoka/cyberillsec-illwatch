@@ -7,6 +7,27 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M7 Production Hardening, lot 2 (ADR-012)
+- Rôle PostgreSQL applicatif sans droit de structure (`sentry db app-role`), droits
+  réappliqués après chaque migration ; migrations via `MIGRATION_DATABASE_URL`.
+- Jetons de rafraîchissement opaques et rotatifs, lignée révoquée au rejeu ;
+  `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout` ; jeton d'accès ramené à 15 min.
+- `sentry users disable|enable|revoke-sessions`.
+- Rotation de `SECRET_KEY` sans déconnexion (`kid`, `SECRET_KEY_PREVIOUS`).
+- Redis protégé par mot de passe (Compose), exigé en production.
+- `sentry cves import` : CVE NVD 2.0 depuis des fichiers (.json, .gz, .xz), lus en flux,
+  pour les déploiements sans accès à l'API NVD.
+
+### Corrigé
+- Alembic échouait avec un mot de passe encodé dans l'URL de base (« % » interprété par
+  ConfigParser) : `sentry db upgrade` et `/ready` en erreur.
+- `sentry config` affichait les mots de passe des URL de base et de Redis.
+- Les URL de source refusées par l'anti-SSRF dès la validation (422) n'étaient pas auditées.
+- Le scénario SOC ne pouvait pas être rejoué dans les 15 minutes (compte bloqué).
+- Image Docker : la directive `# syntax` exigeait Docker Hub pour construire ; journal
+  d'accès d'uvicorn doublé.
+
+
 ### Ajouté — M7 Production Hardening, lot 1 (ADR-011)
 - Journal d'audit `audit_events` en ajout seul : connexions (réussies, échouées, bloquées),
   refus d'accès, administration des sources, soumission d'IOC, acquittement, chasse, exports,

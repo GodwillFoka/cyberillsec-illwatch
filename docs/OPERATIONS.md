@@ -1,7 +1,7 @@
 # SENTRY — Guide d'exploitation
 
 **Public :** la personne qui installe, surveille, sauvegarde et met à jour une instance.
-**Référence :** M7 Production Hardening (ADR-011). Testé sur Kali Linux (rolling) et Debian 12.
+**Référence :** M7 Production Hardening (ADR-011, ADR-012). Testé sur Kali Linux (rolling) et Debian 12.
 
 ## 1. Composants
 
@@ -14,6 +14,24 @@
 
 Démarrage complet : `docker compose --profile full up -d`. Développement : `docker compose up -d`
 (base et Redis seuls, ports liés à `127.0.0.1`).
+
+## 1 bis. Comptes de service (M7 lot 2)
+
+| Rôle | Variable | Droits |
+|---|---|---|
+| PostgreSQL propriétaire (`sentry`) | `MIGRATION_DATABASE_URL` | structure : migrations uniquement |
+| PostgreSQL applicatif (`sentry_app`) | `DATABASE_URL`, `DATABASE_APP_ROLE` | données ; `SELECT, INSERT` seulement sur `incident_events` et `audit_events` |
+| Redis | `REDIS_URL` (`redis://:MOT_DE_PASSE@…`), `REDIS_PASSWORD` (serveur Compose) | — |
+
+Volume Compose neuf : le rôle `sentry_app` est créé au premier démarrage
+(`scripts/db/init-app-role.sh`, mot de passe `POSTGRES_APP_PASSWORD`). Volume existant, une fois :
+
+```bash
+SENTRY_APP_DB_PASSWORD='…' sentry db app-role sentry_app --create   # avec MIGRATION_DATABASE_URL
+sentry db upgrade                                                   # réapplique les droits
+```
+
+Un mot de passe contenant `:`, `@`, `/` ou `%` s'encode dans l'URL : `%3A`, `%40`, `%2F`, `%25`.
 
 ## 2. Sondes
 
@@ -42,6 +60,33 @@ et sa ligne d'audit. Jamais journalisés : en-têtes, corps, mots de passe, jeto
 ```bash
 docker compose logs api | jq -c 'select(.logger=="sentry.audit" and .outcome!="SUCCESS")'
 ```
+
+## 3 bis. Sessions et clés (M7 lot 2)
+
+| Besoin | Commande |
+|---|---|
+| Couper l'accès d'un compte tout de suite | `sentry users disable alice` (statut relu à chaque requête, sessions révoquées) |
+| Vol de session suspecté | `sentry users revoke-sessions alice` |
+| Réactiver | `sentry users enable alice` |
+| Changer la clé de signature sans déconnecter | `SECRET_KEY_PREVIOUS=<ancienne>`, `SECRET_KEY=$(openssl rand -hex 32)`, redémarrer l'API ; retirer `SECRET_KEY_PREVIOUS` 15 min plus tard |
+
+Côté client : `POST /api/v1/auth/token` renvoie `access_token` (15 min) et `refresh_token`
+(7 j) ; `POST /api/v1/auth/refresh` en échange un nouveau couple ; `POST /api/v1/auth/logout`
+révoque la session. Un `refresh_token` déjà utilisé qui revient révoque toute la session et
+apparaît dans l'audit (`auth.refresh` DENIED, `reuse_detected`).
+
+## 3 ter. Vulnérabilités sans accès à l'API NVD
+
+Réseau filtré ou déploiement isolé : importer les flux annuels NVD 2.0 (miroir
+`fkie-cad/nvd-json-data-feeds`, ou pages de l'API sauvegardées) :
+
+```bash
+sentry cves sync --only kev                             # catalogue KEV (ou KEV_CATALOG_URL miroir)
+sentry cves import CVE-20*.json.xz --only-known         # complète le CVSS des CVE suivies
+```
+
+Lecture en flux : ~220 Mo de mémoire pour les 24 flux annuels du catalogue KEV (59 s).
+**Sans EPSS, aucune CVE n'atteint P0** (score plafonné à 75) : EPSS reste à synchroniser.
 
 ## 4. Journal d'audit
 

@@ -34,7 +34,7 @@ que les décisions :
   depuis une alerte ;
 - **chasse** les menaces dans les journaux d'une organisation (Tor, DNS dynamique, DGA,
   infrastructures ransomware, CVE exploitables sur l'inventaire) ;
-- **expose** tout cela par une API REST (33 opérations), une CLI riche (35 commandes) et un tableau
+- **expose** tout cela par une API REST (35 opérations), une CLI riche (40 commandes) et un tableau
   de bord SOC, dans **moins de 256 Mo de mémoire**.
 
 ## Le problème
@@ -141,7 +141,9 @@ protéger.
 | Fuite de secrets | Clés jamais en base (gabarits `{ABUSECH_AUTH_KEY}`, en-têtes), masquées dans erreurs et journaux, identifiants TAXII attachés à un seul hôte |
 | Force brute | 429 avant toute vérification du mot de passe : 5 échecs d'une adresse sur un compte, 50 sur un compte (botnet), 20 d'une adresse (pulvérisation) — sans verrouiller le titulaire légitime |
 | Falsification de l'historique | Chronologie d'incident et journal d'audit refusant `UPDATE`, `DELETE` et `TRUNCATE` jusque dans PostgreSQL (déclencheurs) |
-| Répudiation | Journal d'audit : connexions, refus d'accès, administration, exports, chasse — acteur, IP, `X-Request-ID` |
+| Répudiation | Journal d'audit : connexions, refus d'accès, tentatives SSRF, administration, exports, chasse — acteur, IP, `X-Request-ID` |
+| Vol de session | Accès de 15 min, jeton de rafraîchissement opaque et rotatif : un rejeu révoque toute la session ; `sentry users disable` coupe l'accès immédiatement |
+| Compromission du code applicatif | Rôle PostgreSQL applicatif sans droit de structure : ni `ALTER`, ni `TRUNCATE`, ni suppression de déclencheur ; tables d'audit en `SELECT/INSERT` seulement |
 | Exposition HTTP | CSP `default-src 'none'`, `nosniff`, `X-Frame-Options`, `no-store`, HSTS et `/docs` masqué en production, erreurs 500 sans détail interne |
 | Injection CSV (CWE-1236) | Cellules exportées commençant par `= + - @` neutralisées |
 | Élévation de privilèges | RBAC sur chaque route d'écriture, rôle relu en base à chaque requête |
@@ -228,12 +230,14 @@ sentry status                                # jalons constatés sur données r�
 
 # Sécurité et exploitation (M7)
 sentry audit list --action auth. --outcome FAILURE --since 24
+sentry users disable alice                   # coupe l'accès et révoque les sessions
+sentry cves import CVE-2024.json.xz --only-known   # NVD hors ligne (réseau filtré)
 scripts/backup.sh                            # sauvegarde vérifiée, rotation
 ```
 
 | API (`/api/v1`) | Rôle requis en écriture |
 |---|---|
-| `auth/token`, `users/me` | — |
+| `auth/token`, `auth/refresh`, `auth/logout`, `users/me` | — |
 | `feeds`, `indicators` | ADMIN (flux), ADMIN / ANALYST (IOC) |
 | `cves`, `alerts` | ADMIN / ANALYST (acquittement) |
 | `incidents` | ADMIN / ANALYST |
@@ -269,7 +273,7 @@ La suite vise une plateforme **déployable et démontrable** :
 | Étape | Objectif | État |
 |---|---|---|
 | M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés (`v0.1.1`) |
-| **M7** | Production Hardening : audit append-only, en-têtes, readiness, dépendances figées, sauvegardes | 🔄 lot 1 livré, lots 2–3 à venir |
+| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, sauvegardes | 🔄 lots 1–2 livrés, lot 3 (TLS, scan d'image) à venir |
 | M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif | ⏳ |
 | M9 | SOC Operations : triage L1/L2/L3, faux positifs, séries temporelles | ⏳ |
 | M10 | CTI Intelligence : acteurs, campagnes, MITRE ATT&CK, export STIX | ⏳ |
