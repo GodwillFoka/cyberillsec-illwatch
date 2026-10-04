@@ -56,7 +56,7 @@ async def _apply(conn: AsyncConnection, role: str) -> GrantReport:
         raise AppRoleError(f"Le rôle {role} n'existe pas (option --create).")
     if flags[0]:
         raise AppRoleError(f"{role} est superutilisateur : la séparation serait sans effet.")
-    owned = (
+    owned: int = (
         await conn.execute(
             text("SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tableowner = :r"),
             {"r": role},
@@ -68,7 +68,8 @@ async def _apply(conn: AsyncConnection, role: str) -> GrantReport:
         )
 
     quoted = f'"{role}"'  # nom validé par _ROLE_RE : pas d'injection possible
-    database = (await conn.execute(text("SELECT current_database()"))).scalar_one()
+    database: str = (await conn.execute(text("SELECT current_database()"))).scalar_one()
+    database = database.replace('"', '""')  # identifiant entre guillemets : « " » doublé
     statements = [
         f'GRANT CONNECT ON DATABASE "{database}" TO {quoted}',
         f"GRANT USAGE ON SCHEMA public TO {quoted}",
@@ -76,7 +77,7 @@ async def _apply(conn: AsyncConnection, role: str) -> GrantReport:
         f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {quoted}",
         f"GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {quoted}",
     ]
-    existing = set(
+    existing: set[str] = set(
         (
             await conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'"))
         ).scalars()
@@ -119,7 +120,7 @@ async def grant_app_role(
                     )
                 ).first()
                 if exists is None:
-                    statement = (
+                    statement: str = (
                         await conn.execute(
                             text(
                                 "SELECT format('CREATE ROLE %I LOGIN PASSWORD %L', "
