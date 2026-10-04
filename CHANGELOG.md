@@ -7,6 +7,25 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M7 Production Hardening, lot 3 (ADR-013)
+- `docker-compose.prod.yml` : Caddy (TLS Let's Encrypt, HTTP/2-3) seul service exposé,
+  conteneur `migrate` éphémère (rôle propriétaire), API et worker en rôle applicatif,
+  secrets obligatoires, `X-Forwarded-For` accepté de Caddy seul.
+- CI : image poussée sous son SHA et analysée (Container Scanning) ; validation des deux
+  fichiers Compose (`compose-config`).
+- Worker : entretien quotidien (purge des sessions périmées, alerte `cve.epss_stale`) ;
+  `sentry status` signale un EPSS de plus de 48 h.
+- Production refusée avec un mot de passe de base absent ou de développement.
+- ADR-014 (à trancher) : dépendance du score à EPSS et plancher KEV.
+
+### Corrigé (réexécution du 04/10)
+- Une migration lancée dans le processus (`sentry db upgrade`, tests) rendait muets les
+  journaux `sentry.*`, dont l'audit (`fileConfig` d'Alembic).
+- Les tests ne pouvaient pas passer d'une branche à l'autre sur la même base de test (schéma
+  vidé par `drop_all` partiel) ; le schéma recréé n'accorde plus que `USAGE` à `PUBLIC`.
+- Scénario de la baseline : contrôle SSRF non probant et compte bloqué entre deux exécutions.
+
+
 ### Ajouté — M7 Production Hardening, lot 2 (ADR-012)
 - Rôle PostgreSQL applicatif sans droit de structure (`sentry db app-role`), droits
   réappliqués après chaque migration ; migrations via `MIGRATION_DATABASE_URL`.

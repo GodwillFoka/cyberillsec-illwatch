@@ -149,7 +149,8 @@ Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_la
 | Intégrité de l'audit | Chronologie d'incident et journal d'audit en ajout seul : ORM + déclencheurs PostgreSQL refusant `UPDATE`, `DELETE` et `TRUNCATE` (ADR-011) |
 | Traçabilité | `audit_events` : connexions, refus d'accès, administration, exports, chasse ; `X-Request-ID` relie réponse, accès et audit (`app/middleware.py`, `foundation/audit.py`) |
 | Couche HTTP | `nosniff`, `X-Frame-Options`, CSP `default-src 'none'` et `no-store` sur l'API, HSTS en production, 500 JSON sans détail interne |
-| Exploitation | `/health` (vivacité) et `/ready` (base + schéma), sauvegarde vérifiée et restauration (`docs/OPERATIONS.md`) |
+| Exploitation | `/health` (vivacité) et `/ready` (base + schéma), sauvegarde vérifiée et restauration, entretien quotidien (`docs/OPERATIONS.md`) |
+| Transport et déploiement | Caddy (TLS, HTTP/2-3) seul exposé ; `migrate` éphémère avec le rôle propriétaire ; API et worker en rôle applicatif (`docker-compose.prod.yml`, ADR-013) |
 | Injection CSV | Cellules exportées neutralisées (`dashboard/service.py`) |
 | Conteneur non privilégié | Utilisateur `sentry` UID 10001 ; `.dockerignore` excluant `.env` et `.git` |
 | Dépendances surveillées et figées | `constraints.txt` partagé par la CI, l'image et le poste ; Renovate ; SAST, secrets et dépendances analysés à chaque pipeline |

@@ -18,6 +18,8 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [010](ADR-010-client-taxii.md) | Client TAXII 2.1 : taxii2-client durci, transport maison en repli | Proposé |
 | [011](ADR-011-durcissement-production.md) | Durcissement de production : audit append-only, couche HTTP, limitation compte × IP | Proposé |
 | [012](ADR-012-roles-sessions.md) | Rôles PostgreSQL séparés, sessions révocables, rotation de clé, Redis protégé | Proposé |
+| [013](ADR-013-deploiement-tls.md) | Déploiement : TLS par Caddy, migrations isolées, analyse d'image, entretien quotidien | Proposé |
+| [014](ADR-014-score-dependance-epss.md) | Score : dépendance à EPSS et plancher KEV (proposition M8) | À trancher |
 
 ## Gabarit
 

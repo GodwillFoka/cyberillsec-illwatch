@@ -29,7 +29,7 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 |---|---|---|
 | 1 ✅ codé | Immuabilité étendue (`TRUNCATE`), journal d'audit append-only, `/ready` distinct de `/health`, en-têtes HTTP, identifiant de requête et erreurs JSON uniformes, verrouillage par couple compte/IP, ports Compose sur 127.0.0.1, contraintes de dépendances, sauvegarde/restauration | tests verts ; scénario 44/44 ; audit § 7 sans ✘ — **constaté en local le 03/10** (`Rapport/BILAN_M7_LOT1.md`) |
 | 2 ✅ codé | Rôle PostgreSQL applicatif non propriétaire, rôle de migration séparé ; Redis avec mot de passe ; rotation de `SECRET_KEY` (clé courante + clé précédente) ; jetons de rafraîchissement révocables | test : le compte applicatif ne peut ni `ALTER` ni `DROP` — **constaté le 04/10** (`Rapport/BILAN_M7_LOT2.md`) |
-| 3 | Reverse proxy TLS (Caddy ou Traefik), image non root déjà acquise + scan Trivy, worker et migrations en conteneurs séparés | `docker compose --profile prod up` sur un VPS UE, note SSL Labs ≥ A |
+| 3 ✅ codé | Reverse proxy TLS (Caddy), analyse d'image (Container Scanning GitLab), migrations en conteneur éphémère, entretien quotidien (sessions, EPSS) | `docker compose -f … -f docker-compose.prod.yml --profile full up` sur un VPS UE, note SSL Labs ≥ A — **TLS constaté en local le 04/10, VPS à faire** |
 
 ## M8 — Detection & Correlation
 

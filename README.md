@@ -148,7 +148,8 @@ protéger.
 | Injection CSV (CWE-1236) | Cellules exportées commençant par `= + - @` neutralisées |
 | Élévation de privilèges | RBAC sur chaque route d'écriture, rôle relu en base à chaque requête |
 | Chaîne d'approvisionnement | Versions figées (`constraints.txt`) pour la CI, l'image et le poste ; SAST, secrets et dépendances analysés à chaque pipeline ; Renovate |
-| Conteneur | Utilisateur non privilégié (UID 10001), contexte de build sans `.env` |
+| Conteneur | Utilisateur non privilégié (UID 10001), contexte de build sans `.env`, image analysée à chaque pipeline (Container Scanning) |
+| Transport | TLS 1.3 / HTTP/2 par Caddy (Let's Encrypt), seul service exposé ; migrations dans un conteneur éphémère, l'API ne détient pas les droits de structure |
 
 ## Qualité et mesures
 
@@ -273,7 +274,7 @@ La suite vise une plateforme **déployable et démontrable** :
 | Étape | Objectif | État |
 |---|---|---|
 | M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés (`v0.1.1`) |
-| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, sauvegardes | 🔄 lots 1–2 livrés, lot 3 (TLS, scan d'image) à venir |
+| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, TLS (Caddy), migrations isolées, analyse d'image, sauvegardes | ✅ lots 1–3 codés, préproduction à constater |
 | M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif | ⏳ |
 | M9 | SOC Operations : triage L1/L2/L3, faux positifs, séries temporelles | ⏳ |
 | M10 | CTI Intelligence : acteurs, campagnes, MITRE ATT&CK, export STIX | ⏳ |

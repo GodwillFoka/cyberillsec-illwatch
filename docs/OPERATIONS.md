@@ -1,7 +1,7 @@
 # SENTRY — Guide d'exploitation
 
 **Public :** la personne qui installe, surveille, sauvegarde et met à jour une instance.
-**Référence :** M7 Production Hardening (ADR-011, ADR-012). Testé sur Kali Linux (rolling) et Debian 12.
+**Référence :** M7 Production Hardening (ADR-011, ADR-012, ADR-013). Testé sur Kali Linux (rolling) et Debian 12.
 
 ## 1. Composants
 
@@ -124,7 +124,35 @@ docker compose --profile full start api worker && curl -fsS localhost:8000/ready
 Une sauvegarde non restaurée n'est pas une sauvegarde : tester la restauration une fois par
 mois sur une base jetable (`PGURL=postgresql://…/sentry_restore scripts/restore.sh …`).
 
-## 6. Exposition derrière un reverse proxy
+## 6. Déploiement de production (TLS, M7 lot 3)
+
+Prérequis : Docker Compose **v2.24 ou plus** (`docker compose version`), un nom DNS public
+pointant sur l'hôte et les ports 80/443 ouverts (Let's Encrypt), ou `SENTRY_DOMAIN=localhost`
+pour un essai avec l'autorité interne de Caddy.
+
+`.env` de production (aucune valeur de développement n'est acceptée) :
+
+```bash
+SECRET_KEY=$(openssl rand -hex 32)
+POSTGRES_PASSWORD=$(openssl rand -hex 24)        # propriétaire des tables (migrations)
+POSTGRES_APP_PASSWORD=$(openssl rand -hex 24)    # rôle applicatif
+REDIS_PASSWORD=$(openssl rand -hex 24)
+SENTRY_DOMAIN=sentry.exemple.eu
+```
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps   # migrate : Exited (0)
+curl -fsS https://sentry.exemple.eu/ready
+```
+
+Ce que fait l'overlay : `migrate` applique les migrations avec le propriétaire puis s'arrête ;
+l'API et le worker démarrent ensuite en rôle applicatif, sans le mot de passe du propriétaire ;
+seul Caddy publie des ports ; uvicorn n'accepte `X-Forwarded-For` que de Caddy (`172.30.0.10`).
+Vérifié dans le bac à sable : TLS 1.3, HTTP/2, `X-Forwarded-For` usurpé par le client ignoré
+(l'audit enregistre l'adresse réelle).
+
+Hors Compose (proxy existant) :
 
 - Servir l'API en HTTPS uniquement (Caddy, Traefik ou nginx) ; `ENVIRONMENT=production` active
   HSTS et masque `/docs`.
@@ -132,6 +160,13 @@ mois sur une base jetable (`PGURL=postgresql://…/sentry_restore scripts/restor
   les requêtes semblent venir du proxy : la limitation par IP bloquerait tout le monde après
   20 échecs cumulés, et l'audit perdrait l'adresse réelle.
 - Ne jamais publier les ports PostgreSQL (5433) et Redis (6379) : ils sont liés à `127.0.0.1`.
+
+## 6 bis. Entretien automatique
+
+Le worker exécute une fois par jour : purge des jetons de rafraîchissement expirés ou révoqués
+depuis plus de 30 jours (`worker.housekeeping`), contrôle de fraîcheur d'EPSS (`cve.epss_stale`
+au-delà de 48 h). `sentry status` affiche le même avertissement : sans EPSS récent, aucune CVE
+ne peut atteindre P0.
 
 ## 7. Mise à jour
 
