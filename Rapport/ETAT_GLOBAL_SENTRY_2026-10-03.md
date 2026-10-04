@@ -252,3 +252,20 @@ désormais avec un rôle sans droit de structure.
 
 Nouveau constat (§ 4 du bilan du lot 2) : **sans EPSS, aucune CVE ne peut être P0**. À traiter
 par ADR en M8.
+
+## 18. Mise à jour du 04/10/2026 (réexécution complète, M7 lot 3)
+
+Tout le processus a été rejoué depuis des bases vierges (`Rapport/BILAN_M7_LOT3.md`). Sept
+erreurs ont été trouvées et corrigées, dont deux sérieuses : un journal d'audit rendu muet par
+une migration exécutée dans le même processus, et une remise à zéro des tests qui faisait tomber
+toute la suite au changement de branche. Le contrôle SSRF du scénario initial n'était pas
+probant ; le § 7 est rectifié et le refus par l'anti-SSRF confirmé.
+
+M7 (lots 1 à 3) est codé : TLS par Caddy, migrations isolées, analyse d'image, entretien
+quotidien. Critère de sortie restant : préproduction sur VPS UE.
+
+| Mesure | 03/10 | 04/10 |
+|---|---|---|
+| Tests (baseline / M7) | 388 / 410 | 388 / **437** |
+| Scénario (baseline / M7) | 40 / 44 | 40 / **48**, rejouables |
+| Jalons opérationnels | 1 / 6 | 1 / 6 (M2, M3 attendent les clés sur Kali) |
