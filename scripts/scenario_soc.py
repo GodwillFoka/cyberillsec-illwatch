@@ -349,6 +349,38 @@ def main() -> int:
     r = c.get(f"{API}/audit", headers=vie)
     check("Journal d'audit réservé aux ADMIN", r.status_code == 403, str(r.status_code))
 
+    # --- M7 lot 2 : sessions révocables ---------------------------------------------------------
+    first = login(c, "analyst2").json()
+    if "refresh_token" not in first:
+        check("Jetons de rafraîchissement (M7 lot 2)", False, "version antérieure au lot 2")
+    else:
+        r1 = first["refresh_token"]
+        rotated = call(c, "POST", f"{API}/auth/refresh", "refresh", json={"refresh_token": r1})
+        check(
+            "Rotation du jeton de rafraîchissement",
+            rotated.status_code == 200,
+            str(rotated.status_code),
+        )
+        r2 = rotated.json().get("refresh_token", "")
+        replay = c.post(f"{API}/auth/refresh", json={"refresh_token": r1})
+        check(
+            "Rejeu d'un jeton remplacé refusé", replay.status_code == 401, str(replay.status_code)
+        )
+        killed = c.post(f"{API}/auth/refresh", json={"refresh_token": r2})
+        check(
+            "Lignée révoquée après rejeu (vol présumé)",
+            killed.status_code == 401,
+            str(killed.status_code),
+        )
+        fresh = login(c, "analyst2").json()["refresh_token"]
+        out = c.post(f"{API}/auth/logout", json={"refresh_token": fresh})
+        after = c.post(f"{API}/auth/refresh", json={"refresh_token": fresh})
+        check(
+            "Déconnexion révoque la session",
+            (out.status_code, after.status_code) == (204, 401),
+            f"{out.status_code}/{after.status_code}",
+        )
+
     # --- Latences -------------------------------------------------------------------------------
     print("\nLatences (ms) : appel · n · médiane · max")
     for key, values in sorted(latencies.items()):

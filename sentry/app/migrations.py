@@ -41,7 +41,11 @@ def alembic_config() -> Config:
     ini = find_alembic_ini()
     cfg = Config(str(ini))
     cfg.set_main_option("script_location", str(ini.parent / "alembic"))
-    cfg.set_main_option("sqlalchemy.url", get_settings().database_url)
+    settings = get_settings()
+    url = settings.migration_database_url or settings.database_url
+    # Alembic stocke l'URL dans un ConfigParser : un mot de passe encodé (« %3A ») y serait
+    # pris pour une interpolation et ferait échouer toute migration. « % » doit être doublé.
+    cfg.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
     return cfg
 
 

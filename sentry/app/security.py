@@ -4,10 +4,14 @@ Choix techniques :
   * Argon2id (via `pwdlib`) pour le hachage : lauréat de la Password Hashing
     Competition, recommandé par l'OWASP, résistant aux attaques GPU.
   * JWT HS256 signé avec `SECRET_KEY`, durée de vie courte
-    (`ACCESS_TOKEN_EXPIRE_MINUTES`). L'algorithme est figé au décodage pour
+    (`ACCESS_TOKEN_EXPIRE_MINUTES`, 15 min). L'algorithme est figé au décodage pour
     interdire toute attaque par substitution (`alg: none`, confusion RS/HS).
+  * Rotation de clé (M7 lot 2) : chaque jeton porte l'empreinte de sa clé (`kid`). La clé
+    courante signe ; `SECRET_KEY_PREVIOUS` est encore acceptée en vérification, le temps que
+    les jetons qu'elle a signés expirent. Un `kid` inconnu est refusé sans essai de clé.
 """
 
+import hashlib
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
@@ -65,6 +69,19 @@ def verify_password(password: str, hashed_password: str | None) -> bool:
     return _password_hash.verify(password, hashed_password)
 
 
+def key_id(secret: str) -> str:
+    """Empreinte publique d'une clé (16 caractères hexadécimaux) : identifie sans révéler."""
+    return hashlib.sha256(secret.encode()).hexdigest()[:16]
+
+
+def _verification_keys(cfg: Settings) -> dict[str, str]:
+    keys = {key_id(cfg.secret_key): cfg.secret_key}
+    if cfg.secret_key_previous is not None:
+        previous = cfg.secret_key_previous.get_secret_value()
+        keys.setdefault(key_id(previous), previous)
+    return keys
+
+
 def create_access_token(
     user_id: UUID,
     role: str,
@@ -83,7 +100,9 @@ def create_access_token(
         "iat": now,
         "exp": expire,
     }
-    return jwt.encode(claims, cfg.secret_key, algorithm=JWT_ALGORITHM)
+    return jwt.encode(
+        claims, cfg.secret_key, algorithm=JWT_ALGORITHM, headers={"kid": key_id(cfg.secret_key)}
+    )
 
 
 def decode_access_token(token: str, *, settings: Settings | None = None) -> TokenPayload:
@@ -93,10 +112,16 @@ def decode_access_token(token: str, *, settings: Settings | None = None) -> Toke
         InvalidTokenError: pour toute anomalie — le détail n'est jamais renvoyé au client.
     """
     cfg = settings or get_settings()
+    keys = _verification_keys(cfg)
     try:
+        kid = jwt.get_unverified_header(token).get("kid")
+        # Jeton antérieur à la rotation (sans `kid`) : seule la clé courante est essayée.
+        secret = keys.get(str(kid)) if kid is not None else cfg.secret_key
+        if secret is None:
+            raise InvalidTokenError("Clé de signature inconnue ou retirée.")
         claims = jwt.decode(
             token,
-            cfg.secret_key,
+            secret,
             algorithms=[JWT_ALGORITHM],
             options={"require": ["sub", "exp", "iat", "type"]},
         )

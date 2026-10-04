@@ -29,7 +29,12 @@ def test_production_refuse_le_mode_debug() -> None:
 
 
 def test_production_accepte_une_configuration_saine() -> None:
-    settings = Settings(environment="production", secret_key=STRONG_SECRET, debug=False)
+    settings = Settings(
+        environment="production",
+        secret_key=STRONG_SECRET,
+        debug=False,
+        redis_url="redis://:Xk29-long-random@redis:6379/0",
+    )
     assert settings.is_production is True
 
 

@@ -18,6 +18,7 @@ from sentry.app.middleware import SecurityMiddleware, request_id_from
 from sentry.app.migrations import head_revision
 
 STRONG_KEY = "k" * 48
+PROD_REDIS = "redis://:Xk29-long-random@localhost:6379/0"
 
 
 # --- En-têtes et identifiant de requête ------------------------------------------------------
@@ -133,9 +134,10 @@ async def test_health_accepte_head(client: AsyncClient) -> None:
 
 @pytest.fixture
 def production_env() -> Iterator[None]:
-    saved = {k: os.environ.get(k) for k in ("ENVIRONMENT", "SECRET_KEY")}
+    saved = {k: os.environ.get(k) for k in ("ENVIRONMENT", "SECRET_KEY", "REDIS_URL")}
     os.environ["ENVIRONMENT"] = "production"
     os.environ["SECRET_KEY"] = STRONG_KEY
+    os.environ["REDIS_URL"] = PROD_REDIS
     get_settings.cache_clear()
     try:
         yield
@@ -160,7 +162,13 @@ async def test_production_masque_la_documentation_et_active_hsts() -> None:
 
 def test_production_refuse_cors_ouvert() -> None:
     with pytest.raises(ValidationError, match="CORS_ORIGINS"):
-        Settings(environment="production", secret_key=STRONG_KEY, cors_origins=["*"])
-    assert Settings(environment="production", secret_key=STRONG_KEY).expose_docs is False
+        Settings(
+            environment="production",
+            secret_key=STRONG_KEY,
+            redis_url=PROD_REDIS,
+            cors_origins=["*"],
+        )
+    prod = {"environment": "production", "secret_key": STRONG_KEY, "redis_url": PROD_REDIS}
+    assert Settings(**prod).expose_docs is False  # type: ignore[arg-type]
     assert Settings(environment="development").expose_docs is True
-    assert Settings(environment="production", secret_key=STRONG_KEY, docs_enabled=True).expose_docs
+    assert Settings(**prod, docs_enabled=True).expose_docs  # type: ignore[arg-type]
