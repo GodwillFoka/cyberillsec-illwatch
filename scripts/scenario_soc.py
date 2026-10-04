@@ -10,6 +10,7 @@ la latence de chaque appel et sort en code 1 au premier écart à l'attendu.
 
 import json
 import os
+import secrets
 import statistics
 import sys
 import time
@@ -291,13 +292,24 @@ def main() -> int:
         r.status_code in (404, 422),
         str(r.status_code),
     )
-    codes = [login(c, "viewer", "mauvais-mot-de-passe").status_code for _ in range(6)]
+    # L'attaquant a une adresse de test aléatoire (RFC 5737), transmise par X-Forwarded-For
+    # qu'uvicorn accepte depuis 127.0.0.1 : le scénario reste rejouable sans attendre la fin de
+    # la fenêtre de 15 minutes, et le compte n'est jamais bloqué pour 127.0.0.1.
+    attacker = {"X-Forwarded-For": f"203.0.113.{secrets.randbelow(250) + 1}"}
+
+    def attempt(password: str) -> int:
+        return c.post(
+            f"{API}/auth/token",
+            data={"username": "viewer", "password": password},
+            headers=attacker,
+        ).status_code
+
+    codes = [attempt("mauvais-mot-de-passe") for _ in range(6)]
     check("Force brute : 429 après 5 échecs", codes[-1] == 429, str(codes))
-    r = login(c, "viewer")
     check(
         "Adresse de l'attaquant bloquée même avec le bon mot de passe",
-        r.status_code == 429,
-        str(r.status_code),
+        attempt(PASSWORD) == 429,
+        attacker["X-Forwarded-For"],
     )
 
     # --- M7 : titulaire épargné, audit, sondes ------------------------------------------------

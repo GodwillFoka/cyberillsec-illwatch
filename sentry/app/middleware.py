@@ -20,6 +20,8 @@ import time
 from uuid import uuid4
 
 from fastapi import Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
@@ -116,3 +118,50 @@ async def unhandled_error(request: Request, exc: Exception) -> JSONResponse:
         content={"detail": "Erreur interne du serveur.", "request_id": request_id},
         headers={"X-Request-ID": request_id},
     )
+
+
+async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """422 standard de FastAPI, plus l'audit des URL de source refusées par l'anti-SSRF.
+
+    Une URL visant le réseau interne est rejetée dès la validation du schéma, avant la route :
+    sans ce gestionnaire, la tentative ne laissait aucune trace d'audit. Seules les erreurs
+    portant une `UnsafeFeedURLError` sont consignées ; les fautes de saisie ordinaires restent
+    dans le seul journal d'accès.
+    """
+    from sentry.app.config import get_settings
+    from sentry.app.security import InvalidTokenError, decode_access_token
+    from sentry.modules.foundation.audit import AuditContext, get_audit_recorder
+    from sentry.modules.threat_feeds.service import UnsafeFeedURLError
+    from sentry.shared.enums import AuditOutcome
+
+    unsafe = [
+        err
+        for err in exc.errors()
+        if isinstance((err.get("ctx") or {}).get("error"), UnsafeFeedURLError)
+    ]
+    feeds_path = f"{get_settings().api_v1_prefix}/feeds"
+    if unsafe and request.url.path.startswith(feeds_path):
+        actor_id = None
+        scheme, _, token = request.headers.get("authorization", "").partition(" ")
+        if scheme.lower() == "bearer" and token:
+            try:
+                actor_id = decode_access_token(token).user_id
+            except InvalidTokenError:
+                actor_id = None
+        provider = request.app.dependency_overrides.get(get_audit_recorder, get_audit_recorder)
+        body = unsafe[0].get("input")
+        await provider().record(
+            "feed.create" if request.method == "POST" else "feed.update",
+            AuditOutcome.FAILURE,
+            actor_id=actor_id,
+            actor_name=None if actor_id else "(non authentifié)",
+            target_type="feed",
+            target_id=request.url.path.removeprefix(feeds_path).strip("/") or None,
+            detail={
+                "reason": "unsafe_url",
+                "url": body if isinstance(body, str) else None,
+                "error": str((unsafe[0].get("ctx") or {}).get("error")),
+            },
+            context=AuditContext.from_request(request),
+        )
+    return await request_validation_exception_handler(request, exc)

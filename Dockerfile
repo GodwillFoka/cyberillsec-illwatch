@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 FROM python:3.12-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
@@ -33,4 +32,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 # Adapté à une instance unique ; en multi-réplicas, sortir la migration dans un job dédié.
 # --proxy-headers : derrière un reverse proxy listé dans FORWARDED_ALLOW_IPS, l'adresse client
 # réelle est lue dans X-Forwarded-For (limitation de débit, journal d'audit).
-CMD ["sh", "-c", "sentry db upgrade && exec uvicorn sentry.app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --no-server-header"]
+# --no-access-log : le journal d'accès JSON de SENTRY (sentry.http) remplace celui d'uvicorn,
+# qui doublait chaque ligne en texte libre.
+CMD ["sh", "-c", "sentry db upgrade && exec uvicorn sentry.app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --no-server-header --no-access-log"]

@@ -4,13 +4,14 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from sentry.app.api.health import router as health_router
 from sentry.app.api.v1.router import api_router
 from sentry.app.config import get_settings
 from sentry.app.database import dispose_engine
-from sentry.app.middleware import SecurityMiddleware, unhandled_error
+from sentry.app.middleware import SecurityMiddleware, unhandled_error, validation_error
 from sentry.shared.logging import configure_logging
 
 
@@ -54,6 +55,7 @@ def create_app() -> FastAPI:
     # couvrent aussi les réponses de pré-vérification et les erreurs.
     app.add_middleware(SecurityMiddleware, hsts=settings.send_hsts)
     app.add_exception_handler(Exception, unhandled_error)
+    app.add_exception_handler(RequestValidationError, validation_error)  # type: ignore[arg-type]
 
     app.include_router(health_router)
     app.include_router(api_router, prefix=settings.api_v1_prefix)

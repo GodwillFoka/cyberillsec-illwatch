@@ -63,10 +63,9 @@ class _FeedFieldsValidation(BaseModel):
     def _safe_url(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        try:
-            return service.validate_feed_url(value)
-        except UnsafeFeedURLError as exc:
-            raise ValueError(str(exc)) from exc
+        # `UnsafeFeedURLError` hérite de `ValueError` : Pydantic la convertit en 422 et la garde
+        # dans `ctx["error"]`, où le gestionnaire de validation la reconnaît pour l'auditer.
+        return service.validate_feed_url(value)
 
 
 class FeedCreate(_FeedFieldsValidation):

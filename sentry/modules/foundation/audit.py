@@ -88,6 +88,7 @@ class AuditRecorder:
         outcome: AuditOutcome = AuditOutcome.SUCCESS,
         *,
         actor: User | None = None,
+        actor_id: UUID | None = None,
         actor_name: str | None = None,
         target_type: str | None = None,
         target_id: str | UUID | None = None,
@@ -98,7 +99,7 @@ class AuditRecorder:
         event = AuditEvent(
             action=action,
             outcome=outcome,
-            actor_id=actor.id if actor is not None else None,
+            actor_id=actor.id if actor is not None else actor_id,
             actor_name=(actor.username if actor is not None else actor_name or None),
             target_type=target_type,
             target_id=None if target_id is None else str(target_id)[:255],

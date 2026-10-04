@@ -101,10 +101,19 @@ async def test_administration_et_export_consignes(
     await client.get("/api/v1/dashboard/export?dataset=iocs&format=csv", headers=admin)
 
     rows, total = await list_audit_events(db_session, action="feed.")
-    # Le 422 de l'URL interne vient de la validation du schéma, avant la route : seules les
-    # actions ayant franchi la validation sont consignées (ADR-011, limite assumée).
-    assert total == 3
-    assert sorted(r.action for r in rows) == ["feed.create", "feed.delete", "feed.update"]
+    # L'URL interne est refusée dès la validation du schéma (422) : le gestionnaire de
+    # validation consigne quand même la tentative, attribuée au porteur du jeton.
+    assert total == 4
+    assert sorted((r.action, r.outcome) for r in rows) == [
+        ("feed.create", AuditOutcome.FAILURE),
+        ("feed.create", AuditOutcome.SUCCESS),
+        ("feed.delete", AuditOutcome.SUCCESS),
+        ("feed.update", AuditOutcome.SUCCESS),
+    ]
+    blocked = next(r for r in rows if r.outcome == AuditOutcome.FAILURE)
+    assert blocked.actor_id is not None
+    assert blocked.detail is not None and blocked.detail["reason"] == "unsafe_url"
+    assert blocked.detail["url"] == "https://169.254.169.254/latest/"
     update = next(r for r in rows if r.action == "feed.update")
     assert update.detail == {"is_active": "False"}
     (export,) = await _events(db_session, "data.export")
@@ -124,6 +133,17 @@ async def test_consultation_reservee_aux_admins(
     body = page.json()
     assert body["total"] == 1  # le refus de l'analyste, lui-même consigné
     assert body["items"][0]["detail"]["path"] == "/api/v1/audit"
+
+
+async def test_saisie_ordinaire_non_auditee(client: AsyncClient, db_session: AsyncSession) -> None:
+    _, admin = await _user(db_session, UserRole.ADMIN)
+    response = await client.post(
+        "/api/v1/feeds",
+        json={"name": "x", "url": "https://example.org/f.json", "feed_type": "XML"},
+        headers=admin,
+    )
+    assert response.status_code == 422
+    assert (await list_audit_events(db_session, action="feed."))[1] == 0
 
 
 async def test_journal_en_ajout_seul(db_session: AsyncSession) -> None:
