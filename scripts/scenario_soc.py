@@ -10,6 +10,7 @@ la latence de chaque appel et sort en code 1 au premier écart à l'attendu.
 
 import json
 import os
+import secrets
 import statistics
 import sys
 import time
@@ -265,11 +266,16 @@ def main() -> int:
         headers=adm,
         json={
             "name": "ssrf",
-            "url": "http://169.254.169.254/latest/meta-data/",
-            "feed_type": "json",
+            "url": "https://169.254.169.254/latest/meta-data/",
+            "feed_type": "JSON",
         },
     )
-    check("Source vers métadonnées cloud refusée (SSRF)", r.status_code == 422, str(r.status_code))
+    # Le 422 doit venir de l'anti-SSRF, pas d'une autre faute de saisie (schéma, casse).
+    check(
+        "Source vers métadonnées cloud refusée (SSRF)",
+        r.status_code == 422 and "interne ou réservée" in r.text,
+        f"{r.status_code} {r.text[:120]}",
+    )
     r = call(
         c,
         "POST",
@@ -287,13 +293,15 @@ def main() -> int:
         r.status_code in (404, 422),
         str(r.status_code),
     )
-    codes = [login(c, "viewer", "mauvais-mot-de-passe").status_code for _ in range(6)]
+    # Cible aléatoire et inexistante : le scénario reste rejouable (aucun compte réel n'est
+    # verrouillé) et vérifie au passage que le blocage ne révèle pas l'existence d'un compte.
+    target = f"cible-{secrets.token_hex(4)}"
+    codes = [login(c, target, "mauvais-mot-de-passe").status_code for _ in range(6)]
     check("Force brute : 429 après 5 échecs", codes[-1] == 429, str(codes))
-    r = login(c, "viewer")
     check(
-        "Compte verrouillé temporairement même avec le bon mot de passe",
-        r.status_code == 429,
-        str(r.status_code),
+        "Blocage identique pour un compte inexistant (pas d'énumération)",
+        codes[:5] == [401] * 5,
+        target,
     )
 
     # --- Latences -------------------------------------------------------------------------------
