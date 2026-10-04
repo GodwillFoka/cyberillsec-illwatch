@@ -10,6 +10,7 @@ import asyncio
 import pytest
 from alembic import command
 from click.testing import CliRunner
+from conftest import drop_public_schema
 from sqlalchemy import delete, text
 
 from sentry.app import migrations
@@ -24,8 +25,7 @@ pytestmark = pytest.mark.postgres
 async def _reset_schema() -> None:
     """Repart d'une base vierge (les autres tests créent les tables via `create_all`)."""
     async with get_engine().begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
+        await drop_public_schema(conn)
     await dispose_engine()
 
 

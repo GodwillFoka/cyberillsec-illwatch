@@ -20,7 +20,12 @@ os.environ.setdefault("SECRET_KEY", "test-secret-key-at-least-32-bytes-long")
 
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
+    AsyncConnection,
+    AsyncEngine,
+    AsyncSession,
+    create_async_engine,
+)
 from sqlalchemy.pool import NullPool, StaticPool  # noqa: E402
 
 from sentry.app.config import get_settings  # noqa: E402
@@ -98,12 +103,26 @@ def _fresh_postgres_schema() -> None:
     async def _reset() -> None:
         engine = make_test_engine()
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
-            await conn.execute(text("DROP TABLE IF EXISTS alembic_version"))
+            await drop_public_schema(conn)
             await conn.run_sync(Base.metadata.create_all)
         await engine.dispose()
 
     asyncio.run(_reset())
+
+
+async def drop_public_schema(conn: AsyncConnection) -> None:
+    """Vide entièrement le schéma `public` (tables, fonctions, déclencheurs).
+
+    `Base.metadata.drop_all` ne supprime que les tables connues de la branche courante :
+    après des tests lancés sur une branche plus récente (nouvelles tables liées à `users`),
+    il échouait sur les dépendances et **toute** la suite tombait en erreur. Réservé à une
+    base dont le nom finit par `_test` (garde-fou ci-dessus).
+    """
+    await conn.execute(text("DROP SCHEMA public CASCADE"))
+    await conn.execute(text("CREATE SCHEMA public"))
+    # USAGE seulement, comme le schéma public par défaut depuis PostgreSQL 15 : un GRANT ALL
+    # donnerait CREATE à tous les rôles (le test du rôle applicatif, en M7, le détecte).
+    await conn.execute(text("GRANT USAGE ON SCHEMA public TO PUBLIC"))
 
 
 def make_test_engine() -> AsyncEngine:

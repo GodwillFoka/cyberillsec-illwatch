@@ -118,7 +118,7 @@ l'écart `mypy` du § 13. Correctif prévu en M7 (fichier de contraintes partag�
 | `bandit` (code applicatif) | 0 haut, 0 moyen, 2 faibles (faux positifs documentés : sentinelle de clé refusée en production, libellé `"access"`) |
 | Sans jeton / jeton altéré / `alg=none` | 401 / 401 / 401 ✅ |
 | RBAC : VIEWER crée un incident, lance une chasse ; ANALYST crée une source | 403 ✅ |
-| SSRF : source vers `169.254.169.254` | 422 ✅ |
+| SSRF : source vers `169.254.169.254` | 422 ✅ — *rectifié le 04/10 : la première version du scénario obtenait ce 422 pour une autre raison (type de flux en minuscules, schéma `http`). Rejoué avec une requête valide : refus par l'anti-SSRF confirmé (« Adresse IP interne ou réservée interdite »).* |
 | Injection dans un identifiant de CVE | 422 ✅ |
 | Force brute : 6ᵉ tentative | 429 ✅ |
 | CORS depuis une origine inconnue | refusé (400) ✅ |
