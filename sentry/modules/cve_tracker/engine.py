@@ -18,10 +18,12 @@ Règles :
   page est validée en base (une interruption ne perd que la page en cours).
 """
 
+import json
 import logging
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, time, timedelta
+from typing import Any
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,6 +40,7 @@ from sentry.modules.cve_tracker.sources import (
     fetch_nvd,
     nvd_windows,
     parse_kev,
+    parse_nvd_page,
 )
 from sentry.modules.threat_feeds.fetcher import FetchError
 from sentry.modules.threat_feeds.secrets import mask_secrets
@@ -404,3 +407,71 @@ async def mark_cve_sync_attempt(session: AsyncSession, now: datetime) -> None:
     state = await _state(session, ATTEMPT_STATE)
     state.last_success_at = now
     await session.flush()
+
+
+async def import_nvd_file(
+    session: AsyncSession,
+    items: Iterable[dict[str, Any]],
+    *,
+    settings: Settings,
+    only_known: bool = False,
+    batch: int = _CHUNK,
+) -> SyncReport:
+    """Importe des CVE au format NVD 2.0 depuis un fichier (réseau restreint, miroir, archive).
+
+    `items` vient de `iter_nvd_items` (lecture en flux). Même chemin que la synchronisation en
+    ligne : `parse_nvd_page` → `apply_nvd_page` → `rescore`, validation en base par lot.
+    `only_known` limite l'import aux CVE déjà suivies (typiquement le catalogue KEV) pour
+    compléter leur CVSS sans importer toute une année. Le curseur de la synchronisation en
+    ligne n'est pas modifié. Les alertes suivent la règle de la ligne de base.
+    """
+    report = SyncReport()
+    baseline = await _state(session, BASELINE_STATE)
+    alerts_enabled = baseline.last_success_at is not None
+    report.baseline = not alerts_enabled
+
+    async def _flush(chunk: list[dict[str, Any]]) -> None:
+        if only_known:
+            ids = [str(item.get("id") or "") for item in chunk]
+            rows = await session.execute(select(CVE.id).where(CVE.id.in_(ids)))
+            known = set(rows.scalars())
+            chunk = [item for item in chunk if item.get("id") in known]
+        if not chunk:
+            return
+        page = parse_nvd_page(
+            json.dumps({"vulnerabilities": [{"cve": item} for item in chunk]}).encode()
+        )
+        touched: dict[str, str] = {}
+        created = await apply_nvd_page(session, page, touched)
+        report.nvd += len(page.records)
+        report.created += len(created)
+        await rescore(
+            session,
+            touched,
+            settings=settings,
+            alerts_enabled=alerts_enabled,
+            report=report,
+            new_ids=created,
+        )
+        await session.commit()
+
+    pending: list[dict[str, Any]] = []
+    for item in items:
+        pending.append(item)
+        if len(pending) >= batch:
+            await _flush(pending)
+            pending = []
+    await _flush(pending)
+    log.info(
+        "cve.nvd_file_imported",
+        extra={
+            "fields": {
+                "records": report.nvd,
+                "created": report.created,
+                "rescored": report.rescored,
+                "alerts": report.alerts,
+                "peak_rss_mb": peak_rss_mb(),
+            }
+        },
+    )
+    return report
