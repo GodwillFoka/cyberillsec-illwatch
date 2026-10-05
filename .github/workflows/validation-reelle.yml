@@ -118,11 +118,11 @@ jobs:
         if: always()
         shell: bash
         run: |
-          note() { echo "::notice title=$1::$(echo "$2" | tr '\n' ' ' | cut -c1-900)"; }
+          note() { echo "::notice title=$1::$(echo "$2" | tr '\n' ' ' | cut -c1-4000)"; }
           [ -f scenario.txt ] && note "Scénario SOC" "$(grep -cE '^✔' scenario.txt) ✔ / $(grep -cE '^✘' scenario.txt) ✘ — $(grep -E '^✘' scenario.txt | head -5)"
           [ -f cves.txt ] && note "CVE (KEV, NVD, EPSS)" "$(grep -E 'Catalogue KEV|CVE reçues|Scores EPSS|CVE créées|Scores recalculés|✗' cves.txt)"
           [ -f feeds.txt ] && note "Flux de menaces" "$(grep -E 'HEALTHY|DEGRADED|FAILED|ERROR' feeds.txt | head -12)"
-          [ -f live.txt ] && note "Tests live" "$(grep -E '^(FAILED|ERROR) |^E  ' live.txt | head -12) $(grep -E '(passed|failed|error)' live.txt | tail -1)"
+          [ -f live.txt ] && note "Tests live" "$(grep -E '(PASSED|FAILED|XFAIL|XPASS|ERROR)' live.txt | grep '::' | sed -E 's/ +\[ *[0-9]+%\]//' | head -12) — $(grep -E '(passed|failed|error)' live.txt | tail -1)"
           [ -f status.txt ] && note "sentry status" "$(cat status.txt)"
       - name: Résumé
         if: always()

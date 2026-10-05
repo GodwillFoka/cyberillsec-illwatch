@@ -1,4 +1,4 @@
-"""Tests réseau réels (T9) — désactivés par défaut, jamais en CI.
+"""Tests réseau réels (T9) — désactivés par défaut ; lancés chaque semaine par la validation réelle.
 
 À lancer sur le poste (Kali) pour valider la chaîne complète contre les vraies sources :
 
@@ -23,6 +23,14 @@ DIGITALSIDE = (
 )
 
 
+@pytest.mark.xfail(
+    reason=(
+        "DigitalSide injoignable depuis le 29/09/2026 (délai de connexion dépassé), constat "
+        "renouvelé le 06/10 depuis GitHub Actions ; la source est inactive dans `sentry seed`. "
+        "Un XPASS signale son retour : la réactiver alors (`sentry feeds enable`)."
+    ),
+    strict=False,
+)
 async def test_digitalside_taxii_reel() -> None:
     report = await probe_source(DIGITALSIDE, FeedType.TAXII, settings=get_settings())
     assert report.reachable, report.error
