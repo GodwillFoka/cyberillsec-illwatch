@@ -19,8 +19,10 @@ on:
   schedule:
     - cron: "17 5 * * 1"
   push:
+    # Tags : toujours (les filtres de chemin ne s'appliquent pas aux tags).
+    # Branches : seulement quand ce workflow change, pour le valider dès sa modification.
     tags: ["v*"]
-    # …et quand le workflow lui-même change, pour le valider dès sa fusion.
+    branches: ["**"]
     paths: [".github/workflows/validation-reelle.yml"]
 
 permissions:
