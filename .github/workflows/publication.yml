@@ -1,0 +1,98 @@
+# ============================================================================
+# SENTRY — Publication : image Docker (GHCR) et release GitHub
+#
+#   push sur main  → ghcr.io/godwillfoka/cyberillsec-sentry:edge   (+ :sha-xxxxxxx)
+#   tag vX.Y.Z     → ghcr.io/godwillfoka/cyberillsec-sentry:X.Y.Z, :X.Y, :latest
+#                    + release GitHub dont les notes viennent de CHANGELOG.md
+#
+# Déploiement : SENTRY_IMAGE=ghcr.io/godwillfoka/cyberillsec-sentry:<version>
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d --no-build
+# ============================================================================
+name: Publication
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/godwillfoka/cyberillsec-sentry
+
+jobs:
+  image:
+    name: Image Docker → GHCR
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=edge,branch=main
+            type=sha,prefix=sha-,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+          labels: |
+            org.opencontainers.image.title=SENTRY
+            org.opencontainers.image.description=Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec)
+            org.opencontainers.image.vendor=CYBERILL
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Contrôle de l'image publiée
+        run: |
+          TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          docker pull "$TAG"
+          docker run --rm --entrypoint sentry "$TAG" version
+          echo "### Image publiée" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.meta.outputs.tags }}" | sed 's/^/- `/; s/$/`/' >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    name: Release GitHub
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: image
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Notes de version depuis CHANGELOG.md
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v v="$VERSION" '
+            /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found=1; next } }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "Voir CHANGELOG.md." > notes.md
+          {
+            echo
+            echo "---"
+            echo "**Image Docker :** \`docker pull ${IMAGE}:${VERSION}\`"
+            echo
+            echo "**Documentation :** https://godwillfoka.github.io/cyberillsec-sentry/"
+          } >> notes.md
+      - uses: softprops/action-gh-release@v3
+        with:
+          name: SENTRY ${{ github.ref_name }}
+          body_path: notes.md
+          make_latest: true

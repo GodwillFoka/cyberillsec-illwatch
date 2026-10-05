@@ -48,3 +48,11 @@ logs/
 Bubble/
 patches/
 .venv-*/
+
+# Site de documentation (copies générées par scripts/docs_prepare.py)
+site/
+docs/rapport/
+docs/changelog.md
+docs/contributing.md
+docs/security.md
+docs/code_of_conduct.md

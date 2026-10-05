@@ -1,0 +1,99 @@
+# Site de documentation SENTRY — publié sur GitHub Pages par .github/workflows/docs.yml
+# Aperçu local : pip install "mkdocs-material>=9.5,<10" && python scripts/docs_prepare.py && mkdocs serve
+site_name: SENTRY — Documentation
+site_description: Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)
+site_author: Godwill FOKA
+site_url: https://godwillfoka.github.io/cyberillsec-sentry/
+repo_url: https://github.com/GodwillFoka/cyberillsec-sentry
+repo_name: GodwillFoka/cyberillsec-sentry
+edit_uri: edit/main/docs/
+copyright: © 2026 CYBERILL · Licence MIT
+
+docs_dir: docs
+
+theme:
+  name: material
+  language: fr
+  logo: assets/sentry-mark-mono.svg
+  favicon: assets/favicon.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Thème sombre
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Thème clair
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+
+extra_css:
+  - stylesheets/sentry.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+not_in_nav: |
+  /pdf/**
+
+nav:
+  - Accueil: README.md
+  - Produit:
+      - Cahier des charges: CAHIER_DES_CHARGES.md
+      - Vision produit: PRODUCT_VISION.md
+      - Feuille de route: ROADMAP.md
+  - Technique:
+      - Architecture: ARCHITECTURE.md
+      - Prise en main: ONBOARDING.md
+      - Exploitation: OPERATIONS.md
+      - Décisions (ADR):
+          - adr/README.md
+          - ADR-001 Scoring composite: adr/ADR-001-scoring-composite.md
+          - ADR-002 Hébergement GitLab: adr/ADR-002-hebergement-gitlab.md
+          - ADR-003 Authentification: adr/ADR-003-authentification-phase-1.md
+          - ADR-004 Recalage du planning: adr/ADR-004-recalage-planning.md
+          - ADR-005 Cycle de vie des IOC: adr/ADR-005-cycle-de-vie-ioc.md
+          - ADR-006 Provenance multi-sources: adr/ADR-006-provenance-multi-sources.md
+          - ADR-007 Moteur CVE: adr/ADR-007-moteur-cve.md
+          - ADR-008 Incidents: adr/ADR-008-incidents.md
+          - ADR-009 Threat hunting: adr/ADR-009-threat-hunting.md
+          - ADR-010 Client TAXII: adr/ADR-010-client-taxii.md
+          - ADR-011 Durcissement production: adr/ADR-011-durcissement-production.md
+          - ADR-012 Rôles et sessions: adr/ADR-012-roles-sessions.md
+          - ADR-013 Déploiement TLS: adr/ADR-013-deploiement-tls.md
+          - ADR-014 Score et EPSS: adr/ADR-014-score-dependance-epss.md
+          - ADR-015 Miroir GitHub: adr/ADR-015-miroir-github.md
+  - Rapports: rapport/
+  - Changelog: changelog.md
+  - Contribuer:
+      - Guide de contribution: contributing.md
+      - Politique de sécurité: security.md
+      - Code de conduite: code_of_conduct.md
