@@ -35,7 +35,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from functools import partial
 from typing import Any, Literal
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 import requests
 from requests.adapters import BaseAdapter
@@ -455,7 +455,11 @@ async def discover(
             raise FeedParseError("TAXII : réponse de découverte inattendue.")
         result.title = str(document.get("title") or "")
         roots = document.get("api_roots")
-        result.api_roots = [str(r) for r in roots] if isinstance(roots, list) else [target]
+        # Une API root peut être annoncée en chemin relatif (« /api/v21/ », serveur MITRE
+        # ATT&CK) : elle se résout par rapport à l'URL de découverte, puis est revalidée.
+        result.api_roots = (
+            [urljoin(target, str(r)) for r in roots] if isinstance(roots, list) else [target]
+        )
         for root in result.api_roots:
             root_url = root if root.endswith("/") else root + "/"
             try:

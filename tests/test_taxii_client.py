@@ -382,6 +382,33 @@ async def test_decouverte_des_collections() -> None:
     assert server.closed
 
 
+async def test_decouverte_api_root_relative() -> None:
+    """Constat du 06/10 sur le serveur MITRE ATT&CK : API roots annoncées en chemin relatif."""
+    relative = {"title": "MITRE ATT&CK TAXII 2.1", "api_roots": ["/api/v21/", "api/v21"]}
+
+    def handler(request: requests.PreparedRequest) -> Reply:
+        url = request.url or ""
+        if url.endswith("/taxii2/"):
+            return _taxii(json.dumps(relative).encode())
+        return _discovery(request)
+
+    server = FakeServer(handler)
+    found = await taxii.discover(
+        "https://taxii.example.org/taxii2/",
+        settings=_settings(),
+        resolver=_public,
+        transport=server,
+    )
+    assert found.api_roots == [
+        "https://taxii.example.org/api/v21/",
+        "https://taxii.example.org/taxii2/api/v21",
+    ]
+    assert found.collections[0].objects_url == (
+        "https://taxii.example.org/api/v21/collections/x-mitre-collection--1f5f/objects/"
+    )
+    assert "https://taxii.example.org/api/v21/" not in found.errors
+
+
 async def test_sonde_taxii_sans_ecriture() -> None:
     from sentry.modules.threat_feeds.probe import probe_source
 
