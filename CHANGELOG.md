@@ -7,6 +7,31 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Miroir GitHub et distribution (06/10, ADR-015)
+- CI GitHub Actions miroir de `.gitlab-ci.yml` : ruff, mypy, pytest 3.12/3.14 sur PostgreSQL 16
+  et Redis 7, migrations aller-retour, image Docker, fichiers Compose, pip-audit et bandit.
+- **Validation réelle** hebdomadaire (`validation-reelle.yml`) : instance complète alimentée par
+  les vraies sources (flux IOC, KEV, NVD, EPSS, Tor), tests `live`, scénario SOC d'acceptation
+  et `sentry status` publiés dans le résumé du job — ferme la dette D3 de l'audit du 03/10.
+- **Documentation publiée** sur GitHub Pages (MkDocs Material, charte SENTRY) :
+  https://godwillfoka.github.io/cyberillsec-sentry/ — `mkdocs.yml`, `scripts/docs_prepare.py`.
+- **Image Docker** sur `ghcr.io/godwillfoka/cyberillsec-sentry` (`:edge` depuis `main`,
+  `:X.Y.Z` et `:latest` sur tag) et **release GitHub** dont les notes viennent de ce fichier.
+- `docker-compose.prod.yml` : `SENTRY_IMAGE` permet de déployer l'image publiée (`--no-build`).
+- Gabarits d'issues et de pull request GitHub ; Dependabot pour les actions et l'image de base.
+
+### Corrigé — checkup du 06/10
+- Version déclarée à deux endroits (`sentry/__init__.py` et `config.py`) : source unique.
+- Badges du README pointant vers des pipelines GitLab privés (images cassées hors GitLab).
+- Actions GitHub en Node 20 (dépréciées) remplacées par leurs versions Node 24 ; runners
+  épinglés sur `ubuntu-24.04` (bascule de `ubuntu-latest` vers Ubuntu 26 le 19/10/2026).
+- `CORS_ORIGINS` absent de `.env.example` alors qu'il est requis en production derrière un
+  navigateur.
+- Image Docker sans métadonnées OCI (source, licence) : ajoutées.
+
+### Modifié
+- `main` intègre `release/v0.1.1` et M7 (lots 1 à 3) ; version de développement `0.2.0.dev0`.
+
 ### Ajouté — M7 Production Hardening, lot 3 (ADR-013)
 - `docker-compose.prod.yml` : Caddy (TLS Let's Encrypt, HTTP/2-3) seul service exposé,
   conteneur `migrate` éphémère (rôle propriétaire), API et worker en rôle applicatif,

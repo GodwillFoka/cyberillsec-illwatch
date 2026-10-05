@@ -7,7 +7,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | ADR | Titre | Statut |
 |---|---|---|
 | [001](ADR-001-scoring-composite.md) | Formule du score de risque composite | Accepté |
-| [002](ADR-002-hebergement-gitlab.md) | GitLab comme dépôt principal, abandon de GitHub | Accepté |
+| [002](ADR-002-hebergement-gitlab.md) | GitLab comme dépôt principal, abandon de GitHub | Accepté, complété par 015 |
 | [003](ADR-003-authentification-phase-1.md) | Authentification JWT livrée dès la phase 1 | Accepté |
 | [004](ADR-004-recalage-planning.md) | Recalage du planning sur la fin réelle de la phase 1 | Proposé |
 | [005](ADR-005-cycle-de-vie-ioc.md) | Cycle de vie et déduplication des IOC | Proposé |
@@ -20,6 +20,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [012](ADR-012-roles-sessions.md) | Rôles PostgreSQL séparés, sessions révocables, rotation de clé, Redis protégé | Proposé |
 | [013](ADR-013-deploiement-tls.md) | Déploiement : TLS par Caddy, migrations isolées, analyse d'image, entretien quotidien | Proposé |
 | [014](ADR-014-score-dependance-epss.md) | Score : dépendance à EPSS et plancher KEV (proposition M8) | À trancher |
+| [015](ADR-015-miroir-github.md) | Miroir GitHub : CI, documentation publiée, image Docker et releases | Accepté |
 
 ## Gabarit
 

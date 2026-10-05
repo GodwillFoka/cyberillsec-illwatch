@@ -1,5 +1,17 @@
 # Documentation SENTRY
 
+![SENTRY](assets/sentry-logo-light.svg#only-light){ width="360" }
+![SENTRY](assets/sentry-logo-dark.svg#only-dark){ width="360" }
+
+**SENTRY** est la plateforme open source de Cyber Threat Intelligence de CyberillSec : collecte
+et déduplication des IOC (STIX/TAXII 2.1, OTX, flux publics), priorisation des CVE (CVSS + EPSS +
+KEV), gestion d'incidents NIST SP 800-61, chasse aux menaces et pilotage SOC.
+
+Code : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-sentry) ·
+[GitHub (miroir)](https://github.com/GodwillFoka/cyberillsec-sentry) · Image :
+`ghcr.io/godwillfoka/cyberillsec-sentry`
+
+
 | Document | Contenu |
 |---|---|
 | [`CAHIER_DES_CHARGES.md`](CAHIER_DES_CHARGES.md) | **Spécification opposable.** Exigences fonctionnelles (RF-01 à RF-28), exigences non fonctionnelles, modèle de données, contrats d'API, planning des 44 tâches. La référence en cas de doute. |
@@ -8,7 +20,8 @@
 | [`ONBOARDING.md`](ONBOARDING.md) | Guide Day-1 : installation, structure du dépôt, standards, première tâche. |
 | [`OPERATIONS.md`](OPERATIONS.md) | Exploitation : sondes, journaux, audit, sauvegarde/restauration, reverse proxy, mise à jour, Kali. |
 | [`ROADMAP.md`](ROADMAP.md) | Trajectoire M7 → M11 vers la v0.2.0 « Production Candidate », critères de sortie. |
-| [`adr/`](adr/) | Architecture Decision Records — décisions tracées avec leur contexte et leurs conséquences. |
+| [`rapport/`](rapport/index.md) | Rapports d'avancement, bilans d'étape et audits (site de documentation). |
+| [`adr/`](adr/README.md) | Architecture Decision Records — décisions tracées avec leur contexte et leurs conséquences. |
 | [`pdf/`](pdf/) | Documents fondateurs d'origine, conservés tels quels. |
 
 ## Hiérarchie des sources

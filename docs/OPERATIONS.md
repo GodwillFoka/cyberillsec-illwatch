@@ -146,6 +146,21 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml ps   # migrate :
 curl -fsS https://sentry.exemple.eu/ready
 ```
 
+### Depuis l'image publiée (GitHub Container Registry)
+
+Chaque tag `vX.Y.Z` publie `ghcr.io/godwillfoka/cyberillsec-sentry:X.Y.Z` (et `:latest`) ;
+chaque fusion sur `main` publie `:edge`. Le serveur n'a alors besoin ni du code ni d'une
+construction locale, seulement des deux fichiers Compose, du `Caddyfile` et du `.env` :
+
+```bash
+export SENTRY_IMAGE=ghcr.io/godwillfoka/cyberillsec-sentry:latest
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full pull
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d --no-build
+```
+
+Mise à jour : changer la version de `SENTRY_IMAGE`, `pull`, puis `up -d --no-build` ; le
+conteneur `migrate` applique les nouvelles migrations avant le redémarrage de l'API.
+
 Ce que fait l'overlay : `migrate` applique les migrations avec le propriétaire puis s'arrête ;
 l'API et le worker démarrent ensuite en rôle applicatif, sans le mot de passe du propriétaire ;
 seul Caddy publie des ports ; uvicorn n'accepte `X-Forwarded-For` que de Caddy (`172.30.0.10`).

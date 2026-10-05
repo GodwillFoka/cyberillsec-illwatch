@@ -1,21 +1,35 @@
 <div align="center">
 
-# 🛡️ SENTRY
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/sentry-logo-dark.svg">
+  <img alt="CyberillSec SENTRY" src="docs/assets/sentry-logo-light.svg" width="420">
+</picture>
 
 **Security Monitoring & Cyber Threat Intelligence Platform**
 
 *CyberillSec — A CYBERILL Initiative*
 
 [![CI](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/ci.yml)
-[![Couverture ≥ 80 %](https://img.shields.io/badge/couverture-%E2%89%A5%2080%25-20155C.svg)](pyproject.toml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-E6681B.svg)](LICENSE)
-[![Python 3.12 | 3.14](https://img.shields.io/badge/Python-3.12%20%7C%203.14-20155C.svg)](https://www.python.org/)
-[![mypy strict](https://img.shields.io/badge/mypy-strict-20155C.svg)](pyproject.toml)
-[![STIX/TAXII 2.1](https://img.shields.io/badge/STIX%2FTAXII-2.1-E6681B.svg)](https://oasis-open.github.io/cti-documentation/)
+[![Validation réelle](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/validation-reelle.yml/badge.svg)](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/validation-reelle.yml)
+[![Documentation](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/docs.yml/badge.svg?branch=main)](https://godwillfoka.github.io/cyberillsec-sentry/)
+[![Release](https://img.shields.io/github/v/release/GodwillFoka/cyberillsec-sentry?color=0891B2&label=release)](https://github.com/GodwillFoka/cyberillsec-sentry/releases)
+[![Image Docker](https://img.shields.io/badge/ghcr.io-cyberillsec--sentry-0A1628?logo=docker&logoColor=white)](https://github.com/GodwillFoka/cyberillsec-sentry/pkgs/container/cyberillsec-sentry)
+<br>
+[![Couverture ≥ 80 %](https://img.shields.io/badge/couverture-94%25-22D3EE.svg)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B.svg)](LICENSE)
+[![Python 3.12 | 3.14](https://img.shields.io/badge/Python-3.12%20%7C%203.14-0A1628.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![mypy strict](https://img.shields.io/badge/mypy-strict-0A1628.svg)](pyproject.toml)
+[![STIX/TAXII 2.1](https://img.shields.io/badge/STIX%2FTAXII-2.1-0891B2.svg)](https://oasis-open.github.io/cti-documentation/)
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
 
-**Dépôts :** [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-sentry) · [GitHub (miroir)](https://github.com/GodwillFoka/cyberillsec-sentry)
+[**📖 Documentation**](https://godwillfoka.github.io/cyberillsec-sentry/) ·
+[Démarrage rapide](#démarrage-rapide) ·
+[Déploiement](#déploiement) ·
+[Feuille de route](#feuille-de-route) ·
+[Rapports](https://godwillfoka.github.io/cyberillsec-sentry/rapport/)
+
+Dépôts : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-sentry) · [GitHub (miroir)](https://github.com/GodwillFoka/cyberillsec-sentry)
 
 </div>
 
@@ -38,6 +52,16 @@ que les décisions :
   infrastructures ransomware, CVE exploitables sur l'inventaire) ;
 - **expose** tout cela par une API REST (35 opérations), une CLI riche (40 commandes) et un tableau
   de bord SOC, dans **moins de 256 Mo de mémoire**.
+
+## État du projet
+
+| | |
+|---|---|
+| **Version** | `0.2.0.dev0` sur `main` · dernière release : [`v0.1.1`](https://github.com/GodwillFoka/cyberillsec-sentry/releases) (baseline M1–M6) |
+| **Intégré dans `main`** | M1 → M6 (six modules) **et** M7 « Production Hardening » (lots 1 à 3) |
+| **Vérifié en continu** | CI à chaque push (qualité, ≈ 440 tests sur PostgreSQL réel, migrations, image, sécurité) ; **validation sur données réelles** chaque lundi (flux IOC, KEV, NVD, EPSS, scénario SOC complet) |
+| **Prochaine étape** | Préproduction sur un VPS européen (clôture de M7), puis M8 « Detection & Correlation » |
+| **Dernier rapport** | [`Rapport/03_06-10-2026.md`](Rapport/03_06-10-2026.md) |
 
 ## Le problème
 
@@ -124,12 +148,12 @@ flowchart LR
     D --> S --> DB
     DB --> I & H
     DB --> API[API REST · CLI · Dashboard]
-    classDef src fill:#20155C,color:#fff
+    classDef src fill:#0A1628,color:#22D3EE
 ```
 
 Clean Architecture en couches strictes : les contrôleurs (API FastAPI, CLI Click) ne contiennent
 aucune logique métier ; tout passe par `sentry/modules/`, testable sans HTTP ni base. Détail :
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) et les [10 décisions d'architecture](docs/adr/).
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) et les [15 décisions d'architecture](docs/adr/README.md).
 
 ## Sécurité par conception
 
@@ -157,25 +181,31 @@ protéger.
 
 | Indicateur | Valeur |
 |---|---|
-| Tests automatisés | **≈ 390**, sur PostgreSQL 16 réel, Python 3.12 **et** 3.14 |
+| Tests automatisés | **≈ 440**, sur PostgreSQL 16 réel, Python 3.12 **et** 3.14 |
 | Couverture | **≈ 94 %** (seuil bloquant : 80 %) |
-| Typage | `mypy --strict`, 0 erreur sur 69 modules |
+| Typage | `mypy --strict`, 0 erreur sur 78 modules |
 | Lint / format | `ruff`, 0 erreur |
-| Migrations | 6, vérifiées montée → `alembic check` → descente → remontée à chaque pipeline |
+| Migrations | 8, vérifiées montée → `alembic check` → descente → remontée à chaque pipeline |
 | Liste des CVE, P95 (30 000 CVE) | **8 ms** (cible 250 ms) |
 | Ingestion réelle (37 000 IOC) | 24 s, pic mémoire **120 Mo** (cible 256 Mo) |
-| Scénario SOC de bout en bout (`scripts/scenario_soc.py`) | **40/40** sur données réelles, latence médiane des appels incidents 12 ms |
+| Scénario SOC de bout en bout (`scripts/scenario_soc.py`) | **48/48** sur données réelles (M7), rejoué chaque semaine par la CI GitHub |
 | Chasse sur 3 867 IOC réels | **27 ms** |
 
-Pipeline GitLab : qualité (lint, typage) → tests (matrice 3.12 / 3.14 + migrations sur base
-vierge) → build de l'image Docker → sécurité (SAST, secrets, dépendances). `scripts/ci-local.sh`
-le reproduit en local avant chaque push.
+Deux pipelines indépendants exécutent les mêmes étapes — qualité (lint, typage) → tests (matrice
+3.12 / 3.14 + migrations sur base vierge) → image Docker → sécurité :
+
+| Pipeline | Ce qu'il ajoute |
+|---|---|
+| **GitLab CI** (référence) | SAST, détection de secrets, analyse des dépendances et de l'image (Container Scanning) |
+| **GitHub Actions** (miroir) | pip-audit et bandit ; [validation réelle](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/validation-reelle.yml) hebdomadaire ; publication de la documentation, de l'image `ghcr.io` et des releases |
+
+`scripts/ci-local.sh` reproduit le pipeline en local avant chaque push.
 
 ## Stack technique
 
 **Python 3.12+** · **FastAPI** · **Pydantic v2** · **SQLAlchemy 2.0 async** + asyncpg ·
 **PostgreSQL 16** · **Alembic** · **Redis 7.2** · httpx · **taxii2-client** (OASIS) · Click + Rich ·
-Pytest · Docker Compose · GitLab CI.
+Pytest · Docker Compose · Caddy · GitLab CI · GitHub Actions · MkDocs Material.
 
 Python est le langage de l'écosystème CTI (STIX, TAXII, YARA, Sigma) ; Pydantic v2 (cœur Rust)
 et l'asynchrone de bout en bout donnent un débit largement suffisant dans un seul processus.
@@ -251,35 +281,78 @@ scripts/backup.sh                            # sauvegarde vérifiée, rotation
 
 Documentation interactive : `/docs` (Swagger) et `/redoc`.
 
+## Déploiement
+
+L'image est publiée sur GitHub Container Registry à chaque release (`:X.Y.Z`, `:latest`) et à
+chaque fusion sur `main` (`:edge`) :
+
+```bash
+docker pull ghcr.io/godwillfoka/cyberillsec-sentry:latest
+```
+
+Production derrière TLS (Caddy, Let's Encrypt), migrations dans un conteneur éphémère, API et
+worker sans droits de structure :
+
+```bash
+cp .env.example .env    # SECRET_KEY, POSTGRES_PASSWORD, POSTGRES_APP_PASSWORD, REDIS_PASSWORD, SENTRY_DOMAIN
+export SENTRY_IMAGE=ghcr.io/godwillfoka/cyberillsec-sentry:latest
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d --no-build
+curl -fsS https://$SENTRY_DOMAIN/ready
+```
+
+Procédure complète, sauvegardes et mise à jour : [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
+
+## Documentation
+
+Le site **[godwillfoka.github.io/cyberillsec-sentry](https://godwillfoka.github.io/cyberillsec-sentry/)**
+rassemble toute la documentation, régénérée à chaque fusion sur `main` :
+
+| Document | Pour qui | Contenu |
+|---|---|---|
+| [Cahier des charges](docs/CAHIER_DES_CHARGES.md) | Tous | **Spécification opposable** : exigences RF-01 à RF-28, données, API |
+| [Vision produit](docs/PRODUCT_VISION.md) | Décideurs | Marché, concurrence, trajectoire jusqu'en 2035 |
+| [Architecture](docs/ARCHITECTURE.md) | Développeurs | Couches, flux de données, sécurité |
+| [Prise en main](docs/ONBOARDING.md) | Nouveaux contributeurs | Installation pas à pas, standards, première tâche |
+| [Exploitation](docs/OPERATIONS.md) | Opérateurs | Sondes, journaux, audit, sauvegarde, TLS, mise à jour |
+| [Feuille de route](docs/ROADMAP.md) | Tous | M7 → M11, critères de sortie |
+| [Décisions (ADR)](docs/adr/README.md) | Développeurs | 15 décisions tracées avec leurs coûts |
+| [Rapports](Rapport/) | Pilotage | Bilans d'étape, audits, rapports d'avancement |
+| [Changelog](CHANGELOG.md) | Tous | Évolutions par version |
+
 ## Structure du dépôt
 
 ```
 cyberillsec-sentry/
-├── .gitlab-ci.yml          # Pipeline : qualité, tests 3.12/3.14, migrations, image, sécurité
-├── .github/workflows/      # Même pipeline sur GitHub Actions (miroir)
-├── alembic/versions/       # 6 migrations, historique immuable
-├── docs/                   # Cahier des charges, vision, architecture, 10 ADR
-├── Rapport/                # Bilans d'étape et rapport global
-├── scripts/ci-local.sh     # Réplique locale du pipeline
+├── .gitlab-ci.yml          # Pipeline GitLab : qualité, tests 3.12/3.14, migrations, image, sécurité
+├── .github/workflows/      # CI miroir, validation réelle, documentation (Pages), publication (GHCR)
+├── alembic/versions/       # 8 migrations, historique immuable
+├── deploy/Caddyfile        # Reverse proxy TLS de production
+├── docker-compose.yml      # Développement : PostgreSQL 16, Redis 7, API, worker
+├── docker-compose.prod.yml # Production : Caddy, migrations isolées, secrets obligatoires
+├── docs/                   # Cahier des charges, vision, architecture, exploitation, 15 ADR
+├── mkdocs.yml              # Site de documentation
+├── Rapport/                # Rapports d'avancement, bilans d'étape, audits
+├── scripts/                # ci-local, scénario SOC, sauvegarde/restauration
 ├── sentry/
-│   ├── app/                # API FastAPI, modèles, configuration, sécurité
+│   ├── app/                # API FastAPI, modèles, configuration, sécurité, middleware
 │   ├── cli/                # Commandes Click
-│   ├── modules/            # threat_feeds, cve_tracker, incidents, dashboard, threat_hunting
+│   ├── modules/            # foundation, threat_feeds, cve_tracker, incidents, dashboard, threat_hunting
 │   └── shared/             # Énumérations, journal JSON
-└── tests/                  # ≈ 390 tests, fixtures tirées de sources réelles
+└── tests/                  # ≈ 440 tests, fixtures tirées de sources réelles
 ```
 
 ## Feuille de route
 
-Les six modules sont **intégrés dans `main`** et validés de bout en bout sur données réelles
-(audit du 03/10/2026 : [`Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`](Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md)).
-La suite vise une plateforme **déployable et démontrable** :
+Les six modules et le durcissement de production (M7) sont **intégrés dans `main`** (audit du
+03/10/2026 : [`Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`](Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md) ;
+point du 06/10 : [`Rapport/03_06-10-2026.md`](Rapport/03_06-10-2026.md)). La suite vise une
+plateforme **déployable et démontrable** :
 
 | Étape | Objectif | État |
 |---|---|---|
-| M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés (`v0.1.1`) |
-| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, TLS (Caddy), migrations isolées, analyse d'image, sauvegardes | ✅ lots 1–3 codés, préproduction à constater |
-| M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif | ⏳ |
+| M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés, release `v0.1.1` |
+| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, TLS (Caddy), migrations isolées, analyse d'image, sauvegardes | ✅ lots 1–3 fusionnés dans `main` ; préproduction VPS UE à constater |
+| M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif, plancher KEV (ADR-014 à trancher) | ⏳ |
 | M9 | SOC Operations : triage L1/L2/L3, faux positifs, séries temporelles | ⏳ |
 | M10 | CTI Intelligence : acteurs, campagnes, MITRE ATT&CK, export STIX | ⏳ |
 | M11 | Observability & Deployment : Prometheus, Grafana, staging → production | ⏳ |
@@ -299,8 +372,8 @@ hébergée en UE).
   heuristiques de détection (DGA, DNS dynamique, Tor), conformité NIS 2 / DORA.
 - **Données** : modèle relationnel contraint (CHECK, déclencheurs), upserts groupés, migrations
   réversibles, performances mesurées.
-- **DevSecOps** : typage strict, ≈ 94 % de couverture, pipeline multi-versions, analyses de
-  sécurité, réplique locale du pipeline.
+- **DevSecOps** : typage strict, ≈ 94 % de couverture, deux pipelines multi-versions, analyses de
+  sécurité, validation hebdomadaire sur données réelles, image versionnée publiée sur GHCR.
 - **Conduite de projet** : cahier des charges, plan directeur, bilans d'étape, mesure de
   l'avancement sur les données plutôt que sur les déclarations.
 

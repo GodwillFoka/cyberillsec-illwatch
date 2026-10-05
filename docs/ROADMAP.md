@@ -1,7 +1,11 @@
 # SENTRY — Feuille de route après la v1.0 fonctionnelle (M7 → M11)
 
-**Version :** 03/10/2026 · **Point de départ :** baseline `v0.1.1` (M1–M6 intégrés dans `main`,
+**Version :** 06/10/2026 · **Point de départ :** baseline `v0.1.1` (M1–M6 intégrés dans `main`,
 audit `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`)
+
+**État au 06/10/2026 :** `v0.1.1` taguée ; M7 (lots 1 à 3) **fusionné dans `main`**, qui porte
+la version de développement `0.2.0.dev0`. Validation sur données réelles automatisée sur GitHub
+Actions (hebdomadaire). Reste pour clore M7 : le déploiement sur un VPS européen (lot 3).
 
 Règle de conduite : un jalon est clos quand ses **critères de sortie sont constatés**, pas quand
 le code est fusionné. Chaque jalon part d'une branche créée depuis `main` à jour et se termine par
@@ -27,9 +31,9 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 
 | Lot | Contenu | Critère de sortie |
 |---|---|---|
-| 1 ✅ codé | Immuabilité étendue (`TRUNCATE`), journal d'audit append-only, `/ready` distinct de `/health`, en-têtes HTTP, identifiant de requête et erreurs JSON uniformes, verrouillage par couple compte/IP, ports Compose sur 127.0.0.1, contraintes de dépendances, sauvegarde/restauration | tests verts ; scénario 44/44 ; audit § 7 sans ✘ — **constaté en local le 03/10** (`Rapport/BILAN_M7_LOT1.md`) |
-| 2 ✅ codé | Rôle PostgreSQL applicatif non propriétaire, rôle de migration séparé ; Redis avec mot de passe ; rotation de `SECRET_KEY` (clé courante + clé précédente) ; jetons de rafraîchissement révocables | test : le compte applicatif ne peut ni `ALTER` ni `DROP` — **constaté le 04/10** (`Rapport/BILAN_M7_LOT2.md`) |
-| 3 ✅ codé | Reverse proxy TLS (Caddy), analyse d'image (Container Scanning GitLab), migrations en conteneur éphémère, entretien quotidien (sessions, EPSS) | `docker compose -f … -f docker-compose.prod.yml --profile full up` sur un VPS UE, note SSL Labs ≥ A — **TLS constaté en local le 04/10, VPS à faire** |
+| 1 ✅ codé, fusionné | Immuabilité étendue (`TRUNCATE`), journal d'audit append-only, `/ready` distinct de `/health`, en-têtes HTTP, identifiant de requête et erreurs JSON uniformes, verrouillage par couple compte/IP, ports Compose sur 127.0.0.1, contraintes de dépendances, sauvegarde/restauration | tests verts ; scénario 44/44 ; audit § 7 sans ✘ — **constaté en local le 03/10** (`Rapport/BILAN_M7_LOT1.md`) |
+| 2 ✅ codé, fusionné | Rôle PostgreSQL applicatif non propriétaire, rôle de migration séparé ; Redis avec mot de passe ; rotation de `SECRET_KEY` (clé courante + clé précédente) ; jetons de rafraîchissement révocables | test : le compte applicatif ne peut ni `ALTER` ni `DROP` — **constaté le 04/10** (`Rapport/BILAN_M7_LOT2.md`) |
+| 3 ✅ codé, fusionné | Reverse proxy TLS (Caddy), analyse d'image (Container Scanning GitLab), migrations en conteneur éphémère, entretien quotidien (sessions, EPSS) | `docker compose -f … -f docker-compose.prod.yml --profile full up` sur un VPS UE, note SSL Labs ≥ A — **TLS constaté en local le 04/10, VPS à faire** |
 
 ## M8 — Detection & Correlation
 
@@ -38,7 +42,7 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 - Enrichissement des IOC : ASN/pays (base locale), réputation multi-sources, âge.
 - Score de confiance d'un IOC (nombre et fiabilité des sources, fraîcheur).
 - Règles de corrélation : IOC × CVE × actif × KEV → évènement corrélé.
-- Plancher « KEV ⇒ au moins P1 » à trancher par ADR (constat de l'audit, § 9).
+- Plancher « KEV ⇒ au moins P1 » et EPSS manquant : **ADR-014, à trancher** (recommandation A + B + C).
 - Calibration DGA sur corpus (Tranco + DGArchive), RULE-05 par CPE.
 
 **Critère de sortie :** sur un jeu de données figé, 100 % des cas de corrélation attendus produisent
@@ -72,7 +76,8 @@ une alerte, taux de faux positifs mesuré et publié.
 
 - Métriques Prometheus (API, worker, collecte, base, Redis), tableaux Grafana, alertes.
 - Journaux JSON corrélés par identifiant de requête (amorcé en M7).
-- Environnements dev → staging → production ; job d'acceptation en CI sur jeu figé.
+- Environnements dev → staging → production ; job d'acceptation en CI sur jeu figé (le scénario
+  tourne déjà chaque semaine sur données réelles : workflow GitHub « Validation réelle »).
 - Procédure de sauvegarde testée par restauration mensuelle.
 
 **Critère de sortie :** 7 jours de collecte continue en staging sans intervention, tableaux de bord
