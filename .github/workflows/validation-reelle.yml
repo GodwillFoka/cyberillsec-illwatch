@@ -83,6 +83,8 @@ jobs:
           sentry users create --username viewer   --email viewer@example.org   --role viewer  --password "$SCENARIO_PASSWORD"
 
       - name: Tests réseau réels (SENTRY_LIVE_TESTS=1)
+        # Un échec décrit l'état d'une source externe : signalé, sans bloquer la suite.
+        continue-on-error: true
         env:
           SENTRY_LIVE_TESTS: "1"
           DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_live_test
@@ -120,7 +122,7 @@ jobs:
           [ -f scenario.txt ] && note "Scénario SOC" "$(grep -cE '^✔' scenario.txt) ✔ / $(grep -cE '^✘' scenario.txt) ✘ — $(grep -E '^✘' scenario.txt | head -5)"
           [ -f cves.txt ] && note "CVE (KEV, NVD, EPSS)" "$(grep -E 'Catalogue KEV|CVE reçues|Scores EPSS|CVE créées|Scores recalculés|✗' cves.txt)"
           [ -f feeds.txt ] && note "Flux de menaces" "$(grep -E 'HEALTHY|DEGRADED|FAILED|ERROR' feeds.txt | head -12)"
-          [ -f live.txt ] && note "Tests live" "$(grep -E '(passed|failed|error)' live.txt | tail -1)"
+          [ -f live.txt ] && note "Tests live" "$(grep -E '^(FAILED|ERROR) |^E  ' live.txt | head -12) $(grep -E '(passed|failed|error)' live.txt | tail -1)"
           [ -f status.txt ] && note "sentry status" "$(cat status.txt)"
       - name: Résumé
         if: always()
