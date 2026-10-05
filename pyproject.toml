@@ -1,6 +1,6 @@
 [project]
 name = "sentry-cti"
-version = "0.1.1"
+version = "0.2.0.dev0"
 description = "SENTRY — Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -46,6 +46,9 @@ sentry = "sentry.cli.main:cli"
 [project.urls]
 Homepage = "https://gitlab.com/GodwillFoka/cyberillsec-sentry"
 Repository = "https://gitlab.com/GodwillFoka/cyberillsec-sentry"
+Mirror = "https://github.com/GodwillFoka/cyberillsec-sentry"
+Documentation = "https://godwillfoka.github.io/cyberillsec-sentry/"
+Changelog = "https://github.com/GodwillFoka/cyberillsec-sentry/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["setuptools>=69.0"]

@@ -1,5 +1,11 @@
 FROM python:3.12-slim AS base
 
+LABEL org.opencontainers.image.title="SENTRY" \
+      org.opencontainers.image.description="Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec)" \
+      org.opencontainers.image.source="https://github.com/GodwillFoka/cyberillsec-sentry" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="CYBERILL"
+
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1

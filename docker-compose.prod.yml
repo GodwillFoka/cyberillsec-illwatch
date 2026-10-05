@@ -3,6 +3,10 @@
 #
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d
 #
+# Avec l'image publiée sur GitHub Container Registry plutôt qu'une construction locale :
+#   SENTRY_IMAGE=ghcr.io/godwillfoka/cyberillsec-sentry:latest docker compose \
+#     -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d --no-build
+#
 # Différences avec le développement :
 # - Caddy termine TLS (Let's Encrypt, ou autorité interne pour SENTRY_DOMAIN=localhost) ;
 #   l'API n'est plus publiée sur l'hôte, seul Caddy écoute (80, 443) ;
@@ -35,7 +39,7 @@ services:
 
   migrate:
     build: .
-    image: sentry:local
+    image: ${SENTRY_IMAGE:-sentry:local}
     env_file: .env
     environment:
       <<: *prod-env
@@ -49,7 +53,7 @@ services:
     profiles: ["full"]
 
   api:
-    image: sentry:local
+    image: ${SENTRY_IMAGE:-sentry:local}
     environment: *prod-env
     command: ["uvicorn", "sentry.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "172.30.0.10", "--no-server-header", "--no-access-log"]
     ports: !reset []
@@ -60,7 +64,7 @@ services:
         condition: service_healthy
 
   worker:
-    image: sentry:local
+    image: ${SENTRY_IMAGE:-sentry:local}
     environment: *prod-env
     depends_on:
       migrate:

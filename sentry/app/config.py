@@ -12,6 +12,8 @@ from urllib.parse import unquote, urlsplit
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from sentry import __version__
+
 DEFAULT_SECRET_KEY = "change-me-in-production"  # noqa: S105 - sentinelle refusée en prod
 INSECURE_SECRET_KEYS = frozenset({DEFAULT_SECRET_KEY, "changeme", "secret", "sentry"})
 MIN_PRODUCTION_SECRET_LENGTH = 32
@@ -32,7 +34,7 @@ class Settings(BaseSettings):
 
     # --- Application ---------------------------------------------------------
     app_name: str = "SENTRY"
-    app_version: str = "0.1.1"
+    app_version: str = __version__  # source unique : sentry/__init__.py
     environment: Literal["development", "staging", "production"] = "development"
     debug: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
