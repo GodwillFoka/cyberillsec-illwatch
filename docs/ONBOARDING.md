@@ -19,6 +19,7 @@ CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te
 ```bash
 # 1. Cloner le dépôt
 git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
+# miroir : https://github.com/GodwillFoka/cyberillsec-sentry.git
 cd cyberillsec-sentry
 
 # 2. Environnement virtuel isolé

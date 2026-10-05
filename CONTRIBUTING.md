@@ -7,6 +7,7 @@ contribution — lisez-le avant d'ouvrir une merge request, il vous évitera un 
 
 ```bash
 git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
+# miroir : https://github.com/GodwillFoka/cyberillsec-sentry.git
 cd cyberillsec-sentry
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
