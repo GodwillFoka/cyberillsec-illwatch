@@ -59,7 +59,8 @@ que les décisions :
 |---|---|
 | **Version** | `0.2.0.dev0` sur `main` · dernière release : [`v0.1.1`](https://github.com/GodwillFoka/cyberillsec-sentry/releases) (baseline M1–M6) |
 | **Intégré dans `main`** | M1 → M6 (six modules) **et** M7 « Production Hardening » (lots 1 à 3) |
-| **Vérifié en continu** | CI à chaque push (qualité, ≈ 440 tests sur PostgreSQL réel, migrations, image, sécurité) ; **validation sur données réelles** chaque lundi (flux IOC, KEV, NVD, EPSS, scénario SOC complet) |
+| **Vérifié en continu** | CI à chaque push (qualité, 438 tests sur PostgreSQL réel, migrations, image, sécurité) ; **validation sur données réelles** chaque lundi (flux IOC, KEV, NVD, EPSS, scénario SOC complet) |
+| **Jalons constatés** (`sentry status`, 06/10) | M1 ✅ · M2 ◐ (volume et sources ✅, OTX et STIX attendent leurs clés) · **M3 ✅** · M4 ✅ · M5 ✅ (scénario SOC) · M6 ✅ |
 | **Prochaine étape** | Préproduction sur un VPS européen (clôture de M7), puis M8 « Detection & Correlation » |
 | **Dernier rapport** | [`Rapport/03_06-10-2026.md`](Rapport/03_06-10-2026.md) |
 
@@ -94,11 +95,11 @@ bloquer, qu'est-ce qui a changé, et la preuve de ce qui a été fait.
 | Module | Ce qu'il fait | État |
 |---|---|---|
 | **MOD-01 Foundation** | Configuration validée au démarrage, PostgreSQL + Alembic, JWT + Argon2id, rôles ADMIN / ANALYST / VIEWER, limitation des tentatives de connexion | ✅ opérationnel |
-| **MOD-02 Threat Feeds** | 5 formats de flux, client TAXII 2.1 `taxii2-client` durci, connecteur OTX, sonde de source avant intégration, déduplication, expiration par type, provenance multi-sources, worker planifié avec verrou Redis | ✅ intégré · validé sur 3 sources réelles |
-| **MOD-03 CVE Tracker** | NVD 2.0 incrémental, catalogue KEV, EPSS, score composite recalculé à chaque changement, historique de priorité, alertes + webhook | ✅ intégré · KEV réel validé, NVD/EPSS à constater |
-| **MOD-04 Incidents** | Cycle NIST SP 800-61 à 6 états, chronologie immuable (ORM + déclencheur PostgreSQL), liens IOC/CVE, incident depuis une alerte | ✅ intégré · scénario réel validé |
+| **MOD-02 Threat Feeds** | 5 formats de flux, client TAXII 2.1 `taxii2-client` durci, connecteur OTX, sonde de source avant intégration, déduplication, expiration par type, provenance multi-sources, worker planifié avec verrou Redis | ✅ intégré · 4 sources réelles saines, 3 865 IOC (06/10) ; OTX et STIX attendent leurs clés |
+| **MOD-03 CVE Tracker** | NVD 2.0 incrémental, catalogue KEV, EPSS, score composite recalculé à chaque changement, historique de priorité, alertes + webhook | ✅ **jalon M3 atteint sur données réelles** (06/10) : 1 734 KEV, 9 132 CVE NVD, EPSS sur 97 % |
+| **MOD-04 Incidents** | Cycle NIST SP 800-61 à 6 états, chronologie immuable (ORM + déclencheur PostgreSQL), liens IOC/CVE, incident depuis une alerte | ✅ jalon atteint sur données réelles |
 | **MOD-05 SOC Dashboard** | Synthèse temps réel, activité 24 h, MTTR, exports CSV RFC 4180 / JSON RFC 8259 protégés contre l'injection CSV | ✅ intégré · scénario réel validé |
-| **MOD-06 Threat Hunting** | 6 règles déterministes, chasse sur observables ou sur la base, sessions enregistrées, chasse planifiée | ✅ intégré · scénario réel validé |
+| **MOD-06 Threat Hunting** | 6 règles déterministes, chasse sur observables ou sur la base, sessions enregistrées, chasse planifiée | ✅ jalon atteint sur données réelles |
 
 « Codé » signifie : implémenté, testé, intégré au pipeline. Un jalon n'est déclaré **atteint**
 que lorsque `sentry status` le constate sur données réelles.
@@ -181,7 +182,7 @@ protéger.
 
 | Indicateur | Valeur |
 |---|---|
-| Tests automatisés | **≈ 440**, sur PostgreSQL 16 réel, Python 3.12 **et** 3.14 |
+| Tests automatisés | **438** (+ 4 tests réseau hebdomadaires), sur PostgreSQL 16 réel, Python 3.12 **et** 3.14 |
 | Couverture | **≈ 94 %** (seuil bloquant : 80 %) |
 | Typage | `mypy --strict`, 0 erreur sur 78 modules |
 | Lint / format | `ruff`, 0 erreur |
@@ -338,7 +339,7 @@ cyberillsec-sentry/
 │   ├── cli/                # Commandes Click
 │   ├── modules/            # foundation, threat_feeds, cve_tracker, incidents, dashboard, threat_hunting
 │   └── shared/             # Énumérations, journal JSON
-└── tests/                  # ≈ 440 tests, fixtures tirées de sources réelles
+└── tests/                  # 438 tests, fixtures tirées de sources réelles
 ```
 
 ## Feuille de route
