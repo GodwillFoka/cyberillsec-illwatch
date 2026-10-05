@@ -28,10 +28,10 @@ jobs:
   # ---------------------------------------------------------------------------
   qualite:
     name: Qualité (ruff, mypy)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -49,7 +49,7 @@ jobs:
   # ---------------------------------------------------------------------------
   tests:
     name: Tests (Python ${{ matrix.python }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -76,8 +76,8 @@ jobs:
       DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_test
       REDIS_URL: redis://localhost:6379/0
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -87,8 +87,18 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
       - name: Pytest
-        run: pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml
-      - uses: actions/upload-artifact@v4
+        shell: bash
+        run: |
+          set -o pipefail
+          pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml | tee pytest.txt
+      - name: Résultat lisible (annotation)
+        if: always()
+        shell: bash
+        run: |
+          RES=$(grep -E "^=+ .*(passed|failed|error).* =+$" pytest.txt | tail -1 | tr -d '=' | xargs)
+          COV=$(grep -E "^TOTAL" pytest.txt | awk '{print $NF}')
+          echo "::notice title=Tests Python ${{ matrix.python }}::${RES} · couverture ${COV}"
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: rapports-tests-py${{ matrix.python }}
@@ -101,7 +111,7 @@ jobs:
   # montée complète, comparaison modèle/schéma, descente, remontée.
   migrations:
     name: Migrations Alembic
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16-alpine
@@ -116,8 +126,8 @@ jobs:
     env:
       DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_migrations
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -135,10 +145,10 @@ jobs:
   # ---------------------------------------------------------------------------
   image:
     name: Image Docker
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [qualite]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker build -t sentry:${{ github.sha }} .
       - run: docker run --rm --entrypoint sentry sentry:${{ github.sha }} version
       - name: Fichiers Compose valides
@@ -159,10 +169,10 @@ jobs:
   # ---------------------------------------------------------------------------
   securite:
     name: Sécurité (pip-audit, bandit)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
