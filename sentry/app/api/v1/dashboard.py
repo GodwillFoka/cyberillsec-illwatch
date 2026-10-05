@@ -12,7 +12,7 @@ from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from sentry.app.api.deps import CurrentUser, DbSession
+from sentry.app.api.deps import Audit, CurrentUser, DbSession
 from sentry.modules.dashboard.service import (
     COLUMNS,
     Dataset,
@@ -55,10 +55,20 @@ async def recent(
 @router.get("/export", summary="Export JSON (RFC 8259) ou CSV (RFC 4180) (RF-24)")
 async def export(
     session: DbSession,
-    _: CurrentUser,
+    user: CurrentUser,
+    audit: Audit,
     dataset: Dataset,
     fmt: Annotated[Literal["json", "csv"], Query(alias="format")] = "csv",
 ) -> StreamingResponse:
+    """Export complet d'un jeu de données. Consigné au journal d'audit (`data.export`) : c'est
+    le chemin naturel d'une exfiltration de la base CTI."""
+    await audit.record(
+        "data.export",
+        actor=user,
+        target_type="dataset",
+        target_id=dataset.value,
+        detail={"format": fmt},
+    )
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     rows = export_rows(session, dataset)
     body = csv_stream(COLUMNS[dataset], rows) if fmt == "csv" else json_stream(rows)

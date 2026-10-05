@@ -4,13 +4,18 @@
     sentry cves list [--priority P0_CRITIQUE] [--kev] [--min-score 60] [--search log4j]
     sentry cves show CVE-2021-44228         # décomposition du score, historique de priorité
     sentry cves alerts [--all]              # alertes non acquittées (toutes avec --all)
+    sentry cves import CVE-2024.json.xz --only-known   # NVD 2.0 hors ligne (miroir, archive)
 
 `sync` renvoie 1 si une source a échoué : planifiable par cron, mais `sentry feeds worker`
 l'exécute déjà toutes les `CVE_SYNC_INTERVAL_SECONDS` (6 h par défaut).
 """
 
 import asyncio
+import gzip
+import lzma
 from collections.abc import Awaitable, Callable
+from pathlib import Path
+from typing import IO
 
 import click
 from rich.console import Console
@@ -25,6 +30,7 @@ from sentry.modules.cve_tracker.engine import SyncReport, sync_cves
 from sentry.modules.cve_tracker.queries import CVENotFoundError
 from sentry.modules.cve_tracker.scoring import compute_risk_breakdown, remediation_sla_hours
 from sentry.modules.threat_feeds.fetcher import fetch_feed_content
+from sentry.modules.threat_feeds.parsers import FeedParseError
 from sentry.shared.enums import RiskPriority
 from sentry.shared.logging import configure_logging
 
@@ -106,6 +112,59 @@ def cves_sync(only: tuple[str, ...]) -> None:
         console.print(f"[red]✗ {source} :[/] {error}")
     if not report.succeeded:
         raise SystemExit(1)
+
+
+def _open_text(path: Path) -> IO[str]:
+    if path.suffix == ".xz":
+        return lzma.open(path, "rt", encoding="utf-8")
+    if path.suffix == ".gz":
+        return gzip.open(path, "rt", encoding="utf-8")
+    return path.open(encoding="utf-8")
+
+
+@cves.command("import")
+@click.argument(
+    "files", nargs=-1, required=True, type=click.Path(exists=True, dir_okay=False, path_type=Path)
+)
+@click.option(
+    "--only-known",
+    is_flag=True,
+    help="N'importer que les CVE déjà suivies (ex. compléter le CVSS du catalogue KEV).",
+)
+def cves_import(files: tuple[Path, ...], only_known: bool) -> None:
+    """Importe des CVE NVD 2.0 depuis des fichiers (.json, .json.gz, .json.xz).
+
+    Pour un déploiement sans accès à l'API NVD : page de l'API ou flux annuel au format 2.0
+    (miroir fkie-cad/nvd-json-data-feeds). Même parseur et même recalcul que `sync`.
+    """
+    from sentry.modules.cve_tracker.engine import import_nvd_file
+    from sentry.modules.cve_tracker.sources import iter_nvd_items
+
+    total = SyncReport()
+    for path in files:
+
+        async def _import(session: AsyncSession, path: Path = path) -> SyncReport:
+            with _open_text(path) as stream:
+                return await import_nvd_file(
+                    session,
+                    iter_nvd_items(stream),
+                    settings=get_settings(),
+                    only_known=only_known,
+                )
+
+        try:
+            report = _run(_import)
+        except (FeedParseError, lzma.LZMAError, EOFError, UnicodeDecodeError, OSError) as exc:
+            console.print(f"[red]✗ {path.name} :[/] {exc}")
+            raise SystemExit(1) from exc
+        console.print(
+            f"[green]✓[/] {path.name} : {report.nvd} CVE lues, {report.created} créées, "
+            f"{report.priority_changes} changement(s) de priorité, {report.alerts} alerte(s)"
+        )
+        total.nvd += report.nvd
+        total.created += report.created
+        total.alerts += report.alerts
+    console.print(f"Total : {total.nvd} CVE, {total.created} créées, {total.alerts} alerte(s).")
 
 
 @cves.command("list")

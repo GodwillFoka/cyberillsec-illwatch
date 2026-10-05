@@ -7,6 +7,81 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M7 Production Hardening, lot 3 (ADR-013)
+- `docker-compose.prod.yml` : Caddy (TLS Let's Encrypt, HTTP/2-3) seul service exposé,
+  conteneur `migrate` éphémère (rôle propriétaire), API et worker en rôle applicatif,
+  secrets obligatoires, `X-Forwarded-For` accepté de Caddy seul.
+- CI : image poussée sous son SHA et analysée (Container Scanning) ; validation des deux
+  fichiers Compose (`compose-config`).
+- Worker : entretien quotidien (purge des sessions périmées, alerte `cve.epss_stale`) ;
+  `sentry status` signale un EPSS de plus de 48 h.
+- Production refusée avec un mot de passe de base absent ou de développement.
+- ADR-014 (à trancher) : dépendance du score à EPSS et plancher KEV.
+
+### Corrigé (réexécution du 04/10)
+- Une migration lancée dans le processus (`sentry db upgrade`, tests) rendait muets les
+  journaux `sentry.*`, dont l'audit (`fileConfig` d'Alembic).
+- Les tests ne pouvaient pas passer d'une branche à l'autre sur la même base de test (schéma
+  vidé par `drop_all` partiel) ; le schéma recréé n'accorde plus que `USAGE` à `PUBLIC`.
+- Scénario de la baseline : contrôle SSRF non probant et compte bloqué entre deux exécutions.
+
+
+### Ajouté — M7 Production Hardening, lot 2 (ADR-012)
+- Rôle PostgreSQL applicatif sans droit de structure (`sentry db app-role`), droits
+  réappliqués après chaque migration ; migrations via `MIGRATION_DATABASE_URL`.
+- Jetons de rafraîchissement opaques et rotatifs, lignée révoquée au rejeu ;
+  `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout` ; jeton d'accès ramené à 15 min.
+- `sentry users disable|enable|revoke-sessions`.
+- Rotation de `SECRET_KEY` sans déconnexion (`kid`, `SECRET_KEY_PREVIOUS`).
+- Redis protégé par mot de passe (Compose), exigé en production.
+- `sentry cves import` : CVE NVD 2.0 depuis des fichiers (.json, .gz, .xz), lus en flux,
+  pour les déploiements sans accès à l'API NVD.
+
+### Corrigé
+- Alembic échouait avec un mot de passe encodé dans l'URL de base (« % » interprété par
+  ConfigParser) : `sentry db upgrade` et `/ready` en erreur.
+- `sentry config` affichait les mots de passe des URL de base et de Redis.
+- Les URL de source refusées par l'anti-SSRF dès la validation (422) n'étaient pas auditées.
+- Le scénario SOC ne pouvait pas être rejoué dans les 15 minutes (compte bloqué).
+- Image Docker : la directive `# syntax` exigeait Docker Hub pour construire ; journal
+  d'accès d'uvicorn doublé.
+
+
+### Ajouté — M7 Production Hardening, lot 1 (ADR-011)
+- Journal d'audit `audit_events` en ajout seul : connexions (réussies, échouées, bloquées),
+  refus d'accès, administration des sources, soumission d'IOC, acquittement, chasse, exports,
+  création de compte. `GET /api/v1/audit` (ADMIN), `sentry audit list`.
+- Middleware de sécurité : `X-Request-ID`, `nosniff`, `X-Frame-Options`, CSP et `no-store` sur
+  l'API, HSTS en production, journal d'accès JSON ; erreurs 500 en JSON sans détail interne.
+- Sonde `/ready` (base, schéma à la head Alembic, Redis) ; `HEAD` sur `/health` et `/ready`.
+- `docs/OPERATIONS.md`, `scripts/backup.sh`, `scripts/restore.sh` (vérification, SHA-256,
+  rotation) ; `constraints.txt` partagé par la CI, l'image et le poste.
+
+### Modifié
+- Limitation des connexions par couple compte × IP (5), par compte (50), par IP (20) : un
+  tiers ne peut plus verrouiller le titulaire légitime en 5 essais.
+- Production : `/docs` masqué par défaut (`DOCS_ENABLED`), `CORS_ORIGINS=*` refusé.
+- Ports Compose liés à `127.0.0.1` ; uvicorn lancé avec `--proxy-headers --no-server-header`.
+
+### Sécurité
+- `TRUNCATE` refusé sur `incident_events` et `audit_events` (déclencheurs d'instruction) : la
+  chronologie « immuable » pouvait être vidée d'une instruction (audit du 03/10/2026).
+
+
+## [0.1.1] — 2026-10-03 — Baseline M1–M6 intégrée
+
+### Corrigé
+- `mypy --strict` échouait avec SQLAlchemy 2.0 (`Select` à deux paramètres de type, valide
+  seulement en 2.1) : annotation `Executable`, valide sur les deux versions.
+
+### Ajouté
+- `scripts/scenario_soc.py` : test d'acceptation SOC de bout en bout contre une instance réelle
+  (40 vérifications, latences mesurées).
+- `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md` : audit global de `main` (Git, CI, migrations,
+  validation réelle M2–M6, sécurité, dette, risques).
+- `docs/ROADMAP.md` : trajectoire M7 → M11 et critères de sortie.
+
+
 ### Ajouté — Phase 6 (v1.0 « Threat Hunting »)
 - Moteur de règles déterministe, catalogue RULE-01 à RULE-06 (Tor, DNS dynamique, DGA,
   ransomware, CVE exploitables sur l'inventaire, IOC connu) ; chasse sur observables soumis ou sur

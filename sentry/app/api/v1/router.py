@@ -7,7 +7,16 @@ déclarées : l'OpenAPI exposé reflète strictement ce qui fonctionne.
 
 from fastapi import APIRouter
 
-from sentry.app.api.v1 import auth, cves, dashboard, feeds, hunting, incidents, indicators
+from sentry.app.api.v1 import (
+    audit,
+    auth,
+    cves,
+    dashboard,
+    feeds,
+    hunting,
+    incidents,
+    indicators,
+)
 
 api_router = APIRouter()
 
@@ -31,3 +40,6 @@ api_router.include_router(dashboard.router)
 
 # Phase 6 — MOD-06 : threat hunting (RF-25 à RF-28)
 api_router.include_router(hunting.router)
+
+# M7 — Production Hardening : journal d'audit de sécurité (ADR-011)
+api_router.include_router(audit.router)

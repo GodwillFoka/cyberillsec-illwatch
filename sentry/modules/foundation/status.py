@@ -31,6 +31,9 @@ M2_MIN_HEALTHY_SOURCES = 3
 M3_MIN_KEV = 1000  # le catalogue CISA KEV compte plus de 1 400 entrées (2026)
 M3_MIN_EPSS_COVERAGE = 0.9
 M3_NVD_MAX_AGE = timedelta(hours=24)
+# Au-delà, le score n'intègre plus la probabilité d'exploitation : sans EPSS il plafonne à 75,
+# aucune CVE ne peut atteindre P0 (constat sur données réelles, bilan M7 lot 2, § 4).
+EPSS_MAX_AGE = timedelta(hours=48)
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +62,7 @@ class ProjectStatus:
     alerts_open: int = 0
     m3: list[Criterion] = field(default_factory=list)
     later: list[Criterion] = field(default_factory=list)  # jalons M4 (incidents), M6 (hunting)
+    warnings: list[str] = field(default_factory=list)  # signaux d'exploitation à traiter
 
     @property
     def m2_reached(self) -> bool:
@@ -169,6 +173,18 @@ async def _compute_later(session: AsyncSession, status: ProjectStatus) -> None:
     ]
 
 
+async def epss_staleness(session: AsyncSession, moment: datetime) -> tuple[bool, timedelta | None]:
+    """(périmé ?, âge de la dernière synchro EPSS réussie — `None` si jamais)."""
+    state = await session.get(CollectorState, "epss")
+    at = None if state is None else state.last_success_at
+    if at is None:
+        return True, None
+    if at.tzinfo is None:
+        at = at.replace(tzinfo=UTC)
+    age = moment - at
+    return age > EPSS_MAX_AGE, age
+
+
 async def _compute_m3(session: AsyncSession, status: ProjectStatus, moment: datetime) -> None:
     status.cves_total = await session.scalar(select(func.count()).select_from(CVE)) or 0
     rows = await session.execute(select(CVE.priority, func.count()).group_by(CVE.priority))
@@ -194,6 +210,17 @@ async def _compute_m3(session: AsyncSession, status: ProjectStatus, moment: date
     if nvd_at is not None and nvd_at.tzinfo is None:
         nvd_at = nvd_at.replace(tzinfo=UTC)
     baseline = await session.get(CollectorState, "cve_baseline")
+    epss_stale, epss_age = await epss_staleness(session, moment)
+    if status.cves_total and epss_stale:
+        since = (
+            "jamais synchronisé"
+            if epss_age is None
+            else f"non synchronisé depuis {int(epss_age.total_seconds() // 3600)} h"
+        )
+        status.warnings.append(
+            f"EPSS {since} : sans probabilité d'exploitation, le score plafonne à 75 et "
+            "aucune CVE ne peut atteindre P0. Lancer `sentry cves sync --only epss`."
+        )
     coverage = status.cves_with_epss / status.cves_total if status.cves_total else 0.0
     status.m3 = [
         Criterion(

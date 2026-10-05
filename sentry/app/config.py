@@ -7,13 +7,16 @@ s'exécuter si la validation échoue (règle de gestion MOD-01).
 
 from functools import lru_cache
 from typing import Literal, Self
+from urllib.parse import unquote, urlsplit
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_SECRET_KEY = "change-me-in-production"  # noqa: S105 - sentinelle refusée en prod
 INSECURE_SECRET_KEYS = frozenset({DEFAULT_SECRET_KEY, "changeme", "secret", "sentry"})
 MIN_PRODUCTION_SECRET_LENGTH = 32
+INSECURE_REDIS_PASSWORDS = frozenset({"sentry-dev-redis", "redis", "password", "changeme"})
+INSECURE_DB_PASSWORDS = frozenset({"sentry", "sentry-app-dev", "postgres", "password", "changeme"})
 
 
 class Settings(BaseSettings):
@@ -29,7 +32,7 @@ class Settings(BaseSettings):
 
     # --- Application ---------------------------------------------------------
     app_name: str = "SENTRY"
-    app_version: str = "0.1.0"
+    app_version: str = "0.1.1"
     environment: Literal["development", "staging", "production"] = "development"
     debug: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
@@ -42,13 +45,24 @@ class Settings(BaseSettings):
     )
     database_echo: bool = False
     database_pool_size: int = Field(default=10, ge=1, le=100)
+    # M7 lot 2 — séparation des rôles PostgreSQL. `DATABASE_URL` sert l'application (rôle
+    # sans droit de structure) ; `MIGRATION_DATABASE_URL`, s'il est défini, sert Alembic avec
+    # le rôle propriétaire des tables. `DATABASE_APP_ROLE` : rôle à qui `sentry db upgrade`
+    # réapplique les droits minimaux après chaque migration.
+    migration_database_url: str | None = None
+    database_app_role: str | None = Field(default=None, pattern=r"^[a-z_][a-z0-9_]{0,62}$")
 
     # --- Cache / Broker ------------------------------------------------------
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = "redis://localhost:6379/0"  # production : mot de passe obligatoire
 
     # --- API -----------------------------------------------------------------
     api_v1_prefix: str = "/api/v1"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    # Documentation interactive (/docs, /redoc, /openapi.json). Par défaut : exposée hors
+    # production, masquée en production (surface d'attaque, inventaire des routes).
+    docs_enabled: bool | None = None
+    # En-tête HSTS : par défaut en production uniquement (l'API y est servie derrière TLS).
+    hsts_enabled: bool | None = None
 
     # --- Sécurité ------------------------------------------------------------
     secret_key: str = Field(
@@ -56,7 +70,12 @@ class Settings(BaseSettings):
         min_length=8,
         description="Clé de signature JWT — OBLIGATOIREMENT surchargée en production",
     )
-    access_token_expire_minutes: int = 60
+    # Rotation (M7 lot 2) : l'ancienne clé reste acceptée en vérification, jamais en signature,
+    # le temps que les jetons émis avec elle expirent.
+    secret_key_previous: SecretStr | None = None
+    # Jeton d'accès court + jeton de rafraîchissement révocable (M7 lot 2).
+    access_token_expire_minutes: int = Field(default=15, ge=1, le=24 * 60)
+    refresh_token_expire_days: int = Field(default=7, ge=1, le=90)
     # Force brute : échecs de connexion tolérés par identifiant sur la fenêtre (secondes).
     login_max_failures: int = Field(default=5, ge=1, le=100)
     login_window_seconds: int = Field(default=900, ge=60)
@@ -120,6 +139,27 @@ class Settings(BaseSettings):
     # par l'exploitant dans `.env` : il peut viser un relais interne. Jamais journalisé.
     alert_webhook_url: SecretStr | None = None
 
+    @field_validator(
+        "secret_key_previous", "migration_database_url", "database_app_role", mode="before"
+    )
+    @classmethod
+    def _empty_is_unset(cls, value: object) -> object:
+        """`SECRET_KEY_PREVIOUS=` (vide, comme dans .env.example) vaut « non défini ».
+
+        Sans cette règle, une clé précédente vide serait acceptée en vérification : n'importe
+        qui pourrait signer un jeton avec la chaîne vide.
+        """
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @field_validator("secret_key_previous")
+    @classmethod
+    def _previous_key_length(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is not None and len(value.get_secret_value()) < 16:
+            raise ValueError("SECRET_KEY_PREVIOUS trop courte (16 caractères au moins).")
+        return value
+
     @model_validator(mode="after")
     def _enforce_production_safety(self) -> Self:
         """Refuse de démarrer en production avec une configuration dangereuse.
@@ -141,11 +181,40 @@ class Settings(BaseSettings):
             )
         if self.debug:
             raise ValueError("DEBUG doit être désactivé en production.")
+        previous = self.secret_key_previous
+        if previous is not None and len(previous.get_secret_value()) < MIN_PRODUCTION_SECRET_LENGTH:
+            raise ValueError("SECRET_KEY_PREVIOUS trop courte pour la production.")
+        db_password = unquote(urlsplit(self.database_url).password or "")
+        if self.database_url.startswith("postgresql") and (
+            not db_password or db_password in INSECURE_DB_PASSWORDS
+        ):
+            raise ValueError(
+                "DATABASE_URL sans mot de passe ou avec un mot de passe de développement "
+                "interdit en production."
+            )
+        redis_password = urlsplit(self.redis_url).password
+        if not redis_password or redis_password in INSECURE_REDIS_PASSWORDS:
+            raise ValueError(
+                "REDIS_URL sans mot de passe (ou mot de passe de développement) interdit en "
+                "production : redis://:MOT_DE_PASSE@hote:6379/0"
+            )
+        if "*" in self.cors_origins:
+            raise ValueError(
+                "CORS_ORIGINS='*' interdit en production : les requêtes portent un jeton."
+            )
         return self
 
     @property
     def is_production(self) -> bool:
         return self.environment == "production"
+
+    @property
+    def expose_docs(self) -> bool:
+        return not self.is_production if self.docs_enabled is None else self.docs_enabled
+
+    @property
+    def send_hsts(self) -> bool:
+        return self.is_production if self.hsts_enabled is None else self.hsts_enabled
 
 
 @lru_cache(maxsize=1)

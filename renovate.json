@@ -1,27 +1,51 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "schedule": ["before 6am on monday"],
-  "labels": ["dependencies"],
+  "extends": [
+    "config:recommended"
+  ],
+  "schedule": [
+    "before 6am on monday"
+  ],
+  "labels": [
+    "dependencies"
+  ],
   "prConcurrentLimit": 5,
   "packageRules": [
     {
-      "matchManagers": ["pip_requirements", "pep621"],
+      "matchManagers": [
+        "pip_requirements",
+        "pep621"
+      ],
       "commitMessagePrefix": "chore(deps):"
     },
     {
-      "matchManagers": ["dockerfile", "docker-compose"],
+      "matchManagers": [
+        "dockerfile",
+        "docker-compose"
+      ],
       "commitMessagePrefix": "chore(docker):"
     },
     {
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "matchCurrentVersion": "!/^0/",
       "automerge": false,
       "groupName": "mises à jour mineures et correctives"
     }
   ],
   "vulnerabilityAlerts": {
-    "labels": ["security"],
-    "schedule": ["at any time"]
+    "labels": [
+      "security"
+    ],
+    "schedule": [
+      "at any time"
+    ]
+  },
+  "pip_requirements": {
+    "fileMatch": [
+      "(^|/)constraints\\.txt$"
+    ]
   }
 }

@@ -36,7 +36,7 @@ que les décisions :
   depuis une alerte ;
 - **chasse** les menaces dans les journaux d'une organisation (Tor, DNS dynamique, DGA,
   infrastructures ransomware, CVE exploitables sur l'inventaire) ;
-- **expose** tout cela par une API REST (30 routes), une CLI riche (34 commandes) et un tableau
+- **expose** tout cela par une API REST (35 opérations), une CLI riche (40 commandes) et un tableau
   de bord SOC, dans **moins de 256 Mo de mémoire**.
 
 ## Le problème
@@ -69,12 +69,12 @@ bloquer, qu'est-ce qui a changé, et la preuve de ce qui a été fait.
 
 | Module | Ce qu'il fait | État |
 |---|---|---|
-| **MOD-01 Foundation** | Configuration validée au démarrage, PostgreSQL + Alembic, JWT + Argon2id, rôles ADMIN / ANALYST / VIEWER, limitation des tentatives de connexion | ✅ `v0.1.0` |
-| **MOD-02 Threat Feeds** | 5 formats de flux, client TAXII 2.1 `taxii2-client` durci, connecteur OTX, sonde de source avant intégration, déduplication, expiration par type, provenance multi-sources, worker planifié avec verrou Redis | ✅ codé |
-| **MOD-03 CVE Tracker** | NVD 2.0 incrémental, catalogue KEV, EPSS, score composite recalculé à chaque changement, historique de priorité, alertes + webhook | ✅ codé |
-| **MOD-04 Incidents** | Cycle NIST SP 800-61 à 6 états, chronologie immuable (ORM + déclencheur PostgreSQL), liens IOC/CVE, incident depuis une alerte | ✅ codé |
-| **MOD-05 SOC Dashboard** | Synthèse temps réel, activité 24 h, MTTR, exports CSV RFC 4180 / JSON RFC 8259 protégés contre l'injection CSV | ✅ codé |
-| **MOD-06 Threat Hunting** | 6 règles déterministes, chasse sur observables ou sur la base, sessions enregistrées, chasse planifiée | ✅ codé |
+| **MOD-01 Foundation** | Configuration validée au démarrage, PostgreSQL + Alembic, JWT + Argon2id, rôles ADMIN / ANALYST / VIEWER, limitation des tentatives de connexion | ✅ opérationnel |
+| **MOD-02 Threat Feeds** | 5 formats de flux, client TAXII 2.1 `taxii2-client` durci, connecteur OTX, sonde de source avant intégration, déduplication, expiration par type, provenance multi-sources, worker planifié avec verrou Redis | ✅ intégré · validé sur 3 sources réelles |
+| **MOD-03 CVE Tracker** | NVD 2.0 incrémental, catalogue KEV, EPSS, score composite recalculé à chaque changement, historique de priorité, alertes + webhook | ✅ intégré · KEV réel validé, NVD/EPSS à constater |
+| **MOD-04 Incidents** | Cycle NIST SP 800-61 à 6 états, chronologie immuable (ORM + déclencheur PostgreSQL), liens IOC/CVE, incident depuis une alerte | ✅ intégré · scénario réel validé |
+| **MOD-05 SOC Dashboard** | Synthèse temps réel, activité 24 h, MTTR, exports CSV RFC 4180 / JSON RFC 8259 protégés contre l'injection CSV | ✅ intégré · scénario réel validé |
+| **MOD-06 Threat Hunting** | 6 règles déterministes, chasse sur observables ou sur la base, sessions enregistrées, chasse planifiée | ✅ intégré · scénario réel validé |
 
 « Codé » signifie : implémenté, testé, intégré au pipeline. Un jalon n'est déclaré **atteint**
 que lorsque `sentry status` le constate sur données réelles.
@@ -141,12 +141,17 @@ protéger.
 | **SSRF** (une URL de flux qui vise le réseau interne) | Liste blanche d'adresses publiques (`is_global`, CGNAT, NAT64, 6to4), résolution DNS vérifiée avant chaque requête, redirections revalidées ou refusées |
 | Réponse hostile (taille, lenteur) | Lecture en flux plafonnée, délai par requête, backoff exponentiel, 429 respecté |
 | Fuite de secrets | Clés jamais en base (gabarits `{ABUSECH_AUTH_KEY}`, en-têtes), masquées dans erreurs et journaux, identifiants TAXII attachés à un seul hôte |
-| Force brute | 5 échecs par compte / 20 par IP en 15 min → 429 avant toute vérification du mot de passe |
-| Falsification de l'historique | Chronologie d'incident refusant `UPDATE`/`DELETE` jusque dans PostgreSQL (déclencheur) |
+| Force brute | 429 avant toute vérification du mot de passe : 5 échecs d'une adresse sur un compte, 50 sur un compte (botnet), 20 d'une adresse (pulvérisation) — sans verrouiller le titulaire légitime |
+| Falsification de l'historique | Chronologie d'incident et journal d'audit refusant `UPDATE`, `DELETE` et `TRUNCATE` jusque dans PostgreSQL (déclencheurs) |
+| Répudiation | Journal d'audit : connexions, refus d'accès, tentatives SSRF, administration, exports, chasse — acteur, IP, `X-Request-ID` |
+| Vol de session | Accès de 15 min, jeton de rafraîchissement opaque et rotatif : un rejeu révoque toute la session ; `sentry users disable` coupe l'accès immédiatement |
+| Compromission du code applicatif | Rôle PostgreSQL applicatif sans droit de structure : ni `ALTER`, ni `TRUNCATE`, ni suppression de déclencheur ; tables d'audit en `SELECT/INSERT` seulement |
+| Exposition HTTP | CSP `default-src 'none'`, `nosniff`, `X-Frame-Options`, `no-store`, HSTS et `/docs` masqué en production, erreurs 500 sans détail interne |
 | Injection CSV (CWE-1236) | Cellules exportées commençant par `= + - @` neutralisées |
 | Élévation de privilèges | RBAC sur chaque route d'écriture, rôle relu en base à chaque requête |
-| Chaîne d'approvisionnement | SAST, détection de secrets et analyse des dépendances à chaque pipeline ; Renovate |
-| Conteneur | Utilisateur non privilégié (UID 10001), contexte de build sans `.env` |
+| Chaîne d'approvisionnement | Versions figées (`constraints.txt`) pour la CI, l'image et le poste ; SAST, secrets et dépendances analysés à chaque pipeline ; Renovate |
+| Conteneur | Utilisateur non privilégié (UID 10001), contexte de build sans `.env`, image analysée à chaque pipeline (Container Scanning) |
+| Transport | TLS 1.3 / HTTP/2 par Caddy (Let's Encrypt), seul service exposé ; migrations dans un conteneur éphémère, l'API ne détient pas les droits de structure |
 
 ## Qualité et mesures
 
@@ -159,6 +164,8 @@ protéger.
 | Migrations | 6, vérifiées montée → `alembic check` → descente → remontée à chaque pipeline |
 | Liste des CVE, P95 (30 000 CVE) | **8 ms** (cible 250 ms) |
 | Ingestion réelle (37 000 IOC) | 24 s, pic mémoire **120 Mo** (cible 256 Mo) |
+| Scénario SOC de bout en bout (`scripts/scenario_soc.py`) | **40/40** sur données réelles, latence médiane des appels incidents 12 ms |
+| Chasse sur 3 867 IOC réels | **27 ms** |
 
 Pipeline GitLab : qualité (lint, typage) → tests (matrice 3.12 / 3.14 + migrations sur base
 vierge) → build de l'image Docker → sécurité (SAST, secrets, dépendances). `scripts/ci-local.sh`
@@ -183,7 +190,7 @@ git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git   # ou le miroir
 # git clone https://github.com/GodwillFoka/cyberillsec-sentry.git
 cd cyberillsec-sentry
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -c constraints.txt -e ".[dev]"   # mêmes versions que la CI et l'image
 
 cp .env.example .env               # SECRET_KEY : openssl rand -hex 32
 docker compose up -d postgres redis
@@ -192,12 +199,15 @@ sentry users create --username admin --email admin@example.org --role admin
 
 ./scripts/ci-local.sh              # pipeline complet en local
 uvicorn sentry.app.main:app --reload --port 8000   # http://localhost:8000/docs
+curl -s localhost:8000/ready       # base joignable, schéma à jour, Redis
+python scripts/scenario_soc.py     # test d'acceptation SOC de bout en bout
 ```
 
 Sur **Kali Linux** : `sudo apt install -y docker.io docker-compose python3-venv`, puis
 `sudo usermod -aG docker $USER` et reconnexion (si `docker compose` est absent, la commande
 s'écrit `docker-compose`). Guide pas à pas, y compris pour un développeur qui
-découvre la cybersécurité : [`docs/ONBOARDING.md`](docs/ONBOARDING.md).
+découvre la cybersécurité : [`docs/ONBOARDING.md`](docs/ONBOARDING.md). Exploitation (sondes,
+journaux, audit, sauvegardes, reverse proxy) : [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 ## Utilisation
 
@@ -221,16 +231,23 @@ sentry hunt run --observables proxy.txt --asset FortiOS
 sentry dashboard show
 sentry dashboard export cves --format csv -o cves.csv
 sentry status                                # jalons constatés sur données réelles
+
+# Sécurité et exploitation (M7)
+sentry audit list --action auth. --outcome FAILURE --since 24
+sentry users disable alice                   # coupe l'accès et révoque les sessions
+sentry cves import CVE-2024.json.xz --only-known   # NVD hors ligne (réseau filtré)
+scripts/backup.sh                            # sauvegarde vérifiée, rotation
 ```
 
 | API (`/api/v1`) | Rôle requis en écriture |
 |---|---|
-| `auth/token`, `users/me` | — |
+| `auth/token`, `auth/refresh`, `auth/logout`, `users/me` | — |
 | `feeds`, `indicators` | ADMIN (flux), ADMIN / ANALYST (IOC) |
 | `cves`, `alerts` | ADMIN / ANALYST (acquittement) |
 | `incidents` | ADMIN / ANALYST |
 | `dashboard/summary`, `dashboard/recent`, `dashboard/export` | lecture |
 | `hunting/rules`, `hunting/sessions` | ADMIN / ANALYST (lancer une chasse) |
+| `audit` | ADMIN (lecture seule) |
 
 Documentation interactive : `/docs` (Swagger) et `/redoc`.
 
@@ -254,18 +271,23 @@ cyberillsec-sentry/
 
 ## Feuille de route
 
-| Phase | Livrable | Jalon cible | État |
-|---|---|---|---|
-| P1 Foundation | Socle, CLI, Docker, CI | M1 | ✅ atteint (`v0.1.0`) |
-| P2 Threat Feeds | Collecte, IOC, TAXII, OTX | M2 — 08/10/2026 | code ✅, constat sur données |
-| P3 CVE Tracker | NVD, KEV, EPSS, score, alertes | M3 — 22/10/2026 | code ✅, constat sur données |
-| P4 Incidents | Cycle NIST, chronologie, liens | M4 — 05/11/2026 | code ✅ |
-| P5 SOC Dashboard | Synthèse, activité, exports | M5 — 12/11/2026 | code ✅ |
-| P6 Threat Hunting | Moteur, règles, sessions | **v1.0 — 19/11/2026** | code ✅ |
+Les six modules sont **intégrés dans `main`** et validés de bout en bout sur données réelles
+(audit du 03/10/2026 : [`Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`](Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md)).
+La suite vise une plateforme **déployable et démontrable** :
 
-**Au-delà de la v1.0 :** interface web du tableau de bord, import de règles Sigma, inventaire
-d'actifs CPE, score de confiance des IOC par provenance, assistant d'analyse (LLM + RAG sur la base
-CTI), multi-tenant et SSO, puis **Cyberill TI Cloud** (offre hébergée en UE).
+| Étape | Objectif | État |
+|---|---|---|
+| M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés (`v0.1.1`) |
+| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, TLS (Caddy), migrations isolées, analyse d'image, sauvegardes | ✅ lots 1–3 codés, préproduction à constater |
+| M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif | ⏳ |
+| M9 | SOC Operations : triage L1/L2/L3, faux positifs, séries temporelles | ⏳ |
+| M10 | CTI Intelligence : acteurs, campagnes, MITRE ATT&CK, export STIX | ⏳ |
+| M11 | Observability & Deployment : Prometheus, Grafana, staging → production | ⏳ |
+| **v0.2.0** | Production Candidate | ⏳ |
+
+Critères de sortie de chaque jalon : [`docs/ROADMAP.md`](docs/ROADMAP.md). Au-delà : assistant
+d'analyse (LLM + RAG sur la base CTI), multi-tenant et SSO, puis **Cyberill TI Cloud** (offre
+hébergée en UE).
 
 ## Ce que ce projet démontre
 

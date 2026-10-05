@@ -18,7 +18,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 
-from sentry.app.api.deps import CurrentUser, DbSession, require_roles
+from sentry.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from sentry.app.models import Indicator, User
 from sentry.modules.threat_feeds import indicators as service
 from sentry.modules.threat_feeds.indicators import (
@@ -210,7 +210,9 @@ async def read_indicator(indicator_id: UUID, session: DbSession, _: CurrentUser)
         "`expires_at` sont mis à jour. Les valeurs invalides sont listées dans `rejected`."
     ),
 )
-async def ingest(payload: IngestRequest, session: DbSession, _: Contributor) -> IngestResponse:
+async def ingest(
+    payload: IngestRequest, session: DbSession, user: Contributor, audit: Audit
+) -> IngestResponse:
     if payload.feed_id is not None:
         try:
             await get_feed(session, payload.feed_id)
@@ -223,6 +225,18 @@ async def ingest(payload: IngestRequest, session: DbSession, _: Contributor) -> 
         session,
         (Observation(**item.model_dump()) for item in payload.items),
         feed_id=payload.feed_id,
+    )
+    await audit.record(
+        "indicator.submit",
+        actor=user,
+        target_type="feed" if payload.feed_id else None,
+        target_id=payload.feed_id,
+        detail={
+            "received": result.received,
+            "inserted": result.inserted,
+            "updated": result.updated,
+            "rejected": result.rejected_count,
+        },
     )
     return IngestResponse(
         received=result.received,

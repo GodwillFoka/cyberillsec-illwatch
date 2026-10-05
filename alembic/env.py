@@ -12,10 +12,17 @@ from sentry.app.database import Base
 import sentry.app.models  # noqa: F401 - enregistre tous les modèles dans Base.metadata
 
 config = context.config
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+# M7 lot 2 : les migrations s'exécutent avec le rôle propriétaire (MIGRATION_DATABASE_URL)
+# quand il est défini ; l'application, elle, n'a pas le droit de modifier la structure.
+_settings = get_settings()
+# « % » doublé : ConfigParser prendrait un mot de passe encodé (« %3A ») pour une interpolation.
+_url = _settings.migration_database_url or _settings.database_url
+config.set_main_option("sqlalchemy.url", _url.replace("%", "%%"))
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers=False : sinon chaque migration lancée dans le processus (CLI,
+    # tests) désactive les journaux `sentry.*` déjà créés, dont le journal d'audit.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

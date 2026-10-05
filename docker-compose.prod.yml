@@ -1,0 +1,99 @@
+# ============================================================================
+# SENTRY — déploiement de production (M7 lot 3, ADR-013)
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d
+#
+# Différences avec le développement :
+# - Caddy termine TLS (Let's Encrypt, ou autorité interne pour SENTRY_DOMAIN=localhost) ;
+#   l'API n'est plus publiée sur l'hôte, seul Caddy écoute (80, 443) ;
+# - les migrations tournent dans un conteneur dédié et éphémère (`migrate`) : l'API et le
+#   worker ne détiennent jamais le mot de passe du propriétaire des tables ;
+# - mots de passe obligatoires (`:?`) : PostgreSQL, rôle applicatif, Redis, SECRET_KEY ;
+# - uvicorn n'accepte X-Forwarded-For que de l'adresse fixe de Caddy.
+# ============================================================================
+
+x-prod-env: &prod-env
+  ENVIRONMENT: production
+  SECRET_KEY: ${SECRET_KEY:?SECRET_KEY requis (openssl rand -hex 32)}
+  DATABASE_URL: postgresql+asyncpg://sentry_app:${POSTGRES_APP_PASSWORD:?POSTGRES_APP_PASSWORD requis}@postgres:5432/sentry
+  MIGRATION_DATABASE_URL: ""
+  DATABASE_APP_ROLE: ""
+  REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD requis}@redis:6379/0
+
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requis}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:?POSTGRES_APP_PASSWORD requis}
+    ports: !reset []
+
+  redis:
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD requis}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD requis}
+    ports: !reset []
+
+  migrate:
+    build: .
+    image: sentry:local
+    env_file: .env
+    environment:
+      <<: *prod-env
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://sentry:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requis}@postgres:5432/sentry
+      DATABASE_APP_ROLE: sentry_app
+    entrypoint: ["sentry", "db", "upgrade"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles: ["full"]
+
+  api:
+    image: sentry:local
+    environment: *prod-env
+    command: ["uvicorn", "sentry.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "172.30.0.10", "--no-server-header", "--no-access-log"]
+    ports: !reset []
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  worker:
+    image: sentry:local
+    environment: *prod-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    environment:
+      SENTRY_DOMAIN: ${SENTRY_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      default:
+        ipv4_address: 172.30.0.10
+    depends_on:
+      - api
+    profiles: ["full"]
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  caddy_data:
+  caddy_config:

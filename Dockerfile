@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 FROM python:3.12-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
@@ -11,9 +10,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md constraints.txt ./
 COPY sentry ./sentry
-RUN pip install --upgrade pip && pip install .
+# Versions figées par constraints.txt (M7) : l'image, la CI et le poste Kali installent
+# exactement les mêmes dépendances.
+RUN pip install --upgrade pip && pip install -c constraints.txt .
 
 COPY alembic.ini ./
 COPY alembic ./alembic
@@ -29,4 +30,8 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 
 # Au démarrage : migrations Alembic jusqu'à head, puis service HTTP (critère M1).
 # Adapté à une instance unique ; en multi-réplicas, sortir la migration dans un job dédié.
-CMD ["sh", "-c", "sentry db upgrade && exec uvicorn sentry.app.main:app --host 0.0.0.0 --port 8000"]
+# --proxy-headers : derrière un reverse proxy listé dans FORWARDED_ALLOW_IPS, l'adresse client
+# réelle est lue dans X-Forwarded-For (limitation de débit, journal d'audit).
+# --no-access-log : le journal d'accès JSON de SENTRY (sentry.http) remplace celui d'uvicorn,
+# qui doublait chaque ligne en texte libre.
+CMD ["sh", "-c", "sentry db upgrade && exec uvicorn sentry.app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --no-server-header --no-access-log"]

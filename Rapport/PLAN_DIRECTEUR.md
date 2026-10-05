@@ -8,6 +8,10 @@
 > `Rapport/BILAN_M2_PHASE_3.md` et `Rapport/RAPPORT_GLOBAL.md`. Les étapes 1 et 2 ne restent
 > ouvertes que pour leur constat sur données réelles (`sentry status`).
 
+> **Mise à jour du 03/10, après fusion.** M1–M6 sont intégrés dans `main` (`266b46e`). Audit
+> global : `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`. Les tâches ❌/◐ des étapes 3 à 5 sont
+> reprises dans M7 (durcissement) et M9 (faux positifs, séries 7 j) : voir `docs/ROADMAP.md`.
+
 > **Mise à jour du 03/10.** Backend TAXII 2.1 réel (`taxii2-client` 2.3.0, durci) et phases 4,
 > 5 et 6 codées sur `feature/phases-4-6` : 388 tests, couverture 94 %. Voir
 > `Rapport/BILAN_TAXII_PHASES_4_6.md`. Les étapes 3 à 5 restent ouvertes sur les tâches

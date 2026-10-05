@@ -17,7 +17,7 @@ import json
 from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
-from typing import Any, Protocol
+from typing import IO, Any, Protocol
 from urllib.parse import urlencode
 
 from sentry.app.config import Settings
@@ -163,6 +163,58 @@ def parse_nvd_page(content: bytes) -> NvdPage:
             )
         )
     return page
+
+
+_ARRAY_KEYS = ('"cve_items"', '"vulnerabilities"')
+_READ_CHUNK = 1 << 20
+
+
+def iter_nvd_items(stream: IO[str]) -> Iterator[dict[str, Any]]:
+    """Enregistrements CVE (objet `cve` de l'API NVD 2.0) lus **en flux** dans un fichier.
+
+    Deux formats : page de l'API (`{"vulnerabilities": [{"cve": …}]}`) et flux annuels au
+    format 2.0 publiés hors NVD (`{"cve_items": [ … ]}`, ex. miroir fkie-cad). Lecture par
+    blocs de 1 Mo et décodage objet par objet : la mémoire reste proportionnelle à un
+    enregistrement, pas au fichier (un flux annuel décompressé dépasse 500 Mo).
+    """
+    decoder = json.JSONDecoder()
+    buffer = ""
+    position = -1
+    while position < 0:
+        chunk = stream.read(_READ_CHUNK)
+        if not chunk:
+            raise FeedParseError(
+                "NVD (fichier) : format inconnu (attendu `vulnerabilities` ou `cve_items`)."
+            )
+        buffer += chunk
+        for key in _ARRAY_KEYS:
+            found = buffer.find(key)
+            if found >= 0:
+                bracket = buffer.find("[", found)
+                if bracket >= 0:
+                    position = bracket + 1
+                    break
+        else:
+            buffer = buffer[-64:]  # garde de quoi reconnaître une clé à cheval sur deux blocs
+    buffer = buffer[position:]
+    eof = False
+    while True:
+        stripped = buffer.lstrip(" \t\r\n,")
+        if stripped.startswith("]"):
+            return
+        try:
+            item, end = decoder.raw_decode(stripped)
+        except json.JSONDecodeError:
+            if eof:
+                raise FeedParseError("NVD (fichier) : JSON tronqué ou invalide.") from None
+            chunk = stream.read(_READ_CHUNK)
+            eof = not chunk
+            buffer = stripped + chunk
+            continue
+        buffer = stripped[end:]
+        if isinstance(item, dict):
+            nested = item.get("cve")
+            yield nested if isinstance(nested, dict) else item
 
 
 def nvd_windows(start: datetime, end: datetime) -> Iterator[tuple[datetime, datetime]]:

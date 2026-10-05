@@ -1,6 +1,6 @@
 [project]
 name = "sentry-cti"
-version = "0.1.0"
+version = "0.1.1"
 description = "SENTRY — Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)"
 readme = "README.md"
 requires-python = ">=3.12"
