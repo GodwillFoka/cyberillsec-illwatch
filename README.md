@@ -6,14 +6,16 @@
 
 *CyberillSec — A CYBERILL Initiative*
 
-[![pipeline](https://gitlab.com/GodwillFoka/cyberillsec-sentry/badges/main/pipeline.svg)](https://gitlab.com/GodwillFoka/cyberillsec-sentry/-/pipelines)
-[![coverage](https://gitlab.com/GodwillFoka/cyberillsec-sentry/badges/main/coverage.svg)](https://gitlab.com/GodwillFoka/cyberillsec-sentry/-/pipelines)
+[![CI](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/ci.yml)
+[![Couverture ≥ 80 %](https://img.shields.io/badge/couverture-%E2%89%A5%2080%25-20155C.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-E6681B.svg)](LICENSE)
 [![Python 3.12 | 3.14](https://img.shields.io/badge/Python-3.12%20%7C%203.14-20155C.svg)](https://www.python.org/)
 [![mypy strict](https://img.shields.io/badge/mypy-strict-20155C.svg)](pyproject.toml)
 [![STIX/TAXII 2.1](https://img.shields.io/badge/STIX%2FTAXII-2.1-E6681B.svg)](https://oasis-open.github.io/cti-documentation/)
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
+
+**Dépôts :** [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-sentry) · [GitHub (miroir)](https://github.com/GodwillFoka/cyberillsec-sentry)
 
 </div>
 
@@ -184,7 +186,8 @@ et l'asynchrone de bout en bout donnent un débit largement suffisant dans un se
 (Python 3.14) et vérifié en CI sous Python 3.12 et 3.14 ; compatible Debian/Ubuntu, macOS, WSL2.
 
 ```bash
-git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
+git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git   # ou le miroir :
+# git clone https://github.com/GodwillFoka/cyberillsec-sentry.git
 cd cyberillsec-sentry
 python3 -m venv .venv && source .venv/bin/activate
 pip install -c constraints.txt -e ".[dev]"   # mêmes versions que la CI et l'image
@@ -253,6 +256,7 @@ Documentation interactive : `/docs` (Swagger) et `/redoc`.
 ```
 cyberillsec-sentry/
 ├── .gitlab-ci.yml          # Pipeline : qualité, tests 3.12/3.14, migrations, image, sécurité
+├── .github/workflows/      # Même pipeline sur GitHub Actions (miroir)
 ├── alembic/versions/       # 6 migrations, historique immuable
 ├── docs/                   # Cahier des charges, vision, architecture, 10 ADR
 ├── Rapport/                # Bilans d'étape et rapport global
