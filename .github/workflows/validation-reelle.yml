@@ -1,0 +1,147 @@
+# ============================================================================
+# SENTRY — Validation réelle (dette D3 de l'audit du 03/10)
+#
+# Le runner GitHub a accès à Internet, contrairement au bac à sable d'audit :
+# on monte une instance complète (PostgreSQL 16, Redis 7, API), on l'alimente
+# avec les vraies sources (flux IOC publics, CISA KEV, NIST NVD, FIRST EPSS,
+# liste Tor), puis on rejoue le scénario SOC d'acceptation et `sentry status`.
+#
+# Non bloquant pour les merge requests (sources externes = résultat variable) :
+# il tourne chaque lundi, sur chaque tag et à la demande.
+#
+# Clés facultatives (Settings → Secrets and variables → Actions) :
+#   NVD_API_KEY, OTX_API_KEY, ABUSECH_AUTH_KEY, TAXII_AUTH
+# ============================================================================
+name: Validation réelle
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * 1"
+  push:
+    tags: ["v*"]
+    # …et quand le workflow lui-même change, pour le valider dès sa fusion.
+    paths: [".github/workflows/validation-reelle.yml"]
+
+permissions:
+  contents: read
+
+env:
+  ENVIRONMENT: development
+  SECRET_KEY: validation-secret-key-not-for-production
+  DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry
+  REDIS_URL: redis://localhost:6379/0
+  NVD_INITIAL_DAYS: "7"
+  SCENARIO_PASSWORD: Validation-Passw0rd-2026
+  NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+  OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
+  ABUSECH_AUTH_KEY: ${{ secrets.ABUSECH_AUTH_KEY }}
+  TAXII_AUTH: ${{ secrets.TAXII_AUTH }}
+
+jobs:
+  validation:
+    name: Données réelles et scénario SOC
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sentry
+          POSTGRES_PASSWORD: sentry
+          POSTGRES_DB: sentry
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sentry" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7.2-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Dépendances
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
+
+      - name: Base, sources de référence et comptes
+        run: |
+          sentry db upgrade
+          sentry seed
+          sentry users create --username admin    --email admin@example.org    --role admin   --password "$SCENARIO_PASSWORD"
+          sentry users create --username analyst  --email analyst@example.org  --role analyst --password "$SCENARIO_PASSWORD"
+          sentry users create --username analyst2 --email analyst2@example.org --role analyst --password "$SCENARIO_PASSWORD"
+          sentry users create --username viewer   --email viewer@example.org   --role viewer  --password "$SCENARIO_PASSWORD"
+
+      - name: Tests réseau réels (SENTRY_LIVE_TESTS=1)
+        env:
+          SENTRY_LIVE_TESTS: "1"
+          DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_live_test
+        run: |
+          PGPASSWORD=sentry psql -h localhost -U sentry -d sentry -qc "CREATE DATABASE sentry_live_test"
+          set -o pipefail
+          pytest -m live --no-cov -v 2>&1 | tee live.txt
+
+      - name: M2 — collecte des flux de menaces
+        # Une source sous clé absente (abuse.ch, OTX…) est DEGRADED : le pas ne doit pas échouer.
+        run: sentry feeds fetch-all --force 2>&1 | tee feeds.txt || true
+
+      - name: M3 — synchronisation CVE (KEV, NVD, EPSS)
+        shell: bash
+        run: |
+          set -o pipefail
+          sentry cves sync 2>&1 | tee cves.txt
+
+      - name: API et scénario SOC d'acceptation
+        run: |
+          uvicorn sentry.app.main:app --port 8000 > api.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://localhost:8000/health >/dev/null && break; sleep 1; done
+          set -o pipefail
+          python scripts/scenario_soc.py http://localhost:8000 2>&1 | tee scenario.txt
+
+      - name: État mesuré (sentry status)
+        if: always()
+        run: COLUMNS=120 sentry status 2>&1 | tee status.txt || true
+
+      - name: Résultats lisibles (annotations)
+        if: always()
+        shell: bash
+        run: |
+          note() { echo "::notice title=$1::$(echo "$2" | tr '\n' ' ' | cut -c1-900)"; }
+          [ -f scenario.txt ] && note "Scénario SOC" "$(grep -cE '^✔' scenario.txt) ✔ / $(grep -cE '^✘' scenario.txt) ✘ — $(grep -E '^✘' scenario.txt | head -5)"
+          [ -f cves.txt ] && note "CVE (KEV, NVD, EPSS)" "$(grep -E 'Catalogue KEV|CVE reçues|Scores EPSS|CVE créées|Scores recalculés|✗' cves.txt)"
+          [ -f feeds.txt ] && note "Flux de menaces" "$(grep -E 'HEALTHY|DEGRADED|FAILED|ERROR' feeds.txt | head -12)"
+          [ -f live.txt ] && note "Tests live" "$(grep -E '(passed|failed|error)' live.txt | tail -1)"
+          [ -f status.txt ] && note "sentry status" "$(cat status.txt)"
+      - name: Résumé
+        if: always()
+        run: |
+          {
+            echo "## SENTRY — validation sur données réelles"
+            echo
+            echo "Commit \`${GITHUB_SHA::7}\` · $(date -u '+%d/%m/%Y %H:%M UTC')"
+            for f in status scenario cves feeds live; do
+              [ -f "$f.txt" ] || continue
+              echo
+              echo "### $f"
+              echo '```'
+              tail -n 70 "$f.txt"
+              echo '```'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: validation-reelle
+          path: |
+            *.txt
+            api.log
+          retention-days: 30
