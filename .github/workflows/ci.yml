@@ -1,0 +1,176 @@
+# ============================================================================
+# SENTRY — Pipeline d'intégration continue GitHub Actions
+# Miroir de .gitlab-ci.yml (GitLab reste le dépôt de référence, ADR-002) :
+# qualité, tests PostgreSQL/Redis réels, migrations, image Docker, sécurité.
+# ============================================================================
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SECRET_KEY: ci-secret-key-not-for-production
+  ENVIRONMENT: development
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Étape 1 — Qualité : lint, formatage, typage strict
+  # ---------------------------------------------------------------------------
+  qualite:
+    name: Qualité (ruff, mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Dépendances
+        run: |
+          python -m pip install --upgrade pip
+          # constraints.txt (M7) fige les versions quand il existe.
+          if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
+      - run: ruff check --output-format=github .
+      - run: ruff format --check .
+      - run: mypy sentry
+
+  # ---------------------------------------------------------------------------
+  # Étape 2 — Tests : suite complète contre PostgreSQL 16 et Redis 7 réels
+  # ---------------------------------------------------------------------------
+  tests:
+    name: Tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.12 : version minimale supportée ; 3.14 : version des postes de développement.
+        python: ["3.12", "3.14"]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sentry
+          POSTGRES_PASSWORD: sentry
+          POSTGRES_DB: sentry_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sentry" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7.2-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_test
+      REDIS_URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          allow-prereleases: true
+          cache: pip
+      - name: Dépendances
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
+      - name: Pytest
+        run: pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rapports-tests-py${{ matrix.python }}
+          path: |
+            report.xml
+            coverage.xml
+          retention-days: 7
+
+  # Cohérence ORM ↔ migrations ↔ PostgreSQL sur une base vierge :
+  # montée complète, comparaison modèle/schéma, descente, remontée.
+  migrations:
+    name: Migrations Alembic
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sentry
+          POSTGRES_PASSWORD: sentry
+          POSTGRES_DB: sentry_migrations
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U sentry" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_migrations
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Dépendances
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
+      - run: alembic upgrade head
+      - run: alembic check
+      - run: alembic downgrade base
+      - run: alembic upgrade head
+
+  # ---------------------------------------------------------------------------
+  # Étape 3 — Build : l'image doit se construire et la CLI répondre
+  # ---------------------------------------------------------------------------
+  image:
+    name: Image Docker
+    runs-on: ubuntu-latest
+    needs: [qualite]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t sentry:${{ github.sha }} .
+      - run: docker run --rm --entrypoint sentry sentry:${{ github.sha }} version
+      - name: Fichiers Compose valides
+        env:
+          SECRET_KEY: ci-dummy
+          POSTGRES_PASSWORD: ci-dummy
+          POSTGRES_APP_PASSWORD: ci-dummy
+          REDIS_PASSWORD: ci-dummy
+        run: |
+          touch .env
+          docker compose -f docker-compose.yml config -q
+          if [ -f docker-compose.prod.yml ]; then
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full config -q
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Étape 4 — Sécurité : dépendances (pip-audit) et code (bandit)
+  # ---------------------------------------------------------------------------
+  securite:
+    name: Sécurité (pip-audit, bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Dépendances
+        run: |
+          python -m pip install --upgrade pip pip-audit bandit
+          if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
+      - name: pip-audit (vulnérabilités connues des dépendances installées)
+        run: pip-audit --skip-editable
+      - name: bandit (sévérité moyenne et plus)
+        run: bandit -q -r sentry -ll
