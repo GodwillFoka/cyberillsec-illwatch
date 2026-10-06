@@ -10,14 +10,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sentry.app.config import Settings, get_settings
-from sentry.app.models import Indicator, ThreatFeed
-from sentry.modules.threat_feeds.collector import collect_feed
+from sentry.app.models import CollectorState, Indicator, ThreatFeed
+from sentry.modules.threat_feeds.collector import OTX_STATE_PREFIX, collect_feed
 from sentry.modules.threat_feeds.fetcher import FetchError
 from sentry.modules.threat_feeds.otx import (
     API_KEY_HEADER,
     fetch_otx,
     parse_otx_page,
     with_modified_since,
+    with_page,
 )
 from sentry.modules.threat_feeds.parsers import FeedParseError
 from sentry.shared.enums import FeedStatus, FeedType, IndicatorType
@@ -162,5 +163,107 @@ async def test_erreur_otx_ne_divulgue_pas_la_cle(
         report = await collect_feed(db_session, feed, fetch=leaky, clock=lambda: NOW)
         assert feed.status == FeedStatus.DEGRADED
         assert report.error is not None and KEY not in report.error and "***" in report.error
+    finally:
+        get_settings.cache_clear()
+
+
+# --- Reprise : collecte tronquée ou interrompue (06/10) ---------------------------------------
+
+
+def test_with_page() -> None:
+    assert with_page(FEED_URL, 1) == FEED_URL
+    assert with_page(FEED_URL, 2) == PAGE2
+    assert with_page(PAGE2, 3).endswith("page=3") and "page=2" not in with_page(PAGE2, 3)
+
+
+async def test_erreur_apres_la_premiere_page_garde_l_acquis() -> None:
+    server = _two_pages()
+    server.pages[PAGE2] = b"pas du json"
+    outcome = await fetch_otx(FEED_URL, settings=_settings(), fetch=server)
+    assert outcome.pages == 1 and outcome.interrupted is not None and not outcome.complete
+    assert len(outcome.parsed.observations) == 4
+
+
+async def test_reprise_a_une_page_donnee() -> None:
+    server = _two_pages()
+    outcome = await fetch_otx(FEED_URL, settings=_settings(), fetch=server, start_page=2)
+    assert [c[0] for c in server.calls] == [PAGE2] and outcome.complete
+
+
+async def _otx_feed(session: AsyncSession) -> ThreatFeed:
+    feed = ThreatFeed(name="OTX", url=FEED_URL, feed_type=FeedType.OTX)
+    feed.last_successful_run = datetime(2026, 9, 27, 0, 0, tzinfo=UTC)
+    session.add(feed)
+    await session.flush()
+    return feed
+
+
+async def test_collecte_tronquee_reprend_a_la_page_suivante(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Le curseur n'avance qu'une fois la fenêtre épuisée : aucune page n'est perdue."""
+    monkeypatch.setenv("OTX_API_KEY", KEY)
+    monkeypatch.setenv("OTX_MAX_PAGES", "1")
+    get_settings.cache_clear()
+    try:
+        feed = await _otx_feed(db_session)
+        first = await collect_feed(db_session, feed, fetch=_two_pages(), clock=lambda: NOW)
+        assert first.succeeded and first.inserted == 4
+        assert first.warning is not None and "page 2" in first.warning
+        state = await db_session.get(CollectorState, f"{OTX_STATE_PREFIX}{feed.id}")
+        assert state is not None and state.items == 1
+        assert state.cursor == datetime(2026, 9, 27, 0, 0, tzinfo=UTC)  # inchangé
+
+        later = datetime(2026, 9, 28, 13, 0, tzinfo=UTC)
+        server = _two_pages()
+        second = await collect_feed(db_session, feed, fetch=server, clock=lambda: later)
+        assert server.calls[0][0].startswith(PAGE2)  # reprise, pas de relecture
+        assert "modified_since=2026-09-26T23%3A45%3A00" in server.calls[0][0]
+        assert second.succeeded and second.warning is None and second.inserted == 1
+        # Fenêtre épuisée : le curseur prend le début de la fenêtre (1re collecte).
+        assert state.items == 0 and state.cursor == NOW and state.last_success_at is None
+    finally:
+        get_settings.cache_clear()
+
+
+async def test_collecte_interrompue_garde_les_pages_lues(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Un ReadTimeout page 2 n'annule plus la page 1 (fin du « tout ou rien »)."""
+    monkeypatch.setenv("OTX_API_KEY", KEY)
+    get_settings.cache_clear()
+    try:
+        feed = await _otx_feed(db_session)
+        pages = _two_pages().pages
+
+        async def flaky(url: str, *, headers: Mapping[str, str] | None = None) -> bytes:
+            key = url.split("&modified_since")[0]
+            if key == PAGE2:
+                raise FetchError(f"ReadTimeout (clé {KEY})")
+            return pages[key]
+
+        report = await collect_feed(db_session, feed, fetch=flaky, clock=lambda: NOW)
+        assert report.succeeded and feed.status == FeedStatus.HEALTHY
+        assert report.inserted == 4
+        assert report.warning is not None and "interrompue page 2" in report.warning
+        assert KEY not in report.warning
+        state = await db_session.get(CollectorState, f"{OTX_STATE_PREFIX}{feed.id}")
+        assert state is not None and state.items == 1
+        assert state.cursor == datetime(2026, 9, 27, 0, 0, tzinfo=UTC)
+    finally:
+        get_settings.cache_clear()
+
+
+def test_rythme_nvd_annonce_selon_la_cle(monkeypatch: pytest.MonkeyPatch) -> None:
+    from sentry.cli.cves import _nvd_pace
+
+    monkeypatch.delenv("NVD_API_KEY", raising=False)
+    get_settings.cache_clear()
+    try:
+        assert "sans clé" in _nvd_pace(("kev", "nvd"))
+        assert _nvd_pace(("epss",)) == ""
+        monkeypatch.setenv("NVD_API_KEY", "cle-nvd-de-test")
+        get_settings.cache_clear()
+        assert "avec clé" in _nvd_pace(("nvd",))
     finally:
         get_settings.cache_clear()

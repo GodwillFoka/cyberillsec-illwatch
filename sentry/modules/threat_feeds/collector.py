@@ -14,6 +14,12 @@ Règles :
   de plus de `polling_interval` secondes. Un flux en échec est donc retenté à chaque cycle.
 - **Exclusivité (T2.6)** : avec un verrou (`locks.py`), un flux déjà en cours de collecte
   ailleurs est sauté, pas attendu.
+- **Reprise OTX** : une collecte OTX tronquée (`OTX_MAX_PAGES`) ou interrompue par une
+  erreur réseau garde les pages lues et n'avance pas le curseur `modified_since` ; la
+  suivante reprend à la première page non lue. L'avancement est rangé dans
+  `collector_state` sous `otx:<id du flux>` : `cursor` (borne `modified_since` de la
+  fenêtre en cours), `items` (pages déjà lues dans cette fenêtre), `last_success_at`
+  (début de la fenêtre, qui devient le curseur suivant une fois la fenêtre épuisée).
 - **Traçabilité (UC-01 étape 8)** : chaque collecte écrit une ligne JSON
   (`feed.collected`) : volumes, durée, erreur, pic mémoire du processus.
 """
@@ -28,7 +34,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from sentry.app.config import get_settings
-from sentry.app.models import ThreatFeed
+from sentry.app.models import CollectorState, ThreatFeed
 from sentry.modules.threat_feeds.fetcher import FetchError, RateLimitedError, fetch_feed_content
 from sentry.modules.threat_feeds.indicators import ingest_indicators
 from sentry.modules.threat_feeds.locks import FeedLock
@@ -40,6 +46,7 @@ from sentry.shared.enums import FeedStatus, FeedType
 from sentry.shared.logging import peak_rss_mb
 
 MAX_ERROR_LENGTH = 1000
+OTX_STATE_PREFIX = "otx:"  # + UUID du flux : 40 caractères, la taille de collector_state.name
 
 log = logging.getLogger("sentry.collector")
 
@@ -108,7 +115,7 @@ async def collect_feed(
     )
     started = time.perf_counter()
     try:
-        parsed = await _fetch_and_parse(feed, fetch, report)
+        parsed, record_progress = await _fetch_and_parse(session, feed, fetch, report, clock)
         report.parsed, report.skipped = len(parsed.observations), parsed.skipped
 
         async with session.begin_nested():
@@ -119,6 +126,9 @@ async def collect_feed(
         report.rejected = result.rejected_count
         report.rejected_samples = [r.value for r in result.rejected[:5]]
 
+        # L'avancement n'est enregistré qu'une fois les IOC ingérés.
+        if record_progress is not None:
+            record_progress()
         feed.status = FeedStatus.HEALTHY
         feed.last_successful_run = clock()
         feed.last_error = None
@@ -140,22 +150,63 @@ async def collect_feed(
     return report
 
 
-async def _fetch_and_parse(
-    feed: ThreatFeed, fetch: Fetcher, report: CollectionReport
-) -> ParseResult:
-    if FeedType(feed.feed_type) is FeedType.OTX:
-        outcome = await fetch_otx(
-            feed.url,
-            settings=get_settings(),
-            fetch=fetch,
-            since=_as_utc(feed.last_successful_run),
+async def _otx_state(session: AsyncSession, feed: ThreatFeed) -> CollectorState:
+    """Avancement OTX du flux ; à la première collecte, repris de `last_successful_run`."""
+    name = f"{OTX_STATE_PREFIX}{feed.id}"
+    state = await session.get(CollectorState, name)
+    if state is None:
+        state = CollectorState(name=name, cursor=_as_utc(feed.last_successful_run), items=0)
+        session.add(state)
+    return state
+
+
+async def _fetch_otx_feed(
+    session: AsyncSession,
+    feed: ThreatFeed,
+    fetch: Fetcher,
+    report: CollectionReport,
+    clock: Callable[[], datetime],
+) -> tuple[ParseResult, Callable[[], None]]:
+    state = await _otx_state(session, feed)
+    window_start = _as_utc(state.last_success_at) or clock()
+    start_page = (state.items or 0) + 1
+    outcome = await fetch_otx(
+        feed.url,
+        settings=get_settings(),
+        fetch=fetch,
+        since=_as_utc(state.cursor),
+        start_page=start_page,
+    )
+    next_page = start_page + outcome.pages
+    if outcome.truncated:
+        report.warning = (
+            f"Collecte OTX limitée à {outcome.pages} pages (OTX_MAX_PAGES) : reprise à la "
+            f"page {next_page} à la prochaine collecte."
         )
-        if outcome.truncated:
-            report.warning = (
-                f"Collecte OTX tronquée à {outcome.pages} pages : augmentez OTX_MAX_PAGES "
-                "pour ne pas manquer de pulses."
-            )
-        return outcome.parsed
+    elif outcome.interrupted is not None:
+        report.warning = _safe_message(
+            f"Collecte OTX interrompue page {next_page} ({outcome.interrupted}) : "
+            f"{outcome.pages} page(s) conservée(s), reprise à la prochaine collecte."
+        )
+
+    def record_progress() -> None:
+        if outcome.complete:
+            state.cursor, state.items, state.last_success_at = window_start, 0, None
+        else:
+            state.items, state.last_success_at = next_page - 1, window_start
+
+    return outcome.parsed, record_progress
+
+
+async def _fetch_and_parse(
+    session: AsyncSession,
+    feed: ThreatFeed,
+    fetch: Fetcher,
+    report: CollectionReport,
+    clock: Callable[[], datetime],
+) -> tuple[ParseResult, Callable[[], None] | None]:
+    if FeedType(feed.feed_type) is FeedType.OTX:
+        return await _fetch_otx_feed(session, feed, fetch, report, clock)
     if FeedType(feed.feed_type) is FeedType.TAXII:
         settings = get_settings()
         # Production (fetcher par défaut) : client taxii2-client. Un fetcher injecté (tests)
@@ -169,10 +220,10 @@ async def _fetch_and_parse(
         )
         if truncated:
             report.warning = f"Collecte TAXII tronquée à {pages} pages : augmentez TAXII_MAX_PAGES."
-        return parsed
+        return parsed, None
     content = await fetch(feed.url)
     report.fetched_bytes = len(content)
-    return parse_feed(content, FeedType(feed.feed_type))
+    return parse_feed(content, FeedType(feed.feed_type)), None
 
 
 def _log_report(feed: ThreatFeed, report: CollectionReport) -> None:

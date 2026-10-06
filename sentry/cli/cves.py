@@ -75,6 +75,16 @@ def cves() -> None:
     configure_logging(get_settings().log_level)
 
 
+def _nvd_pace(steps: tuple[str, ...]) -> str:
+    """Rythme NVD annoncé, conforme à la configuration réelle (clé présente ou non)."""
+    if "nvd" not in steps:
+        return ""
+    key = get_settings().nvd_api_key
+    if key is not None and key.get_secret_value():
+        return " (NVD avec clé : ≈ 0,6 s par page)"
+    return " (NVD sans clé : ≈ 6 s par page ; NVD_API_KEY accélère d'un facteur 10)"
+
+
 @cves.command("sync")
 @click.option(
     "--only",
@@ -85,7 +95,7 @@ def cves() -> None:
 def cves_sync(only: tuple[str, ...]) -> None:
     """Synchronise KEV, NVD et EPSS, recalcule les scores et émet les alertes."""
     steps = tuple(s for s in ("kev", "nvd", "epss") if not only or s in only)
-    console.print(f"Synchronisation : {', '.join(steps)} (NVD sans clé : ≈ 6 s par page)…")
+    console.print(f"Synchronisation : {', '.join(steps)}{_nvd_pace(steps)}…")
 
     async def _sync(session: AsyncSession) -> SyncReport:
         return await run_cve_sync(session, steps)

@@ -7,6 +7,18 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Corrigé — collecte OTX (06/10, soirée)
+Constaté lors de la première collecte réelle d'un compte OTX abonné à plus de 1 000 pulses :
+- **Fin du « tout ou rien »** : une erreur réseau après la première page (ex. `ReadTimeout`
+  après 17 min) annulait toute la collecte ; les pages déjà lues sont désormais ingérées et
+  la collecte est signalée « interrompue ».
+- **Curseur gelé tant que la fenêtre n'est pas épuisée** : une collecte tronquée
+  (`OTX_MAX_PAGES`) avançait `modified_since` à l'heure de fin, et les pulses au-delà de la
+  dernière page lue n'étaient plus jamais demandés. La collecte suivante reprend maintenant à
+  la première page non lue (avancement dans `collector_state`, entrée `otx:<id du flux>`).
+- `sentry cves sync` annonçait « NVD sans clé » même avec `NVD_API_KEY` : le rythme affiché
+  suit désormais la configuration.
+
 ### Corrigé — clone neuf sur Kali (06/10)
 Un clone neuf suivi du démarrage rapide du README a révélé des défauts invisibles en CI, où
 aucun `.env` n'existe :

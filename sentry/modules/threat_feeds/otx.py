@@ -15,9 +15,11 @@ Règles :
   chaque lien `next` l'est aussi. Le fetcher refuse toute redirection vers un autre hôte.
 - **Incrémental** : `modified_since` = dernier succès moins une marge de 15 min (horloges
   décalées, pulses modifiés pendant la collecte). Les IOC re-rapportés sont dédupliqués.
-- **Bornes** : au plus `OTX_MAX_PAGES` pages par collecte. Au-delà, la collecte réussit
-  mais est signalée **tronquée** : les pages suivantes seront manquées si le curseur
-  avance. Pour une première collecte d'un compte très abonné, augmenter la limite.
+- **Bornes et reprise** : au plus `OTX_MAX_PAGES` pages par collecte. Au-delà, la collecte
+  réussit mais est signalée **tronquée** ; une page en échec après la première arrête la
+  collecte sans perdre les pages déjà lues (**interrompue**). Dans les deux cas, le curseur
+  `modified_since` n'avance pas : la collecte suivante reprend à la page non lue
+  (`start_page`, géré par le collecteur), jusqu'à épuisement de la fenêtre.
 - **Types** : seuls les types d'IOC gérés par SENTRY sont retenus ; les autres (CVE,
   YARA, CIDR, mutex, chemins…) sont comptés comme ignorés, pas comme rejetés.
 """
@@ -69,6 +71,13 @@ class OTXResult:
     pages: int = 0
     pulses: int = 0
     truncated: bool = False
+    # Erreur survenue après au moins une page lue : les pages lues restent exploitables.
+    interrupted: str | None = None
+
+    @property
+    def complete(self) -> bool:
+        """Toute la fenêtre a été lue : le curseur peut avancer."""
+        return not self.truncated and self.interrupted is None
 
 
 def _ensure_otx_url(url: str) -> None:
@@ -87,6 +96,16 @@ def with_modified_since(url: str, since: datetime | None) -> str:
     parts = urlsplit(url)
     query = [(k, v) for k, v in parse_qsl(parts.query) if k != "modified_since"]
     query.append(("modified_since", (since - SINCE_OVERLAP).strftime("%Y-%m-%dT%H:%M:%S")))
+    return urlunsplit(parts._replace(query=urlencode(query)))
+
+
+def with_page(url: str, page: int) -> str:
+    """Positionne le paramètre `page` (1 = première page, paramètre omis)."""
+    if page <= 1:
+        return url
+    parts = urlsplit(url)
+    query = [(k, v) for k, v in parse_qsl(parts.query) if k != "page"]
+    query.append(("page", str(page)))
     return urlunsplit(parts._replace(query=urlencode(query)))
 
 
@@ -140,12 +159,18 @@ async def fetch_otx(
     settings: Settings,
     fetch: HeaderFetcher,
     since: datetime | None = None,
+    start_page: int = 1,
 ) -> OTXResult:
     """Parcourt les pages de pulses abonnés et agrège les observations.
 
+    `start_page` > 1 reprend une collecte précédente tronquée ou interrompue. Une erreur
+    réseau ou de lecture après la première page lue n'annule pas la collecte : elle
+    s'arrête là et le signale (`interrupted`).
+
     Raises:
-        FetchError: clé absente, URL ou lien `next` hors de l'API OTX, échec réseau.
-        FeedParseError: réponse illisible.
+        FetchError: clé absente, URL ou lien `next` hors de l'API OTX, échec réseau sur la
+            première page.
+        FeedParseError: première page illisible.
     """
     key = settings.otx_api_key.get_secret_value() if settings.otx_api_key else ""
     if not key:
@@ -155,14 +180,21 @@ async def fetch_otx(
     headers = {API_KEY_HEADER: key, "Accept": "application/json"}
 
     outcome = OTXResult()
-    page_url: str | None = with_modified_since(url, since)
+    page_url: str | None = with_modified_since(with_page(url, start_page), since)
     while page_url is not None:
         if outcome.pages >= settings.otx_max_pages:
             outcome.truncated = True
             break
+        # Hors du `try` : une destination refusée est une faute de sécurité, jamais tolérée.
         _ensure_otx_url(page_url)
-        content = await fetch(page_url, headers=headers)
-        parsed, pulses, page_url = parse_otx_page(content)
+        try:
+            content = await fetch(page_url, headers=headers)
+            parsed, pulses, page_url = parse_otx_page(content)
+        except (FetchError, FeedParseError) as exc:
+            if outcome.pages == 0:
+                raise
+            outcome.interrupted = str(exc)
+            break
         outcome.pages += 1
         outcome.pulses += pulses
         outcome.parsed.observations.extend(parsed.observations)

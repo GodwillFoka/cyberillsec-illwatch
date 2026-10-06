@@ -219,6 +219,19 @@ migration (montée, descente) y auraient été envoyés. Une `MIGRATION_DATABASE
 dans le shell doit viser une base dont le nom finit par `_test`, sinon la suite refuse de
 démarrer.
 
+## 7 ter. Collecte OTX : reprise et remise à zéro
+
+Une collecte OTX limitée par `OTX_MAX_PAGES` ou interrompue par une erreur réseau garde les
+pages lues et ne fait pas avancer son curseur : la collecte suivante reprend à la première
+page non lue. Pour rattraper un gros historique, relancer `sentry feeds fetch "<nom du flux>"`
+jusqu'à disparition de l'avertissement. Pour tout relire depuis le début :
+
+```bash
+docker compose exec -T postgres psql -U sentry -d sentry \
+  -c "DELETE FROM collector_state WHERE name LIKE 'otx:%';" \
+  -c "UPDATE threat_feeds SET last_successful_run = NULL WHERE feed_type = 'OTX';"
+```
+
 ## 8. Spécificités Kali Linux
 
 - Le paquet système `python3-sqlalchemy` peut être plus ancien que celui de la CI : toujours
