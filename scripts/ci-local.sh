@@ -16,6 +16,11 @@ set -euo pipefail
 PG_URL_BASE="${CI_LOCAL_PG:-postgresql+asyncpg://sentry:sentry@localhost:5433}"
 export SECRET_KEY="${SECRET_KEY:-ci-secret-key-not-for-production}"
 export ENVIRONMENT=development
+# Comme en CI : aucun `.env` lu. Celui du poste définit MIGRATION_DATABASE_URL vers la base
+# de travail ; l'étape 2b (`alembic downgrade base`) aurait alors vidé cette base au lieu de
+# la base jetable. Les variables héritées du shell sont écartées pour la même raison.
+export SENTRY_ENV_FILE=""
+unset MIGRATION_DATABASE_URL DATABASE_APP_ROLE
 
 step() { printf '\n\033[1;36m▶ %s\033[0m\n' "$1"; }
 ok()   { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }

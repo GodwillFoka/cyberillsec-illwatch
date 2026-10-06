@@ -7,6 +7,31 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Corrigé — clone neuf sur Kali (06/10)
+Un clone neuf suivi du démarrage rapide du README a révélé des défauts invisibles en CI, où
+aucun `.env` n'existe :
+- **Tests et CI locale isolés du `.env`** : `MIGRATION_DATABASE_URL` du `.env` de poste
+  envoyait les migrations des tests vers la base de travail, et l'étape 2b de
+  `scripts/ci-local.sh` (`alembic downgrade base`) l'aurait vidée. Les tests et `ci-local.sh`
+  ne lisent plus aucun fichier (`SENTRY_ENV_FILE=`), et la suite refuse une
+  `MIGRATION_DATABASE_URL` qui ne vise pas une base `_test`.
+- `.env.example` copié tel quel ne démarrait pas (`DOCS_ENABLED=`, `HSTS_ENABLED=` vides
+  refusés) : une variable vide prend désormais sa valeur par défaut (`env_ignore_empty`).
+- `sentry db init` sur un volume antérieur à M7 affichait « Échec de la migration » alors que
+  les migrations étaient passées ; le message nomme désormais la commande à lancer
+  (`sentry db app-role sentry_app --create`).
+- Scénario SOC : arrêt explicite (code 2, action à mener) sur API injoignable, comptes absents
+  ou base vide, au lieu d'une trace `IndexError` ou `HTTPStatusError`.
+- `sentry status` : le critère M3 « Alerting actif » vérifie seulement la ligne de base ;
+  renommé « Alerting : ligne de base établie ».
+
+### Ajouté
+- `SENTRY_ENV_FILE` : choisit le fichier de configuration lu au démarrage (vide : aucun).
+- `sentry users set-password` : réinitialisation d'un mot de passe (politique appliquée,
+  sessions révoquées, `user.password_reset` au journal d'audit) ; il fallait jusqu'ici une
+  requête SQL manuelle.
+- CI GitHub : étape « clone neuf » qui copie `.env.example` en `.env` avant les tests.
+
 ### Ajouté — Miroir GitHub et distribution (06/10, ADR-015)
 - CI GitHub Actions miroir de `.gitlab-ci.yml` : ruff, mypy, pytest 3.12/3.14 sur PostgreSQL 16
   et Redis 7, migrations aller-retour, image Docker, fichiers Compose, pip-audit et bandit.

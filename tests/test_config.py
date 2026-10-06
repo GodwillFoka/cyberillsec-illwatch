@@ -1,9 +1,11 @@
 """Tests de la validation de configuration au démarrage — RF-01 / règle de gestion MOD-01."""
 
+from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
 
-from sentry.app.config import DEFAULT_SECRET_KEY, Settings
+from sentry.app.config import DEFAULT_SECRET_KEY, ENV_FILE_VARIABLE, Settings, _env_file
 
 STRONG_SECRET = "a" * 64
 PROD_DB = "postgresql+asyncpg://sentry_app:Zq7%3Along-random@db:5432/sentry"
@@ -62,3 +64,38 @@ def test_configuration_est_immuable() -> None:
     settings = Settings(secret_key=STRONG_SECRET)
     with pytest.raises(ValidationError):
         settings.environment = "production"  # type: ignore[misc]
+
+
+# --- Clone neuf : `.env.example` copié tel quel doit démarrer ------------------------------------
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_env_example_copie_tel_quel_se_charge() -> None:
+    """`cp .env.example .env` puis démarrage : les booléens vides ne doivent rien casser."""
+    settings = Settings(_env_file=REPO_ROOT / ".env.example")  # type: ignore[call-arg]
+    assert settings.docs_enabled is None and settings.expose_docs is True
+    assert settings.hsts_enabled is None and settings.send_hsts is False
+    assert settings.secret_key_previous is None
+    assert settings.nvd_api_key is None and settings.otx_api_key is None
+
+
+def test_variable_vide_vaut_valeur_par_defaut(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DOCS_ENABLED", "")
+    monkeypatch.setenv("HSTS_ENABLED", "")
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    assert settings.docs_enabled is None and settings.hsts_enabled is None
+
+
+def test_sentry_env_file_choisit_ou_desactive_le_fichier(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv(ENV_FILE_VARIABLE, raising=False)
+    assert _env_file() == ".env"
+    monkeypatch.setenv(ENV_FILE_VARIABLE, "/etc/sentry/env")
+    assert _env_file() == "/etc/sentry/env"
+    monkeypatch.setenv(ENV_FILE_VARIABLE, "")
+    assert _env_file() is None
+
+
+def test_les_tests_ne_lisent_aucun_env() -> None:
+    """Garde-fou : un `.env` de poste ne doit jamais influencer la suite (ni ses migrations)."""
+    assert Settings.model_config.get("env_file") is None

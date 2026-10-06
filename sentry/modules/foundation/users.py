@@ -59,6 +59,17 @@ async def create_user(
     return user
 
 
+async def set_password(session: AsyncSession, user: User, password: str) -> None:
+    """Remplace le mot de passe d'un compte, après validation de la politique.
+
+    Raises:
+        WeakPasswordError: mot de passe trop court.
+    """
+    validate_password_policy(password)
+    user.hashed_password = hash_password(password)
+    await session.flush()
+
+
 async def authenticate(session: AsyncSession, username: str, password: str) -> User | None:
     """Retourne l'utilisateur si les identifiants sont valides, sinon `None`.
 

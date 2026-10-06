@@ -5,6 +5,7 @@ et validée par Pydantic au démarrage. Aucune requête applicative ne doit
 s'exécuter si la validation échoue (règle de gestion MOD-01).
 """
 
+import os
 from functools import lru_cache
 from typing import Literal, Self
 from urllib.parse import unquote, urlsplit
@@ -19,14 +20,29 @@ INSECURE_SECRET_KEYS = frozenset({DEFAULT_SECRET_KEY, "changeme", "secret", "sen
 MIN_PRODUCTION_SECRET_LENGTH = 32
 INSECURE_REDIS_PASSWORDS = frozenset({"sentry-dev-redis", "redis", "password", "changeme"})
 INSECURE_DB_PASSWORDS = frozenset({"sentry", "sentry-app-dev", "postgres", "password", "changeme"})
+ENV_FILE_VARIABLE = "SENTRY_ENV_FILE"
+
+
+def _env_file() -> str | None:
+    """Fichier de configuration lu au démarrage : `.env` par défaut.
+
+    `SENTRY_ENV_FILE=/etc/sentry/env` désigne un autre fichier ; `SENTRY_ENV_FILE=` (vide)
+    n'en lit aucun. La suite de tests et `scripts/ci-local.sh` s'en servent : un `.env` de
+    développement ne doit jamais rediriger les tests (ni leurs migrations) vers une autre base.
+    """
+    value = os.environ.get(ENV_FILE_VARIABLE, ".env")
+    return value or None
 
 
 class Settings(BaseSettings):
     """Variables d'environnement typées de SENTRY."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_env_file(),
         env_file_encoding="utf-8",
+        # `DOCS_ENABLED=` (vide, comme dans .env.example) vaut « non défini » : valeur par défaut.
+        # Sans cette règle, une variable vide faisait échouer la validation au démarrage.
+        env_ignore_empty=True,
         case_sensitive=False,
         extra="ignore",
         frozen=True,

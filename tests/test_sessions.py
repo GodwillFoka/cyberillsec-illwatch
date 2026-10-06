@@ -345,6 +345,43 @@ def test_cli_desactivation_revoque_les_sessions() -> None:
     assert _audit_actions(name) >= {"user.disable", "user.enable", "user.revoke_sessions"}
 
 
+# --- Réinitialisation de mot de passe (clone neuf du 06/10) ---------------------------------------
+
+
+async def test_set_password_remplace_le_mot_de_passe(db_session: AsyncSession) -> None:
+    from sentry.app.security import WeakPasswordError
+    from sentry.modules.foundation.users import authenticate, set_password
+
+    name = f"pwd-{uuid4().hex[:6]}"
+    user = await create_user(db_session, username=name, email=f"{name}@x.test", password=PASSWORD)
+    with pytest.raises(WeakPasswordError):
+        await set_password(db_session, user, "court")
+    await set_password(db_session, user, "un-autre-mot-de-passe-solide")
+    assert await authenticate(db_session, name, "un-autre-mot-de-passe-solide") is not None
+    assert await authenticate(db_session, name, PASSWORD) is None
+
+
+@pytest.mark.postgres
+def test_cli_reinitialisation_du_mot_de_passe() -> None:
+    from sentry.cli.main import cli
+
+    runner = CliRunner()
+    name = f"cli-pwd-{uuid4().hex[:6]}"
+    args = ["users", "create", "--username", name, "--email", f"{name}@x.test"]
+    created = runner.invoke(cli, [*args, "--password", PASSWORD])
+    assert created.exit_code == 0, created.output
+
+    weak = runner.invoke(cli, ["users", "set-password", name, "--password", "court"])
+    assert weak.exit_code == 1 and "12 caractères" in weak.output
+    reset = runner.invoke(
+        cli, ["users", "set-password", name, "--password", "un-autre-mot-de-passe-solide"]
+    )
+    assert reset.exit_code == 0 and "réinitialisé" in reset.output, reset.output
+    unknown = runner.invoke(cli, ["users", "set-password", "inconnu-xyz", "--password", PASSWORD])
+    assert unknown.exit_code == 1
+    assert "user.password_reset" in _audit_actions(name)
+
+
 def _audit_actions(username: str) -> set[str]:
     async def _load() -> set[str]:
         engine = create_async_engine(os.environ["DATABASE_URL"], poolclass=NullPool)

@@ -53,7 +53,9 @@ async def _apply(conn: AsyncConnection, role: str) -> GrantReport:
         await conn.execute(text("SELECT rolsuper FROM pg_roles WHERE rolname = :r"), {"r": role})
     ).first()
     if flags is None:
-        raise AppRoleError(f"Le rôle {role} n'existe pas (option --create).")
+        raise AppRoleError(
+            f"Le rôle {role} n'existe pas. Créez-le : sentry db app-role {role} --create"
+        )
     if flags[0]:
         raise AppRoleError(f"{role} est superutilisateur : la séparation serait sans effet.")
     owned: int = (

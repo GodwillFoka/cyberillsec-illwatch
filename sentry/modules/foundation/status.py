@@ -239,7 +239,7 @@ async def _compute_m3(session: AsyncSession, status: ProjectStatus, moment: date
             f"{coverage:.0%} de {status.cves_total} CVE",
         ),
         Criterion(
-            "Alerting actif (ligne de base établie)",
+            "Alerting : ligne de base établie",
             baseline is not None and baseline.last_success_at is not None,
             f"{status.alerts_total} alerte(s), {status.alerts_open} non acquittée(s)",
         ),

@@ -43,9 +43,23 @@ def login(c: httpx.Client, user: str, password: str = PASSWORD) -> httpx.Respons
     )
 
 
+class PrerequisiteError(Exception):
+    """L'instance n'est pas prête pour le scénario : message d'action, sans trace Python."""
+
+
+EMPTY_BASE_HINT = (
+    "base vide : lancez d'abord `sentry feeds fetch-all --force` puis `sentry cves sync`"
+)
+
+
 def headers(c: httpx.Client, user: str) -> dict[str, str]:
     r = login(c, user)
-    r.raise_for_status()
+    if r.status_code != 200:
+        raise PrerequisiteError(
+            f"connexion refusée pour « {user} » (HTTP {r.status_code}). Créez les comptes "
+            "admin, analyst, analyst2 (ANALYST) et viewer avec le mot de passe SCENARIO_PASSWORD "
+            "(`sentry users create`, ou `sentry users set-password` pour un compte existant)."
+        )
     return {"Authorization": f"Bearer {r.json()['access_token']}"}
 
 
@@ -61,6 +75,8 @@ def main() -> int:
         iocs.status_code == 200 and iocs.json()["total"] > 0,
         f"{iocs.json().get('total')} IOC",
     )
+    if not iocs.json().get("items"):
+        raise PrerequisiteError(f"aucun IOC — {EMPTY_BASE_HINT}")
     ioc = iocs.json()["items"][0]
     detail = call(c, "GET", f"{API}/indicators/{ioc['id']}", "iocs", headers=vie).json()
     check(
@@ -76,6 +92,8 @@ def main() -> int:
         cves.status_code == 200 and cves.json()["total"] > 0,
         f"{cves.json().get('total')} CVE",
     )
+    if not cves.json().get("items"):
+        raise PrerequisiteError(f"aucune CVE — {EMPTY_BASE_HINT}")
     cve = cves.json()["items"][0]
     cdet = call(c, "GET", f"{API}/cves/{cve['id']}", "cves", headers=vie)
     check("Décomposition du score d'une CVE", cdet.status_code == 200, cve["id"])
@@ -391,4 +409,11 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except httpx.ConnectError:
+        print(f"✘ SENTRY injoignable sur {BASE} : démarrez l'API (uvicorn) avant le scénario.")
+        sys.exit(2)
+    except PrerequisiteError as exc:
+        print(f"✘ Prérequis manquant : {exc}")
+        sys.exit(2)

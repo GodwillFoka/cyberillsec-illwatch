@@ -14,6 +14,10 @@ from collections.abc import AsyncGenerator
 
 import pytest
 
+# Jamais de `.env` dans les tests : celui du poste de développement (DEBUG=true,
+# MIGRATION_DATABASE_URL vers la base de travail…) faisait échouer des tests et, surtout,
+# envoyait leurs migrations sur la base de travail. Positionné avant tout import de `sentry`.
+os.environ["SENTRY_ENV_FILE"] = ""
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-at-least-32-bytes-long")
@@ -47,18 +51,24 @@ def _guard_against_non_test_database() -> None:
     `alembic downgrade base`). Pointés par erreur sur la base de travail, ils
     effaceraient les flux et les IOC collectés. Le nom doit donc finir par `_test`.
     """
-    if not IS_POSTGRES:
-        return
     from sqlalchemy.engine import make_url
 
-    database = make_url(TEST_DATABASE_URL).database or ""
-    if not database.endswith(TEST_DATABASE_SUFFIX):
-        pytest.exit(
-            f"Base « {database} » refusée : la suite de tests détruit le schéma de la base "
-            f"visée. Utilisez une base dédiée dont le nom finit par « {TEST_DATABASE_SUFFIX} » "
-            f"(ex. …/sentry{TEST_DATABASE_SUFFIX}).",
-            returncode=4,
-        )
+    # Alembic suit MIGRATION_DATABASE_URL quand elle est définie : elle doit, elle aussi,
+    # viser une base de test, sinon les tests de migration montent et descendent le schéma
+    # de la base de travail.
+    urls = {"DATABASE_URL": TEST_DATABASE_URL if IS_POSTGRES else ""}
+    urls["MIGRATION_DATABASE_URL"] = os.environ.get("MIGRATION_DATABASE_URL", "")
+    for variable, url in urls.items():
+        if not url.startswith("postgresql"):
+            continue
+        database = make_url(url).database or ""
+        if not database.endswith(TEST_DATABASE_SUFFIX):
+            pytest.exit(
+                f"{variable} : base « {database} » refusée. La suite de tests détruit le "
+                f"schéma de la base visée ; utilisez une base dédiée dont le nom finit par "
+                f"« {TEST_DATABASE_SUFFIX} » (ex. …/sentry{TEST_DATABASE_SUFFIX}).",
+                returncode=4,
+            )
 
 
 def pytest_configure(config: pytest.Config) -> None:

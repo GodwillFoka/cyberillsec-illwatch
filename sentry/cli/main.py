@@ -98,11 +98,17 @@ def _run_migration(action: str, revision: str) -> None:
             migrations.upgrade(revision)
         else:
             migrations.downgrade(revision)
-        _regrant_app_role()
     except Exception as exc:  # noqa: BLE001 - diagnostic CLI, l'erreur est affichée puis propagée
         console.print(f"[red]Échec de la migration :[/] {exc}")
         raise SystemExit(1) from exc
     console.print(f"[green]Migration {action} → {revision} appliquée.[/]")
+    try:
+        _regrant_app_role()
+    except Exception as exc:  # noqa: BLE001 - rôle absent, droits insuffisants : affiché
+        # Les migrations sont passées : seuls les droits du rôle applicatif manquent (par
+        # exemple, volume PostgreSQL antérieur à M7 dont le rôle n'a jamais été créé).
+        console.print(f"[red]Droits du rôle applicatif non posés :[/] {exc}")
+        raise SystemExit(1) from exc
 
 
 def _regrant_app_role() -> None:
@@ -276,6 +282,55 @@ def users_create(username: str, email: str, role: str, password: str) -> None:
         console.print(f"[red]Refusé :[/] {exc}")
         raise SystemExit(1) from exc
     console.print(f"[green]Compte créé :[/] {created} ({role.upper()})")
+
+
+@users.command("set-password")
+@click.argument("username")
+@click.password_option(
+    "--password",
+    help=f"Nouveau mot de passe (≥ {MIN_PASSWORD_LENGTH} caractères). Demandé si absent.",
+)
+def users_set_password(username: str, password: str) -> None:
+    """Réinitialise le mot de passe d'un compte et révoque toutes ses sessions.
+
+    Les jetons d'accès déjà émis restent valides jusqu'à leur expiration
+    (ACCESS_TOKEN_EXPIRE_MINUTES) ; pour couper l'accès immédiatement : `users disable`.
+    """
+    from sentry.app.database import dispose_engine, get_session_factory
+    from sentry.app.security import WeakPasswordError
+    from sentry.modules.foundation.audit import cli_actor, record_in_session
+    from sentry.modules.foundation.sessions import revoke_user_sessions
+    from sentry.modules.foundation.users import get_user_by_username, set_password
+
+    async def _apply() -> tuple[str, int]:
+        try:
+            async with get_session_factory()() as session:
+                user = await get_user_by_username(session, username)
+                if user is None:
+                    raise click.ClickException(f"Compte introuvable : {username}")
+                await set_password(session, user, password)
+                revoked = await revoke_user_sessions(session, user.id, "password_reset")
+                await record_in_session(
+                    session,
+                    "user.password_reset",
+                    actor_name=cli_actor(),
+                    target_type="user",
+                    target_id=user.id,
+                    detail={"username": user.username, "sessions_revoked": revoked},
+                )
+                await session.commit()
+                return user.username, revoked
+        finally:
+            await dispose_engine()
+
+    try:
+        name, revoked = asyncio.run(_apply())
+    except WeakPasswordError as exc:
+        console.print(f"[red]Refusé :[/] {exc}")
+        raise SystemExit(1) from exc
+    console.print(
+        f"[green]Mot de passe de {name} réinitialisé[/], {revoked} session(s) révoquée(s)."
+    )
 
 
 def _user_action(username: str, *, active: bool | None, reason: str) -> tuple[str, int]:
