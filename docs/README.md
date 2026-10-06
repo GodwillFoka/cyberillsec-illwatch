@@ -22,7 +22,7 @@ Code : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-sentry)
 | [`ROADMAP.md`](ROADMAP.md) | Trajectoire M7 → M11 vers la v0.2.0 « Production Candidate », critères de sortie. |
 | [`rapport/`](rapport/index.md) | Rapports d'avancement, bilans d'étape et audits (site de documentation). |
 | [`adr/`](adr/README.md) | Architecture Decision Records — décisions tracées avec leur contexte et leurs conséquences. |
-| [`pdf/`](pdf/) | Documents fondateurs d'origine, conservés tels quels. |
+| `pdf/` | Documents fondateurs d'origine, conservés tels quels : [Cahier des charges](pdf/SENTRY_Cahier_des_Charges.pdf), [Product Vision](pdf/CYBERILL-SENTRY-PRODUCT-VISION_3.pdf). |
 
 ## Hiérarchie des sources
 
