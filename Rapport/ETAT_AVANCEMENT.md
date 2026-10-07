@@ -1,6 +1,6 @@
 # SENTRY — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **07/10/2026, 22 h 45**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **07/10/2026, 23 h 10**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -20,7 +20,7 @@ données réelles, en local et en CI.
 | M4 Incidents | ✅ | incident mené jusqu'à la clôture |
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
-| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 à trancher ; **VPS UE à faire** |
+| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 accepté (A + B + C), branche prête ; **VPS UE à faire** |
 | M8 Detection & Correlation | ⏳ | — |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
@@ -30,12 +30,13 @@ données réelles, en local et en CI.
 |---|---|---|
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Rattrapage de l'historique OTX (Kali) | — | ✅ historique entièrement lu le 07/10 ; collecte incrémentale ensuite |
-| ADR-014 (score sans EPSS, plancher KEV) | — | 🟡 chiffré sur la base réelle, **décision attendue** |
+| ADR-014 (score sans EPSS, plancher KEV) | `feat/adr-014-score` | 🟡 **accepté le 07/10 (A + B + C)** ; codé, CI verte (463 tests) ; reste fusion + `sentry cves rescore` sur Kali |
 
 ## 4. Journal des livraisons
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 07/10 | `6d0ff40` *(branche)* | ADR-014 : plancher KEV ⇒ P1, motif `+floor_kev`, `sentry cves rescore`, test panne EPSS |
 | 07/10 | `5b55f64` | État d'avancement vivant créé |
 | 07/10 | `3422168` | Export par clé au lieu d'`OFFSET`, envoi par paquets ; tableau de bord en 2 lectures au lieu de 5 |
 | 07/10 | `fa73bd6` | URL au port invalide rejetée seule (bloquait le rattrapage OTX de nuit) |
@@ -47,7 +48,7 @@ données réelles, en local et en CI.
 
 | Indicateur | Valeur | Date |
 |---|---|---|
-| Tests (CI) | 454 / 454, Python 3.12 et 3.14 | 07/10 (`fa73bd6`) |
+| Tests (CI) | 463 / 463, Python 3.12 et 3.14 | 07/10 (`6d0ff40`) |
 | Couverture | 93-94 % (seuil 80 %) | 07/10 |
 | Scénario SOC | 48 / 48, local (gros volume) et CI | 07/10 |
 | Sources saines | 7 / 9 (DigitalSide hors ligne depuis le 29/09) | 06/10 |
@@ -69,7 +70,7 @@ données réelles, en local et en CI.
 | Point | Impact | Action | État |
 |---|---|---|---|
 | Export des IOC légèrement au-dessus de la cible (16,6 s) | acceptable derrière un proxy (délai > 60 s) | sérialisation à optimiser en M8 si besoin | 🟡 |
-| ADR-014 non tranché | 612 CVE exploitées (KEV) en P2/P3, dont 10 en P3 ; une panne EPSS ferait tomber les 495 P0 | décision A + B + C recommandée | 🟡 |
+| 612 CVE exploitées (KEV) en P2/P3 | non conforme à la BOD 22-01 | ADR-014 accepté : plancher KEV codé, reclassement à lancer | 🟡 |
 | Plages CIDR rejetées (1 640 chez RedEye) | information perdue | type « réseau » au backlog M8 | ⏳ |
 | Analyses de sécurité GitLab non vérifiées sur M7 | SAST, secrets, dépendances | consulter *Build → Pipelines* | ⏳ |
 | Branches GitHub `feature/m7-production-hardening`, `maj/2026-10-06` | non ancêtres de `main` | vérifier leur contenu avant suppression | ⏳ |
@@ -78,7 +79,7 @@ données réelles, en local et en CI.
 
 ## 8. Prochaines étapes
 
-1. Trancher l'ADR-014, puis coder la décision (plancher KEV, dernier EPSS connu).
+1. Fusionner `feat/adr-014-score`, puis `sentry cves rescore` sur Kali (attendu : P1 627 → 1 239).
 2. Vérifier les analyses de sécurité GitLab sur `main`.
 3. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 4. Ouvrir M8 Detection & Correlation.
