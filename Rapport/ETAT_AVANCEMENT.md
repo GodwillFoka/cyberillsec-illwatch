@@ -1,6 +1,6 @@
 # SENTRY — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **07/10/2026, 19 h**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **07/10/2026, 19 h 05**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -20,7 +20,7 @@ données réelles, en local et en CI.
 | M4 Incidents | ✅ | incident mené jusqu'à la clôture |
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
-| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume en cours ; **VPS UE à faire** |
+| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; export 7× plus rapide ; **VPS UE à faire** |
 | M8 Detection & Correlation | ⏳ | — |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
@@ -28,14 +28,15 @@ données réelles, en local et en CI.
 
 | Chantier | Branche | État |
 |---|---|---|
-| Performances sur gros volume (export, tableau de bord) | `perf/export-streaming` | 🟡 codé, **CI verte (456 tests)**, mesure Kali à faire |
-| Rattrapage de l'historique OTX (Kali) | — | 🟡 relancé après le correctif `fa73bd6` |
+| Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné ; export 89 s → 12,9 s ; tableau de bord à confirmer |
+| Rattrapage de l'historique OTX (Kali) | — | 🟡 interrompu par erreur le 07/10 à 18 h 50 (`kill %1`), à relancer |
 
 ## 4. Journal des livraisons
 
 | Date | Commit | Contenu |
 |---|---|---|
-| 07/10 | `3422168` *(branche)* | Export par clé au lieu d'`OFFSET`, envoi par paquets ; tableau de bord en 2 lectures au lieu de 5 |
+| 07/10 | `5b55f64` | État d'avancement vivant créé |
+| 07/10 | `3422168` | Export par clé au lieu d'`OFFSET`, envoi par paquets ; tableau de bord en 2 lectures au lieu de 5 |
 | 07/10 | `fa73bd6` | URL au port invalide rejetée seule (bloquait le rattrapage OTX de nuit) |
 | 06/10 | `c11f00f` | Collecte OTX : reprise des collectes tronquées ou interrompues, message NVD |
 | 06/10 | `bdb4bc8` | Rapport du 06/10 (soirée), Markdown et PDF |
@@ -56,9 +57,9 @@ données réelles, en local et en CI.
 
 | Appel | Avant (07/10) | Après correctif | Cible |
 |---|---|---|---|
-| Export des IOC | 89 s | *à mesurer* | < 15 s |
+| Export des IOC | 89 s | **12,9 s** (max 13,4 s) ✔ | < 15 s |
 | Tableau de bord | 2,0 à 3,9 s | *à mesurer* | < 1 s |
-| Chasse sur la base complète | 5,7 s | — | < 10 s ✔ |
+| Chasse sur la base complète | 5,7 s | 5,8 s (inchangé) | < 10 s ✔ |
 | Export des CVE | 4,4 s | *à mesurer* | < 5 s ✔ |
 | Autres appels | < 0,6 s | — | ✔ |
 
@@ -66,7 +67,7 @@ données réelles, en local et en CI.
 
 | Point | Impact | Action | État |
 |---|---|---|---|
-| Export et tableau de bord lents | préproduction compromise | branche `perf/export-streaming` | 🟡 |
+| Export et tableau de bord lents | préproduction compromise | `5b55f64` : export ✔, tableau de bord à mesurer | 🟡 |
 | ADR-014 non tranché | sans EPSS, aucune CVE en P0 | décision | ⏳ |
 | Plages CIDR rejetées (1 640 chez RedEye) | information perdue | type « réseau » au backlog M8 | ⏳ |
 | Analyses de sécurité GitLab non vérifiées sur M7 | SAST, secrets, dépendances | consulter *Build → Pipelines* | ⏳ |
@@ -76,8 +77,8 @@ données réelles, en local et en CI.
 
 ## 8. Prochaines étapes
 
-1. Mesurer sur Kali puis fusionner `perf/export-streaming`.
-2. Finir le rattrapage OTX (Kali).
+1. Mesurer le tableau de bord après `5b55f64` (sans collecte en parallèle).
+2. Relancer et finir le rattrapage OTX (Kali).
 3. Trancher l'ADR-014.
 4. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 5. Ouvrir M8 Detection & Correlation.
