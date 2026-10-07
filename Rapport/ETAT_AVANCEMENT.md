@@ -1,9 +1,12 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 00 h 10**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 00 h 45**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
+
+> **08/10 — SENTRY devient ILLWATCH** (nom « Sentry » déjà pris). Code renommé et fusionné
+> (`4c1e220`, CI et validation réelle vertes) ; reste à renommer les dépôts et à migrer le poste Kali.
 
 ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
 v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés ; **reste le
@@ -28,6 +31,7 @@ données réelles, en local et en CI.
 
 | Chantier | Branche | État |
 |---|---|---|
+| **Renommage SENTRY → ILLWATCH** | `4c1e220` | ✅ code fusionné : 162 fichiers, CI 463/463, validation réelle verte ; ⏳ dépôts à renommer, poste Kali à migrer (`scripts/migrer-vers-illwatch.sh`) |
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ constaté sur `56ab581` : 0 Critical ; High 52 → 44, total 240 → 165 (−31 %) ; 44 High Debian sans correctif acceptées |
 | Analyse de code (SAST Semgrep GitLab) | `56ab581` | ✅ constaté : **0 constat** ; concorde avec bandit (CI GitHub) |
@@ -39,6 +43,7 @@ données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 08/10 | `4c1e220` | SENTRY → ILLWATCH : paquet, CLI, variables `ILLWATCH_*`, base `illwatch`, infra, docs, logo ; script de migration |
 | 07/10 | `56ab581` | Fusion : détection de secrets gitleaks en CI ; anciennes branches supprimées |
 | 07/10 | `a2fb367` | Fusion : image sans curl |
 | 07/10 | `62b7bf0` | Image sans curl, sonde de santé en Python, risque résiduel documenté |
@@ -55,7 +60,7 @@ données réelles, en local et en CI.
 
 | Indicateur | Valeur | Date |
 |---|---|---|
-| Tests (CI) | 463 / 463, Python 3.12 et 3.14 | 07/10 (`6d0ff40`) |
+| Tests (CI) | 463 / 463, Python 3.12 et 3.14 | 08/10 (`4c1e220`) |
 | Couverture | 93-94 % (seuil 80 %) | 07/10 |
 | Scénario SOC | 48 / 48, local (gros volume) et CI | 07/10 |
 | Sources saines | 7 / 9 (DigitalSide hors ligne depuis le 29/09) | 06/10 |
@@ -83,10 +88,12 @@ données réelles, en local et en CI.
 | Secrets dans l'historique Git | fuite de clés | gitleaks : 0 vrai secret sur 79 commits ; contrôle ajouté à chaque push | ✅ |
 | Analyse de code | vulnérabilités applicatives | SAST Semgrep GitLab : 0 constat (`56ab581`) ; bandit vert | ✅ |
 | Branches GitHub `feature/m7-production-hardening`, `maj/2026-10-06` | aucune (entièrement contenues dans `main`) | supprimées le 07/10 | ✅ |
+| Poste Kali encore sous SENTRY (base `sentry`) | la commande `illwatch` ne trouve pas la base | `scripts/migrer-vers-illwatch.sh` (sauvegarde, comptages, retour arrière) | ⏳ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
 | Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | — |
 
 ## 8. Prochaines étapes
 
-1. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
-2. Ouvrir M8 Detection & Correlation.
+1. Renommer les dépôts GitHub et GitLab en `cyberillsec-illwatch`, migrer le poste Kali.
+2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
+3. Ouvrir M8 Detection & Correlation.
