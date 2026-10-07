@@ -3,10 +3,12 @@
 import csv
 import io
 import json
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
+import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -204,3 +206,61 @@ async def test_api_tableau_de_bord(client: AsyncClient, db_session: AsyncSession
         await client.get("/api/v1/dashboard/export?dataset=x", headers=headers)
     ).status_code == 422
     assert (await client.get("/api/v1/dashboard/summary")).status_code == 401
+
+
+# --- Export sur gros volume (07/10 : 89 s pour 300 000 IOC) ------------------------------------
+
+
+async def test_export_pagine_par_cle_sans_perte_ni_doublon(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Pages de 2 lignes : chaque ligne une seule fois, dans l'ordre, ex æquo compris."""
+    from sentry.modules.dashboard import service
+
+    monkeypatch.setattr(service, "EXPORT_CHUNK", 2)
+    await ingest_indicators(
+        db_session, [Observation(f"h{i}.example.org") for i in range(7)], now=NOW
+    )
+    scores = [80.0, 80.0, 80.0, 50.0, 50.0, 10.0, 10.0]  # ex æquo à cheval sur deux pages
+    for i, score in enumerate(scores):
+        db_session.add(
+            CVE(
+                id=f"CVE-2026-1{i:03d}",
+                description="x",
+                published_date=NOW,
+                last_modified_date=NOW,
+                composite_risk_score=score,
+                priority=RiskPriority.P2_MOYEN,
+            )
+        )
+    await db_session.flush()
+
+    iocs = [row async for row in export_rows(db_session, Dataset.IOCS, now=NOW)]
+    ids = [r["id"] for r in iocs]
+    assert len(ids) == 7 and len(set(ids)) == 7 and ids == sorted(ids)
+
+    cves = [row async for row in export_rows(db_session, Dataset.CVES)]
+    assert [r["id"] for r in cves] == [f"CVE-2026-1{i:03d}" for i in range(7)]
+    assert [r["composite_risk_score"] for r in cves] == scores
+
+
+async def test_flux_regroupe_les_lignes(monkeypatch: pytest.MonkeyPatch) -> None:
+    from sentry.modules.dashboard import service
+
+    monkeypatch.setattr(service, "STREAM_BATCH", 3)
+
+    async def rows() -> AsyncIterator[dict[str, Any]]:
+        for i in range(10):
+            yield {"id": i, "value": f"v{i}"}
+
+    chunks = [c async for c in service.csv_stream(("id", "value"), rows())]
+    assert len(chunks) == 4  # en-tête + 10 lignes, par 3
+    assert list(csv.reader(io.StringIO("".join(chunks))))[-1] == ["9", "v9"]
+    as_json = "".join([c async for c in service.json_stream(rows())])
+    assert [r["id"] for r in json.loads(as_json)] == list(range(10))
+    assert "".join([c async for c in service.json_stream(_empty())]) == "[]"
+
+
+async def _empty() -> AsyncIterator[dict[str, Any]]:
+    return
+    yield {}

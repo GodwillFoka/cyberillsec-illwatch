@@ -22,7 +22,7 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Executable
 
@@ -41,6 +41,8 @@ from sentry.shared.enums import FeedStatus, IncidentStatus, RiskPriority
 
 RECENT_LIMIT = 200
 EXPORT_CHUNK = 1000
+# Lignes regroupées par envoi réseau : une écriture par ligne coûtait plus que la ligne elle-même.
+STREAM_BATCH = 500
 MTTR_WINDOW = timedelta(days=90)
 
 
@@ -106,21 +108,34 @@ async def compute_summary(session: AsyncSession, now: datetime | None = None) ->
         .having(func.count() >= 2)
         .subquery()
     )
+    # Deux lectures de la table des IOC au lieu de cinq (07/10 : 2 à 4 s sur 480 000 IOC) :
+    # les totaux en un passage (agrégats filtrés), puis les actifs par type et gravité.
+    totals = (
+        await session.execute(
+            select(
+                func.count(),
+                func.count().filter(active),
+                func.count().filter(Indicator.first_seen >= day_ago),
+            ).select_from(Indicator)
+        )
+    ).one()
+    by_type: dict[str, int] = {}
+    by_severity: dict[str, int] = {}
+    grouped = await session.execute(
+        select(Indicator.type, Indicator.severity, func.count())
+        .where(active)
+        .group_by(Indicator.type, Indicator.severity)
+    )
+    for ioc_type, severity, count in grouped.all():
+        by_type[str(ioc_type)] = by_type.get(str(ioc_type), 0) + int(count)
+        by_severity[str(severity)] = by_severity.get(str(severity), 0) + int(count)
     summary.iocs = {
-        "total": await _count(session, select(func.count()).select_from(Indicator)),
-        "active": await _count(session, select(func.count()).select_from(Indicator).where(active)),
-        "new_24h": await _count(
-            session,
-            select(func.count()).select_from(Indicator).where(Indicator.first_seen >= day_ago),
-        ),
+        "total": int(totals[0]),
+        "active": int(totals[1]),
+        "new_24h": int(totals[2]),
         "multi_source": await _count(session, select(func.count()).select_from(multi)),
-        "active_by_type": await _grouped(
-            session, select(Indicator.type, func.count()).where(active).group_by(Indicator.type)
-        ),
-        "active_by_severity": await _grouped(
-            session,
-            select(Indicator.severity, func.count()).where(active).group_by(Indicator.severity),
-        ),
+        "active_by_type": by_type,
+        "active_by_severity": by_severity,
     }
 
     by_priority = await _grouped(session, select(CVE.priority, func.count()).group_by(CVE.priority))
@@ -365,23 +380,43 @@ async def export_rows(
 
     `iocs` n'exporte que les IOC actifs (non expirés) : un export sert à alimenter un
     équipement de blocage, pas à archiver l'historique.
+
+    Pagination par clé (`WHERE clé > dernière clé`), jamais par `OFFSET` : avec `OFFSET`, la
+    page n relisait les n × 1 000 lignes précédentes (coût quadratique : 89 s pour 300 000
+    IOC le 07/10). Seules les colonnes exportées sont lues, sans construire d'objets ORM.
     """
-    model = _MODELS[Dataset(dataset)]
-    columns = COLUMNS[Dataset(dataset)]
-    statement = select(model).order_by(model.id)
+    dataset = Dataset(dataset)
+    model = _MODELS[dataset]
+    columns = COLUMNS[dataset]
+    by_score = dataset is Dataset.CVES  # les CVE les plus risquées d'abord
+    selected = [getattr(model, c) for c in columns]
+    order = (model.composite_risk_score.desc(), model.id) if by_score else (model.id,)
+    base = select(*selected).order_by(*order).limit(EXPORT_CHUNK)
     if dataset is Dataset.IOCS:
-        statement = statement.where(is_active_clause(now or datetime.now(UTC)))
-    elif dataset is Dataset.CVES:
-        statement = select(model).order_by(model.composite_risk_score.desc(), model.id)
-    offset = 0
+        base = base.where(is_active_clause(now or datetime.now(UTC)))
+
+    last: Any = None
     while True:
-        page = await session.execute(statement.limit(EXPORT_CHUNK).offset(offset))
-        rows: Sequence[Any] = page.scalars().all()
+        statement = base
+        if last is not None:
+            if by_score:
+                score, key = last
+                statement = statement.where(
+                    or_(
+                        model.composite_risk_score < score,
+                        and_(model.composite_risk_score == score, model.id > key),
+                    )
+                )
+            else:
+                statement = statement.where(model.id > last)
+        rows: Sequence[Any] = (await session.execute(statement)).all()
         for row in rows:
-            yield {column: _plain(getattr(row, column)) for column in columns}
+            values = row._mapping
+            yield {column: _plain(values[column]) for column in columns}
         if len(rows) < EXPORT_CHUNK:
             return
-        offset += EXPORT_CHUNK
+        tail = rows[-1]._mapping
+        last = (tail["composite_risk_score"], tail["id"]) if by_score else tail["id"]
 
 
 _FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
@@ -425,18 +460,27 @@ def csv_lines(columns: Iterable[str], rows: Iterable[dict[str, Any]]) -> Iterabl
 async def csv_stream(
     columns: Iterable[str], rows: AsyncIterator[dict[str, Any]]
 ) -> AsyncIterator[str]:
-    """CSV diffusé ligne à ligne depuis un itérateur asynchrone."""
+    """CSV diffusé par paquets de `STREAM_BATCH` lignes depuis un itérateur asynchrone."""
     writer = _CsvRow(columns)
-    yield writer.header()
+    batch = [writer.header()]
     async for row in rows:
-        yield writer.row(row)
+        batch.append(writer.row(row))
+        if len(batch) >= STREAM_BATCH:
+            yield "".join(batch)
+            batch = []
+    if batch:
+        yield "".join(batch)
 
 
 async def json_stream(rows: AsyncIterator[dict[str, Any]]) -> AsyncIterator[str]:
-    """Tableau JSON (RFC 8259) diffusé élément par élément."""
-    yield "["
+    """Tableau JSON (RFC 8259) diffusé par paquets de `STREAM_BATCH` éléments."""
+    batch = ["["]
     first = True
     async for row in rows:
-        yield ("" if first else ",") + json.dumps(row, ensure_ascii=False)
+        batch.append(("" if first else ",") + json.dumps(row, ensure_ascii=False))
         first = False
-    yield "]"
+        if len(batch) >= STREAM_BATCH:
+            yield "".join(batch)
+            batch = []
+    batch.append("]")
+    yield "".join(batch)

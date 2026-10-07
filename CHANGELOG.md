@@ -7,6 +7,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Performances — gros volume (07/10)
+Mesuré sur 480 669 IOC (poste Kali) : export des IOC en 89 s, tableau de bord en 2 à 4 s.
+- **Export** : pagination par clé (`WHERE id > dernière clé`) au lieu d'`OFFSET`, dont le
+  coût était quadratique ; lecture des seules colonnes exportées ; envoi par paquets de 500
+  lignes au lieu d'une écriture réseau par ligne.
+- **Tableau de bord** : deux lectures de la table des IOC au lieu de cinq (agrégats filtrés).
+
 ### Corrigé — rattrapage OTX de nuit (07/10)
 - Une URL au port invalide (`http://hote:99999/`) levait une `ValueError` brute qui faisait
   échouer **tout le lot** d'IOC ; la collecte relisait alors les mêmes pages à l'infini
