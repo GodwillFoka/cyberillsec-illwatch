@@ -1,0 +1,18 @@
+# Détection de secrets (gitleaks) — règles par défaut + exclusions justifiées.
+# Revue du 07/10/2026 : 17 constats sur tout l'historique, tous des faux positifs ci-dessous.
+# Toute nouvelle exclusion doit être justifiée ici ; ne jamais exclure `sentry/` ni `.env*`.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Valeurs factices de tests et de validation (comptes jetables, base éphémère)"
+paths = [
+  # Mots de passe et clés factices des tests unitaires (bases de test jetables).
+  '''^tests/''',
+]
+regexTarget = "line"
+regexes = [
+  # Mot de passe des comptes jetables de la validation réelle (base détruite en fin de job).
+  '''SCENARIO_PASSWORD: Validation-Passw0rd-2026''',
+]

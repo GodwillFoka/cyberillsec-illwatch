@@ -7,6 +7,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Sécurité — détection de secrets (07/10)
+- Revue de tout l'historique Git avec gitleaks : 17 constats, **tous des faux positifs**
+  (mots de passe factices de `tests/`, comptes jetables de la validation réelle) ; aucun `.env`,
+  aucune clé privée jamais commité.
+- `.gitleaks.toml` : exclusions justifiées ; un vrai jeton reste détecté (contrôle fait).
+- CI GitHub : gitleaks sur tout l'historique à chaque push (version épinglée, somme vérifiée).
+
 ### Sécurité — image Docker (07/10)
 - `curl` retiré de l'image : il ne servait qu'au `HEALTHCHECK` (désormais en Python) et portait
   8 des 52 vulnérabilités « High » relevées par Container Scanning (aucune corrigée par Debian).
