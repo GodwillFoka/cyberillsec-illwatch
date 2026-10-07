@@ -232,6 +232,14 @@ docker compose exec -T postgres psql -U sentry -d sentry \
   -c "UPDATE threat_feeds SET last_successful_run = NULL WHERE feed_type = 'OTX';"
 ```
 
+## 7 quater. Changement de règle de priorité (ADR-014)
+
+Après une mise à jour qui modifie la règle de priorité des CVE (plancher KEV, ADR-014) :
+
+```bash
+sentry cves rescore     # reclasse toutes les CVE, sans alerte ; motifs historisés
+```
+
 ## 8. Spécificités Kali Linux
 
 - Le paquet système `python3-sqlalchemy` peut être plus ancien que celui de la CI : toujours

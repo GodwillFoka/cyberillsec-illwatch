@@ -18,6 +18,13 @@ différente (CVSS 30 % + EPSS 25 % + KEV 25 % + Exploit 10 % + Ransomware 5 %
 + CWE 5 %) et des seuils différents (70/40/20 au lieu de 80/60/40). Le Cahier
 des Charges, seul document « Approuvé pour Développement », fait foi pour la
 v1.0. Voir docs/adr/ADR-001-scoring-composite.md.
+
+PLANCHER KEV (ADR-014, décidé le 07/10/2026) — une CVE du catalogue CISA KEV est classée
+**au moins P1**, quel que soit son score. Le score lui-même n'est pas modifié (formule
+inchangée, comparabilité de l'historique préservée) : seule la priorité est relevée, et
+`RiskBreakdown.kev_floor` le signale. Motif : une vulnérabilité activement exploitée ne peut
+pas relever de la maintenance standard (directive CISA BOD 22-01). Sur la base réelle du
+07/10, 612 CVE KEV sur 1 734 étaient classées P2 ou P3.
 """
 
 from dataclasses import dataclass
@@ -50,6 +57,8 @@ class RiskBreakdown:
     attack_contribution: float
     total: float
     priority: RiskPriority
+    # Priorité relevée à P1 par le plancher KEV (ADR-014) ; le score `total` est inchangé.
+    kev_floor: bool = False
 
 
 def compute_risk_score(
@@ -108,6 +117,8 @@ def compute_risk_breakdown(
     attack_part = W_ATTACK if has_ransomware_campaign else 0.0
 
     total = round(min(MAX_SCORE, cvss_part + epss_part + kev_part + exploit_part + attack_part), 2)
+    priority = classify_priority(total)
+    kev_floor = is_kev and priority in (RiskPriority.P2_MOYEN, RiskPriority.P3_FAIBLE)
 
     return RiskBreakdown(
         cvss_contribution=round(cvss_part, 2),
@@ -116,7 +127,8 @@ def compute_risk_breakdown(
         exploit_contribution=exploit_part,
         attack_contribution=attack_part,
         total=total,
-        priority=classify_priority(total),
+        priority=RiskPriority.P1_ELEVE if kev_floor else priority,
+        kev_floor=kev_floor,
     )
 
 

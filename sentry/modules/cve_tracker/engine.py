@@ -223,7 +223,8 @@ async def rescore(
                     new_priority=breakdown.priority,
                     old_score=old_score,
                     new_score=breakdown.total,
-                    reason=reason,
+                    # Le plancher KEV est tracé : la priorité ne découle pas du seul score.
+                    reason=f"{reason}+floor_kev" if breakdown.kev_floor else reason,
                 )
             )
         crossed = breakdown.total >= threshold and (old_score is None or old_score < threshold)
@@ -393,6 +394,23 @@ async def sync_cves(
             }
         },
     )
+    return report
+
+
+async def rescore_all(
+    session: AsyncSession, *, settings: Settings, reason: str = "rescore"
+) -> SyncReport:
+    """Recalcule score et priorité de toutes les CVE, sans alerte (changement de règle).
+
+    Sert après une évolution de la règle de priorité (ADR-014, plancher KEV) : sans cela, les
+    CVE ne seraient reclassées qu'à leur prochaine mise à jour par KEV, NVD ou EPSS. Le score
+    n'étant pas modifié par le plancher, aucun seuil d'alerte ne peut être franchi.
+    """
+    report = SyncReport()
+    ids = list((await session.execute(select(CVE.id).order_by(CVE.id))).scalars())
+    for start in range(0, len(ids), _CHUNK):
+        touched = dict.fromkeys(ids[start : start + _CHUNK], reason)
+        await rescore(session, touched, settings=settings, alerts_enabled=False, report=report)
     return report
 
 

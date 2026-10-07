@@ -7,6 +7,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Modifié — priorité des CVE (ADR-014 accepté le 07/10)
+- **Plancher KEV** : une CVE du catalogue CISA KEV est classée au moins **P1**, même si la
+  formule la place en P2 ou P3 ; le score reste celui de la formule (ADR-001). Motif historisé
+  `…+floor_kev`, exposé dans l'API (`breakdown.kev_floor`) et `sentry cves show`.
+- `sentry cves rescore` : reclasse toutes les CVE après un changement de règle, sans alerte.
+  **À lancer une fois après la mise à jour** (612 CVE KEV en P2/P3 sur la base de référence).
+- Panne EPSS : la conservation de la dernière valeur connue est verrouillée par un test.
+
 ### Performances — gros volume (07/10)
 Mesuré sur 480 669 IOC (poste Kali) : export des IOC en 89 s, tableau de bord en 2 à 4 s.
 - **Export** : pagination par clé (`WHERE id > dernière clé`) au lieu d'`OFFSET`, dont le

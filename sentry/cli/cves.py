@@ -26,7 +26,7 @@ from sentry.app.config import get_settings
 from sentry.app.models import CVE, CVEAlert, CVEPriorityChange
 from sentry.modules.cve_tracker import queries
 from sentry.modules.cve_tracker.alerts import deliver_pending
-from sentry.modules.cve_tracker.engine import SyncReport, sync_cves
+from sentry.modules.cve_tracker.engine import SyncReport, rescore_all, sync_cves
 from sentry.modules.cve_tracker.queries import CVENotFoundError
 from sentry.modules.cve_tracker.scoring import compute_risk_breakdown, remediation_sla_hours
 from sentry.modules.threat_feeds.fetcher import fetch_feed_content
@@ -122,6 +122,24 @@ def cves_sync(only: tuple[str, ...]) -> None:
         console.print(f"[red]✗ {source} :[/] {error}")
     if not report.succeeded:
         raise SystemExit(1)
+
+
+@cves.command("rescore")
+def cves_rescore() -> None:
+    """Recalcule les priorités de toutes les CVE (après un changement de règle, ex. ADR-014).
+
+    N'interroge aucune source et n'émet aucune alerte ; chaque changement de priorité est
+    historisé (motif `rescore`, `rescore+floor_kev` pour le plancher KEV).
+    """
+
+    async def _rescore(session: AsyncSession) -> SyncReport:
+        return await rescore_all(session, settings=get_settings())
+
+    report = _run(_rescore)
+    console.print(
+        f"{report.rescored} CVE recalculées, "
+        f"[bold]{report.priority_changes}[/] changement(s) de priorité."
+    )
 
 
 def _open_text(path: Path) -> IO[str]:
@@ -263,6 +281,8 @@ def cves_show(cve_id: str) -> None:
     ):
         table.add_row(label, f"{value:.2f}")
     console.print(table)
+    if parts.kev_floor:
+        console.print("Priorité relevée à P1 : plancher KEV (ADR-014), score inchangé.")
     for h in history:
         console.print(
             f"  {h.changed_at:%Y-%m-%d %H:%M} {h.old_priority or '—'} → "

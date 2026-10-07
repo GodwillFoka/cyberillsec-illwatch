@@ -63,6 +63,8 @@ class ScoreBreakdown(BaseModel):
     exploit: float
     ransomware: float
     total: float
+    # Priorité relevée à P1 par le plancher KEV (ADR-014) ; `total` est le score de la formule.
+    kev_floor: bool = False
 
 
 class PriorityChangeRead(BaseModel):
@@ -177,6 +179,7 @@ async def read_cve(
             exploit=parts.exploit_contribution,
             ransomware=parts.attack_contribution,
             total=parts.total,
+            kev_floor=parts.kev_floor,
         ),
         history=[PriorityChangeRead.model_validate(h) for h in history],
     )

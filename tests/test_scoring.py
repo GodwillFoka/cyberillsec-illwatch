@@ -83,3 +83,28 @@ def test_determinisme() -> None:
 def test_sla_de_remediation() -> None:
     assert remediation_sla_hours(RiskPriority.P0_CRITIQUE) == 24
     assert remediation_sla_hours(RiskPriority.P1_ELEVE) == 168
+
+
+# --- ADR-014 : plancher KEV ---------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "priority", "floor"),
+    [
+        ({"is_kev": True}, RiskPriority.P1_ELEVE, True),  # 25 points : P3 par la formule
+        ({"cvss": 7.5, "is_kev": True}, RiskPriority.P1_ELEVE, True),  # 47,5 : P2 par la formule
+        ({"cvss": 9.8, "epss": 0.89, "is_kev": True}, RiskPriority.P1_ELEVE, False),  # déjà P1
+        (
+            {"cvss": 9.8, "epss": 0.95, "is_kev": True, "has_public_exploit": True},
+            RiskPriority.P0_CRITIQUE,
+            False,
+        ),
+        ({"cvss": 7.5}, RiskPriority.P3_FAIBLE, False),  # hors KEV : formule seule
+    ],
+)
+def test_plancher_kev(kwargs: dict[str, object], priority: RiskPriority, floor: bool) -> None:
+    """Une CVE exploitée (KEV) n'est jamais en P2/P3 ; le score, lui, reste celui de la formule."""
+    breakdown = compute_risk_breakdown(**kwargs)  # type: ignore[arg-type]
+    assert breakdown.priority is priority
+    assert breakdown.kev_floor is floor
+    assert breakdown.total == compute_risk_score(**kwargs)  # type: ignore[arg-type]

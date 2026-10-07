@@ -237,7 +237,8 @@ async def test_premiere_synchro_ligne_de_base_sans_alerte(db_session: AsyncSessi
     netlogon = await _cve(db_session, "CVE-2020-1472")
     assert netlogon.cvss_score is None and netlogon.is_kev
     assert float(netlogon.composite_risk_score) == pytest.approx(48.58, abs=0.01)
-    assert netlogon.priority == RiskPriority.P2_MOYEN
+    # Score de la formule P2, priorité relevée à P1 : exploitée (KEV), ADR-014.
+    assert netlogon.priority == RiskPriority.P1_ELEVE
 
     assert await db_session.get(CVE, "CVE-2026-10002") is None  # rejetée par le NVD
     nvd = await db_session.get(CollectorState, "nvd")
@@ -253,10 +254,10 @@ async def test_premiere_synchro_ligne_de_base_sans_alerte(db_session: AsyncSessi
         .scalars()
         .all()
     )
-    # Créée par le KEV, complétée par le NVD, puis par l'EPSS : chaque étape est tracée.
+    # Créée par le KEV (plancher P1, tracé), complétée par le NVD (déjà P1 par la formule,
+    # aucun changement), puis par l'EPSS : chaque changement est tracé avec son motif.
     assert [(h.old_priority, h.new_priority, h.reason) for h in history] == [
-        (None, "P3_FAIBLE", "kev"),
-        ("P3_FAIBLE", "P1_ELEVE", "nvd"),
+        (None, "P1_ELEVE", "kev+floor_kev"),
         ("P1_ELEVE", "P0_CRITIQUE", "epss"),
     ]
     assert (await db_session.execute(select(CVEAlert))).first() is None
@@ -480,3 +481,74 @@ async def test_filtre_haskev_refuse_n_arrete_pas_la_synchro(db_session: AsyncSes
     )
     assert report.succeeded
     assert (await _cve(db_session, "CVE-2021-44228")).cvss_score is not None  # fenêtre NVD
+
+
+# --- ADR-014 : plancher KEV et panne EPSS (décision du 07/10) ---------------------------------
+
+
+async def test_panne_epss_ne_fait_pas_tomber_les_p0(db_session: AsyncSession) -> None:
+    """Option C : la dernière valeur EPSS connue est conservée pendant une panne de l'API."""
+    settings = _settings()
+    sources = _Sources(settings)
+    await sync_cves(db_session, settings=settings, fetch=sources, sleep=_no_sleep, clock=lambda: T0)
+    before = await _cve(db_session, "CVE-2021-44228")
+    epss_before = float(before.epss_score or 0)
+    assert before.priority == RiskPriority.P0_CRITIQUE and epss_before > 0
+
+    sources.fail = {"epss"}
+    report = await sync_cves(
+        db_session,
+        settings=settings,
+        fetch=sources,
+        sleep=_no_sleep,
+        clock=lambda: T0 + timedelta(days=3),
+    )
+    assert set(report.errors) == {"epss"}
+    after = await _cve(db_session, "CVE-2021-44228")
+    assert float(after.epss_score or 0) == epss_before
+    assert after.priority == RiskPriority.P0_CRITIQUE
+
+
+async def test_reclassement_complet_applique_le_plancher(db_session: AsyncSession) -> None:
+    """`rescore_all` reclasse une base existante sans alerte, motif tracé."""
+    from sentry.modules.cve_tracker.engine import rescore_all
+
+    db_session.add_all(
+        [
+            CVE(
+                id="CVE-2026-20001",
+                description="KEV classée P3 avant l'ADR-014",
+                published_date=T0,
+                last_modified_date=T0,
+                is_kev=True,
+                composite_risk_score=25.0,
+                priority=RiskPriority.P3_FAIBLE,
+            ),
+            CVE(
+                id="CVE-2026-20002",
+                description="Hors KEV",
+                published_date=T0,
+                last_modified_date=T0,
+                cvss_score=5.0,
+                composite_risk_score=15.0,
+                priority=RiskPriority.P3_FAIBLE,
+            ),
+        ]
+    )
+    await db_session.flush()
+    report = await rescore_all(db_session, settings=_settings())
+
+    assert report.rescored == 2 and report.priority_changes == 1 and report.alerts == 0
+    assert (await _cve(db_session, "CVE-2026-20001")).priority == RiskPriority.P1_ELEVE
+    assert (await _cve(db_session, "CVE-2026-20002")).priority == RiskPriority.P3_FAIBLE
+    change = (
+        await db_session.execute(
+            select(CVEPriorityChange).where(CVEPriorityChange.cve_id == "CVE-2026-20001")
+        )
+    ).scalar_one()
+    assert (change.old_priority, change.new_priority, change.reason) == (
+        "P3_FAIBLE",
+        "P1_ELEVE",
+        "rescore+floor_kev",
+    )
+    assert (await db_session.execute(select(CVEAlert))).first() is None
