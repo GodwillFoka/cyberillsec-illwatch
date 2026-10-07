@@ -1,6 +1,6 @@
 # SENTRY — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **07/10/2026, 23 h 55**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **07/10/2026, 23 h 58**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -30,7 +30,7 @@ données réelles, en local et en CI.
 |---|---|---|
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ fusionné : 0 Critical ; curl retiré (−8 High), 44 High Debian sans correctif acceptées ; recomptage GitLab attendu (52 → 44) |
-| Détection de secrets (historique Git) | `sec/detection-secrets` | 🟡 gitleaks : 17 constats, tous faux positifs ; exclusions justifiées ; **CI verte** avec gitleaks à chaque push ; à fusionner |
+| Détection de secrets (historique Git) | `56ab581` | ✅ fusionné : 17 constats gitleaks, tous faux positifs ; gitleaks à chaque push (CI GitHub) |
 | Rattrapage de l'historique OTX (Kali) | — | ✅ historique entièrement lu le 07/10 ; collecte incrémentale ensuite |
 | ADR-014 (score sans EPSS, plancher KEV) | `ad69dc6` | ✅ accepté (A + B + C), fusionné, appliqué sur Kali : 612 CVE reclassées, P1 627 → 1 239, **0 CVE KEV en P2/P3** |
 
@@ -38,6 +38,7 @@ données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 07/10 | `56ab581` | Fusion : détection de secrets gitleaks en CI ; anciennes branches supprimées |
 | 07/10 | `a2fb367` | Fusion : image sans curl |
 | 07/10 | `62b7bf0` | Image sans curl, sonde de santé en Python, risque résiduel documenté |
 | 07/10 | `ad69dc6` | Fusion ADR-014 ; reclassement Kali : 612 changements, constaté |
@@ -80,12 +81,12 @@ données réelles, en local et en CI.
 | Image : 44 vulnérabilités High Debian sans correctif | non exposées, processus non privilégié | acceptées et documentées (OPERATIONS § 7 quinquies) ; revue à chaque analyse | ✅ accepté |
 | Secrets dans l'historique Git | fuite de clés | gitleaks : 0 vrai secret sur 79 commits ; contrôle ajouté à chaque push | ✅ |
 | Rapport SAST GitLab non relu | analyse de code non constatée par GitLab | bandit (CI GitHub) vert ; télécharger le rapport `sast` GitLab pour confirmer | 🟡 |
-| Branches GitHub `feature/m7-production-hardening`, `maj/2026-10-06` | aucune (entièrement contenues dans `main`, vérifié le 07/10) | à supprimer | 🟡 |
+| Branches GitHub `feature/m7-production-hardening`, `maj/2026-10-06` | aucune (entièrement contenues dans `main`) | supprimées le 07/10 | ✅ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
 | Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | — |
 
 ## 8. Prochaines étapes
 
-1. Fusionner `sec/detection-secrets` ; supprimer les deux anciennes branches GitHub ; relire le rapport SAST GitLab.
+1. Relire les rapports GitLab du pipeline `56ab581` : `sast` et `container_scanning` (attendu : 44 High).
 2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 3. Ouvrir M8 Detection & Correlation.
