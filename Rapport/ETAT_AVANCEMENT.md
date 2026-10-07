@@ -1,6 +1,6 @@
 # SENTRY — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **07/10/2026, 19 h 05**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **07/10/2026, 22 h 45**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -20,7 +20,7 @@ données réelles, en local et en CI.
 | M4 Incidents | ✅ | incident mené jusqu'à la clôture |
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
-| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; export 7× plus rapide ; **VPS UE à faire** |
+| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 à trancher ; **VPS UE à faire** |
 | M8 Detection & Correlation | ⏳ | — |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
@@ -28,8 +28,9 @@ données réelles, en local et en CI.
 
 | Chantier | Branche | État |
 |---|---|---|
-| Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné ; export 89 s → 12,9 s ; tableau de bord à confirmer |
-| Rattrapage de l'historique OTX (Kali) | — | 🟡 interrompu par erreur le 07/10 à 18 h 50 (`kill %1`), à relancer |
+| Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
+| Rattrapage de l'historique OTX (Kali) | — | ✅ historique entièrement lu le 07/10 ; collecte incrémentale ensuite |
+| ADR-014 (score sans EPSS, plancher KEV) | — | 🟡 chiffré sur la base réelle, **décision attendue** |
 
 ## 4. Journal des livraisons
 
@@ -48,27 +49,27 @@ données réelles, en local et en CI.
 |---|---|---|
 | Tests (CI) | 454 / 454, Python 3.12 et 3.14 | 07/10 (`fa73bd6`) |
 | Couverture | 93-94 % (seuil 80 %) | 07/10 |
-| Scénario SOC | 48 / 48, local et CI | 07/10 |
+| Scénario SOC | 48 / 48, local (gros volume) et CI | 07/10 |
 | Sources saines | 7 / 9 (DigitalSide hors ligne depuis le 29/09) | 06/10 |
 | IOC en base (Kali) | 480 669, dont 305 286 actifs | 07/10 |
-| CVE en base (Kali) | ≈ 25 700, dont 495 en P0 | 06/10 |
+| CVE en base (Kali) | 26 416 : P0 495 · P1 627 · P2 638 · P3 24 656 ; KEV 1 734 | 07/10 |
 
 ## 6. Performances (480 669 IOC, poste Kali)
 
 | Appel | Avant (07/10) | Après correctif | Cible |
 |---|---|---|---|
-| Export des IOC | 89 s | **12,9 s** (max 13,4 s) ✔ | < 15 s |
-| Tableau de bord | 2,0 à 3,9 s | *à mesurer* | < 1 s |
-| Chasse sur la base complète | 5,7 s | 5,8 s (inchangé) | < 10 s ✔ |
-| Export des CVE | 4,4 s | *à mesurer* | < 5 s ✔ |
+| Export des IOC | 89 s | 12,9 s pendant la collecte ; **16,6 s** (max 17,0 s) au repos, base agrandie ⚠️ | < 15 s |
+| Tableau de bord | 2,0 à 3,9 s | **0,51 s** (max 0,87 s) ✔ | < 1 s |
+| Chasse sur la base complète | 5,7 s | 5,0 s | < 10 s ✔ |
+| Export des CVE | 4,4 s | **2,0 s** (max 2,2 s) ✔ | < 5 s |
 | Autres appels | < 0,6 s | — | ✔ |
 
 ## 7. Risques et points ouverts
 
 | Point | Impact | Action | État |
 |---|---|---|---|
-| Export et tableau de bord lents | préproduction compromise | `5b55f64` : export ✔, tableau de bord à mesurer | 🟡 |
-| ADR-014 non tranché | sans EPSS, aucune CVE en P0 | décision | ⏳ |
+| Export des IOC légèrement au-dessus de la cible (16,6 s) | acceptable derrière un proxy (délai > 60 s) | sérialisation à optimiser en M8 si besoin | 🟡 |
+| ADR-014 non tranché | 612 CVE exploitées (KEV) en P2/P3, dont 10 en P3 ; une panne EPSS ferait tomber les 495 P0 | décision A + B + C recommandée | 🟡 |
 | Plages CIDR rejetées (1 640 chez RedEye) | information perdue | type « réseau » au backlog M8 | ⏳ |
 | Analyses de sécurité GitLab non vérifiées sur M7 | SAST, secrets, dépendances | consulter *Build → Pipelines* | ⏳ |
 | Branches GitHub `feature/m7-production-hardening`, `maj/2026-10-06` | non ancêtres de `main` | vérifier leur contenu avant suppression | ⏳ |
@@ -77,8 +78,7 @@ données réelles, en local et en CI.
 
 ## 8. Prochaines étapes
 
-1. Mesurer le tableau de bord après `5b55f64` (sans collecte en parallèle).
-2. Relancer et finir le rattrapage OTX (Kali).
-3. Trancher l'ADR-014.
-4. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
-5. Ouvrir M8 Detection & Correlation.
+1. Trancher l'ADR-014, puis coder la décision (plancher KEV, dernier EPSS connu).
+2. Vérifier les analyses de sécurité GitLab sur `main`.
+3. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
+4. Ouvrir M8 Detection & Correlation.
