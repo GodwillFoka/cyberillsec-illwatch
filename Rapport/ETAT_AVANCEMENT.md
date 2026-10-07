@@ -30,7 +30,7 @@ données réelles, en local et en CI.
 |---|---|---|
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ fusionné : 0 Critical ; curl retiré (−8 High), 44 High Debian sans correctif acceptées ; recomptage GitLab attendu (52 → 44) |
-| Détection de secrets (historique Git) | `sec/detection-secrets` | 🟡 gitleaks : 17 constats, tous faux positifs ; exclusions justifiées ; ajouté à la CI GitHub |
+| Détection de secrets (historique Git) | `sec/detection-secrets` | 🟡 gitleaks : 17 constats, tous faux positifs ; exclusions justifiées ; **CI verte** avec gitleaks à chaque push ; à fusionner |
 | Rattrapage de l'historique OTX (Kali) | — | ✅ historique entièrement lu le 07/10 ; collecte incrémentale ensuite |
 | ADR-014 (score sans EPSS, plancher KEV) | `ad69dc6` | ✅ accepté (A + B + C), fusionné, appliqué sur Kali : 612 CVE reclassées, P1 627 → 1 239, **0 CVE KEV en P2/P3** |
 
