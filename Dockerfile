@@ -12,9 +12,9 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+# Aucun paquet système ajouté à l'image de base : curl, installé autrefois pour le seul contrôle
+# de santé, apportait 8 des 52 vulnérabilités « High » relevées par l'analyse d'image du 07/10
+# (Container Scanning GitLab). Le contrôle de santé utilise Python, déjà présent.
 
 COPY pyproject.toml README.md constraints.txt ./
 COPY sentry ./sentry
@@ -32,7 +32,7 @@ USER sentry
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -fsS http://localhost:8000/health || exit 1
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=4)"]
 
 # Au démarrage : migrations Alembic jusqu'à head, puis service HTTP (critère M1).
 # Adapté à une instance unique ; en multi-réplicas, sortir la migration dans un job dédié.

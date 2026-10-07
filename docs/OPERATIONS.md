@@ -240,6 +240,23 @@ Après une mise à jour qui modifie la règle de priorité des CVE (plancher KEV
 sentry cves rescore     # reclasse toutes les CVE, sans alerte ; motifs historisés
 ```
 
+## 7 quinquies. Analyse d'image : risque résiduel accepté
+
+Analyse GitLab Container Scanning du 07/10/2026 (`python:3.12-slim`, Debian 13.7, commit
+`ad69dc6`) : **0 Critical**, 52 High, 81 Medium, 105 Low, 2 Unknown — toutes dans des paquets
+système Debian, **aucune avec correctif publié**, aucune dans une dépendance Python.
+
+| Famille (CVE distinctes) | Décision | Justification |
+|---|---|---|
+| curl, libcurl (4) | **retirées** : curl supprimé de l'image | ne servait qu'au contrôle de santé, désormais en Python |
+| util-linux : mount, login, libblkid… (4) | acceptées | socle Debian ; outils jamais invoqués par SENTRY |
+| ncurses, libsystemd/libudev, libacl, perl-base (4) | acceptées | socle Debian, non exposés au réseau |
+
+Mesures compensatoires : processus non privilégié (`USER sentry`, UID 10001), aucun port exposé
+hors Caddy en production, image reconstruite à chaque push sur `main` (base `python:3.12-slim`
+à jour). Revue à chaque analyse : une vulnérabilité **Critical** ou un correctif Debian publié
+impose une reconstruction immédiate.
+
 ## 8. Spécificités Kali Linux
 
 - Le paquet système `python3-sqlalchemy` peut être plus ancien que celui de la CI : toujours

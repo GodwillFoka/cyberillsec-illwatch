@@ -7,6 +7,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Sécurité — image Docker (07/10)
+- `curl` retiré de l'image : il ne servait qu'au `HEALTHCHECK` (désormais en Python) et portait
+  8 des 52 vulnérabilités « High » relevées par Container Scanning (aucune corrigée par Debian).
+  Les 44 autres, toutes dans le socle Debian 13.7 et sans correctif, sont acceptées et
+  documentées (guide d'exploitation § 7 quinquies). Aucune Critical.
+- CI GitHub : l'image est vérifiée sans curl et sa sonde de santé est exécutée.
+
 ### Modifié — priorité des CVE (ADR-014 accepté le 07/10)
 - **Plancher KEV** : une CVE du catalogue CISA KEV est classée au moins **P1**, même si la
   formule la place en P2 ou P3 ; le score reste celui de la formule (ADR-001). Motif historisé
