@@ -219,10 +219,10 @@ jobs:
         env:
           GITLEAKS_VERSION: 8.28.0
         run: |
-          curl -sSfL -o gitleaks.tgz \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          curl -sSfL -o checksums.txt \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
-          grep " gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz$" checksums.txt | sha256sum -c -
-          tar xzf gitleaks.tgz gitleaks
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfLO "$base/$archive"  # nom d'origine : sha256sum -c le cherche sous ce nom
+          curl -sSfL -o checksums.txt "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          grep " ${archive}$" checksums.txt | sha256sum -c -
+          tar xzf "$archive" gitleaks
           ./gitleaks git . --log-opts="--all" --config .gitleaks.toml --redact --no-banner
