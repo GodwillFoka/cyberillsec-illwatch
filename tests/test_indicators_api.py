@@ -7,9 +7,9 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.security import create_access_token
-from sentry.modules.foundation.users import create_user
-from sentry.shared.enums import UserRole
+from illwatch.app.security import create_access_token
+from illwatch.modules.foundation.users import create_user
+from illwatch.shared.enums import UserRole
 
 IOCS = "/api/v1/indicators"
 FEEDS = "/api/v1/feeds"

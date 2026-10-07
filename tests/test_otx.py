@@ -9,19 +9,19 @@ from pydantic import SecretStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings, get_settings
-from sentry.app.models import CollectorState, Indicator, ThreatFeed
-from sentry.modules.threat_feeds.collector import OTX_STATE_PREFIX, collect_feed
-from sentry.modules.threat_feeds.fetcher import FetchError
-from sentry.modules.threat_feeds.otx import (
+from illwatch.app.config import Settings, get_settings
+from illwatch.app.models import CollectorState, Indicator, ThreatFeed
+from illwatch.modules.threat_feeds.collector import OTX_STATE_PREFIX, collect_feed
+from illwatch.modules.threat_feeds.fetcher import FetchError
+from illwatch.modules.threat_feeds.otx import (
     API_KEY_HEADER,
     fetch_otx,
     parse_otx_page,
     with_modified_since,
     with_page,
 )
-from sentry.modules.threat_feeds.parsers import FeedParseError
-from sentry.shared.enums import FeedStatus, FeedType, IndicatorType
+from illwatch.modules.threat_feeds.parsers import FeedParseError
+from illwatch.shared.enums import FeedStatus, FeedType, IndicatorType
 
 FIXTURES = Path(__file__).parent / "fixtures" / "feeds"
 FEED_URL = "https://otx.alienvault.com/api/v1/pulses/subscribed?limit=50"
@@ -255,7 +255,7 @@ async def test_collecte_interrompue_garde_les_pages_lues(
 
 
 def test_rythme_nvd_annonce_selon_la_cle(monkeypatch: pytest.MonkeyPatch) -> None:
-    from sentry.cli.cves import _nvd_pace
+    from illwatch.cli.cves import _nvd_pace
 
     monkeypatch.delenv("NVD_API_KEY", raising=False)
     get_settings.cache_clear()
@@ -273,7 +273,7 @@ async def test_reprise_annoncee_seulement_si_l_avancement_est_enregistre(
     db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Une ingestion en échec n'annonce pas « reprise à la page N » (boucle du 07/10)."""
-    from sentry.modules.threat_feeds import collector
+    from illwatch.modules.threat_feeds import collector
 
     monkeypatch.setenv("OTX_API_KEY", KEY)
     monkeypatch.setenv("OTX_MAX_PAGES", "1")
@@ -295,7 +295,7 @@ async def test_reprise_annoncee_seulement_si_l_avancement_est_enregistre(
 
 
 async def test_url_a_port_invalide_n_empeche_pas_le_lot(db_session: AsyncSession) -> None:
-    from sentry.modules.threat_feeds.indicators import Observation, ingest_indicators
+    from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
 
     result = await ingest_indicators(
         db_session,

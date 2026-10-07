@@ -9,7 +9,7 @@
 
 L'ADR-002 a fait de GitLab la plateforme unique du projet et en a documenté le coût : une moindre
 découvrabilité auprès des contributeurs. Le 05/10/2026, le code a été publié sur
-`github.com/GodwillFoka/cyberillsec-sentry` (dépôt public). Deux faits pèsent :
+`github.com/GodwillFoka/cyberillsec-illwatch` (dépôt public). Deux faits pèsent :
 
 - les sessions d'assistance ne peuvent pas joindre `gitlab.com` (refus réseau), alors qu'elles
   poussent sur GitHub ;
@@ -28,7 +28,7 @@ même CI, publie la documentation, l'image Docker et les releases.
 - Vérification : un second pipeline, indépendant, rejoue qualité, tests, migrations et sécurité ;
   la validation réelle hebdomadaire ferme la dette D3 de l'audit du 03/10.
 - Distribution : une image versionnée sur `ghcr.io` évite de construire sur le serveur de
-  production (`SENTRY_IMAGE`, `--no-build`).
+  production (`ILLWATCH_IMAGE`, `--no-build`).
 
 Option écartée : basculer entièrement sur GitHub — contredirait l'argument de souveraineté de
 l'ADR-002 sans nécessité.

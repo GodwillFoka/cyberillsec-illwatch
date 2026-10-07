@@ -8,19 +8,19 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings
-from sentry.app.models import CVE
-from sentry.app.security import create_access_token
-from sentry.modules.foundation.users import create_user
-from sentry.modules.threat_feeds.indicators import Observation, ingest_indicators
-from sentry.modules.threat_hunting import engine
-from sentry.modules.threat_hunting.rules import (
+from illwatch.app.config import Settings
+from illwatch.app.models import CVE
+from illwatch.app.security import create_access_token
+from illwatch.modules.foundation.users import create_user
+from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
+from illwatch.modules.threat_hunting import engine
+from illwatch.modules.threat_hunting.rules import (
     CATALOG,
     looks_generated,
     registered_label,
     shannon_entropy,
 )
-from sentry.shared.enums import HuntStatus, HuntTrigger, RiskPriority, UserRole
+from illwatch.shared.enums import HuntStatus, HuntTrigger, RiskPriority, UserRole
 
 NOW = datetime(2026, 10, 3, 12, 0, tzinfo=UTC)
 SETTINGS = Settings(secret_key="k" * 64)
@@ -198,7 +198,7 @@ async def _headers(session: AsyncSession, role: UserRole) -> dict[str, str]:
 async def test_api_hunting(
     client: AsyncClient, db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from sentry.app.api.v1 import hunting
+    from illwatch.app.api.v1 import hunting
 
     monkeypatch.setattr(hunting, "fetch_feed_content", tor)
     await _seed_base(db_session)

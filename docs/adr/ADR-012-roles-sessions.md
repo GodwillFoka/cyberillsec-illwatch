@@ -3,8 +3,8 @@
 - **Statut :** proposé
 - **Date :** 2026-10-04
 - **Décideurs :** à valider par le porteur du projet
-- **Concerne :** `sentry/app/db_roles.py`, `sentry/modules/foundation/sessions.py`,
-  `sentry/app/security.py`, `sentry/app/api/v1/auth.py`, migration `f41c7a9d2e86`,
+- **Concerne :** `illwatch/app/db_roles.py`, `illwatch/modules/foundation/sessions.py`,
+  `illwatch/app/security.py`, `illwatch/app/api/v1/auth.py`, migration `f41c7a9d2e86`,
   `docker-compose.yml`
 
 ## Contexte
@@ -25,17 +25,17 @@ du code. Trois autres faiblesses restaient :
    l'application se connecte avec un rôle (`DATABASE_URL`, `DATABASE_APP_ROLE`) qui n'a que
    `SELECT, INSERT, UPDATE, DELETE` sur les données, **`SELECT, INSERT` seulement** sur
    `incident_events` et `audit_events`, `SELECT` sur `alembic_version`, aucun droit de
-   structure. `sentry db upgrade` réapplique ces droits après chaque migration ;
-   `sentry db app-role ROLE [--create]` les pose à la demande. Le rôle est refusé s'il est
+   structure. `illwatch db upgrade` réapplique ces droits après chaque migration ;
+   `illwatch db app-role ROLE [--create]` les pose à la demande. Le rôle est refusé s'il est
    superutilisateur ou propriétaire d'une table.
 2. **Sessions.** Jeton d'accès de 15 min ; jeton de rafraîchissement opaque (256 bits, empreinte
    SHA-256 seule en base), 7 jours, **rotatif** : chaque usage le remplace. Un jeton déjà
    remplacé qui revient révoque toute la lignée (`reuse_detected`). `POST /auth/refresh`,
-   `POST /auth/logout`, `sentry users disable|enable|revoke-sessions`.
+   `POST /auth/logout`, `illwatch users disable|enable|revoke-sessions`.
 3. **Rotation de clé.** Chaque JWT porte `kid` (empreinte SHA-256 tronquée de sa clé).
    `SECRET_KEY` signe ; `SECRET_KEY_PREVIOUS` est acceptée en vérification seulement. Une
    valeur vide vaut « non définie ».
-4. **Redis protégé** par mot de passe dans Compose ; en production, SENTRY refuse de démarrer
+4. **Redis protégé** par mot de passe dans Compose ; en production, ILLWATCH refuse de démarrer
    sans mot de passe ou avec la valeur de développement.
 
 ## Justification
@@ -47,7 +47,7 @@ du code. Trois autres faiblesses restaient :
   sans valeur si la base fuit.
 - *Rejeu toléré quelques secondes* (requêtes parallèles d'un même client) : écarté. Un client qui
   rafraîchit deux fois en parallèle est déconnecté ; c'est le comportement strict recommandé par
-  l'OAuth 2.0 Security BCP, et SENTRY n'a pas encore de client web.
+  l'OAuth 2.0 Security BCP, et ILLWATCH n'a pas encore de client web.
 - *Rôles créés par une migration* : écarté. Un rôle est un objet du cluster, pas de la base, et
   son mot de passe ne doit pas figurer dans l'historique Git.
 

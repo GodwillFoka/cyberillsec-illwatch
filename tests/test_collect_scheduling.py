@@ -13,14 +13,14 @@ import httpx
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings
-from sentry.app.models import ThreatFeed
-from sentry.cli.feeds import run_worker
-from sentry.modules.threat_feeds.collector import collect_due_feeds, collect_feed
-from sentry.modules.threat_feeds.fetcher import UnsafeDestinationError, fetch_feed_content
-from sentry.modules.threat_feeds.locks import LocalFeedLock, RedisFeedLock, open_feed_lock
-from sentry.shared.enums import FeedType
-from sentry.shared.logging import JsonFormatter, configure_logging, peak_rss_mb
+from illwatch.app.config import Settings
+from illwatch.app.models import ThreatFeed
+from illwatch.cli.feeds import run_worker
+from illwatch.modules.threat_feeds.collector import collect_due_feeds, collect_feed
+from illwatch.modules.threat_feeds.fetcher import UnsafeDestinationError, fetch_feed_content
+from illwatch.modules.threat_feeds.locks import LocalFeedLock, RedisFeedLock, open_feed_lock
+from illwatch.shared.enums import FeedType
+from illwatch.shared.logging import JsonFormatter, configure_logging, peak_rss_mb
 
 NOW = datetime(2026, 9, 28, 12, 0, tzinfo=UTC)
 CSV = b"# ip\n203.0.113.20\n203.0.113.21\n"
@@ -52,15 +52,15 @@ async def test_verrou_local_expire() -> None:
 
 async def test_redis_injoignable_repli_local(caplog: pytest.LogCaptureFixture) -> None:
     configure_logging("INFO", stream=io.StringIO())
-    logging.getLogger("sentry").propagate = True
+    logging.getLogger("illwatch").propagate = True
     try:
-        with caplog.at_level(logging.WARNING, logger="sentry.collector"):
+        with caplog.at_level(logging.WARNING, logger="illwatch.collector"):
             lock = await open_feed_lock("redis://127.0.0.1:1/0")
         assert isinstance(lock, LocalFeedLock)
         assert "lock.redis_unavailable" in caplog.text
         await lock.close()
     finally:
-        logging.getLogger("sentry").propagate = False
+        logging.getLogger("illwatch").propagate = False
 
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
@@ -108,7 +108,7 @@ async def test_flux_verrouille_ailleurs_saute(db_session: AsyncSession) -> None:
 
 def test_format_json_une_ligne_par_evenement() -> None:
     record = logging.LogRecord(
-        "sentry.collector", logging.INFO, __file__, 1, "feed.collected", None, None
+        "illwatch.collector", logging.INFO, __file__, 1, "feed.collected", None, None
     )
     record.fields = {"inserted": 3, "succeeded": True, "error": None}
     line = JsonFormatter().format(record)
@@ -123,7 +123,7 @@ def test_configuration_idempotente() -> None:
     first, second = io.StringIO(), io.StringIO()
     configure_logging("INFO", stream=first)
     configure_logging("INFO", stream=second)
-    logging.getLogger("sentry.test").info("evt")
+    logging.getLogger("illwatch.test").info("evt")
     assert first.getvalue() == ""
     assert len(second.getvalue().splitlines()) == 1
 

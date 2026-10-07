@@ -11,17 +11,17 @@ from pydantic import SecretStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings
-from sentry.app.models import CVE, CollectorState, CVEAlert, CVEPriorityChange
-from sentry.modules.cve_tracker.alerts import (
+from illwatch.app.config import Settings
+from illwatch.app.models import CVE, CollectorState, CVEAlert, CVEPriorityChange
+from illwatch.modules.cve_tracker.alerts import (
     MAX_DELIVERY_ATTEMPTS,
     AlertNotFoundError,
     acknowledge,
     alert_payload,
     deliver_pending,
 )
-from sentry.modules.cve_tracker.engine import cve_sync_due, mark_cve_sync_attempt, sync_cves
-from sentry.modules.cve_tracker.sources import (
+from illwatch.modules.cve_tracker.engine import cve_sync_due, mark_cve_sync_attempt, sync_cves
+from illwatch.modules.cve_tracker.sources import (
     fetch_epss,
     fetch_nvd,
     nvd_windows,
@@ -29,9 +29,9 @@ from sentry.modules.cve_tracker.sources import (
     parse_kev,
     parse_nvd_page,
 )
-from sentry.modules.threat_feeds.fetcher import FetchError
-from sentry.modules.threat_feeds.parsers import FeedParseError
-from sentry.shared.enums import RiskPriority
+from illwatch.modules.threat_feeds.fetcher import FetchError
+from illwatch.modules.threat_feeds.parsers import FeedParseError
+from illwatch.shared.enums import RiskPriority
 
 FIXTURES = Path(__file__).parent / "fixtures" / "cve"
 T0 = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)
@@ -444,7 +444,7 @@ async def test_abandon_apres_cinq_echecs_et_sans_webhook(db_session: AsyncSessio
 async def test_acquittement_idempotent(db_session: AsyncSession) -> None:
     from uuid import uuid4
 
-    from sentry.modules.foundation.users import create_user
+    from illwatch.modules.foundation.users import create_user
 
     alert = await _alert(db_session)
     users = [
@@ -511,7 +511,7 @@ async def test_panne_epss_ne_fait_pas_tomber_les_p0(db_session: AsyncSession) ->
 
 async def test_reclassement_complet_applique_le_plancher(db_session: AsyncSession) -> None:
     """`rescore_all` reclasse une base existante sans alerte, motif tracé."""
-    from sentry.modules.cve_tracker.engine import rescore_all
+    from illwatch.modules.cve_tracker.engine import rescore_all
 
     db_session.add_all(
         [

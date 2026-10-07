@@ -1,20 +1,20 @@
-# SENTRY — Cahier des charges & dossier d'ingénierie logicielle
+# ILLWATCH — Cahier des charges & dossier d'ingénierie logicielle
 
 > **Conversion Markdown versionnable** du document maître
-> `CYBERILL-SENTRY — Cahier des Charges & Dossier d'Ingénierie v1.0.0`.
+> `CYBERILL-ILLWATCH — Cahier des Charges & Dossier d'Ingénierie v1.0.0`.
 > Le PDF d'origine est conservé dans [`pdf/SENTRY_Cahier_des_Charges.pdf`](pdf/SENTRY_Cahier_des_Charges.pdf).
 > En cas de divergence, **ce fichier Markdown fait foi** : il est celui que la CI, les revues de
 > code et les merge requests référencent.
 
 | | |
 |---|---|
-| **Projet** | SENTRY — Security Monitoring & Threat Intelligence Platform |
+| **Projet** | ILLWATCH — Security Monitoring & Threat Intelligence Platform |
 | **Initiative** | CyberillSec — A CYBERILL Initiative |
 | **Auteur & architecte** | Godwill FOKA, Lead Architect & Security Engineer |
 | **Destinataire** | Équipe d'ingénierie logicielle / développeurs en onboarding |
 | **Version** | v1.0.0 (Master Engineering Baseline) |
 | **Baseline** | Juillet – Septembre 2026 |
-| **Dépôt** | `gitlab.com/GodwillFoka/cyberillsec-sentry` (voir [ADR-002](adr/ADR-002-hebergement-gitlab.md)) |
+| **Dépôt** | `gitlab.com/GodwillFoka/cyberillsec-illwatch` (voir [ADR-002](adr/ADR-002-hebergement-gitlab.md)) |
 | **Classification** | Interne CYBERILL — document fondateur de référence |
 | **Statut** | Approuvé pour développement |
 
@@ -40,7 +40,7 @@ FOKA, articulée autour de six piliers :
 
 | Branche | Domaine | Périmètre |
 |---|---|---|
-| **CyberillSec / SENTRY** | Threat Intelligence | Plateforme de veille CTI |
+| **CyberillSec / ILLWATCH** | Threat Intelligence | Plateforme de veille CTI |
 | Cyberill Labs | Recherche | Analyse de malware, offensif, pentest |
 | Cyberill Academy | Formation | Certifications, workshops, sensibilisation |
 | Cyberill Consulting | Conseil | GRC, audit, advisory |
@@ -50,13 +50,13 @@ FOKA, articulée autour de six piliers :
 CyberillSec est le bras armé de veille stratégique : collecter, analyser, corréler et vulgariser les
 données relatives aux cyberattaques mondiales.
 
-### 1.2 Mission de SENTRY
+### 1.2 Mission d'ILLWATCH
 
-SENTRY est le moteur logiciel qui propulse CyberillSec. Dans l'industrie, un analyste sécurité passe
+ILLWATCH est le moteur logiciel qui propulse CyberillSec. Dans l'industrie, un analyste sécurité passe
 60 à 70 % de son temps à copier-coller des indicateurs entre une dizaine d'outils, lire des bulletins
 illisibles et trier des alertes en double.
 
-SENTRY crée un cerveau centralisé qui :
+ILLWATCH crée un cerveau centralisé qui :
 
 1. collecte automatiquement le renseignement sur les menaces (flux publics, bases gouvernementales,
    flux communautaires) ;
@@ -82,12 +82,12 @@ SENTRY crée un cerveau centralisé qui :
 
 ### 1.4 La journée type de l'analyste SOC
 
-**Sans SENTRY** — Alex ouvre quinze onglets (CISA, NVD, AlienVault, réseaux sociaux, presse
+**Sans ILLWATCH** — Alex ouvre quinze onglets (CISA, NVD, AlienVault, réseaux sociaux, presse
 spécialisée), lit quarante articles, repère une faille Fortinet, cherche manuellement son CVSS,
 vérifie l'existence d'un exploit public, croise les IP attaquantes, ouvre un ticket. Il est 11 h 30
 et rien n'est encore bloqué.
 
-**Avec SENTRY** — les tâches asynchrones ont tourné toute la nuit. À 08 h 01, `sentry dashboard show`
+**Avec ILLWATCH** — les tâches asynchrones ont tourné toute la nuit. À 08 h 01, `illwatch dashboard show`
 affiche les trois CVE critiques de la nuit (score > 80 parce que KEV = oui et EPSS > 0.85), les
 quarante nouveaux IOC dédupliqués et rattachés à la campagne en cours, et l'incident créé
 automatiquement avec sa chronologie pré-remplie. En cinq minutes, le blocage firewall est lancé et
@@ -156,7 +156,7 @@ externes ; absence d'IHM lourde en phase 1 (choix assumé au profit de l'API et 
 **Opportunités** — NIS 2 impose la surveillance CTI ; forte demande pour des briques CTI autonomes
 et transparentes déployables on-premise ; possibilité de fédérer une communauté internationale.
 
-**Aspirations** — positionner SENTRY comme le standard open source européen de surveillance des
+**Aspirations** — positionner ILLWATCH comme le standard open source européen de surveillance des
 menaces d'ici 2030 ; démontrer une excellence technique au niveau des plus grands centres de R&D.
 
 **Menaces** — évolution ou fermeture des points d'accès API gratuits ; concurrence d'outils massifs
@@ -203,7 +203,7 @@ mieux financés.
 | RF-20 | MOD-04 | Associer des IOC et des CVE spécifiques à un incident. | P1 |
 | RF-21 | MOD-05 | Exposer `/api/v1/dashboard/summary` compilant les indicateurs clés en temps réel. | P0 |
 | RF-22 | MOD-05 | Retourner la liste consolidée des menaces et vulnérabilités des dernières 24 heures. | P1 |
-| RF-23 | MOD-05 | Fournir `sentry dashboard show` affichant une vue console riche de l'état du SOC. | P1 |
+| RF-23 | MOD-05 | Fournir `illwatch dashboard show` affichant une vue console riche de l'état du SOC. | P1 |
 | RF-24 | MOD-05 | Exporter les données du dashboard aux formats JSON et CSV. | P1 |
 | RF-25 | MOD-06 | Intégrer un moteur d'évaluation de règles par comparaison de motifs. | P1 |
 | RF-26 | MOD-06 | Embarquer un catalogue initial de 5 règles de hunting opérationnelles. | P1 |
@@ -216,7 +216,7 @@ mieux financés.
 
 Socle technique : configuration, pool de connexions PostgreSQL, migrations Alembic, CLI Click.
 
-Commandes clés : `sentry db init`, `sentry db upgrade`, `sentry version`, `sentry seed`.
+Commandes clés : `illwatch db init`, `illwatch db upgrade`, `illwatch version`, `illwatch seed`.
 
 > **Règle de gestion.** Aucune requête applicative ne s'exécute si la configuration n'est pas validée
 > au démarrage par Pydantic.
@@ -273,7 +273,7 @@ R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + K × 25 + E × 10 + A × 10)
 > différents (70/40/20). Le présent cahier des charges fait foi pour la v1.0. Voir
 > [`adr/ADR-001-scoring-composite.md`](adr/ADR-001-scoring-composite.md).
 
-Implémentation : [`sentry/modules/cve_tracker/scoring.py`](../sentry/modules/cve_tracker/scoring.py).
+Implémentation : [`illwatch/modules/cve_tracker/scoring.py`](../illwatch/modules/cve_tracker/scoring.py).
 
 #### MOD-04 — Incident Management (NIST SP 800-61 Rev. 2)
 
@@ -289,7 +289,7 @@ NOUVEAU → ANALYSE → CONFINEMENT → ERADICATION → RECUPERATION → CLOTURE
   investigation qui rouvre des questions ne doit pas obliger à créer un nouvel incident ;
 - `CLOTURE` est un état terminal.
 
-Implémentation : [`sentry/modules/incidents/state_machine.py`](../sentry/modules/incidents/state_machine.py).
+Implémentation : [`illwatch/modules/incidents/state_machine.py`](../illwatch/modules/incidents/state_machine.py).
 
 #### MOD-05 — SOC Dashboard & Analytics
 
@@ -378,14 +378,14 @@ RFC 4180.
 ```
   [CLIENTS]           CLI (Click)                 API REST (FastAPI)
                            │                              │
-  [CONTROLLERS]      sentry/cli/                   sentry/app/api/
+  [CONTROLLERS]      illwatch/cli/                   illwatch/app/api/
                            └──────────────┬──────────────┘
                                           ▼
-  [SERVICES]                      sentry/modules/
+  [SERVICES]                      illwatch/modules/
                        (logique métier pure, calculateurs,
                          collecteurs, moteur de scoring)
                                           ▼
-  [DATA ACCESS]          sentry/app/database.py · sentry/app/models/
+  [DATA ACCESS]          illwatch/app/database.py · illwatch/app/models/
                           (modèles SQLAlchemy, sessions async)
                                           ▼
   [PERSISTENCE]                PostgreSQL 16 · Redis
@@ -479,7 +479,7 @@ CREATE TABLE incident_events (
 CREATE INDEX idx_incident_events_timeline ON incident_events (incident_id, created_at ASC);
 ```
 
-L'implémentation SQLAlchemy vit dans [`sentry/app/models/`](../sentry/app/models/) et ajoute trois
+L'implémentation SQLAlchemy vit dans [`illwatch/app/models/`](../illwatch/app/models/) et ajoute trois
 colonnes non prévues au DDL d'origine — `cves.cvss_vector`, `cves.has_ransomware_campaign` (requise
 par le facteur *A* de la formule de scoring) et `incidents.closure_summary` (requise par la règle de
 clôture). Ces ajouts sont tracés dans le CHANGELOG.
@@ -528,7 +528,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | **M2** Ingestion opérationnelle | 19/08/2026 | Collecteur OTX et flux STIX connectés ; déduplication fonctionnelle ; ≥ 500 indicateurs réels en base. |
 | **M3** Moteur CVE & alerting | 02/09/2026 | NVD 2.0 synchronisée ; EPSS intégrés ; risk score vérifié par tests unitaires ; alerte déclenchée sur CVE critique. |
 | **M4** Gestion des incidents | 16/09/2026 | Workflow testé sur les 6 états ; timeline persistée ; liaison bidirectionnelle incidents ↔ IOC/CVE validée. |
-| **M5** Dashboard & reporting | 23/09/2026 | `/dashboard/summary` avec métriques exactes ; `sentry dashboard show` opérationnel ; exports JSON/CSV conformes. |
+| **M5** Dashboard & reporting | 23/09/2026 | `/dashboard/summary` avec métriques exactes ; `illwatch dashboard show` opérationnel ; exports JSON/CSV conformes. |
 | **v1.0** 🚀 | 30/09/2026 | 6 modules intégrés ; couverture ≥ 80 % ; documentation à jour ; tag Git `v1.0.0` poussé. |
 
 ### 5.3 Découpage des 44 tâches
@@ -539,7 +539,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 |---|---|---|
 | T1.1 | 30/07 | Arborescence standard, `pyproject.toml`, dépendances, squelette FastAPI |
 | T1.2 | 30/07 | Module `database.py`, modèle `User`, migration Alembic initiale |
-| T1.3 | 31/07 | CLI Click racine (`sentry`) avec `db init`, `db upgrade`, `version` |
+| T1.3 | 31/07 | CLI Click racine (`illwatch`) avec `db init`, `db upgrade`, `version` |
 | T1.4 | 31/07 | `docker-compose.yml` : PostgreSQL 16 et Redis 7 avec volumes persistants |
 | T1.5–1.7 | 01/08 | Isolation des répertoires modules (`threat_feeds`, `cve_tracker`, `incidents`) |
 | T1.8 | 01/08 | Framework `pytest`, fixtures asynchrones, premier test sur `/health` |
@@ -555,7 +555,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T2.4 | 08/08 | Modèle `Indicator` et migration |
 | T2.5 | 08/08 | Insertion optimisée et déduplication automatique (upsert) |
 | T2.6 | 09/08 | Background task worker ordonnançant les collectes |
-| T2.7 | 10/08 | CLI `sentry feeds list / add / fetch / fetch-all` |
+| T2.7 | 10/08 | CLI `illwatch feeds list / add / fetch / fetch-all` |
 | T2.8 | 10/08 | Tests unitaires et mocks réseau du module `threat_feeds` |
 | T2.9 | 15/08 | Connecteur AlienVault OTX, extraction des pulses récents |
 | T2.10 | 16/08 | Parseur STIX/TAXII |
@@ -570,7 +570,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T3.4 | 23/08 | Moteur de recherche et filtrage multicritères |
 | T3.5 | 24/08 | Endpoints `/api/v1/cves` et `/api/v1/cves/{cve_id}` |
 | T3.6 | 25/08 | Fonction de risk score composite et moteur d'alertes |
-| T3.7 | 26/08 | CLI `sentry cves list / search / alert` |
+| T3.7 | 26/08 | CLI `illwatch cves list / search / alert` |
 | T3.8 | 27/08 | Tests de précision du scoring et de tolérance aux pannes réseau |
 
 #### Phase 4 — Incident Management (J36–J49)
@@ -583,7 +583,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T4.4 | 06/09 | Contrôleurs REST `/api/v1/incidents` |
 | T4.5 | 07/09 | Endpoint d'enrichissement et lecture de la timeline |
 | T4.6 | 08/09 | Tables de liaison incidents ↔ IOC / CVE |
-| T4.7 | 09/09 | CLI `sentry incidents list / create / close` |
+| T4.7 | 09/09 | CLI `illwatch incidents list / create / close` |
 | T4.8 | 10/09 | Tests d'intégrité de la machine d'état et des transitions interdites |
 
 #### Phase 5 — SOC Dashboard (J50–J56)
@@ -593,7 +593,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T5.1 | 17/09 | Service d'agrégation et endpoint `/api/v1/dashboard/summary` |
 | T5.2 | 18/09 | Contrôleur d'extraction des menaces des dernières 24 heures |
 | T5.3 | 19/09 | Endpoint d'historique consolidé sur 7 jours glissants |
-| T5.4 | 20/09 | Tableau de bord console `rich` (`sentry dashboard show`) |
+| T5.4 | 20/09 | Tableau de bord console `rich` (`illwatch dashboard show`) |
 | T5.5 | 21/09 | Moteur de sérialisation et d'export JSON / CSV |
 | T5.6 | 22/09 | Tests d'intégration des métriques et formats d'export |
 
@@ -604,7 +604,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T6.1 | 24/09 | Moteur d'évaluation de règles par pattern matching |
 | T6.2 | 25/09 | Intégration des 5 règles opérationnelles |
 | T6.3 | 26/09 | Routes `/api/v1/hunt/rules` et `/api/v1/hunt/run` |
-| T6.4 | 27/09 | CLI `sentry hunt run / list-rules / results` |
+| T6.4 | 27/09 | CLI `illwatch hunt run / list-rules / results` |
 | T6.5 | 28/09 | Tests finaux de détection et de précision des correspondances |
 
 ### 5.4 Bilan hebdomadaire du jeudi
@@ -624,7 +624,7 @@ par dossier, standards d'ingénierie, GitFlow et première tâche — vit dans u
 
 <div align="center">
 
-**FIN DU CAHIER DES CHARGES SENTRY**
+**FIN DU CAHIER DES CHARGES ILLWATCH**
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
 

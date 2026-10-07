@@ -2,13 +2,13 @@
 
 import pytest
 
-from sentry.modules.cve_tracker.scoring import (
+from illwatch.modules.cve_tracker.scoring import (
     classify_priority,
     compute_risk_breakdown,
     compute_risk_score,
     remediation_sla_hours,
 )
-from sentry.shared.enums import RiskPriority
+from illwatch.shared.enums import RiskPriority
 
 
 def test_score_nul_sans_donnee() -> None:

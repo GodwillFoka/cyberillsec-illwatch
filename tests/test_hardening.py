@@ -10,17 +10,17 @@ from pydantic import ValidationError
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app import database
-from sentry.app.api.health import get_redis_probe
-from sentry.app.config import Settings, get_settings
-from sentry.app.database import get_db
-from sentry.app.main import create_app
-from sentry.app.middleware import SecurityMiddleware, request_id_from
-from sentry.app.migrations import head_revision
+from illwatch.app import database
+from illwatch.app.api.health import get_redis_probe
+from illwatch.app.config import Settings, get_settings
+from illwatch.app.database import get_db
+from illwatch.app.main import create_app
+from illwatch.app.middleware import SecurityMiddleware, request_id_from
+from illwatch.app.migrations import head_revision
 
 STRONG_KEY = "k" * 48
 PROD_REDIS = "redis://:Xk29-long-random@localhost:6379/0"
-PROD_DB = "postgresql+asyncpg://sentry_app:Zq7-long-random@localhost:5432/sentry_test"
+PROD_DB = "postgresql+asyncpg://illwatch_app:Zq7-long-random@localhost:5432/illwatch_test"
 
 
 # --- En-têtes et identifiant de requête ------------------------------------------------------

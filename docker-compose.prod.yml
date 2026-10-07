@@ -1,14 +1,14 @@
 # ============================================================================
-# SENTRY — déploiement de production (M7 lot 3, ADR-013)
+# ILLWATCH — déploiement de production (M7 lot 3, ADR-013)
 #
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d
 #
 # Avec l'image publiée sur GitHub Container Registry plutôt qu'une construction locale :
-#   SENTRY_IMAGE=ghcr.io/godwillfoka/cyberillsec-sentry:latest docker compose \
+#   ILLWATCH_IMAGE=ghcr.io/godwillfoka/cyberillsec-illwatch:latest docker compose \
 #     -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d --no-build
 #
 # Différences avec le développement :
-# - Caddy termine TLS (Let's Encrypt, ou autorité interne pour SENTRY_DOMAIN=localhost) ;
+# - Caddy termine TLS (Let's Encrypt, ou autorité interne pour ILLWATCH_DOMAIN=localhost) ;
 #   l'API n'est plus publiée sur l'hôte, seul Caddy écoute (80, 443) ;
 # - les migrations tournent dans un conteneur dédié et éphémère (`migrate`) : l'API et le
 #   worker ne détiennent jamais le mot de passe du propriétaire des tables ;
@@ -19,7 +19,7 @@
 x-prod-env: &prod-env
   ENVIRONMENT: production
   SECRET_KEY: ${SECRET_KEY:?SECRET_KEY requis (openssl rand -hex 32)}
-  DATABASE_URL: postgresql+asyncpg://sentry_app:${POSTGRES_APP_PASSWORD:?POSTGRES_APP_PASSWORD requis}@postgres:5432/sentry
+  DATABASE_URL: postgresql+asyncpg://illwatch_app:${POSTGRES_APP_PASSWORD:?POSTGRES_APP_PASSWORD requis}@postgres:5432/illwatch
   MIGRATION_DATABASE_URL: ""
   DATABASE_APP_ROLE: ""
   REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD requis}@redis:6379/0
@@ -39,13 +39,13 @@ services:
 
   migrate:
     build: .
-    image: ${SENTRY_IMAGE:-sentry:local}
+    image: ${ILLWATCH_IMAGE:-illwatch:local}
     env_file: .env
     environment:
       <<: *prod-env
-      MIGRATION_DATABASE_URL: postgresql+asyncpg://sentry:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requis}@postgres:5432/sentry
-      DATABASE_APP_ROLE: sentry_app
-    entrypoint: ["sentry", "db", "upgrade"]
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://illwatch:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requis}@postgres:5432/illwatch
+      DATABASE_APP_ROLE: illwatch_app
+    entrypoint: ["illwatch", "db", "upgrade"]
     restart: "no"
     depends_on:
       postgres:
@@ -53,9 +53,9 @@ services:
     profiles: ["full"]
 
   api:
-    image: ${SENTRY_IMAGE:-sentry:local}
+    image: ${ILLWATCH_IMAGE:-illwatch:local}
     environment: *prod-env
-    command: ["uvicorn", "sentry.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "172.30.0.10", "--no-server-header", "--no-access-log"]
+    command: ["uvicorn", "illwatch.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "172.30.0.10", "--no-server-header", "--no-access-log"]
     ports: !reset []
     depends_on:
       migrate:
@@ -64,7 +64,7 @@ services:
         condition: service_healthy
 
   worker:
-    image: ${SENTRY_IMAGE:-sentry:local}
+    image: ${ILLWATCH_IMAGE:-illwatch:local}
     environment: *prod-env
     depends_on:
       migrate:
@@ -76,7 +76,7 @@ services:
     image: caddy:2.8-alpine
     restart: unless-stopped
     environment:
-      SENTRY_DOMAIN: ${SENTRY_DOMAIN:-localhost}
+      ILLWATCH_DOMAIN: ${ILLWATCH_DOMAIN:-localhost}
     ports:
       - "80:80"
       - "443:443"

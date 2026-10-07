@@ -5,14 +5,14 @@ from pathlib import Path
 
 import pytest
 
-from sentry.modules.threat_feeds.parsers import (
+from illwatch.modules.threat_feeds.parsers import (
     FeedParseError,
     parse_csv,
     parse_feed,
     parse_json,
     parse_stix,
 )
-from sentry.shared.enums import FeedType, Severity
+from illwatch.shared.enums import FeedType, Severity
 
 FIXTURES = Path(__file__).parent / "fixtures" / "feeds"
 

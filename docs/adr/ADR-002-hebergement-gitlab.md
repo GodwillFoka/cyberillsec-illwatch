@@ -9,13 +9,13 @@
 
 Les deux documents fondateurs désignaient GitHub comme dépôt principal :
 
-- le Cahier des charges v1.0.0 en en-tête — *« DÉPÔT GITHUB : github.com/GodwillFoka/sentry
-  (Miroir GitLab : gitlab.com/GodwillFoka/sentry) »* ;
+- le Cahier des charges v1.0.0 en en-tête — *« DÉPÔT GITHUB : github.com/GodwillFoka/illwatch
+  (Miroir GitLab : gitlab.com/GodwillFoka/illwatch) »* ;
 - son critère de validation du jalon v1.0 — *« tag Git v1.0.0 poussé sur GitHub et GitLab »* ;
 - le Product Vision Document, Tome 10, qui liste GitHub comme canal de communication principal.
 
-Or SENTRY se positionne explicitement sur la souveraineté numérique européenne. Le Tome 1 fait de
-la souveraineté l'une des six valeurs de CYBERILL. Le Tome 2 oppose SENTRY aux solutions
+Or ILLWATCH se positionne explicitement sur la souveraineté numérique européenne. Le Tome 1 fait de
+la souveraineté l'une des six valeurs de CYBERILL. Le Tome 2 oppose ILLWATCH aux solutions
 américaines sur le critère « Hébergement UE ». Le PVD identifie la « dépendance américaine » comme
 l'un des cinq problèmes majeurs que la plateforme entend résoudre.
 
@@ -27,12 +27,12 @@ qui ouvre le README, et par tout auditeur qui instruit un dossier NIS 2.
 
 **GitLab devient le dépôt unique et principal du projet. GitHub est abandonné, sans miroir.**
 
-Dépôt de référence : `gitlab.com/GodwillFoka/cyberillsec-sentry`.
+Dépôt de référence : `gitlab.com/GodwillFoka/cyberillsec-illwatch`.
 
 ## Justification
 
 1. **Cohérence du discours produit.** L'argument de souveraineté est le principal différenciateur de
-   SENTRY face à CrowdStrike et Recorded Future. Un différenciateur que le projet ne s'applique pas
+   ILLWATCH face à CrowdStrike et Recorded Future. Un différenciateur que le projet ne s'applique pas
    à lui-même est un différenciateur qui ne tient pas en réunion commerciale.
 2. **GitLab est de droit européen sur l'offre SaaS UE**, et l'édition Community est auto-hébergeable
    — ce qui laisse ouverte la migration vers une instance CYBERILL sans changer d'outillage.

@@ -7,8 +7,8 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.throttle import LocalCounter, LoginThrottle, RedisCounter
-from sentry.modules.foundation.users import create_user
+from illwatch.app.throttle import LocalCounter, LoginThrottle, RedisCounter
+from illwatch.modules.foundation.users import create_user
 
 PASSWORD = "mot-de-passe-robuste-2026"
 
@@ -82,9 +82,9 @@ async def test_compteur_redis_partage() -> None:
         assert await counter.record(key, 30) == 1
         assert await counter.record(key, 30) == 2
         assert await counter.failures(key) == 2
-        assert 0 < await client.ttl("sentry:login:" + key) <= 30
+        assert 0 < await client.ttl("illwatch:login:" + key) <= 30
         await counter.reset(key)
         assert await counter.failures(key) == 0
     finally:
-        await client.delete("sentry:login:" + key)
+        await client.delete("illwatch:login:" + key)
         await client.aclose()

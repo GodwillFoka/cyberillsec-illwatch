@@ -1,19 +1,19 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/sentry-logo-dark.svg">
-  <img alt="CyberillSec SENTRY" src="docs/assets/sentry-logo-light.svg" width="420">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/illwatch-logo-dark.svg">
+  <img alt="CyberillSec ILLWATCH" src="docs/assets/illwatch-logo-light.svg" width="420">
 </picture>
 
 **Security Monitoring & Cyber Threat Intelligence Platform**
 
 *CyberillSec — A CYBERILL Initiative*
 
-[![CI](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/ci.yml)
-[![Validation réelle](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/validation-reelle.yml/badge.svg)](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/validation-reelle.yml)
-[![Documentation](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/docs.yml/badge.svg?branch=main)](https://godwillfoka.github.io/cyberillsec-sentry/)
-[![Release](https://img.shields.io/github/v/release/GodwillFoka/cyberillsec-sentry?color=0891B2&label=release)](https://github.com/GodwillFoka/cyberillsec-sentry/releases)
-[![Image Docker](https://img.shields.io/badge/ghcr.io-cyberillsec--sentry-0A1628?logo=docker&logoColor=white)](https://github.com/GodwillFoka/cyberillsec-sentry/pkgs/container/cyberillsec-sentry)
+[![CI](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/ci.yml)
+[![Validation réelle](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/validation-reelle.yml/badge.svg)](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/validation-reelle.yml)
+[![Documentation](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/docs.yml/badge.svg?branch=main)](https://godwillfoka.github.io/cyberillsec-illwatch/)
+[![Release](https://img.shields.io/github/v/release/GodwillFoka/cyberillsec-illwatch?color=0891B2&label=release)](https://github.com/GodwillFoka/cyberillsec-illwatch/releases)
+[![Image Docker](https://img.shields.io/badge/ghcr.io-cyberillsec--illwatch-0A1628?logo=docker&logoColor=white)](https://github.com/GodwillFoka/cyberillsec-illwatch/pkgs/container/cyberillsec-illwatch)
 <br>
 [![Couverture ≥ 80 %](https://img.shields.io/badge/couverture-94%25-22D3EE.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B.svg)](LICENSE)
@@ -23,13 +23,15 @@
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
 
-[**📖 Documentation**](https://godwillfoka.github.io/cyberillsec-sentry/) ·
+<sub>Anciennement SENTRY — renommé ILLWATCH le 08/10/2026 ; poste existant : <a href="docs/OPERATIONS.md">OPERATIONS § 7 sexies</a>.</sub>
+
+[**📖 Documentation**](https://godwillfoka.github.io/cyberillsec-illwatch/) ·
 [Démarrage rapide](#démarrage-rapide) ·
 [Déploiement](#déploiement) ·
 [Feuille de route](#feuille-de-route) ·
-[Rapports](https://godwillfoka.github.io/cyberillsec-sentry/rapport/)
+[Rapports](https://godwillfoka.github.io/cyberillsec-illwatch/rapport/)
 
-Dépôts : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-sentry) · [GitHub (miroir)](https://github.com/GodwillFoka/cyberillsec-sentry)
+Dépôts : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-illwatch) · [GitHub (miroir)](https://github.com/GodwillFoka/cyberillsec-illwatch)
 
 </div>
 
@@ -37,7 +39,7 @@ Dépôts : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-sen
 
 ## En 30 secondes
 
-SENTRY est une plateforme de **Cyber Threat Intelligence** open source qui fait le travail
+ILLWATCH est une plateforme de **Cyber Threat Intelligence** open source qui fait le travail
 répétitif d'un analyste SOC — collecter, dédupliquer, prioriser, corréler — pour qu'il ne garde
 que les décisions :
 
@@ -57,10 +59,10 @@ que les décisions :
 
 | | |
 |---|---|
-| **Version** | `0.2.0.dev0` sur `main` · dernière release : [`v0.1.1`](https://github.com/GodwillFoka/cyberillsec-sentry/releases) (baseline M1–M6) |
+| **Version** | `0.2.0.dev0` sur `main` · dernière release : [`v0.1.1`](https://github.com/GodwillFoka/cyberillsec-illwatch/releases) (baseline M1–M6) |
 | **Intégré dans `main`** | M1 → M6 (six modules) **et** M7 « Production Hardening » (lots 1 à 3) |
 | **Vérifié en continu** | CI à chaque push (qualité, 438 tests sur PostgreSQL réel, migrations, image, sécurité) ; **validation sur données réelles** chaque lundi (flux IOC, KEV, NVD, EPSS, scénario SOC complet) |
-| **Jalons constatés** (`sentry status`, 06/10) | M1 ✅ · M2 ◐ (volume et sources ✅, OTX et STIX attendent leurs clés) · **M3 ✅** · M4 ✅ · M5 ✅ (scénario SOC) · M6 ✅ |
+| **Jalons constatés** (`illwatch status`, 06/10) | M1 ✅ · M2 ◐ (volume et sources ✅, OTX et STIX attendent leurs clés) · **M3 ✅** · M4 ✅ · M5 ✅ (scénario SOC) · M6 ✅ |
 | **Prochaine étape** | Préproduction sur un VPS européen (clôture de M7), puis M8 « Detection & Correlation » |
 | **Dernier rapport** | [`Rapport/03_06-10-2026.md`](Rapport/03_06-10-2026.md) |
 
@@ -78,7 +80,7 @@ Pendant ce temps, les attaquants exploitent une vulnérabilité publiée en moin
 
 ## La réponse
 
-| | Plateformes commerciales | Plateformes open source complètes | **SENTRY** |
+| | Plateformes commerciales | Plateformes open source complètes | **ILLWATCH** |
 |---|---|---|---|
 | Coût annuel | 40 à 150 k€ | 0 € (hors infrastructure) | **0 €** |
 | Licence | Propriétaire | AGPL / Apache | **MIT** |
@@ -86,7 +88,7 @@ Pendant ce temps, les attaquants exploitent une vulnérabilité publiée en moin
 | Priorisation CVE par l'exploitation réelle | Oui | Via connecteurs | **Native (KEV + EPSS + exploit)** |
 | Souveraineté | Variable | Auto-hébergé | **Auto-hébergé, UE** |
 
-SENTRY ne cherche pas à remplacer un graphe de connaissances CTI complet : il donne à une
+ILLWATCH ne cherche pas à remplacer un graphe de connaissances CTI complet : il donne à une
 équipe de 1 à 10 personnes ce dont elle a besoin **le lundi matin** — quoi patcher d'abord, quoi
 bloquer, qu'est-ce qui a changé, et la preuve de ce qui a été fait.
 
@@ -102,11 +104,11 @@ bloquer, qu'est-ce qui a changé, et la preuve de ce qui a été fait.
 | **MOD-06 Threat Hunting** | 6 règles déterministes, chasse sur observables ou sur la base, sessions enregistrées, chasse planifiée | ✅ jalon atteint sur données réelles |
 
 « Codé » signifie : implémenté, testé, intégré au pipeline. Un jalon n'est déclaré **atteint**
-que lorsque `sentry status` le constate sur données réelles.
+que lorsque `illwatch status` le constate sur données réelles.
 
 ## Score de risque composite
 
-Le cœur de SENTRY. Pour chaque CVE :
+Le cœur d'ILLWATCH. Pour chaque CVE :
 
 ```
 R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + KEV × 25 + Exploit × 10 + Ransomware × 10)
@@ -135,7 +137,7 @@ flowchart LR
         C[AlienVault OTX]:::src
         D[NVD 2.0 · KEV · EPSS]:::src
     end
-    subgraph SENTRY
+    subgraph ILLWATCH
         W[Worker planifié<br/>verrou Redis]
         F[Fetcher durci<br/>SSRF · taille · délai]
         N[Normalisation<br/>déduplication]
@@ -153,7 +155,7 @@ flowchart LR
 ```
 
 Clean Architecture en couches strictes : les contrôleurs (API FastAPI, CLI Click) ne contiennent
-aucune logique métier ; tout passe par `sentry/modules/`, testable sans HTTP ni base. Détail :
+aucune logique métier ; tout passe par `illwatch/modules/`, testable sans HTTP ni base. Détail :
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) et les [15 décisions d'architecture](docs/adr/README.md).
 
 ## Sécurité par conception
@@ -169,7 +171,7 @@ protéger.
 | Force brute | 429 avant toute vérification du mot de passe : 5 échecs d'une adresse sur un compte, 50 sur un compte (botnet), 20 d'une adresse (pulvérisation) — sans verrouiller le titulaire légitime |
 | Falsification de l'historique | Chronologie d'incident et journal d'audit refusant `UPDATE`, `DELETE` et `TRUNCATE` jusque dans PostgreSQL (déclencheurs) |
 | Répudiation | Journal d'audit : connexions, refus d'accès, tentatives SSRF, administration, exports, chasse — acteur, IP, `X-Request-ID` |
-| Vol de session | Accès de 15 min, jeton de rafraîchissement opaque et rotatif : un rejeu révoque toute la session ; `sentry users disable` coupe l'accès immédiatement |
+| Vol de session | Accès de 15 min, jeton de rafraîchissement opaque et rotatif : un rejeu révoque toute la session ; `illwatch users disable` coupe l'accès immédiatement |
 | Compromission du code applicatif | Rôle PostgreSQL applicatif sans droit de structure : ni `ALTER`, ni `TRUNCATE`, ni suppression de déclencheur ; tables d'audit en `SELECT/INSERT` seulement |
 | Exposition HTTP | CSP `default-src 'none'`, `nosniff`, `X-Frame-Options`, `no-store`, HSTS et `/docs` masqué en production, erreurs 500 sans détail interne |
 | Injection CSV (CWE-1236) | Cellules exportées commençant par `= + - @` neutralisées |
@@ -198,7 +200,7 @@ Deux pipelines indépendants exécutent les mêmes étapes — qualité (lint, t
 | Pipeline | Ce qu'il ajoute |
 |---|---|
 | **GitLab CI** (référence) | SAST, détection de secrets, analyse des dépendances et de l'image (Container Scanning) |
-| **GitHub Actions** (miroir) | pip-audit et bandit ; [validation réelle](https://github.com/GodwillFoka/cyberillsec-sentry/actions/workflows/validation-reelle.yml) hebdomadaire ; publication de la documentation, de l'image `ghcr.io` et des releases |
+| **GitHub Actions** (miroir) | pip-audit et bandit ; [validation réelle](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/validation-reelle.yml) hebdomadaire ; publication de la documentation, de l'image `ghcr.io` et des releases |
 
 `scripts/ci-local.sh` reproduit le pipeline en local avant chaque push.
 
@@ -217,19 +219,19 @@ et l'asynchrone de bout en bout donnent un débit largement suffisant dans un se
 (Python 3.14) et vérifié en CI sous Python 3.12 et 3.14 ; compatible Debian/Ubuntu, macOS, WSL2.
 
 ```bash
-git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git   # ou le miroir :
-# git clone https://github.com/GodwillFoka/cyberillsec-sentry.git
-cd cyberillsec-sentry
+git clone https://gitlab.com/GodwillFoka/cyberillsec-illwatch.git   # ou le miroir :
+# git clone https://github.com/GodwillFoka/cyberillsec-illwatch.git
+cd cyberillsec-illwatch
 python3 -m venv .venv && source .venv/bin/activate
 pip install -c constraints.txt -e ".[dev]"   # mêmes versions que la CI et l'image
 
 cp .env.example .env               # SECRET_KEY : openssl rand -hex 32
 docker compose up -d postgres redis
-sentry db init && sentry seed      # schéma + sources de référence vérifiées
-sentry users create --username admin --email admin@example.org --role admin
+illwatch db init && illwatch seed      # schéma + sources de référence vérifiées
+illwatch users create --username admin --email admin@example.org --role admin
 
 ./scripts/ci-local.sh              # pipeline complet en local
-uvicorn sentry.app.main:app --reload --port 8000   # http://localhost:8000/docs
+uvicorn illwatch.app.main:app --reload --port 8000   # http://localhost:8000/docs
 curl -s localhost:8000/ready       # base joignable, schéma à jour, Redis
 python scripts/scenario_soc.py     # test d'acceptation SOC de bout en bout
 ```
@@ -244,29 +246,29 @@ journaux, audit, sauvegardes, reverse proxy) : [`docs/OPERATIONS.md`](docs/OPERA
 
 ```bash
 # Renseignement
-sentry feeds probe <nom|url> --type TAXII   # vérifier qu'une source répond et porte des IOC
-sentry taxii discover https://attack-taxii.mitre.org/taxii2/
-sentry feeds fetch-all --force
-sentry feeds worker                          # flux en continu, CVE toutes les 6 h, chasse quotidienne
+illwatch feeds probe <nom|url> --type TAXII   # vérifier qu'une source répond et porte des IOC
+illwatch taxii discover https://attack-taxii.mitre.org/taxii2/
+illwatch feeds fetch-all --force
+illwatch feeds worker                          # flux en continu, CVE toutes les 6 h, chasse quotidienne
 
 # Vulnérabilités
-sentry cves sync && sentry cves list --priority P0_CRITIQUE
-sentry cves show CVE-2021-44228              # décomposition du score
+illwatch cves sync && illwatch cves list --priority P0_CRITIQUE
+illwatch cves show CVE-2021-44228              # décomposition du score
 
 # Réponse
-sentry incidents from-alert <alerte>         # incident pré-rempli depuis une alerte CVE
-sentry incidents move <id> CONFINEMENT --note "Poste isolé"
+illwatch incidents from-alert <alerte>         # incident pré-rempli depuis une alerte CVE
+illwatch incidents move <id> CONFINEMENT --note "Poste isolé"
 
 # Chasse et pilotage
-sentry hunt run --observables proxy.txt --asset FortiOS
-sentry dashboard show
-sentry dashboard export cves --format csv -o cves.csv
-sentry status                                # jalons constatés sur données réelles
+illwatch hunt run --observables proxy.txt --asset FortiOS
+illwatch dashboard show
+illwatch dashboard export cves --format csv -o cves.csv
+illwatch status                                # jalons constatés sur données réelles
 
 # Sécurité et exploitation (M7)
-sentry audit list --action auth. --outcome FAILURE --since 24
-sentry users disable alice                   # coupe l'accès et révoque les sessions
-sentry cves import CVE-2024.json.xz --only-known   # NVD hors ligne (réseau filtré)
+illwatch audit list --action auth. --outcome FAILURE --since 24
+illwatch users disable alice                   # coupe l'accès et révoque les sessions
+illwatch cves import CVE-2024.json.xz --only-known   # NVD hors ligne (réseau filtré)
 scripts/backup.sh                            # sauvegarde vérifiée, rotation
 ```
 
@@ -288,24 +290,24 @@ L'image est publiée sur GitHub Container Registry à chaque release (`:X.Y.Z`, 
 chaque fusion sur `main` (`:edge`) :
 
 ```bash
-docker pull ghcr.io/godwillfoka/cyberillsec-sentry:latest
+docker pull ghcr.io/godwillfoka/cyberillsec-illwatch:latest
 ```
 
 Production derrière TLS (Caddy, Let's Encrypt), migrations dans un conteneur éphémère, API et
 worker sans droits de structure :
 
 ```bash
-cp .env.example .env    # SECRET_KEY, POSTGRES_PASSWORD, POSTGRES_APP_PASSWORD, REDIS_PASSWORD, SENTRY_DOMAIN
-export SENTRY_IMAGE=ghcr.io/godwillfoka/cyberillsec-sentry:latest
+cp .env.example .env    # SECRET_KEY, POSTGRES_PASSWORD, POSTGRES_APP_PASSWORD, REDIS_PASSWORD, ILLWATCH_DOMAIN
+export ILLWATCH_IMAGE=ghcr.io/godwillfoka/cyberillsec-illwatch:latest
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d --no-build
-curl -fsS https://$SENTRY_DOMAIN/ready
+curl -fsS https://$ILLWATCH_DOMAIN/ready
 ```
 
 Procédure complète, sauvegardes et mise à jour : [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 ## Documentation
 
-Le site **[godwillfoka.github.io/cyberillsec-sentry](https://godwillfoka.github.io/cyberillsec-sentry/)**
+Le site **[godwillfoka.github.io/cyberillsec-illwatch](https://godwillfoka.github.io/cyberillsec-illwatch/)**
 rassemble toute la documentation, régénérée à chaque fusion sur `main` :
 
 | Document | Pour qui | Contenu |
@@ -323,7 +325,7 @@ rassemble toute la documentation, régénérée à chaque fusion sur `main` :
 ## Structure du dépôt
 
 ```
-cyberillsec-sentry/
+cyberillsec-illwatch/
 ├── .gitlab-ci.yml          # Pipeline GitLab : qualité, tests 3.12/3.14, migrations, image, sécurité
 ├── .github/workflows/      # CI miroir, validation réelle, documentation (Pages), publication (GHCR)
 ├── alembic/versions/       # 8 migrations, historique immuable
@@ -334,7 +336,7 @@ cyberillsec-sentry/
 ├── mkdocs.yml              # Site de documentation
 ├── Rapport/                # Rapports d'avancement, bilans d'étape, audits
 ├── scripts/                # ci-local, scénario SOC, sauvegarde/restauration
-├── sentry/
+├── illwatch/
 │   ├── app/                # API FastAPI, modèles, configuration, sécurité, middleware
 │   ├── cli/                # Commandes Click
 │   ├── modules/            # foundation, threat_feeds, cve_tracker, incidents, dashboard, threat_hunting

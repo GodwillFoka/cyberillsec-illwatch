@@ -5,18 +5,18 @@ import pytest
 from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings, get_settings
-from sentry.app.models import ThreatFeed
-from sentry.modules.foundation.seed import seed_reference_feeds
-from sentry.modules.threat_feeds.collector import collect_feed
-from sentry.modules.threat_feeds.fetcher import FetchError, fetch_feed_content
-from sentry.modules.threat_feeds.secrets import (
+from illwatch.app.config import Settings, get_settings
+from illwatch.app.models import ThreatFeed
+from illwatch.modules.foundation.seed import seed_reference_feeds
+from illwatch.modules.threat_feeds.collector import collect_feed
+from illwatch.modules.threat_feeds.fetcher import FetchError, fetch_feed_content
+from illwatch.modules.threat_feeds.secrets import (
     MissingFeedSecretError,
     mask_secrets,
     resolve_feed_url,
 )
-from sentry.modules.threat_feeds.service import UnsafeFeedURLError, validate_feed_url
-from sentry.shared.enums import FeedStatus, FeedType
+from illwatch.modules.threat_feeds.service import UnsafeFeedURLError, validate_feed_url
+from illwatch.shared.enums import FeedStatus, FeedType
 
 TEMPLATE = "https://urlhaus-api.abuse.ch/v2/files/exports/{ABUSECH_AUTH_KEY}/recent.csv"
 KEY = "s3cr3t/Key+42"

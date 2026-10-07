@@ -4,7 +4,7 @@
 - **Date :** 2026-09-27
 - **Décideurs :** à valider par le porteur du projet
 - **Concerne :** MOD-02, RF-07, RF-08, RNF-PERF-02, table `indicators`,
-  `sentry/modules/threat_feeds/indicators.py`
+  `illwatch/modules/threat_feeds/indicators.py`
 
 ## Contexte
 

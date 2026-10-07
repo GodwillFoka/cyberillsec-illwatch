@@ -1,11 +1,11 @@
-# SENTRY — État d'avancement des travaux
+# ILLWATCH — État d'avancement des travaux
 
 **Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 00 h 10**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
 
-SENTRY est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
+ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
 v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés ; **reste le
 déploiement de préproduction sur un VPS européen** pour clore M7. M1 à M6 sont constatés sur
 données réelles, en local et en CI.
@@ -43,7 +43,7 @@ données réelles, en local et en CI.
 | 07/10 | `a2fb367` | Fusion : image sans curl |
 | 07/10 | `62b7bf0` | Image sans curl, sonde de santé en Python, risque résiduel documenté |
 | 07/10 | `ad69dc6` | Fusion ADR-014 ; reclassement Kali : 612 changements, constaté |
-| 07/10 | `6d0ff40` | ADR-014 : plancher KEV ⇒ P1, motif `+floor_kev`, `sentry cves rescore`, test panne EPSS |
+| 07/10 | `6d0ff40` | ADR-014 : plancher KEV ⇒ P1, motif `+floor_kev`, `illwatch cves rescore`, test panne EPSS |
 | 07/10 | `5b55f64` | État d'avancement vivant créé |
 | 07/10 | `3422168` | Export par clé au lieu d'`OFFSET`, envoi par paquets ; tableau de bord en 2 lectures au lieu de 5 |
 | 07/10 | `fa73bd6` | URL au port invalide rejetée seule (bloquait le rattrapage OTX de nuit) |

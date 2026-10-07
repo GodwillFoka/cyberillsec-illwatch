@@ -1,7 +1,7 @@
 """Backend TAXII 2.1 `taxii2-client` (T3 à T8, T10, T11) — sans réseau.
 
 Un adaptateur `requests` factice joue le serveur TAXII : on vérifie ce que la bibliothèque
-envoie réellement (en-têtes, paramètres, délai) et comment SENTRY traduit ses réponses.
+envoie réellement (en-têtes, paramètres, délai) et comment ILLWATCH traduit ses réponses.
 """
 
 import io
@@ -18,19 +18,19 @@ from requests.adapters import BaseAdapter
 from requests.structures import CaseInsensitiveDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings, get_settings
-from sentry.app.models import ThreatFeed
-from sentry.modules.threat_feeds import collector, taxii
-from sentry.modules.threat_feeds.fetcher import (
+from illwatch.app.config import Settings, get_settings
+from illwatch.app.models import ThreatFeed
+from illwatch.modules.threat_feeds import collector, taxii
+from illwatch.modules.threat_feeds.fetcher import (
     USER_AGENT,
     FetchError,
     RateLimitedError,
     UnsafeDestinationError,
     fetch_feed_content,
 )
-from sentry.modules.threat_feeds.parsers import FeedParseError
-from sentry.modules.threat_feeds.taxii import TAXII_MEDIA_TYPE, collection_endpoint, fetch_taxii
-from sentry.shared.enums import FeedStatus, FeedType
+from illwatch.modules.threat_feeds.parsers import FeedParseError
+from illwatch.modules.threat_feeds.taxii import TAXII_MEDIA_TYPE, collection_endpoint, fetch_taxii
+from illwatch.shared.enums import FeedStatus, FeedType
 
 FIXTURES = Path(__file__).parent / "fixtures" / "feeds"
 OBJECTS = (
@@ -410,7 +410,7 @@ async def test_decouverte_api_root_relative() -> None:
 
 
 async def test_sonde_taxii_sans_ecriture() -> None:
-    from sentry.modules.threat_feeds.probe import probe_source
+    from illwatch.modules.threat_feeds.probe import probe_source
 
     server = FakeServer(_pages)
     report = await probe_source(
@@ -422,7 +422,7 @@ async def test_sonde_taxii_sans_ecriture() -> None:
 
 
 async def test_sonde_collection_sans_ioc_et_source_en_panne() -> None:
-    from sentry.modules.threat_feeds.probe import probe_source
+    from illwatch.modules.threat_feeds.probe import probe_source
 
     attack = b'{"more": false, "objects": [{"type": "attack-pattern", "name": "Phishing"}]}'
     empty = await probe_source(
@@ -448,7 +448,7 @@ async def test_sonde_collection_sans_ioc_et_source_en_panne() -> None:
 
 
 async def test_sonde_csv_reel_ipsum() -> None:
-    from sentry.modules.threat_feeds.probe import probe_source
+    from illwatch.modules.threat_feeds.probe import probe_source
 
     content = (FIXTURES / "ipsum_level5.txt").read_bytes()
 

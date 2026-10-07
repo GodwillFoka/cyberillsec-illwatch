@@ -1,4 +1,4 @@
-# Contribuer à SENTRY
+# Contribuer à ILLWATCH
 
 Merci de l'intérêt que vous portez au projet. Ce document décrit exactement ce qu'on attend d'une
 contribution — lisez-le avant d'ouvrir une merge request, il vous évitera un aller-retour.
@@ -6,15 +6,15 @@ contribution — lisez-le avant d'ouvrir une merge request, il vous évitera un 
 ## Installation de l'environnement
 
 ```bash
-git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
-# miroir : https://github.com/GodwillFoka/cyberillsec-sentry.git
-cd cyberillsec-sentry
+git clone https://gitlab.com/GodwillFoka/cyberillsec-illwatch.git
+# miroir : https://github.com/GodwillFoka/cyberillsec-illwatch.git
+cd cyberillsec-illwatch
 python3.12 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 cp .env.example .env
 docker compose up -d
-sentry db init
-./scripts/ci-local.sh   # pipeline complet sur la base dédiée sentry_test
+illwatch db init
+./scripts/ci-local.sh   # pipeline complet sur la base dédiée illwatch_test
 ```
 
 ## Stratégie de branches
@@ -71,9 +71,9 @@ porteuse d'un message exploitable.
 ## Architecture — la règle d'or
 
 Un contrôleur d'API ne fait **jamais** de calcul métier ni de requête SQL complexe. Il valide les
-paramètres d'entrée, appelle la couche `sentry/modules/`, et retourne un schéma Pydantic.
+paramètres d'entrée, appelle la couche `illwatch/modules/`, et retourne un schéma Pydantic.
 
-Si votre MR met de la logique métier dans `sentry/app/api/`, elle sera refusée — pas par sévérité,
+Si votre MR met de la logique métier dans `illwatch/app/api/`, elle sera refusée — pas par sévérité,
 mais parce que cette logique devient alors intestable sans serveur HTTP.
 
 ## Cycle de contribution
@@ -82,7 +82,7 @@ mais parce que cette logique devient alors intestable sans serveur HTTP.
 2. **Brancher** — `git checkout -b feat/T3.6-cve-alerting`
 3. **Développer** — dans le sous-module approprié
 4. **Tester** — écrire le test, puis `pytest -v`
-5. **Vérifier** — `ruff check . && ruff format --check . && mypy sentry`
+5. **Vérifier** — `ruff check . && ruff format --check . && mypy illwatch`
 6. **Committer et pousser** — message Conventional Commits
 7. **Ouvrir la MR** vers `main`, en renseignant les critères de validation testés
 8. **Fusion** une fois la CI verte et la revue approuvée

@@ -12,9 +12,9 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import CVE, CVEAlert, CVEPriorityChange, Incident, ThreatFeed
-from sentry.app.security import create_access_token
-from sentry.modules.dashboard.service import (
+from illwatch.app.models import CVE, CVEAlert, CVEPriorityChange, Incident, ThreatFeed
+from illwatch.app.security import create_access_token
+from illwatch.modules.dashboard.service import (
     COLUMNS,
     Dataset,
     compute_summary,
@@ -22,9 +22,9 @@ from sentry.modules.dashboard.service import (
     export_rows,
     recent_activity,
 )
-from sentry.modules.foundation.users import create_user
-from sentry.modules.threat_feeds.indicators import Observation, ingest_indicators
-from sentry.shared.enums import (
+from illwatch.modules.foundation.users import create_user
+from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
+from illwatch.shared.enums import (
     FeedStatus,
     FeedType,
     IncidentStatus,
@@ -192,7 +192,7 @@ async def test_api_tableau_de_bord(client: AsyncClient, db_session: AsyncSession
     exported = await client.get("/api/v1/dashboard/export?dataset=cves&format=csv", headers=headers)
     assert exported.status_code == 200
     assert exported.headers["content-type"].startswith("text/csv")
-    assert 'filename="sentry-cves-' in exported.headers["content-disposition"]
+    assert 'filename="illwatch-cves-' in exported.headers["content-disposition"]
     rows = list(csv.reader(io.StringIO(exported.text)))
     assert rows[0][0] == "id" and len(rows) == 4
 
@@ -215,7 +215,7 @@ async def test_export_pagine_par_cle_sans_perte_ni_doublon(
     db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Pages de 2 lignes : chaque ligne une seule fois, dans l'ordre, ex æquo compris."""
-    from sentry.modules.dashboard import service
+    from illwatch.modules.dashboard import service
 
     monkeypatch.setattr(service, "EXPORT_CHUNK", 2)
     await ingest_indicators(
@@ -245,7 +245,7 @@ async def test_export_pagine_par_cle_sans_perte_ni_doublon(
 
 
 async def test_flux_regroupe_les_lignes(monkeypatch: pytest.MonkeyPatch) -> None:
-    from sentry.modules.dashboard import service
+    from illwatch.modules.dashboard import service
 
     monkeypatch.setattr(service, "STREAM_BATCH", 3)
 

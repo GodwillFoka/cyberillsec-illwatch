@@ -7,8 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import CVE, Incident, Indicator, ThreatFeed, User
-from sentry.shared.enums import FeedStatus, FeedType, IncidentStatus, IndicatorType, Severity
+from illwatch.app.models import CVE, Incident, Indicator, ThreatFeed, User
+from illwatch.shared.enums import FeedStatus, FeedType, IncidentStatus, IndicatorType, Severity
 
 
 async def test_creation_utilisateur(db_session: AsyncSession) -> None:

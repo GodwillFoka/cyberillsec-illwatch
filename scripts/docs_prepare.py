@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
-REPO = "https://github.com/GodwillFoka/cyberillsec-sentry/blob/main"
+REPO = "https://github.com/GodwillFoka/cyberillsec-illwatch/blob/main"
 
 COPIES = {
     "CHANGELOG.md": "changelog.md",

@@ -12,9 +12,9 @@ from sqlalchemy import delete, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.database import Base
-from sentry.app.models import Indicator, ThreatFeed
-from sentry.shared.enums import FeedType, IndicatorType, Severity
+from illwatch.app.database import Base
+from illwatch.app.models import Indicator, ThreatFeed
+from illwatch.shared.enums import FeedType, IndicatorType, Severity
 
 NOW = datetime.now(UTC)
 

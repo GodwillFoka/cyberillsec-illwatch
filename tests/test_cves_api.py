@@ -10,13 +10,13 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings
-from sentry.app.models import CVE, CVEAlert
-from sentry.app.security import create_access_token
-from sentry.modules.cve_tracker.engine import sync_cves
-from sentry.modules.foundation.status import compute_status
-from sentry.modules.foundation.users import create_user
-from sentry.shared.enums import RiskPriority, UserRole
+from illwatch.app.config import Settings
+from illwatch.app.models import CVE, CVEAlert
+from illwatch.app.security import create_access_token
+from illwatch.modules.cve_tracker.engine import sync_cves
+from illwatch.modules.foundation.status import compute_status
+from illwatch.modules.foundation.users import create_user
+from illwatch.shared.enums import RiskPriority, UserRole
 
 FIXTURES = Path(__file__).parent / "fixtures" / "cve"
 T0 = datetime(2026, 9, 29, 12, 0, tzinfo=UTC)

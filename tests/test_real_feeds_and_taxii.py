@@ -14,13 +14,13 @@ from pydantic import SecretStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings
-from sentry.app.models import Indicator, ThreatFeed
-from sentry.modules.threat_feeds.collector import collect_feed
-from sentry.modules.threat_feeds.fetcher import FetchError
-from sentry.modules.threat_feeds.parsers import FeedParseError, parse_csv
-from sentry.modules.threat_feeds.secrets import mask_secrets
-from sentry.modules.threat_feeds.taxii import (
+from illwatch.app.config import Settings
+from illwatch.app.models import Indicator, ThreatFeed
+from illwatch.modules.threat_feeds.collector import collect_feed
+from illwatch.modules.threat_feeds.fetcher import FetchError
+from illwatch.modules.threat_feeds.parsers import FeedParseError, parse_csv
+from illwatch.modules.threat_feeds.secrets import mask_secrets
+from illwatch.modules.threat_feeds.taxii import (
     TAXII_MEDIA_TYPE,
     TaxiiConfigError,
     TaxiiCredential,
@@ -28,8 +28,8 @@ from sentry.modules.threat_feeds.taxii import (
     parse_envelope,
     parse_taxii_auth,
 )
-from sentry.modules.threat_feeds.validators import normalize_indicator
-from sentry.shared.enums import FeedStatus, FeedType, IndicatorType
+from illwatch.modules.threat_feeds.validators import normalize_indicator
+from illwatch.shared.enums import FeedStatus, FeedType, IndicatorType
 
 FIXTURES = Path(__file__).parent / "fixtures" / "feeds"
 COLLECTION = (

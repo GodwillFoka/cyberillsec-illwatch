@@ -1,7 +1,7 @@
-# SENTRY — Product Vision Document
+# ILLWATCH — Product Vision Document
 
 > **Conversion Markdown versionnable** du document
-> `CYBERILL-SENTRY — Product Vision Document v1.0` (Godwill FOKA, Berlin, juillet 2026).
+> `CYBERILL-ILLWATCH — Product Vision Document v1.0` (Godwill FOKA, Berlin, juillet 2026).
 > Le PDF d'origine est conservé dans [`pdf/CYBERILL-SENTRY-PRODUCT-VISION_3.pdf`](pdf/CYBERILL-SENTRY-PRODUCT-VISION_3.pdf).
 >
 > Ce document porte la **vision produit et stratégique**. Pour les spécifications opposables au
@@ -21,7 +21,7 @@ CyberillSec par ses recherches, et chaque projet renforce les autres.
 
 | Projet | Domaine | Description |
 |---|---|---|
-| CyberillSec / SENTRY | Threat Intelligence | Plateforme de veille CTI |
+| CyberillSec / ILLWATCH | Threat Intelligence | Plateforme de veille CTI |
 | Cyberill Labs | Recherche | Analyse de malware, pentest |
 | Cyberill Academy | Formation | Certifications, workshops |
 | Cyberill Consulting | Conseil | GRC, audit, advisory |
@@ -36,12 +36,12 @@ Innovation · Excellence · Transparence · Souveraineté · Collaboration · É
 
 Face à un paysage de menace professionnalisé — 1 655 CVE au catalogue KEV, 858 techniques MITRE
 ATT&CK, RaaS en expansion — CyberillSec collecte, corrèle et analyse le renseignement pour anticiper
-les attaques. SENTRY en est le moteur technologique.
+les attaques. ILLWATCH en est le moteur technologique.
 
 **Cinq problèmes majeurs** : surcharge informationnelle, fragmentation des outils, coût (> 50 k€/an
 pour Recorded Future), manque de contexte, dépendance américaine.
 
-**La réponse SENTRY** : 100 % open source, scoring composite CVE + EPSS + KEV, dashboard SOC natif,
+**La réponse ILLWATCH** : 100 % open source, scoring composite CVE + EPSS + KEV, dashboard SOC natif,
 hébergement européen.
 
 ---
@@ -58,7 +58,7 @@ hébergement européen.
 
 ### Analyse concurrentielle
 
-| Critère | CrowdStrike | Recorded Future | MISP | OpenCTI | **SENTRY** |
+| Critère | CrowdStrike | Recorded Future | MISP | OpenCTI | **ILLWATCH** |
 |---|---|---|---|---|---|
 | Open source | Non | Non | AGPL | Apache | **MIT** |
 | Dashboard | Oui | Partiel | Non | Non | **Natif** |

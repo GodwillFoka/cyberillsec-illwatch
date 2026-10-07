@@ -1,5 +1,5 @@
 # ============================================================================
-# SENTRY — Pipeline d'intégration continue GitLab
+# ILLWATCH — Pipeline d'intégration continue GitLab
 # Quatre étapes : qualité, tests, build, sécurité.
 # Une merge request ne peut être fusionnée que si tout est vert (RSK-05).
 # ============================================================================
@@ -69,7 +69,7 @@ typage:
   extends: .python
   stage: qualite
   script:
-    - mypy sentry
+    - mypy illwatch
 
 # ---------------------------------------------------------------------------
 # Étape 2 — Tests : suite complète contre PostgreSQL et Redis réels
@@ -88,11 +88,11 @@ tests:
     - name: redis:7.2-alpine
       alias: redis
   variables:
-    POSTGRES_USER: sentry
-    POSTGRES_PASSWORD: sentry
-    POSTGRES_DB: sentry_test
+    POSTGRES_USER: illwatch
+    POSTGRES_PASSWORD: illwatch
+    POSTGRES_DB: illwatch_test
     POSTGRES_HOST_AUTH_METHOD: trust
-    DATABASE_URL: "postgresql+asyncpg://sentry:sentry@postgres:5432/sentry_test"
+    DATABASE_URL: "postgresql+asyncpg://illwatch:illwatch@postgres:5432/illwatch_test"
     REDIS_URL: "redis://redis:6379/0"
     SECRET_KEY: "ci-secret-key-not-for-production"
     ENVIRONMENT: "development"
@@ -119,11 +119,11 @@ migrations:
     - name: postgres:16-alpine
       alias: postgres
   variables:
-    POSTGRES_USER: sentry
-    POSTGRES_PASSWORD: sentry
-    POSTGRES_DB: sentry_migrations
+    POSTGRES_USER: illwatch
+    POSTGRES_PASSWORD: illwatch
+    POSTGRES_DB: illwatch_migrations
     POSTGRES_HOST_AUTH_METHOD: trust
-    DATABASE_URL: "postgresql+asyncpg://sentry:sentry@postgres:5432/sentry_migrations"
+    DATABASE_URL: "postgresql+asyncpg://illwatch:illwatch@postgres:5432/illwatch_migrations"
     SECRET_KEY: "ci-secret-key-not-for-production"
   script:
     - alembic upgrade head
@@ -146,13 +146,13 @@ image-docker:
     DOCKER_TLS_VERIFY: "1"
     DOCKER_CERT_PATH: "/certs/client"
   script:
-    - docker build -t sentry:$CI_COMMIT_SHORT_SHA .
-    - docker run --rm --entrypoint sentry sentry:$CI_COMMIT_SHORT_SHA version
+    - docker build -t illwatch:$CI_COMMIT_SHORT_SHA .
+    - docker run --rm --entrypoint illwatch illwatch:$CI_COMMIT_SHORT_SHA version
     # M7 lot 3 : l'image est publiée sous son SHA dans le registre du projet pour que
     # container_scanning l'analyse. Registre désactivé : avertissement, pas d'échec du build.
     - |
       if echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"; then
-        docker tag sentry:$CI_COMMIT_SHORT_SHA "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+        docker tag illwatch:$CI_COMMIT_SHORT_SHA "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
         docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" || echo "AVERTISSEMENT : push refusé, analyse d'image impossible"
       else
         echo "AVERTISSEMENT : registre GitLab indisponible, analyse d'image impossible"

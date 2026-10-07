@@ -1,12 +1,12 @@
-"""CLI `sentry hunt` (phase 6) sur PostgreSQL réel, liste Tor simulée."""
+"""CLI `illwatch hunt` (phase 6) sur PostgreSQL réel, liste Tor simulée."""
 
 from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
 
-from sentry.cli import hunt as hunt_cli
-from sentry.cli.main import cli
+from illwatch.cli import hunt as hunt_cli
+from illwatch.cli.main import cli
 
 pytestmark = pytest.mark.postgres
 

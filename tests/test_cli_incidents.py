@@ -1,4 +1,4 @@
-"""CLI `sentry incidents` (phase 4) sur PostgreSQL réel."""
+"""CLI `illwatch incidents` (phase 4) sur PostgreSQL réel."""
 
 import asyncio
 import re
@@ -7,9 +7,9 @@ import pytest
 from click.testing import CliRunner
 from sqlalchemy import delete
 
-from sentry.app.database import dispose_engine, get_engine
-from sentry.app.models import Incident
-from sentry.cli.main import cli
+from illwatch.app.database import dispose_engine, get_engine
+from illwatch.app.models import Incident
+from illwatch.cli.main import cli
 
 pytestmark = pytest.mark.postgres
 

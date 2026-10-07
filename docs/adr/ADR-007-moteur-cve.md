@@ -4,7 +4,7 @@
 - **Date :** 2026-09-29
 - **Décideurs :** à valider par le porteur du projet
 - **Concerne :** MOD-03, RF-11 à RF-16, RNF-PERF-01, tables `cves`, `cve_priority_history`,
-  `cve_alerts`, `collector_state`, `sentry/modules/cve_tracker/`
+  `cve_alerts`, `collector_state`, `illwatch/modules/cve_tracker/`
 
 ## Contexte
 
@@ -29,8 +29,8 @@ et FIRST EPSS (API par lots). Elle doit aussi alerter sans noyer l'astreinte.
    première synchronisation complète est une ligne de base sans alerte.**
 6. **Livraison** : l'alerte est d'abord enregistrée et journalisée, puis envoyée au webhook
    (`ALERT_WEBHOOK_URL`), 5 tentatives au plus.
-7. **Ordonnancement** : `sentry feeds worker` synchronise les CVE toutes les 6 h
-   (`CVE_SYNC_INTERVAL_SECONDS`) sous verrou Redis ; `sentry cves sync` à la demande.
+7. **Ordonnancement** : `illwatch feeds worker` synchronise les CVE toutes les 6 h
+   (`CVE_SYNC_INTERVAL_SECONDS`) sous verrou Redis ; `illwatch cves sync` à la demande.
 
 ## Justification
 

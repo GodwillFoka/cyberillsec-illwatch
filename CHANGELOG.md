@@ -1,11 +1,30 @@
 # Changelog
 
-Toutes les évolutions notables de SENTRY sont consignées ici.
+Toutes les évolutions notables d'ILLWATCH (nommé SENTRY jusqu'au 08/10/2026) sont consignées ici.
+Les entrées antérieures au renommage gardent l'ancien nom.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le versionnage
 respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
+
+### Modifié — SENTRY devient ILLWATCH (08/10)
+- Le nom « Sentry » étant déjà pris (plateforme de suivi d'erreurs), le projet est renommé
+  **ILLWATCH**. Tout est renommé, sans compatibilité ascendante :
+  - paquet Python `illwatch` (ex-`sentry-cti`), commande `illwatch`, journaux `illwatch.*` ;
+  - variables `ILLWATCH_*` (ex-`SENTRY_*`, **plus lues**) ;
+  - base, rôles et bases de test : `illwatch`, `illwatch_app`, `illwatch_test`… ;
+  - conteneurs `illwatch-*`, volumes `illwatch_pgdata` / `illwatch_redisdata`, utilisateur
+    de l'image `illwatch` ;
+  - dépôts `cyberillsec-illwatch` (GitHub, GitLab), image `ghcr.io/godwillfoka/cyberillsec-illwatch` ;
+  - logo : bouclier et radar conservés, mot ILLWATCH.
+- Inchangés volontairement : les migrations Alembic déjà appliquées (fonctions
+  `sentry_refuse_rewrite` et `sentry_refuse_timeline_rewrite`), les documents d'origine
+  (`docs/pdf/`) et les rapports datés.
+- `scripts/migrer-vers-illwatch.sh` : migration d'un poste existant (sauvegarde, `.env`
+  réécrit, restauration, comptages comparés, retour arrière `--retour`). Voir OPERATIONS § 7 sexies.
+- Les anciens mots de passe de développement (`sentry`, `sentry-app-dev`, `sentry-dev-redis`)
+  restent refusés en production.
 
 ### Sécurité — détection de secrets (07/10)
 - Revue de tout l'historique Git avec gitleaks : 17 constats, **tous des faux positifs**

@@ -1,4 +1,4 @@
-"""CLI `sentry dashboard` (phase 5) sur PostgreSQL réel."""
+"""CLI `illwatch dashboard` (phase 5) sur PostgreSQL réel."""
 
 import json
 from pathlib import Path
@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from sentry.cli.main import cli
+from illwatch.cli.main import cli
 
 pytestmark = pytest.mark.postgres
 

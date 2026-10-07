@@ -1,10 +1,10 @@
-"""Tests de l'amorçage des données de référence — `sentry seed`."""
+"""Tests de l'amorçage des données de référence — `illwatch seed`."""
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import ThreatFeed
-from sentry.modules.foundation.seed import REFERENCE_FEEDS, seed_reference_feeds
+from illwatch.app.models import ThreatFeed
+from illwatch.modules.foundation.seed import REFERENCE_FEEDS, seed_reference_feeds
 
 
 async def test_seed_est_idempotent(db_session: AsyncSession) -> None:
@@ -21,8 +21,8 @@ async def test_seed_est_idempotent(db_session: AsyncSession) -> None:
 def test_sources_de_reference_conformes_aux_regles_de_l_api() -> None:
     """Le seed écrit directement en base : ses URL doivent passer les mêmes contrôles
     que celles saisies par un administrateur (SSRF, OTX limité à l'API OTX…)."""
-    from sentry.modules.threat_feeds.secrets import placeholders
-    from sentry.modules.threat_feeds.service import ensure_url_fits_type, validate_feed_url
+    from illwatch.modules.threat_feeds.secrets import placeholders
+    from illwatch.modules.threat_feeds.service import ensure_url_fits_type, validate_feed_url
 
     for feed in REFERENCE_FEEDS:
         url = feed.url

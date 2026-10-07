@@ -2,14 +2,14 @@
 
 import pytest
 
-from sentry.modules.incidents.state_machine import (
+from illwatch.modules.incidents.state_machine import (
     ClosureRequirementError,
     InvalidTransitionError,
     can_transition,
     next_states,
     validate_transition,
 )
-from sentry.shared.enums import IncidentStatus
+from illwatch.shared.enums import IncidentStatus
 
 NOMINAL_PATH = [
     IncidentStatus.NOUVEAU,
@@ -54,6 +54,6 @@ def test_retour_en_analyse_autorise_apres_confinement() -> None:
 
 
 def test_tous_les_etats_sont_couverts_par_le_graphe() -> None:
-    from sentry.modules.incidents.state_machine import ALLOWED_TRANSITIONS
+    from illwatch.modules.incidents.state_machine import ALLOWED_TRANSITIONS
 
     assert set(ALLOWED_TRANSITIONS) == set(IncidentStatus)

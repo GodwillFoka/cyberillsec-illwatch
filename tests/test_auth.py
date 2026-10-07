@@ -7,12 +7,12 @@ from fastapi import Depends, FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.api.deps import require_roles
-from sentry.app.database import get_db
-from sentry.app.models import User
-from sentry.app.security import WeakPasswordError, create_access_token
-from sentry.modules.foundation.users import UserAlreadyExistsError, authenticate, create_user
-from sentry.shared.enums import UserRole
+from illwatch.app.api.deps import require_roles
+from illwatch.app.database import get_db
+from illwatch.app.models import User
+from illwatch.app.security import WeakPasswordError, create_access_token
+from illwatch.modules.foundation.users import UserAlreadyExistsError, authenticate, create_user
+from illwatch.shared.enums import UserRole
 
 PASSWORD = "mot-de-passe-robuste-2026"
 TOKEN_URL = "/api/v1/auth/token"

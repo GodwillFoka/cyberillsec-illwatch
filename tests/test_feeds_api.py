@@ -9,10 +9,10 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import Indicator, ThreatFeed
-from sentry.app.security import create_access_token
-from sentry.modules.foundation.users import create_user
-from sentry.shared.enums import FeedStatus, IndicatorType, UserRole
+from illwatch.app.models import Indicator, ThreatFeed
+from illwatch.app.security import create_access_token
+from illwatch.modules.foundation.users import create_user
+from illwatch.shared.enums import FeedStatus, IndicatorType, UserRole
 
 FEEDS = "/api/v1/feeds"
 PASSWORD = "mot-de-passe-robuste-2026"

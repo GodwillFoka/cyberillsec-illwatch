@@ -1,6 +1,6 @@
 ---
 name: Anomalie
-about: Signaler un comportement incorrect de SENTRY
+about: Signaler un comportement incorrect d'ILLWATCH
 labels: bug
 ---
 

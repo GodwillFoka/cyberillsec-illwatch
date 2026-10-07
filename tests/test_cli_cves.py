@@ -1,4 +1,4 @@
-"""CLI `sentry cves` (phase 3) sur PostgreSQL réel, sources simulées (aucun accès réseau)."""
+"""CLI `illwatch cves` (phase 3) sur PostgreSQL réel, sources simulées (aucun accès réseau)."""
 
 import asyncio
 from collections.abc import Mapping
@@ -8,11 +8,11 @@ import pytest
 from click.testing import CliRunner
 from sqlalchemy import delete
 
-from sentry.app.config import get_settings
-from sentry.app.database import dispose_engine, get_engine
-from sentry.app.models import CVE, CollectorState
-from sentry.cli import cves as cves_cli
-from sentry.cli.main import cli
+from illwatch.app.config import get_settings
+from illwatch.app.database import dispose_engine, get_engine
+from illwatch.app.models import CVE, CollectorState
+from illwatch.cli import cves as cves_cli
+from illwatch.cli.main import cli
 
 pytestmark = pytest.mark.postgres
 

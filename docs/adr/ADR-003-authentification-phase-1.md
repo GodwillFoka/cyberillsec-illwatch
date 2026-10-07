@@ -2,8 +2,8 @@
 
 - **Statut :** accepté
 - **Date :** 2026-09-23
-- **Décideurs :** équipe SENTRY
-- **Concerne :** MOD-01, `sentry/app/security.py`, `sentry/app/api/deps.py`, `/api/v1/auth/*`
+- **Décideurs :** équipe ILLWATCH
+- **Concerne :** MOD-01, `illwatch/app/security.py`, `illwatch/app/api/deps.py`, `/api/v1/auth/*`
 
 ## Contexte
 
@@ -17,7 +17,7 @@ données sensibles : IOC internes, vulnérabilités non corrigées, incidents en
 
 L'authentification est livrée dans la phase 1 : hachage Argon2id, jeton d'accès JWT HS256,
 dépendances `get_current_user` et `require_roles`, routes `/api/v1/auth/token` et `/api/v1/users/me`,
-commande `sentry users create`.
+commande `illwatch users create`.
 
 ## Justification
 

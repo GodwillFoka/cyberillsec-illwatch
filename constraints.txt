@@ -1,7 +1,7 @@
 aiosqlite==0.22.1
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 alembic==1.20.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 annotated-doc==0.0.5
     # via fastapi
 annotated-types==0.8.0
@@ -18,7 +18,7 @@ argon2-cffi-bindings==26.1.0
 ast-serialize==0.12.1
     # via mypy
 asyncpg==0.31.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 certifi==2026.7.22
     # via
     #   httpcore
@@ -32,7 +32,7 @@ charset-normalizer==3.5.2
     # via requests
 click==8.5.0
     # via
-    #   sentry-cti (pyproject.toml)
+    #   illwatch (pyproject.toml)
     #   uvicorn
 colorama==0.4.6 ; sys_platform == 'win32'
     # via pytest
@@ -43,7 +43,7 @@ cryptography==50.0.2
     #   types-pyopenssl
     #   types-redis
 fastapi==0.142.2
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 greenlet==3.5.6
     # via sqlalchemy
 h11==0.16.0
@@ -55,7 +55,7 @@ httpcore==1.0.9
 httptools==0.8.0
     # via uvicorn
 httpx==0.28.1
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 idna==3.20
     # via
     #   anyio
@@ -74,7 +74,7 @@ markupsafe==3.0.4
 mdurl==0.1.2
     # via markdown-it-py
 mypy==2.4.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 mypy-extensions==1.1.0
     # via mypy
 opentelemetry-api==1.45.0
@@ -88,72 +88,72 @@ pluggy==1.6.0
     #   pytest
     #   pytest-cov
 pwdlib==0.3.1
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
 pydantic==2.13.5
     # via
-    #   sentry-cti (pyproject.toml)
+    #   illwatch (pyproject.toml)
     #   fastapi
     #   pydantic-settings
 pydantic-core==2.46.5
     # via pydantic
 pydantic-settings==2.15.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 pygments==2.21.0
     # via
     #   pytest
     #   rich
 pyjwt==2.15.1
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 pytest==9.1.1
     # via
-    #   sentry-cti (pyproject.toml)
+    #   illwatch (pyproject.toml)
     #   pytest-asyncio
     #   pytest-cov
 pytest-asyncio==1.4.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 pytest-cov==7.1.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 python-dotenv==1.2.4
     # via
-    #   sentry-cti (pyproject.toml)
+    #   illwatch (pyproject.toml)
     #   pydantic-settings
     #   uvicorn
 python-multipart==0.0.32
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 pytz==2026.4
     # via taxii2-client
 pyyaml==6.0.3
     # via uvicorn
 redis==8.1.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 requests==2.34.2
     # via taxii2-client
 rich==15.0.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 ruff==0.16.10
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 six==1.17.0
     # via taxii2-client
 sqlalchemy==2.1.3
     # via
-    #   sentry-cti (pyproject.toml)
+    #   illwatch (pyproject.toml)
     #   alembic
 starlette==1.7.0
     # via fastapi
 taxii2-client==2.3.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 tenacity==9.1.4
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 types-cffi==2.1.0.20260827
     # via types-pyopenssl
 types-pyopenssl==24.1.0.20240722
     # via types-redis
 types-redis==4.6.0.20241004
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 types-requests==2.33.0.20260906
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 types-setuptools==84.0.0.20260812
     # via types-cffi
 typing-extensions==4.16.0
@@ -179,7 +179,7 @@ urllib3==2.8.0
     #   requests
     #   types-requests
 uvicorn==0.54.0
-    # via sentry-cti (pyproject.toml)
+    # via illwatch (pyproject.toml)
 uvloop==0.23.0 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
     # via uvicorn
 watchfiles==1.3.0

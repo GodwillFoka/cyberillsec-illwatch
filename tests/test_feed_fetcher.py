@@ -5,8 +5,8 @@ from collections.abc import Callable
 import httpx
 import pytest
 
-from sentry.app.config import Settings
-from sentry.modules.threat_feeds.fetcher import (
+from illwatch.app.config import Settings
+from illwatch.modules.threat_feeds.fetcher import (
     USER_AGENT,
     FetchError,
     RateLimitedError,
@@ -191,7 +191,7 @@ async def test_url_non_https_refusee_avant_toute_requete() -> None:
 
 
 async def test_resolution_dns_reelle_de_localhost() -> None:
-    from sentry.modules.threat_feeds.fetcher import resolve_host
+    from illwatch.modules.threat_feeds.fetcher import resolve_host
 
     assert "127.0.0.1" in await resolve_host("localhost", 443) or "::1" in await resolve_host(
         "localhost", 443

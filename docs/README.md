@@ -1,15 +1,15 @@
-# Documentation SENTRY
+# Documentation ILLWATCH
 
-![SENTRY](assets/sentry-logo-light.svg#only-light){ width="360" }
-![SENTRY](assets/sentry-logo-dark.svg#only-dark){ width="360" }
+![ILLWATCH](assets/illwatch-logo-light.svg#only-light){ width="360" }
+![ILLWATCH](assets/illwatch-logo-dark.svg#only-dark){ width="360" }
 
-**SENTRY** est la plateforme open source de Cyber Threat Intelligence de CyberillSec : collecte
+**ILLWATCH** est la plateforme open source de Cyber Threat Intelligence de CyberillSec : collecte
 et déduplication des IOC (STIX/TAXII 2.1, OTX, flux publics), priorisation des CVE (CVSS + EPSS +
 KEV), gestion d'incidents NIST SP 800-61, chasse aux menaces et pilotage SOC.
 
-Code : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-sentry) ·
-[GitHub (miroir)](https://github.com/GodwillFoka/cyberillsec-sentry) · Image :
-`ghcr.io/godwillfoka/cyberillsec-sentry`
+Code : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-illwatch) ·
+[GitHub (miroir)](https://github.com/GodwillFoka/cyberillsec-illwatch) · Image :
+`ghcr.io/godwillfoka/cyberillsec-illwatch`
 
 
 | Document | Contenu |

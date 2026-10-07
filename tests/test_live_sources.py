@@ -2,18 +2,18 @@
 
 À lancer sur le poste (Kali) pour valider la chaîne complète contre les vraies sources :
 
-    SENTRY_LIVE_TESTS=1 pytest tests/test_live_sources.py -v --no-cov
+    ILLWATCH_LIVE_TESTS=1 pytest tests/test_live_sources.py -v --no-cov
 
 Un échec ici décrit l'état d'une source externe (indisponible, format changé, identifiants
-refusés), pas un défaut du code : comparer avec `sentry feeds probe`.
+refusés), pas un défaut du code : comparer avec `illwatch feeds probe`.
 """
 
 import pytest
 
-from sentry.app.config import get_settings
-from sentry.modules.threat_feeds.probe import probe_source
-from sentry.modules.threat_feeds.taxii import discover
-from sentry.shared.enums import FeedType
+from illwatch.app.config import get_settings
+from illwatch.modules.threat_feeds.probe import probe_source
+from illwatch.modules.threat_feeds.taxii import discover
+from illwatch.shared.enums import FeedType
 
 pytestmark = pytest.mark.live
 
@@ -26,8 +26,8 @@ DIGITALSIDE = (
 @pytest.mark.xfail(
     reason=(
         "DigitalSide injoignable depuis le 29/09/2026 (délai de connexion dépassé), constat "
-        "renouvelé le 06/10 depuis GitHub Actions ; la source est inactive dans `sentry seed`. "
-        "Un XPASS signale son retour : la réactiver alors (`sentry feeds enable`)."
+        "renouvelé le 06/10 depuis GitHub Actions ; la source est inactive dans `illwatch seed`. "
+        "Un XPASS signale son retour : la réactiver alors (`illwatch feeds enable`)."
     ),
     strict=False,
 )

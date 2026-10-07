@@ -18,9 +18,9 @@ CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te
 
 ```bash
 # 1. Cloner le dépôt
-git clone https://gitlab.com/GodwillFoka/cyberillsec-sentry.git
-# miroir : https://github.com/GodwillFoka/cyberillsec-sentry.git
-cd cyberillsec-sentry
+git clone https://gitlab.com/GodwillFoka/cyberillsec-illwatch.git
+# miroir : https://github.com/GodwillFoka/cyberillsec-illwatch.git
+cd cyberillsec-illwatch
 
 # 2. Environnement virtuel isolé
 python3.12 -m venv .venv
@@ -38,16 +38,16 @@ cp .env.example .env
 docker compose up -d             # PostgreSQL 16 + Redis 7
 
 # 6. Migrations de schéma, données de référence et premier compte
-sentry db init
-sentry seed
-sentry users create --username admin --email admin@example.org --role admin
+illwatch db init
+illwatch seed
+illwatch users create --username admin --email admin@example.org --role admin
 
 # 7. Vérification — SQLite par défaut ; PostgreSQL si DATABASE_URL est exportée
 pytest
-./scripts/ci-local.sh   # pipeline complet sur la base dédiée sentry_test
+./scripts/ci-local.sh   # pipeline complet sur la base dédiée illwatch_test
 
 # 8. Serveur en rechargement automatique
-uvicorn sentry.app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn illwatch.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Ouvre <http://localhost:8000/docs> : la documentation Swagger interactive doit s'afficher.
@@ -57,7 +57,7 @@ Vérifie aussi <http://localhost:8000/health>, qui doit répondre `{"status":"ok
 ## 3. Le dépôt, dossier par dossier
 
 ```
-cyberillsec-sentry/
+cyberillsec-illwatch/
 ├── .gitlab-ci.yml           Pipeline CI/CD (qualité, tests, build, sécurité)
 ├── .gitlab/                 Gabarits de merge requests et d'issues
 ├── alembic/
@@ -70,14 +70,14 @@ cyberillsec-sentry/
 │   ├── adr/                    Décisions d'architecture tracées
 │   └── pdf/                    Documents fondateurs d'origine
 ├── Rapport/                 Bilans hebdomadaires du jeudi
-├── sentry/                  Code source applicatif
+├── illwatch/                  Code source applicatif
 │   ├── app/
 │   │   ├── api/             Contrôleurs et routes REST
 │   │   ├── models/          Modèles relationnels SQLAlchemy
 │   │   ├── config.py        Variables d'environnement typées Pydantic
 │   │   ├── database.py      Moteur et sessions asynchrones
 │   │   └── main.py          Point d'entrée FastAPI
-│   ├── cli/                 Commandes Click (`sentry …`)
+│   ├── cli/                 Commandes Click (`illwatch …`)
 │   ├── modules/             Modules métier indépendants
 │   │   ├── threat_feeds/    Collecte, parseurs, IOC
 │   │   ├── cve_tracker/     NVD, EPSS, KEV, scoring
@@ -90,8 +90,8 @@ cyberillsec-sentry/
 └── pyproject.toml           Ruff, mypy, pytest, dépendances
 ```
 
-**Où écrire ton code ?** La logique métier va dans `sentry/modules/<module>/`. La route qui
-l'expose va dans `sentry/app/api/v1/`. Le test va dans `tests/`. Si tu hésites, relis
+**Où écrire ton code ?** La logique métier va dans `illwatch/modules/<module>/`. La route qui
+l'expose va dans `illwatch/app/api/v1/`. Le test va dans `tests/`. Si tu hésites, relis
 [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ## 4. Standards d'ingénierie
@@ -141,7 +141,7 @@ docs(onboarding): update day-1 guide for docker compose setup
 2. **Brancher** — `git checkout -b feat/T2.1-threat-feed-model`
 3. **Développer** — dans le sous-module concerné
 4. **Tester** — écris le test dans `tests/`, puis `pytest -v`
-5. **Vérifier le style** — `ruff check . && ruff format --check . && mypy sentry`
+5. **Vérifier le style** — `ruff check . && ruff format --check . && mypy illwatch`
 6. **Committer et pousser**
    ```bash
    git add .
@@ -155,7 +155,7 @@ docs(onboarding): update day-1 guide for docker compose setup
 
 ```bash
 # Qualité complète, comme la CI
-ruff check . && ruff format --check . && mypy sentry && pytest
+ruff check . && ruff format --check . && mypy illwatch && pytest
 
 # Un seul test, en verbeux
 pytest tests/test_scoring.py::test_score_maximal_borne_a_100 -v
@@ -168,10 +168,10 @@ alembic revision --autogenerate -m "add threat_feeds table"
 alembic upgrade head
 
 # CLI
-sentry version
-sentry config
-sentry db check
-sentry db current
+illwatch version
+illwatch config
+illwatch db check
+illwatch db current
 ```
 
 ## 8. Problèmes fréquents
@@ -179,16 +179,16 @@ sentry db current
 | Symptôme | Cause probable | Correctif |
 |---|---|---|
 | `connection refused` sur le port 5433 | Conteneurs non démarrés | `docker compose up -d` puis `docker compose ps` |
-| `Target database is not up to date` | Migrations en retard | `sentry db upgrade` |
+| `Target database is not up to date` | Migrations en retard | `illwatch db upgrade` |
 | `ValidationError` au démarrage | `.env` absent ou incomplet | `cp .env.example .env` et renseigner `SECRET_KEY` |
 | `SECRET_KEY par défaut interdite en production` | `ENVIRONMENT=production` avec la clé d'exemple | `openssl rand -hex 32` → `SECRET_KEY` |
-| Tests `postgres` marqués *skipped* | `DATABASE_URL` non exportée : suite lancée sur SQLite | `./scripts/ci-local.sh` (base `sentry_test`) |
-| `Base « sentry » refusée` | `DATABASE_URL` pointe vers la base de travail | Utiliser une base dont le nom finit par `_test` |
+| Tests `postgres` marqués *skipped* | `DATABASE_URL` non exportée : suite lancée sur SQLite | `./scripts/ci-local.sh` (base `illwatch_test`) |
+| `Base « illwatch » refusée` | `DATABASE_URL` pointe vers la base de travail | Utiliser une base dont le nom finit par `_test` |
 | Les tests passent en local, échouent en CI | Dépendance à un état local | Les tests doivent créer leurs propres données ; voir `tests/conftest.py` |
 | HTTP 429 depuis NVD | Rate limit sans clé API | Demander une clé sur nvd.nist.gov et renseigner `NVD_API_KEY` |
-| Une source reste `DEGRADED` | Hôte injoignable, clé absente ou format changé | `sentry feeds probe <nom>` : joignable ? identifiants acceptés ? IOC produits ? |
-| HTTP 429 sur `/auth/token` | 5 échecs de connexion en 15 min | Attendre 15 min (`LOGIN_WINDOW_SECONDS`) ou vider la clé Redis `sentry:login:user:<nom>` |
-| Tests réseau marqués *skipped* | Tests `live` désactivés par défaut | `SENTRY_LIVE_TESTS=1 pytest tests/test_live_sources.py --no-cov` |
+| Une source reste `DEGRADED` | Hôte injoignable, clé absente ou format changé | `illwatch feeds probe <nom>` : joignable ? identifiants acceptés ? IOC produits ? |
+| HTTP 429 sur `/auth/token` | 5 échecs de connexion en 15 min | Attendre 15 min (`LOGIN_WINDOW_SECONDS`) ou vider la clé Redis `illwatch:login:user:<nom>` |
+| Tests réseau marqués *skipped* | Tests `live` désactivés par défaut | `ILLWATCH_LIVE_TESTS=1 pytest tests/test_live_sources.py --no-cov` |
 
 ## 9. Bilan hebdomadaire
 

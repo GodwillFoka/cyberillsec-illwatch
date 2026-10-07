@@ -1,5 +1,5 @@
 # ============================================================================
-# SENTRY — Pipeline d'intégration continue GitHub Actions
+# ILLWATCH — Pipeline d'intégration continue GitHub Actions
 # Miroir de .gitlab-ci.yml (GitLab reste le dépôt de référence, ADR-002) :
 # qualité, tests PostgreSQL/Redis réels, migrations, image Docker, sécurité.
 # ============================================================================
@@ -42,7 +42,7 @@ jobs:
           if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
       - run: ruff check --output-format=github .
       - run: ruff format --check .
-      - run: mypy sentry
+      - run: mypy illwatch
 
   # ---------------------------------------------------------------------------
   # Étape 2 — Tests : suite complète contre PostgreSQL 16 et Redis 7 réels
@@ -59,12 +59,12 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: sentry
-          POSTGRES_PASSWORD: sentry
-          POSTGRES_DB: sentry_test
+          POSTGRES_USER: illwatch
+          POSTGRES_PASSWORD: illwatch
+          POSTGRES_DB: illwatch_test
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U sentry" --health-interval 5s
+          --health-cmd "pg_isready -U illwatch" --health-interval 5s
           --health-timeout 5s --health-retries 10
       redis:
         image: redis:7.2-alpine
@@ -73,7 +73,7 @@ jobs:
           --health-cmd "redis-cli ping" --health-interval 5s
           --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_test
+      DATABASE_URL: postgresql+asyncpg://illwatch:illwatch@localhost:5432/illwatch_test
       REDIS_URL: redis://localhost:6379/0
     steps:
       - uses: actions/checkout@v7
@@ -93,7 +93,7 @@ jobs:
         shell: bash
         run: |
           cp .env.example .env
-          env -u DATABASE_URL -u REDIS_URL python -c "from sentry.app.config import Settings; \
+          env -u DATABASE_URL -u REDIS_URL python -c "from illwatch.app.config import Settings; \
             s = Settings(); print('.env.example chargé :', s.environment, s.expose_docs)"
       - name: Pytest
         shell: bash
@@ -125,15 +125,15 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: sentry
-          POSTGRES_PASSWORD: sentry
-          POSTGRES_DB: sentry_migrations
+          POSTGRES_USER: illwatch
+          POSTGRES_PASSWORD: illwatch
+          POSTGRES_DB: illwatch_migrations
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U sentry" --health-interval 5s
+          --health-cmd "pg_isready -U illwatch" --health-interval 5s
           --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_migrations
+      DATABASE_URL: postgresql+asyncpg://illwatch:illwatch@localhost:5432/illwatch_migrations
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -158,18 +158,18 @@ jobs:
     needs: [qualite]
     steps:
       - uses: actions/checkout@v7
-      - run: docker build -t sentry:${{ github.sha }} .
-      - run: docker run --rm --entrypoint sentry sentry:${{ github.sha }} version
+      - run: docker build -t illwatch:${{ github.sha }} .
+      - run: docker run --rm --entrypoint illwatch illwatch:${{ github.sha }} version
       # 07/10 : curl retiré de l'image (8 vulnérabilités « High » sans correctif Debian) ; le
       # HEALTHCHECK passe par Python. On vérifie les deux : curl absent, sonde fonctionnelle.
       - name: Image sans curl, contrôle de santé fonctionnel
         shell: bash
         run: |
-          IMG=sentry:${{ github.sha }}
+          IMG=illwatch:${{ github.sha }}
           docker run --rm --entrypoint sh "$IMG" -c '! command -v curl'
           docker run -d --name hc -e SECRET_KEY=ci-secret-key-not-for-production \
             -e DATABASE_URL=sqlite+aiosqlite:///:memory: --entrypoint uvicorn "$IMG" \
-            sentry.app.main:app --host 0.0.0.0 --port 8000
+            illwatch.app.main:app --host 0.0.0.0 --port 8000
           probe=$(docker inspect --format '{{json .Config.Healthcheck.Test}}' "$IMG" \
             | python3 -c 'import json,sys; print(json.load(sys.stdin)[-1])')
           for i in $(seq 1 20); do
@@ -212,7 +212,7 @@ jobs:
       - name: pip-audit (vulnérabilités connues des dépendances installées)
         run: pip-audit --skip-editable
       - name: bandit (sévérité moyenne et plus)
-        run: bandit -q -r sentry -ll
+        run: bandit -q -r illwatch -ll
       # Détection de secrets sur tout l'historique (07/10). Exclusions justifiées dans
       # .gitleaks.toml ; version épinglée et somme de contrôle vérifiée.
       - name: gitleaks (secrets dans l'historique Git)

@@ -10,14 +10,20 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import CVE, CVEAlert, IncidentEvent, User
-from sentry.app.models.incident import ImmutableTimelineError
-from sentry.app.security import create_access_token
-from sentry.modules.foundation.users import create_user
-from sentry.modules.incidents import service
-from sentry.modules.incidents.state_machine import ClosureRequirementError, InvalidTransitionError
-from sentry.modules.threat_feeds.indicators import Observation, ingest_indicators
-from sentry.shared.enums import IncidentEventType, IncidentStatus, RiskPriority, Severity, UserRole
+from illwatch.app.models import CVE, CVEAlert, IncidentEvent, User
+from illwatch.app.models.incident import ImmutableTimelineError
+from illwatch.app.security import create_access_token
+from illwatch.modules.foundation.users import create_user
+from illwatch.modules.incidents import service
+from illwatch.modules.incidents.state_machine import ClosureRequirementError, InvalidTransitionError
+from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
+from illwatch.shared.enums import (
+    IncidentEventType,
+    IncidentStatus,
+    RiskPriority,
+    Severity,
+    UserRole,
+)
 
 T0 = datetime(2026, 10, 3, 9, 0, tzinfo=UTC)
 Headers = dict[str, str]

@@ -7,9 +7,9 @@ from alembic import context
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import pool
 
-from sentry.app.config import get_settings
-from sentry.app.database import Base
-import sentry.app.models  # noqa: F401 - enregistre tous les modèles dans Base.metadata
+from illwatch.app.config import get_settings
+from illwatch.app.database import Base
+import illwatch.app.models  # noqa: F401 - enregistre tous les modèles dans Base.metadata
 
 config = context.config
 # M7 lot 2 : les migrations s'exécutent avec le rôle propriétaire (MIGRATION_DATABASE_URL)
@@ -21,7 +21,7 @@ config.set_main_option("sqlalchemy.url", _url.replace("%", "%%"))
 
 if config.config_file_name is not None:
     # disable_existing_loggers=False : sinon chaque migration lancée dans le processus (CLI,
-    # tests) désactive les journaux `sentry.*` déjà créés, dont le journal d'audit.
+    # tests) désactive les journaux `illwatch.*` déjà créés, dont le journal d'audit.
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata

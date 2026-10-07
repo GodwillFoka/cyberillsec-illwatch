@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# SENTRY — Réplique locale du pipeline GitLab (.gitlab-ci.yml)
+# ILLWATCH — Réplique locale du pipeline GitLab (.gitlab-ci.yml)
 #
 # À lancer avant chaque push : un pipeline rouge sur GitLab coûte un aller-retour,
 # celui-ci coûte une minute. Mêmes étapes, même ordre, même seuils.
@@ -13,13 +13,13 @@
 # ============================================================================
 set -euo pipefail
 
-PG_URL_BASE="${CI_LOCAL_PG:-postgresql+asyncpg://sentry:sentry@localhost:5433}"
+PG_URL_BASE="${CI_LOCAL_PG:-postgresql+asyncpg://illwatch:illwatch@localhost:5433}"
 export SECRET_KEY="${SECRET_KEY:-ci-secret-key-not-for-production}"
 export ENVIRONMENT=development
 # Comme en CI : aucun `.env` lu. Celui du poste définit MIGRATION_DATABASE_URL vers la base
 # de travail ; l'étape 2b (`alembic downgrade base`) aurait alors vidé cette base au lieu de
 # la base jetable. Les variables héritées du shell sont écartées pour la même raison.
-export SENTRY_ENV_FILE=""
+export ILLWATCH_ENV_FILE=""
 unset MIGRATION_DATABASE_URL DATABASE_APP_ROLE
 
 step() { printf '\n\033[1;36m▶ %s\033[0m\n' "$1"; }
@@ -28,11 +28,11 @@ ok()   { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }
 step "Étape 1 — Qualité : lint, formatage, typage strict"
 ruff check .
 ruff format --check .
-mypy sentry
+mypy illwatch
 ok "qualité"
 
 PSQL_URL="${PG_URL_BASE/+asyncpg/}/postgres"
-TEST_DB="sentry_test"   # jamais la base de travail : les tests détruisent le schéma
+TEST_DB="illwatch_test"   # jamais la base de travail : les tests détruisent le schéma
 
 step "Étape 2a — Tests sur PostgreSQL (base dédiée ${TEST_DB})"
 psql "$PSQL_URL" -tAc "SELECT 1 FROM pg_database WHERE datname='${TEST_DB}'" | grep -q 1 \
@@ -42,7 +42,7 @@ ok "tests"
 
 step "Étape 2b — Migrations : montée, alembic check, descente, remontée"
 # Base dédiée et jetable : ne touche jamais aux données de la base de travail.
-MIG_DB="sentry_ci_migrations"
+MIG_DB="illwatch_ci_migrations"
 psql "$PSQL_URL" -qc "DROP DATABASE IF EXISTS ${MIG_DB}" -c "CREATE DATABASE ${MIG_DB}" >/dev/null
 export DATABASE_URL="${PG_URL_BASE}/${MIG_DB}"
 alembic upgrade head
@@ -54,8 +54,8 @@ ok "migrations"
 
 if [[ "${1:-}" == "--docker" ]]; then
   step "Étape 3 — Build : l'image doit se construire et la CLI répondre"
-  docker build -t sentry:ci-local .
-  docker run --rm --entrypoint sentry sentry:ci-local version
+  docker build -t illwatch:ci-local .
+  docker run --rm --entrypoint illwatch illwatch:ci-local version
   ok "image"
 fi
 

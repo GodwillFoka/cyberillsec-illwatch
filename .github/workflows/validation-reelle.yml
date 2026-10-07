@@ -1,10 +1,10 @@
 # ============================================================================
-# SENTRY — Validation réelle (dette D3 de l'audit du 03/10)
+# ILLWATCH — Validation réelle (dette D3 de l'audit du 03/10)
 #
 # Le runner GitHub a accès à Internet, contrairement au bac à sable d'audit :
 # on monte une instance complète (PostgreSQL 16, Redis 7, API), on l'alimente
 # avec les vraies sources (flux IOC publics, CISA KEV, NIST NVD, FIRST EPSS,
-# liste Tor), puis on rejoue le scénario SOC d'acceptation et `sentry status`.
+# liste Tor), puis on rejoue le scénario SOC d'acceptation et `illwatch status`.
 #
 # Non bloquant pour les merge requests (sources externes = résultat variable) :
 # il tourne chaque lundi, sur chaque tag et à la demande.
@@ -31,7 +31,7 @@ permissions:
 env:
   ENVIRONMENT: development
   SECRET_KEY: validation-secret-key-not-for-production
-  DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry
+  DATABASE_URL: postgresql+asyncpg://illwatch:illwatch@localhost:5432/illwatch
   REDIS_URL: redis://localhost:6379/0
   NVD_INITIAL_DAYS: "7"
   SCENARIO_PASSWORD: Validation-Passw0rd-2026
@@ -49,12 +49,12 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: sentry
-          POSTGRES_PASSWORD: sentry
-          POSTGRES_DB: sentry
+          POSTGRES_USER: illwatch
+          POSTGRES_PASSWORD: illwatch
+          POSTGRES_DB: illwatch
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U sentry" --health-interval 5s
+          --health-cmd "pg_isready -U illwatch" --health-interval 5s
           --health-timeout 5s --health-retries 10
       redis:
         image: redis:7.2-alpine
@@ -75,48 +75,48 @@ jobs:
 
       - name: Base, sources de référence et comptes
         run: |
-          sentry db upgrade
-          sentry seed
-          sentry users create --username admin    --email admin@example.org    --role admin   --password "$SCENARIO_PASSWORD"
-          sentry users create --username analyst  --email analyst@example.org  --role analyst --password "$SCENARIO_PASSWORD"
-          sentry users create --username analyst2 --email analyst2@example.org --role analyst --password "$SCENARIO_PASSWORD"
-          sentry users create --username viewer   --email viewer@example.org   --role viewer  --password "$SCENARIO_PASSWORD"
+          illwatch db upgrade
+          illwatch seed
+          illwatch users create --username admin    --email admin@example.org    --role admin   --password "$SCENARIO_PASSWORD"
+          illwatch users create --username analyst  --email analyst@example.org  --role analyst --password "$SCENARIO_PASSWORD"
+          illwatch users create --username analyst2 --email analyst2@example.org --role analyst --password "$SCENARIO_PASSWORD"
+          illwatch users create --username viewer   --email viewer@example.org   --role viewer  --password "$SCENARIO_PASSWORD"
 
-      - name: Tests réseau réels (SENTRY_LIVE_TESTS=1)
+      - name: Tests réseau réels (ILLWATCH_LIVE_TESTS=1)
         # Un échec décrit l'état d'une source externe : signalé, sans bloquer la suite.
         continue-on-error: true
         env:
-          SENTRY_LIVE_TESTS: "1"
-          DATABASE_URL: postgresql+asyncpg://sentry:sentry@localhost:5432/sentry_live_test
+          ILLWATCH_LIVE_TESTS: "1"
+          DATABASE_URL: postgresql+asyncpg://illwatch:illwatch@localhost:5432/illwatch_live_test
         run: |
-          PGPASSWORD=sentry psql -h localhost -U sentry -d sentry -qc "CREATE DATABASE sentry_live_test"
+          PGPASSWORD=illwatch psql -h localhost -U illwatch -d illwatch -qc "CREATE DATABASE illwatch_live_test"
           set -o pipefail
           pytest -m live --no-cov -v 2>&1 | tee live.txt
 
       - name: TAXII public — découverte MITRE ATT&CK (préparation M10)
         continue-on-error: true
-        run: COLUMNS=160 sentry taxii discover https://attack-taxii.mitre.org/taxii2/ 2>&1 | tee taxii.txt
+        run: COLUMNS=160 illwatch taxii discover https://attack-taxii.mitre.org/taxii2/ 2>&1 | tee taxii.txt
 
       - name: M2 — collecte des flux de menaces
         # Une source sous clé absente (abuse.ch, OTX…) est DEGRADED : le pas ne doit pas échouer.
-        run: sentry feeds fetch-all --force 2>&1 | tee feeds.txt || true
+        run: illwatch feeds fetch-all --force 2>&1 | tee feeds.txt || true
 
       - name: M3 — synchronisation CVE (KEV, NVD, EPSS)
         shell: bash
         run: |
           set -o pipefail
-          sentry cves sync 2>&1 | tee cves.txt
+          illwatch cves sync 2>&1 | tee cves.txt
 
       - name: API et scénario SOC d'acceptation
         run: |
-          uvicorn sentry.app.main:app --port 8000 > api.log 2>&1 &
+          uvicorn illwatch.app.main:app --port 8000 > api.log 2>&1 &
           for i in $(seq 1 30); do curl -fsS http://localhost:8000/health >/dev/null && break; sleep 1; done
           set -o pipefail
           python scripts/scenario_soc.py http://localhost:8000 2>&1 | tee scenario.txt
 
-      - name: État mesuré (sentry status)
+      - name: État mesuré (illwatch status)
         if: always()
-        run: COLUMNS=120 sentry status 2>&1 | tee status.txt || true
+        run: COLUMNS=120 illwatch status 2>&1 | tee status.txt || true
 
       - name: Résultats lisibles (annotations)
         if: always()
@@ -127,14 +127,14 @@ jobs:
           [ -f cves.txt ] && note "CVE (KEV, NVD, EPSS)" "$(grep -E 'Catalogue KEV|CVE reçues|Scores EPSS|CVE créées|Scores recalculés|✗' cves.txt)"
           [ -f feeds.txt ] && note "Flux de menaces" "$(grep -E 'HEALTHY|DEGRADED|FAILED|ERROR' feeds.txt | head -12)"
           [ -f live.txt ] && note "Tests live" "$(grep -E '(PASSED|FAILED|XFAIL|XPASS|ERROR)' live.txt | grep '::' | sed -E 's/ +\[ *[0-9]+%\]//' | head -12) — $(grep -E '(passed|failed|error)' live.txt | tail -1)"
-          [ -f status.txt ] && note "Jalons (sentry status)" "$(grep -E 'Jalon|✔|✘|⚠' status.txt | sed -E 's/[│┃]/ /g; s/ +/ /g')"
+          [ -f status.txt ] && note "Jalons (illwatch status)" "$(grep -E 'Jalon|✔|✘|⚠' status.txt | sed -E 's/[│┃]/ /g; s/ +/ /g')"
           [ -f status.txt ] && note "CVE par priorité" "$(grep -E 'Total|P[0-3]_' status.txt | sed -E 's/[│┃]/ /g; s/ +/ /g')"
           [ -f taxii.txt ] && note "Découverte TAXII MITRE" "$(grep -iE 'Enterprise|Mobile|ICS|collection|erreur|refus' taxii.txt | sed -E 's/[│┃]/ /g; s/ +/ /g' | head -8)"
       - name: Résumé
         if: always()
         run: |
           {
-            echo "## SENTRY — validation sur données réelles"
+            echo "## ILLWATCH — validation sur données réelles"
             echo
             echo "Commit \`${GITHUB_SHA::7}\` · $(date -u '+%d/%m/%Y %H:%M UTC')"
             for f in status scenario cves feeds live taxii; do

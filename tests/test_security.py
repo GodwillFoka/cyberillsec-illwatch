@@ -6,8 +6,8 @@ from uuid import uuid4
 import jwt
 import pytest
 
-from sentry.app.config import Settings
-from sentry.app.security import (
+from illwatch.app.config import Settings
+from illwatch.app.security import (
     JWT_ALGORITHM,
     InvalidTokenError,
     WeakPasswordError,

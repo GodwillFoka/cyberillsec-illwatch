@@ -4,15 +4,15 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import ThreatFeed
-from sentry.modules.threat_feeds import service
-from sentry.modules.threat_feeds.service import (
+from illwatch.app.models import ThreatFeed
+from illwatch.modules.threat_feeds import service
+from illwatch.modules.threat_feeds.service import (
     FeedNameConflictError,
     UnsafeFeedURLError,
     normalize_feed_name,
     validate_feed_url,
 )
-from sentry.shared.enums import FeedStatus, FeedType
+from illwatch.shared.enums import FeedStatus, FeedType
 
 
 @pytest.mark.parametrize(
@@ -123,13 +123,13 @@ async def test_changer_de_format_reinitialise_l_etat(db_session: AsyncSession) -
     ],
 )
 def test_adresses_non_publiques_detectees(address: str) -> None:
-    from sentry.modules.threat_feeds.service import is_internal_ip
+    from illwatch.modules.threat_feeds.service import is_internal_ip
 
     assert is_internal_ip(address)
 
 
 @pytest.mark.parametrize("address", ["8.8.8.8", "93.184.216.34", "2606:4700::1111"])
 def test_adresses_publiques_admises(address: str) -> None:
-    from sentry.modules.threat_feeds.service import is_internal_ip
+    from illwatch.modules.threat_feeds.service import is_internal_ip
 
     assert not is_internal_ip(address)

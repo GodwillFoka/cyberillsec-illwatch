@@ -1,7 +1,7 @@
 [project]
-name = "sentry-cti"
+name = "illwatch"
 version = "0.2.0.dev0"
-description = "SENTRY — Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)"
+description = "ILLWATCH — Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
@@ -41,21 +41,21 @@ dev = [
 ]
 
 [project.scripts]
-sentry = "sentry.cli.main:cli"
+illwatch = "illwatch.cli.main:cli"
 
 [project.urls]
-Homepage = "https://gitlab.com/GodwillFoka/cyberillsec-sentry"
-Repository = "https://gitlab.com/GodwillFoka/cyberillsec-sentry"
-Mirror = "https://github.com/GodwillFoka/cyberillsec-sentry"
-Documentation = "https://godwillfoka.github.io/cyberillsec-sentry/"
-Changelog = "https://github.com/GodwillFoka/cyberillsec-sentry/blob/main/CHANGELOG.md"
+Homepage = "https://gitlab.com/GodwillFoka/cyberillsec-illwatch"
+Repository = "https://gitlab.com/GodwillFoka/cyberillsec-illwatch"
+Mirror = "https://github.com/GodwillFoka/cyberillsec-illwatch"
+Documentation = "https://godwillfoka.github.io/cyberillsec-illwatch/"
+Changelog = "https://github.com/GodwillFoka/cyberillsec-illwatch/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["setuptools>=69.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["sentry*"]
+include = ["illwatch*"]
 
 # ----------------------------------------------------------------------------
 # Qualité de code — §6.3 du Cahier des Charges
@@ -93,13 +93,13 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-addopts = "-v --cov=sentry --cov-report=term-missing"
+addopts = "-v --cov=illwatch --cov-report=term-missing"
 
 [tool.coverage.run]
 # SQLAlchemy async exécute le code dans des greenlets : sans cette option, les
 # lignes qui suivent un `await` en base sont comptées à tort comme non couvertes.
 concurrency = ["greenlet", "thread"]
-source = ["sentry"]
+source = ["illwatch"]
 
 [tool.coverage.report]
 fail_under = 80

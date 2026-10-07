@@ -1,9 +1,9 @@
-"""Scénario d'acceptation SOC de bout en bout contre une instance SENTRY réelle.
+"""Scénario d'acceptation SOC de bout en bout contre une instance ILLWATCH réelle.
 
 Usage : python scripts/scenario_soc.py [URL_BASE]   (défaut : http://localhost:8000)
 
-Prérequis : base migrée et alimentée (`sentry seed`, `sentry feeds fetch-all`,
-`sentry cves sync`), quatre comptes créés (admin, analyst, analyst2, viewer) avec le mot de
+Prérequis : base migrée et alimentée (`illwatch seed`, `illwatch feeds fetch-all`,
+`illwatch cves sync`), quatre comptes créés (admin, analyst, analyst2, viewer) avec le mot de
 passe de la variable SCENARIO_PASSWORD. Le script n'écrit que via l'API publique, mesure
 la latence de chaque appel et sort en code 1 au premier écart à l'attendu.
 """
@@ -48,7 +48,7 @@ class PrerequisiteError(Exception):
 
 
 EMPTY_BASE_HINT = (
-    "base vide : lancez d'abord `sentry feeds fetch-all --force` puis `sentry cves sync`"
+    "base vide : lancez d'abord `illwatch feeds fetch-all --force` puis `illwatch cves sync`"
 )
 
 
@@ -58,7 +58,7 @@ def headers(c: httpx.Client, user: str) -> dict[str, str]:
         raise PrerequisiteError(
             f"connexion refusée pour « {user} » (HTTP {r.status_code}). Créez les comptes "
             "admin, analyst, analyst2 (ANALYST) et viewer avec le mot de passe SCENARIO_PASSWORD "
-            "(`sentry users create`, ou `sentry users set-password` pour un compte existant)."
+            "(`illwatch users create`, ou `illwatch users set-password` pour un compte existant)."
         )
     return {"Authorization": f"Bearer {r.json()['access_token']}"}
 
@@ -412,7 +412,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except httpx.ConnectError:
-        print(f"✘ SENTRY injoignable sur {BASE} : démarrez l'API (uvicorn) avant le scénario.")
+        print(f"✘ ILLWATCH injoignable sur {BASE} : démarrez l'API (uvicorn) avant le scénario.")
         sys.exit(2)
     except PrerequisiteError as exc:
         print(f"✘ Prérequis manquant : {exc}")

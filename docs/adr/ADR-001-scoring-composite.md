@@ -88,5 +88,5 @@ Le facteur CWE n'est pas implémenté en v1.0 et part au backlog v2.0.
 
 - [Cahier des charges §3.3.3](../CAHIER_DES_CHARGES.md#mod-03--cve-tracker--vulnerability-intelligence)
 - [Product Vision Document, Tome 3](../PRODUCT_VISION.md#tome-3--architecture-fonctionnelle)
-- Implémentation : [`sentry/modules/cve_tracker/scoring.py`](../../sentry/modules/cve_tracker/scoring.py)
+- Implémentation : [`illwatch/modules/cve_tracker/scoring.py`](../../illwatch/modules/cve_tracker/scoring.py)
 - Tests : [`tests/test_scoring.py`](../../tests/test_scoring.py)

@@ -4,7 +4,7 @@
 - **Date :** 2026-09-28
 - **Décideurs :** à valider par le porteur du projet
 - **Concerne :** MOD-02, RF-07, T2.6, T2.9, tables `indicators` et `indicator_sources`,
-  `sentry/modules/threat_feeds/{indicators,locks,otx,collector}.py`
+  `illwatch/modules/threat_feeds/{indicators,locks,otx,collector}.py`
 
 ## Contexte
 
@@ -28,7 +28,7 @@ collecte « sans intervention » et un connecteur OTX, dont la clé API ne doit 
    en-tête `X-OTX-API-KEY`, **uniquement vers `otx.alienvault.com`** : contrôlé à
    l'enregistrement du flux (API → 422), avant chaque page (y compris les liens `next`), et par
    le fetcher qui refuse toute redirection inter-hôtes d'une requête authentifiée.
-4. **Collecte planifiée** : `sentry feeds worker` (boucle `collect_due_feeds`, période
+4. **Collecte planifiée** : `illwatch feeds worker` (boucle `collect_due_feeds`, période
    `WORKER_TICK_SECONDS`) et **verrou Redis par flux** (`SET NX EX`, libération par script Lua
    conditionnée au jeton). Redis injoignable → verrou local et avertissement journalisé.
 5. **Journal JSON** : une ligne `feed.collected` par collecte (volumes, durée, erreur, pic RSS).
@@ -44,7 +44,7 @@ collecte « sans intervention » et un connecteur OTX, dont la clé API ne doit 
 
 ## Conséquences
 
-- **Positives** : `source_count` et la liste des sources exposés par l'API ; `sentry status`
+- **Positives** : `source_count` et la liste des sources exposés par l'API ; `illwatch status`
   compte les IOC confirmés par ≥ 2 sources ; plusieurs workers peuvent tourner sans doublon.
 - **Négatives** :
   - une écriture de plus par paquet d'IOC rattaché à un flux (≈ ×1,5 sur l'ingestion ; RNF-PERF-02

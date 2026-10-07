@@ -1,24 +1,24 @@
-# Architecture technique de SENTRY
+# Architecture technique d'ILLWATCH
 
 Ce document décrit comment le code est organisé et pourquoi. Pour les spécifications
 fonctionnelles, voir le [Cahier des charges](CAHIER_DES_CHARGES.md).
 
 ## Principe directeur
 
-SENTRY suit une Clean Architecture en couches, avec une dépendance strictement descendante : une
+ILLWATCH suit une Clean Architecture en couches, avec une dépendance strictement descendante : une
 couche ne connaît que celle du dessous.
 
 ```
   [CLIENTS]           CLI (Click)                 API REST (FastAPI)
                            │                              │
-  [CONTROLLERS]      sentry/cli/                   sentry/app/api/
+  [CONTROLLERS]      illwatch/cli/                   illwatch/app/api/
                            └──────────────┬──────────────┘
                                           ▼
-  [SERVICES]                      sentry/modules/
+  [SERVICES]                      illwatch/modules/
                        (logique métier pure, calculateurs,
                          collecteurs, moteur de scoring)
                                           ▼
-  [DATA ACCESS]          sentry/app/database.py · sentry/app/models/
+  [DATA ACCESS]          illwatch/app/database.py · illwatch/app/models/
                                           ▼
   [PERSISTENCE]                PostgreSQL 16 · Redis 7
 ```
@@ -36,13 +36,13 @@ les 100 % de couverture sur `scoring.py` et `state_machine.py`.
 
 | Chemin | Rôle | Dépend de |
 |---|---|---|
-| `sentry/shared/` | Énumérations et utilitaires transverses | rien |
-| `sentry/app/config.py` | Configuration Pydantic validée au démarrage | rien |
-| `sentry/app/database.py` | Moteur, sessions, classe `Base` | `config` |
-| `sentry/app/models/` | Modèles relationnels SQLAlchemy | `database`, `shared` |
-| `sentry/modules/` | Logique métier pure par domaine | `models`, `shared` |
-| `sentry/app/api/` | Contrôleurs REST | `modules`, `database` |
-| `sentry/cli/` | Commandes Click | `modules`, `config` |
+| `illwatch/shared/` | Énumérations et utilitaires transverses | rien |
+| `illwatch/app/config.py` | Configuration Pydantic validée au démarrage | rien |
+| `illwatch/app/database.py` | Moteur, sessions, classe `Base` | `config` |
+| `illwatch/app/models/` | Modèles relationnels SQLAlchemy | `database`, `shared` |
+| `illwatch/modules/` | Logique métier pure par domaine | `models`, `shared` |
+| `illwatch/app/api/` | Contrôleurs REST | `modules`, `database` |
+| `illwatch/cli/` | Commandes Click | `modules`, `config` |
 
 Une importation qui remonte cette liste est un défaut d'architecture, pas un raccourci.
 
@@ -75,7 +75,7 @@ workers concurrents. La normalisation en amont (`normalize_indicator`) garantit 
 
 Trois tentatives avec backoff exponentiel (`tenacity`), timeout de 15 s, respect de l'en-tête
 `Retry-After` sur HTTP 429, cache Redis pour amortir le rate limiting des API publiques (RSK-01).
-Les clés API sont optionnelles : SENTRY fonctionne sans, plus lentement.
+Les clés API sont optionnelles : ILLWATCH fonctionne sans, plus lentement.
 
 ### Migrations
 
@@ -86,7 +86,7 @@ plutôt que depuis `alembic.ini` — pour qu'il n'existe qu'une seule source de 
 ## Flux de données — pipeline de collecte
 
 ```
-   Sources externes            SENTRY                          Sorties
+   Sources externes            ILLWATCH                          Sorties
    ────────────────            ──────                          ───────
    NVD 2.0        ─┐
    CISA KEV       ─┤        ┌──────────────┐
@@ -152,7 +152,7 @@ Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_la
 | Exploitation | `/health` (vivacité) et `/ready` (base + schéma), sauvegarde vérifiée et restauration, entretien quotidien (`docs/OPERATIONS.md`) |
 | Transport et déploiement | Caddy (TLS, HTTP/2-3) seul exposé ; `migrate` éphémère avec le rôle propriétaire ; API et worker en rôle applicatif (`docker-compose.prod.yml`, ADR-013) |
 | Injection CSV | Cellules exportées neutralisées (`dashboard/service.py`) |
-| Conteneur non privilégié | Utilisateur `sentry` UID 10001 ; `.dockerignore` excluant `.env` et `.git` |
+| Conteneur non privilégié | Utilisateur `illwatch` UID 10001 ; `.dockerignore` excluant `.env` et `.git` |
 | Dépendances surveillées et figées | `constraints.txt` partagé par la CI, l'image et le poste ; Renovate ; SAST, secrets et dépendances analysés à chaque pipeline |
 
 ## Ce qui n'est délibérément pas fait en v1.0
@@ -160,7 +160,7 @@ Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_la
 - **Pas de microservices.** Le monolithe modulaire tient jusqu'à 100 000 événements/jour. Découper
   avant d'en avoir besoin coûterait la simplicité de déploiement, qui est un argument produit.
 - **Pas d'Elasticsearch.** PostgreSQL avec des index adaptés couvre les besoins de recherche de la
-  v1.0 (P95 de 8 ms sur 30 000 CVE). C'est la lourdeur des alternatives que SENTRY évite.
+  v1.0 (P95 de 8 ms sur 30 000 CVE). C'est la lourdeur des alternatives qu'ILLWATCH évite.
 - **Pas d'IHM web.** API et CLI d'abord ; le tableau de bord SOC est une vue console `rich` plus des
   endpoints d'agrégation et d'export. Une interface web est la première évolution après la v1.0.
 - **Pas de moteur Sigma complet.** Les règles de chasse portent sur des observables, pas sur des

@@ -1,13 +1,13 @@
-"""État d'avancement mesuré (`sentry status`) : indicateurs et critères du jalon M2."""
+"""État d'avancement mesuré (`illwatch status`) : indicateurs et critères du jalon M2."""
 
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import ThreatFeed
-from sentry.modules.foundation.status import compute_status
-from sentry.modules.threat_feeds.indicators import Observation, ingest_indicators
-from sentry.shared.enums import FeedStatus, FeedType
+from illwatch.app.models import ThreatFeed
+from illwatch.modules.foundation.status import compute_status
+from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
+from illwatch.shared.enums import FeedStatus, FeedType
 
 NOW = datetime(2026, 9, 28, 12, 0, tzinfo=UTC)
 
@@ -61,10 +61,10 @@ async def test_criteres_m2_atteints(db_session: AsyncSession) -> None:
 
 
 async def test_jalons_m4_m6(db_session: AsyncSession) -> None:
-    from sentry.app.config import Settings
-    from sentry.modules.incidents import service as incidents
-    from sentry.modules.threat_hunting import engine
-    from sentry.shared.enums import IncidentStatus, Severity
+    from illwatch.app.config import Settings
+    from illwatch.modules.incidents import service as incidents
+    from illwatch.modules.threat_hunting import engine
+    from illwatch.shared.enums import IncidentStatus, Severity
 
     before = await compute_status(db_session, now=NOW)
     assert [c.met for c in before.later] == [False, False]
@@ -92,7 +92,7 @@ async def test_jalons_m4_m6(db_session: AsyncSession) -> None:
 
 
 async def test_alerte_epss_perime(db_session: AsyncSession) -> None:
-    from sentry.app.models import CVE, CollectorState
+    from illwatch.app.models import CVE, CollectorState
 
     # Identifiant propre au test : d'autres tests (CLI) valident de vraies CVE en base, et
     # peuvent y laisser l'état de synchronisation « epss ».

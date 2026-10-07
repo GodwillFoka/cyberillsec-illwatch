@@ -1,20 +1,20 @@
-"""Tests de l'interface en ligne de commande `sentry` — RF-03."""
+"""Tests de l'interface en ligne de commande `illwatch` — RF-03."""
 
 from click.testing import CliRunner
 
-from sentry.cli.main import cli
+from illwatch.cli.main import cli
 
 
 def test_aide_racine() -> None:
     result = CliRunner().invoke(cli, ["--help"])
     assert result.exit_code == 0
-    assert "SENTRY" in result.output
+    assert "ILLWATCH" in result.output
 
 
 def test_commande_version() -> None:
     result = CliRunner().invoke(cli, ["version"])
     assert result.exit_code == 0
-    assert "SENTRY" in result.output
+    assert "ILLWATCH" in result.output
 
 
 def test_commande_config_masque_les_secrets() -> None:

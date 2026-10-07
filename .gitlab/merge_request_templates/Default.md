@@ -12,9 +12,9 @@ Closes #
 
 - [ ] `pytest` passe à 100 %
 - [ ] `ruff check .` et `ruff format --check .` sans alerte
-- [ ] `mypy sentry` sans erreur en mode strict
+- [ ] `mypy illwatch` sans erreur en mode strict
 - [ ] Couverture globale ≥ 80 %
-- [ ] Aucune logique métier ajoutée dans `sentry/app/api/`
+- [ ] Aucune logique métier ajoutée dans `illwatch/app/api/`
 - [ ] Un ADR a été ajouté si la décision est structurante
 
 ## Écarts par rapport au cahier des charges

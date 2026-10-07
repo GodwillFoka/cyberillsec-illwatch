@@ -2,13 +2,13 @@
 
 import pytest
 
-from sentry.modules.threat_feeds.validators import (
+from illwatch.modules.threat_feeds.validators import (
     InvalidIndicatorError,
     detect_indicator_type,
     is_private_ip,
     normalize_indicator,
 )
-from sentry.shared.enums import IndicatorType
+from illwatch.shared.enums import IndicatorType
 
 
 @pytest.mark.parametrize(

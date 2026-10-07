@@ -1,4 +1,4 @@
-# SENTRY — Feuille de route après la v1.0 fonctionnelle (M7 → M11)
+# ILLWATCH — Feuille de route après la v1.0 fonctionnelle (M7 → M11)
 
 **Version :** 06/10/2026 · **Point de départ :** baseline `v0.1.1` (M1–M6 intégrés dans `main`,
 audit `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`)
@@ -27,7 +27,7 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 
 ## M7 — Production Hardening
 
-**But.** Rendre SENTRY déployable sans réserve de sécurité connue.
+**But.** Rendre ILLWATCH déployable sans réserve de sécurité connue.
 
 | Lot | Contenu | Critère de sortie |
 |---|---|---|
@@ -57,7 +57,7 @@ une alerte, taux de faux positifs mesuré et publié.
 - L3 : ingénierie de détection (règles versionnées), recommandations de réponse.
 - Dashboard : séries 7 et 30 jours, charge par analyste, SLA par priorité.
 
-**Critère de sortie :** un incident traverse L1 → L2 → L3 sans quitter SENTRY, MTTR mesuré.
+**Critère de sortie :** un incident traverse L1 → L2 → L3 sans quitter ILLWATCH, MTTR mesuré.
 
 ## M10 — CTI Intelligence Layer
 
@@ -72,7 +72,7 @@ une alerte, taux de faux positifs mesuré et publié.
 
 ## M11 — Observability & Deployment
 
-**But.** Exploiter SENTRY comme un service.
+**But.** Exploiter ILLWATCH comme un service.
 
 - Métriques Prometheus (API, worker, collecte, base, Redis), tableaux Grafana, alertes.
 - Journaux JSON corrélés par identifiant de requête (amorcé en M7).

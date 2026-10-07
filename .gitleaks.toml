@@ -1,6 +1,6 @@
 # Détection de secrets (gitleaks) — règles par défaut + exclusions justifiées.
 # Revue du 07/10/2026 : 17 constats sur tout l'historique, tous des faux positifs ci-dessous.
-# Toute nouvelle exclusion doit être justifiée ici ; ne jamais exclure `sentry/` ni `.env*`.
+# Toute nouvelle exclusion doit être justifiée ici ; ne jamais exclure `illwatch/` ni `.env*`.
 
 [extend]
 useDefault = true

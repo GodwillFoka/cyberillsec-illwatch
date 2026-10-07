@@ -14,22 +14,22 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from sentry.app.config import Settings
-from sentry.app.models import AuditEvent, RefreshToken
-from sentry.app.security import (
+from illwatch.app.config import Settings
+from illwatch.app.models import AuditEvent, RefreshToken
+from illwatch.app.security import (
     InvalidTokenError,
     create_access_token,
     decode_access_token,
     key_id,
 )
-from sentry.modules.foundation.sessions import (
+from illwatch.modules.foundation.sessions import (
     InvalidRefreshTokenError,
     issue_refresh_token,
     rotate_refresh_token,
 )
-from sentry.modules.foundation.users import create_user
-from sentry.shared.enums import AuditOutcome, UserRole
-from sentry.shared.urls import mask_url_password
+from illwatch.modules.foundation.users import create_user
+from illwatch.shared.enums import AuditOutcome, UserRole
+from illwatch.shared.urls import mask_url_password
 
 PASSWORD = "mot-de-passe-robuste-2026"
 KEY_A = "a" * 40
@@ -192,8 +192,8 @@ def test_jeton_anterieur_sans_kid_accepte_avec_la_cle_courante() -> None:
 
 
 def test_url_masquee() -> None:
-    assert mask_url_password("postgresql+asyncpg://sentry:s3cret@db:5432/sentry") == (
-        "postgresql+asyncpg://sentry:••••••@db:5432/sentry"
+    assert mask_url_password("postgresql+asyncpg://illwatch:s3cret@db:5432/illwatch") == (
+        "postgresql+asyncpg://illwatch:••••••@db:5432/illwatch"
     )
     assert mask_url_password("redis://:pw@redis:6379/0") == "redis://:••••••@redis:6379/0"
     assert mask_url_password("redis://localhost:6379/0") == "redis://localhost:6379/0"
@@ -203,19 +203,19 @@ def test_production_exige_un_mot_de_passe_redis() -> None:
     base = {
         "environment": "production",
         "secret_key": KEY_A,
-        "database_url": "postgresql+asyncpg://app:Zq7-long-random@db:5432/sentry",
+        "database_url": "postgresql+asyncpg://app:Zq7-long-random@db:5432/illwatch",
     }
     with pytest.raises(ValidationError, match="REDIS_URL"):
         Settings(_env_file=None, redis_url="redis://redis:6379/0", **base)  # type: ignore[arg-type]
     with pytest.raises(ValidationError, match="REDIS_URL"):
-        Settings(_env_file=None, redis_url="redis://:sentry-dev-redis@r:6379/0", **base)  # type: ignore[arg-type]
+        Settings(_env_file=None, redis_url="redis://:illwatch-dev-redis@r:6379/0", **base)  # type: ignore[arg-type]
     Settings(_env_file=None, redis_url="redis://:Xk29-long-random@r:6379/0", **base)  # type: ignore[arg-type]
 
 
 @pytest.mark.postgres
 def test_cli_config_ne_montre_pas_les_mots_de_passe(monkeypatch: pytest.MonkeyPatch) -> None:
-    from sentry.app.config import get_settings
-    from sentry.cli.main import cli
+    from illwatch.app.config import get_settings
+    from illwatch.cli.main import cli
 
     monkeypatch.setenv("REDIS_URL", "redis://:tres-secret-redis@localhost:6379/9")
     get_settings.cache_clear()
@@ -230,7 +230,7 @@ def test_cli_config_ne_montre_pas_les_mots_de_passe(monkeypatch: pytest.MonkeyPa
 
 # --- Rôle PostgreSQL applicatif -----------------------------------------------------------------
 
-APP_ROLE = "sentry_app_test"
+APP_ROLE = "illwatch_app_test"
 APP_PASSWORD = "app:Pass-2026!"  # « : » volontaire : jamais interprété comme paramètre
 
 
@@ -262,7 +262,7 @@ async def _owner(statement: str) -> None:
 def test_role_applicatif_sans_droit_de_structure() -> None:
     from sqlalchemy.exc import DBAPIError
 
-    from sentry.app.db_roles import AppRoleError, grant_app_role
+    from illwatch.app.db_roles import AppRoleError, grant_app_role
 
     settings = Settings(_env_file=None, database_url=os.environ["DATABASE_URL"])  # type: ignore[call-arg]
     if _role_exists():  # reste d'une exécution interrompue
@@ -289,7 +289,7 @@ def test_role_applicatif_sans_droit_de_structure() -> None:
                 asyncio.run(_as_app(statement))
 
         with pytest.raises(AppRoleError, match="superutilisateur"):
-            asyncio.run(grant_app_role(settings, "sentry"))
+            asyncio.run(grant_app_role(settings, "illwatch"))
         with pytest.raises(AppRoleError, match="refusé"):
             asyncio.run(grant_app_role(settings, 'x"; DROP TABLE users; --'))
     finally:
@@ -317,7 +317,7 @@ def _role_exists() -> bool:
 
 @pytest.mark.postgres
 def test_cli_desactivation_revoque_les_sessions() -> None:
-    from sentry.cli.main import cli
+    from illwatch.cli.main import cli
 
     runner = CliRunner()
     name = f"cli-sess-{uuid4().hex[:6]}"
@@ -349,8 +349,8 @@ def test_cli_desactivation_revoque_les_sessions() -> None:
 
 
 async def test_set_password_remplace_le_mot_de_passe(db_session: AsyncSession) -> None:
-    from sentry.app.security import WeakPasswordError
-    from sentry.modules.foundation.users import authenticate, set_password
+    from illwatch.app.security import WeakPasswordError
+    from illwatch.modules.foundation.users import authenticate, set_password
 
     name = f"pwd-{uuid4().hex[:6]}"
     user = await create_user(db_session, username=name, email=f"{name}@x.test", password=PASSWORD)
@@ -363,7 +363,7 @@ async def test_set_password_remplace_le_mot_de_passe(db_session: AsyncSession) -
 
 @pytest.mark.postgres
 def test_cli_reinitialisation_du_mot_de_passe() -> None:
-    from sentry.cli.main import cli
+    from illwatch.cli.main import cli
 
     runner = CliRunner()
     name = f"cli-pwd-{uuid4().hex[:6]}"
@@ -400,21 +400,21 @@ def _audit_actions(username: str) -> set[str]:
 
 def test_mot_de_passe_encode_dans_l_url_de_migration(monkeypatch: pytest.MonkeyPatch) -> None:
     """Un « % » d'URL (mot de passe encodé) cassait Alembic : ConfigParser l'interpolait."""
-    from sentry.app import migrations
-    from sentry.app.config import get_settings
+    from illwatch.app import migrations
+    from illwatch.app.config import get_settings
 
-    monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://app:p%3Aw%21@db:5432/sentry_test")
+    monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://app:p%3Aw%21@db:5432/illwatch_test")
     get_settings.cache_clear()
     try:
         assert migrations.head_revision()
         url = migrations.alembic_config().get_main_option("sqlalchemy.url")
-        assert url == "postgresql+asyncpg://app:p%3Aw%21@db:5432/sentry_test"
+        assert url == "postgresql+asyncpg://app:p%3Aw%21@db:5432/illwatch_test"
     finally:
         get_settings.cache_clear()
 
 
 async def test_purge_des_sessions_perimees(db_session: AsyncSession) -> None:
-    from sentry.modules.foundation.sessions import purge_refresh_tokens, revoke_user_sessions
+    from illwatch.modules.foundation.sessions import purge_refresh_tokens, revoke_user_sessions
 
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
     user = await create_user(

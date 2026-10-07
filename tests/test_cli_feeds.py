@@ -1,4 +1,4 @@
-"""CLI `sentry feeds` (T2.7) sur PostgreSQL réel, collecte simulée (aucun accès réseau)."""
+"""CLI `illwatch feeds` (T2.7) sur PostgreSQL réel, collecte simulée (aucun accès réseau)."""
 
 import asyncio
 from pathlib import Path
@@ -7,10 +7,10 @@ import pytest
 from click.testing import CliRunner
 from sqlalchemy import delete
 
-from sentry.app.database import dispose_engine, get_engine
-from sentry.app.models import Indicator, ThreatFeed
-from sentry.cli import feeds as feeds_cli
-from sentry.cli.main import cli
+from illwatch.app.database import dispose_engine, get_engine
+from illwatch.app.models import Indicator, ThreatFeed
+from illwatch.cli import feeds as feeds_cli
+from illwatch.cli.main import cli
 
 pytestmark = pytest.mark.postgres
 

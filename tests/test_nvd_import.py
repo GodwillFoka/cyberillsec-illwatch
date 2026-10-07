@@ -1,4 +1,4 @@
-"""Import NVD 2.0 hors ligne (`sentry cves import`) — lecture en flux, données NVD réelles.
+"""Import NVD 2.0 hors ligne (`illwatch cves import`) — lecture en flux, données NVD réelles.
 
 Le fixture `nvd_feed_2021_extrait.json` est un extrait non modifié du flux annuel 2021 au
 format API 2.0 (miroir fkie-cad) : Log4Shell, ProxyLogon, PrintNightmare et une CVE rejetée.
@@ -14,13 +14,13 @@ import pytest
 from click.testing import CliRunner
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.config import Settings
-from sentry.app.models import CVE
-from sentry.modules.cve_tracker import sources
-from sentry.modules.cve_tracker.engine import import_nvd_file
-from sentry.modules.cve_tracker.sources import iter_nvd_items
-from sentry.modules.threat_feeds.parsers import FeedParseError
-from sentry.shared.enums import RiskPriority
+from illwatch.app.config import Settings
+from illwatch.app.models import CVE
+from illwatch.modules.cve_tracker import sources
+from illwatch.modules.cve_tracker.engine import import_nvd_file
+from illwatch.modules.cve_tracker.sources import iter_nvd_items
+from illwatch.modules.threat_feeds.parsers import FeedParseError
+from illwatch.shared.enums import RiskPriority
 
 FEED = Path(__file__).parent / "fixtures" / "cve" / "nvd_feed_2021_extrait.json"
 PAGE = Path(__file__).parent / "fixtures" / "cve" / "nvd_page.json"
@@ -93,7 +93,7 @@ async def test_import_complet_ignore_les_rejetees(db_session: AsyncSession) -> N
 
 @pytest.mark.postgres
 def test_cli_import_xz(tmp_path: Path) -> None:
-    from sentry.cli.main import cli
+    from illwatch.cli.main import cli
 
     archive = tmp_path / "CVE-2021.json.xz"
     archive.write_bytes(lzma.compress(FEED.read_bytes()))

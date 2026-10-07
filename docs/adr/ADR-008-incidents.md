@@ -4,7 +4,7 @@
 - **Date :** 2026-10-03
 - **Décideurs :** à valider par le porteur du projet
 - **Concerne :** MOD-04, RF-17 à RF-20, tables `incidents`, `incident_events`,
-  `incident_indicators`, `incident_cves`, `sentry/modules/incidents/`
+  `incident_indicators`, `incident_cves`, `illwatch/modules/incidents/`
 
 ## Contexte
 

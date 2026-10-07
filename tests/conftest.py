@@ -16,8 +16,8 @@ import pytest
 
 # Jamais de `.env` dans les tests : celui du poste de développement (DEBUG=true,
 # MIGRATION_DATABASE_URL vers la base de travail…) faisait échouer des tests et, surtout,
-# envoyait leurs migrations sur la base de travail. Positionné avant tout import de `sentry`.
-os.environ["SENTRY_ENV_FILE"] = ""
+# envoyait leurs migrations sur la base de travail. Positionné avant tout import de `illwatch`.
+os.environ["ILLWATCH_ENV_FILE"] = ""
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-at-least-32-bytes-long")
@@ -32,12 +32,12 @@ from sqlalchemy.ext.asyncio import (  # noqa: E402
 )
 from sqlalchemy.pool import NullPool, StaticPool  # noqa: E402
 
-from sentry.app.config import get_settings  # noqa: E402
-from sentry.app.database import Base, get_db  # noqa: E402
-from sentry.app.main import create_app  # noqa: E402
-from sentry.app.models import AuditEvent  # noqa: E402
-from sentry.app.throttle import LocalCounter, LoginThrottle, get_login_throttle  # noqa: E402
-from sentry.modules.foundation.audit import AuditRecorder, get_audit_recorder  # noqa: E402
+from illwatch.app.config import get_settings  # noqa: E402
+from illwatch.app.database import Base, get_db  # noqa: E402
+from illwatch.app.main import create_app  # noqa: E402
+from illwatch.app.models import AuditEvent  # noqa: E402
+from illwatch.app.throttle import LocalCounter, LoginThrottle, get_login_throttle  # noqa: E402
+from illwatch.modules.foundation.audit import AuditRecorder, get_audit_recorder  # noqa: E402
 
 TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 IS_POSTGRES = TEST_DATABASE_URL.startswith("postgresql")
@@ -66,7 +66,7 @@ def _guard_against_non_test_database() -> None:
             pytest.exit(
                 f"{variable} : base « {database} » refusée. La suite de tests détruit le "
                 f"schéma de la base visée ; utilisez une base dédiée dont le nom finit par "
-                f"« {TEST_DATABASE_SUFFIX} » (ex. …/sentry{TEST_DATABASE_SUFFIX}).",
+                f"« {TEST_DATABASE_SUFFIX} » (ex. …/illwatch{TEST_DATABASE_SUFFIX}).",
                 returncode=4,
             )
 
@@ -75,16 +75,16 @@ def pytest_configure(config: pytest.Config) -> None:
     _guard_against_non_test_database()
     config.addinivalue_line("markers", "postgres: nécessite une base PostgreSQL réelle")
     config.addinivalue_line(
-        "markers", "live: interroge de vraies sources sur Internet (SENTRY_LIVE_TESTS=1)"
+        "markers", "live: interroge de vraies sources sur Internet (ILLWATCH_LIVE_TESTS=1)"
     )
 
 
-LIVE = os.environ.get("SENTRY_LIVE_TESTS") == "1"
+LIVE = os.environ.get("ILLWATCH_LIVE_TESTS") == "1"
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     if not LIVE:
-        skip_live = pytest.mark.skip(reason="tests réseau : SENTRY_LIVE_TESTS=1 pour les lancer")
+        skip_live = pytest.mark.skip(reason="tests réseau : ILLWATCH_LIVE_TESTS=1 pour les lancer")
         for item in items:
             if "live" in item.keywords:
                 item.add_marker(skip_live)

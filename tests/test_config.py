@@ -5,10 +5,10 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from sentry.app.config import DEFAULT_SECRET_KEY, ENV_FILE_VARIABLE, Settings, _env_file
+from illwatch.app.config import DEFAULT_SECRET_KEY, ENV_FILE_VARIABLE, Settings, _env_file
 
 STRONG_SECRET = "a" * 64
-PROD_DB = "postgresql+asyncpg://sentry_app:Zq7%3Along-random@db:5432/sentry"
+PROD_DB = "postgresql+asyncpg://illwatch_app:Zq7%3Along-random@db:5432/illwatch"
 
 
 def test_developpement_accepte_la_cle_par_defaut() -> None:
@@ -45,9 +45,9 @@ def test_production_accepte_une_configuration_saine() -> None:
 @pytest.mark.parametrize(
     "url",
     [
-        "postgresql+asyncpg://sentry:sentry@db:5432/sentry",
-        "postgresql+asyncpg://sentry_app:sentry-app-dev@db:5432/sentry",
-        "postgresql+asyncpg://sentry_app@db:5432/sentry",
+        "postgresql+asyncpg://illwatch:illwatch@db:5432/illwatch",
+        "postgresql+asyncpg://illwatch_app:illwatch-app-dev@db:5432/illwatch",
+        "postgresql+asyncpg://illwatch_app@db:5432/illwatch",
     ],
 )
 def test_production_refuse_un_mot_de_passe_de_base_de_developpement(url: str) -> None:
@@ -87,11 +87,11 @@ def test_variable_vide_vaut_valeur_par_defaut(monkeypatch: pytest.MonkeyPatch) -
     assert settings.docs_enabled is None and settings.hsts_enabled is None
 
 
-def test_sentry_env_file_choisit_ou_desactive_le_fichier(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_illwatch_env_file_choisit_ou_desactive_le_fichier(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv(ENV_FILE_VARIABLE, raising=False)
     assert _env_file() == ".env"
-    monkeypatch.setenv(ENV_FILE_VARIABLE, "/etc/sentry/env")
-    assert _env_file() == "/etc/sentry/env"
+    monkeypatch.setenv(ENV_FILE_VARIABLE, "/etc/illwatch/env")
+    assert _env_file() == "/etc/illwatch/env"
     monkeypatch.setenv(ENV_FILE_VARIABLE, "")
     assert _env_file() is None
 

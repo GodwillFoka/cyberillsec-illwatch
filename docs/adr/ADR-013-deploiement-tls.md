@@ -4,7 +4,7 @@
 - **Date :** 2026-10-04
 - **Décideurs :** à valider par le porteur du projet
 - **Concerne :** `docker-compose.prod.yml`, `deploy/Caddyfile`, `.gitlab-ci.yml`,
-  `sentry/cli/feeds.py` (entretien quotidien), `sentry/modules/foundation/status.py`
+  `illwatch/cli/feeds.py` (entretien quotidien), `illwatch/modules/foundation/status.py`
 
 ## Contexte
 
@@ -34,7 +34,7 @@ d'EPSS rend P0 inatteignable sans aucun signal (bilan du lot 2, § 4).
    sont validés à chaque pipeline (`compose-config`).
 5. **Entretien quotidien** par le worker : purge des jetons de rafraîchissement expirés ou
    révoqués depuis plus de 30 jours ; journal `cve.epss_stale` si EPSS date de plus de 48 h.
-   `sentry status` affiche le même avertissement.
+   `illwatch status` affiche le même avertissement.
 
 ## Justification
 

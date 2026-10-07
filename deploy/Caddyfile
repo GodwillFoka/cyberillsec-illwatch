@@ -1,9 +1,9 @@
 # ============================================================================
-# SENTRY — reverse proxy TLS (M7 lot 3, ADR-013)
+# ILLWATCH — reverse proxy TLS (M7 lot 3, ADR-013)
 #
-# SENTRY_DOMAIN=sentry.exemple.eu : certificat Let's Encrypt automatique (ports 80 et 443
+# ILLWATCH_DOMAIN=illwatch.exemple.eu : certificat Let's Encrypt automatique (ports 80 et 443
 #                                   joignables depuis Internet, DNS pointant sur l'hôte).
-# SENTRY_DOMAIN=localhost (défaut) : certificat de l'autorité interne de Caddy, pour tester.
+# ILLWATCH_DOMAIN=localhost (défaut) : certificat de l'autorité interne de Caddy, pour tester.
 #
 # Caddy fixe X-Forwarded-For à l'adresse réelle du client et ignore celui qu'il reçoit
 # (aucun proxy de confiance déclaré) : un client ne peut pas usurper une adresse auprès de
@@ -15,9 +15,9 @@
 	admin off
 }
 
-{$SENTRY_DOMAIN:localhost} {
+{$ILLWATCH_DOMAIN:localhost} {
 	encode zstd gzip
-	reverse_proxy {$SENTRY_UPSTREAM:api:8000} {
+	reverse_proxy {$ILLWATCH_UPSTREAM:api:8000} {
 		header_down -Server
 	}
 	header {

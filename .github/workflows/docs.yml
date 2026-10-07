@@ -1,6 +1,6 @@
 # ============================================================================
-# SENTRY — Site de documentation sur GitHub Pages
-# https://godwillfoka.github.io/cyberillsec-sentry/
+# ILLWATCH — Site de documentation sur GitHub Pages
+# https://godwillfoka.github.io/cyberillsec-illwatch/
 # Source : docs/, Rapport/, CHANGELOG.md, CONTRIBUTING.md, SECURITY.md (scripts/docs_prepare.py)
 # ============================================================================
 name: Documentation

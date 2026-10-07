@@ -7,13 +7,13 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import Indicator, ThreatFeed
-from sentry.modules.threat_feeds.indicators import (
+from illwatch.app.models import Indicator, ThreatFeed
+from illwatch.modules.threat_feeds.indicators import (
     Observation,
     ingest_indicators,
     list_indicators,
 )
-from sentry.shared.enums import FeedType, IndicatorType, Severity
+from illwatch.shared.enums import FeedType, IndicatorType, Severity
 
 T0 = datetime(2026, 9, 1, 12, 0, tzinfo=UTC)
 
@@ -173,7 +173,7 @@ async def test_performance_rnf_perf_02(db_session: AsyncSession) -> None:
 
 
 async def test_rejets_comptes_mais_echantillon_borne(db_session: AsyncSession) -> None:
-    from sentry.modules.threat_feeds.indicators import MAX_REJECTION_SAMPLES
+    from illwatch.modules.threat_feeds.indicators import MAX_REJECTION_SAMPLES
 
     garbage = [Observation(f"n'importe quoi {i}") for i in range(MAX_REJECTION_SAMPLES + 50)]
     result = await ingest_indicators(db_session, garbage, now=T0)

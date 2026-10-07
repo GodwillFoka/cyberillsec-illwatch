@@ -7,10 +7,10 @@ from pathlib import Path
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import Indicator, ThreatFeed
-from sentry.modules.threat_feeds.collector import collect_due_feeds, collect_feed, is_due
-from sentry.modules.threat_feeds.fetcher import FetchError, RateLimitedError
-from sentry.shared.enums import FeedStatus, FeedType
+from illwatch.app.models import Indicator, ThreatFeed
+from illwatch.modules.threat_feeds.collector import collect_due_feeds, collect_feed, is_due
+from illwatch.modules.threat_feeds.fetcher import FetchError, RateLimitedError
+from illwatch.shared.enums import FeedStatus, FeedType
 
 FIXTURES = Path(__file__).parent / "fixtures" / "feeds"
 NOW = datetime(2026, 9, 27, 12, 0, tzinfo=UTC)

@@ -4,11 +4,11 @@
 - **Date :** 2026-10-03
 - **Décideurs :** à valider par le porteur du projet
 - **Concerne :** MOD-06, RF-25 à RF-28, tables `hunting_sessions`, `hunting_matches`,
-  `sentry/modules/threat_hunting/`
+  `illwatch/modules/threat_hunting/`
 
 ## Contexte
 
-Le cahier des charges impose un moteur de règles et un catalogue initial de 5 règles. SENTRY
+Le cahier des charges impose un moteur de règles et un catalogue initial de 5 règles. ILLWATCH
 ne reçoit pas les journaux réseau d'une organisation : il faut un moyen de lui soumettre ce qui
 doit être chassé, sans devenir un SIEM.
 
@@ -22,7 +22,7 @@ doit être chassé, sans devenir un SIEM.
    n'apporterait que du poids. RULE-06 « IOC connu » complète le catalogue : c'est la question
    que tout analyste pose en premier.
 3. **RULE-05** s'appuie sur un inventaire déclaratif (noms de produits) rapproché de la
-   description des CVE P0/P1 à exploit public. Approximation assumée tant que SENTRY ne gère pas
+   description des CVE P0/P1 à exploit public. Approximation assumée tant qu'ILLWATCH ne gère pas
    d'inventaire CPE.
 4. Chaque exécution est une **session** enregistrée ; une règle en échec (liste Tor
    injoignable) rend la session `PARTIELLE` sans arrêter les autres.

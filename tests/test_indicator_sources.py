@@ -9,16 +9,16 @@ from httpx import AsyncClient
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import Indicator, IndicatorSource, ThreatFeed
-from sentry.app.security import create_access_token
-from sentry.modules.foundation.users import create_user
-from sentry.modules.threat_feeds.indicators import (
+from illwatch.app.models import Indicator, IndicatorSource, ThreatFeed
+from illwatch.app.security import create_access_token
+from illwatch.modules.foundation.users import create_user
+from illwatch.modules.threat_feeds.indicators import (
     Observation,
     get_indicator,
     ingest_indicators,
     list_indicators,
 )
-from sentry.shared.enums import FeedType, UserRole
+from illwatch.shared.enums import FeedType, UserRole
 
 NOW = datetime(2026, 9, 28, 12, 0, tzinfo=UTC)
 

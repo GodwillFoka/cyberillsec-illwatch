@@ -8,13 +8,13 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sentry.app.models import AuditEvent
-from sentry.app.models.audit import ImmutableAuditError
-from sentry.app.security import create_access_token
-from sentry.app.throttle import USER_FACTOR, LocalCounter, LoginThrottle
-from sentry.modules.foundation.audit import AuditContext, AuditRecorder, list_audit_events
-from sentry.modules.foundation.users import create_user
-from sentry.shared.enums import AuditOutcome, UserRole
+from illwatch.app.models import AuditEvent
+from illwatch.app.models.audit import ImmutableAuditError
+from illwatch.app.security import create_access_token
+from illwatch.app.throttle import USER_FACTOR, LocalCounter, LoginThrottle
+from illwatch.modules.foundation.audit import AuditContext, AuditRecorder, list_audit_events
+from illwatch.modules.foundation.users import create_user
+from illwatch.shared.enums import AuditOutcome, UserRole
 
 PASSWORD = "mot-de-passe-robuste-2026"
 
@@ -165,7 +165,7 @@ async def test_ecriture_en_echec_n_interrompt_pas(caplog: pytest.LogCaptureFixtu
     async def _broken(_: AuditEvent) -> None:
         raise ConnectionError("base indisponible")
 
-    logger = logging.getLogger("sentry.audit")
+    logger = logging.getLogger("illwatch.audit")
     logger.addHandler(caplog.handler)
     try:
         await AuditRecorder(_broken).record("auth.login", detail={"long": "x" * 2000})
@@ -217,7 +217,7 @@ async def test_succes_remet_a_zero_compte_et_couple() -> None:
 def test_cli_creation_de_compte_et_consultation() -> None:
     from click.testing import CliRunner
 
-    from sentry.cli.main import cli
+    from illwatch.cli.main import cli
 
     runner = CliRunner()
     name = f"cli-{uuid4().hex[:6]}"

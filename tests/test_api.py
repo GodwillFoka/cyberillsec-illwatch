@@ -16,7 +16,7 @@ async def test_health_retourne_200_avec_db_connectee(client: AsyncClient) -> Non
 async def test_openapi_est_expose(client: AsyncClient) -> None:
     response = await client.get("/openapi.json")
     assert response.status_code == 200
-    assert response.json()["info"]["title"].startswith("SENTRY")
+    assert response.json()["info"]["title"].startswith("ILLWATCH")
 
 
 async def test_route_inconnue_retourne_404(client: AsyncClient) -> None:

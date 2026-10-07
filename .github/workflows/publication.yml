@@ -1,11 +1,11 @@
 # ============================================================================
-# SENTRY — Publication : image Docker (GHCR) et release GitHub
+# ILLWATCH — Publication : image Docker (GHCR) et release GitHub
 #
-#   push sur main  → ghcr.io/godwillfoka/cyberillsec-sentry:edge   (+ :sha-xxxxxxx)
-#   tag vX.Y.Z     → ghcr.io/godwillfoka/cyberillsec-sentry:X.Y.Z, :X.Y, :latest
+#   push sur main  → ghcr.io/godwillfoka/cyberillsec-illwatch:edge   (+ :sha-xxxxxxx)
+#   tag vX.Y.Z     → ghcr.io/godwillfoka/cyberillsec-illwatch:X.Y.Z, :X.Y, :latest
 #                    + release GitHub dont les notes viennent de CHANGELOG.md
 #
-# Déploiement : SENTRY_IMAGE=ghcr.io/godwillfoka/cyberillsec-sentry:<version>
+# Déploiement : ILLWATCH_IMAGE=ghcr.io/godwillfoka/cyberillsec-illwatch:<version>
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d --no-build
 # ============================================================================
 name: Publication
@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: ghcr.io/godwillfoka/cyberillsec-sentry
+  IMAGE: ghcr.io/godwillfoka/cyberillsec-illwatch
 
 jobs:
   image:
@@ -48,7 +48,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
           labels: |
-            org.opencontainers.image.title=SENTRY
+            org.opencontainers.image.title=ILLWATCH
             org.opencontainers.image.description=Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec)
             org.opencontainers.image.vendor=CYBERILL
       - uses: docker/build-push-action@v7
@@ -63,7 +63,7 @@ jobs:
         run: |
           TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
           docker pull "$TAG"
-          docker run --rm --entrypoint sentry "$TAG" version
+          docker run --rm --entrypoint illwatch "$TAG" version
           echo "### Image publiée" >> "$GITHUB_STEP_SUMMARY"
           echo "${{ steps.meta.outputs.tags }}" | sed 's/^/- `/; s/$/`/' >> "$GITHUB_STEP_SUMMARY"
 
@@ -89,10 +89,10 @@ jobs:
             echo "---"
             echo "**Image Docker :** \`docker pull ${IMAGE}:${VERSION}\`"
             echo
-            echo "**Documentation :** https://godwillfoka.github.io/cyberillsec-sentry/"
+            echo "**Documentation :** https://godwillfoka.github.io/cyberillsec-illwatch/"
           } >> notes.md
       - uses: softprops/action-gh-release@v3
         with:
-          name: SENTRY ${{ github.ref_name }}
+          name: ILLWATCH ${{ github.ref_name }}
           body_path: notes.md
           make_latest: true

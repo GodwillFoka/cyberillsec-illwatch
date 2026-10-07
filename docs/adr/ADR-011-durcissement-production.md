@@ -3,8 +3,8 @@
 - **Statut :** proposé
 - **Date :** 2026-10-03
 - **Décideurs :** à valider par le porteur du projet
-- **Concerne :** MOD-01, `sentry/app/middleware.py`, `sentry/app/throttle.py`,
-  `sentry/modules/foundation/audit.py`, migration `e7b2c9d41f05`, `docker-compose.yml`,
+- **Concerne :** MOD-01, `illwatch/app/middleware.py`, `illwatch/app/throttle.py`,
+  `illwatch/modules/foundation/audit.py`, migration `e7b2c9d41f05`, `docker-compose.yml`,
   `constraints.txt`
 
 ## Contexte
@@ -32,8 +32,8 @@ et une dette d'outillage : dépendances bornées par le bas seulement, d'où un 
    `data.export` (API et CLI), `user.create` (CLI). Chaque ligne porte acteur, cible, adresse IP,
    identifiant de requête et un détail tronqué, secrets masqués. Écriture dans une transaction
    **indépendante** de la requête (une connexion refusée annule la transaction de la requête,
-   pas sa trace). Doublée d'une ligne JSON `sentry.audit` pour un SIEM. Consultation :
-   `GET /api/v1/audit` (ADMIN), `sentry audit list`.
+   pas sa trace). Doublée d'une ligne JSON `illwatch.audit` pour un SIEM. Consultation :
+   `GET /api/v1/audit` (ADMIN), `illwatch audit list`.
 3. **Politique d'échec de l'audit : ouverture.** Si l'écriture échoue, la requête aboutit et
    l'échec est journalisé en ERROR, la ligne JSON servant de trace de secours.
 4. **Couche HTTP** (middleware ASGI pur, compatible avec les exports en flux) : `X-Request-ID`

@@ -13,11 +13,11 @@ from click.testing import CliRunner
 from conftest import drop_public_schema
 from sqlalchemy import delete, text
 
-from sentry.app import migrations
-from sentry.app.database import Base, dispose_engine, get_engine
-from sentry.app.models import ThreatFeed, User
-from sentry.cli.main import cli
-from sentry.modules.foundation.seed import REFERENCE_FEEDS
+from illwatch.app import migrations
+from illwatch.app.database import Base, dispose_engine, get_engine
+from illwatch.app.models import ThreatFeed, User
+from illwatch.cli.main import cli
+from illwatch.modules.foundation.seed import REFERENCE_FEEDS
 
 pytestmark = pytest.mark.postgres
 

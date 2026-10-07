@@ -2,41 +2,41 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: sentry-postgres
+    container_name: illwatch-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: sentry
-      POSTGRES_PASSWORD: sentry
-      POSTGRES_DB: sentry
+      POSTGRES_USER: illwatch
+      POSTGRES_PASSWORD: illwatch
+      POSTGRES_DB: illwatch
       # Rôle applicatif sans droit de structure (M7 lot 2), créé au premier démarrage.
-      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:-sentry-app-dev}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:-illwatch-app-dev}
     # Écoute locale uniquement (M7) : sur un poste Kali relié à un réseau, la base ne doit pas
     # être joignable depuis le LAN avec le mot de passe de développement.
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
-      - sentry_pgdata:/var/lib/postgresql/data
+      - illwatch_pgdata:/var/lib/postgresql/data
       - ./scripts/db/init-app-role.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sentry -d sentry"]
+      test: ["CMD-SHELL", "pg_isready -U illwatch -d illwatch"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7.2-alpine
-    container_name: sentry-redis
+    container_name: illwatch-redis
     restart: unless-stopped
     # Mot de passe obligatoire (M7 lot 2). Valeur de développement par défaut ; en production,
-    # REDIS_PASSWORD est imposé et SENTRY refuse de démarrer avec la valeur de développement.
-    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-sentry-dev-redis}"]
+    # REDIS_PASSWORD est imposé et ILLWATCH refuse de démarrer avec la valeur de développement.
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-illwatch-dev-redis}"]
     environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-sentry-dev-redis}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-illwatch-dev-redis}
     # Écoute locale uniquement (M7).
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
-      - sentry_redisdata:/data
+      - illwatch_redisdata:/data
     healthcheck:
       test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
       interval: 10s
@@ -45,16 +45,16 @@ services:
 
   api:
     build: .
-    container_name: sentry-api
+    container_name: illwatch-api
     restart: unless-stopped
     env_file: .env
-    environment: &sentry-env
+    environment: &illwatch-env
       # L'API et le worker utilisent le rôle applicatif ; seules les migrations (au démarrage
       # de l'API) utilisent le propriétaire, puis réappliquent les droits (M7 lot 2).
-      DATABASE_URL: postgresql+asyncpg://sentry_app:${POSTGRES_APP_PASSWORD:-sentry-app-dev}@postgres:5432/sentry
-      MIGRATION_DATABASE_URL: postgresql+asyncpg://sentry:sentry@postgres:5432/sentry
-      DATABASE_APP_ROLE: sentry_app
-      REDIS_URL: redis://:${REDIS_PASSWORD:-sentry-dev-redis}@redis:6379/0
+      DATABASE_URL: postgresql+asyncpg://illwatch_app:${POSTGRES_APP_PASSWORD:-illwatch-app-dev}@postgres:5432/illwatch
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://illwatch:illwatch@postgres:5432/illwatch
+      DATABASE_APP_ROLE: illwatch_app
+      REDIS_URL: redis://:${REDIS_PASSWORD:-illwatch-dev-redis}@redis:6379/0
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -67,11 +67,11 @@ services:
   # Planificateur de collecte (T2.6). Plusieurs répliques possibles : verrou Redis par flux.
   worker:
     build: .
-    container_name: sentry-worker
+    container_name: illwatch-worker
     restart: unless-stopped
     env_file: .env
-    environment: *sentry-env
-    entrypoint: ["sentry", "feeds", "worker"]
+    environment: *illwatch-env
+    entrypoint: ["illwatch", "feeds", "worker"]
     healthcheck:
       disable: true  # le HEALTHCHECK de l'image vise l'API HTTP, absente ici
     depends_on:
@@ -82,5 +82,5 @@ services:
     profiles: ["full"]
 
 volumes:
-  sentry_pgdata:
-  sentry_redisdata:
+  illwatch_pgdata:
+  illwatch_redisdata:
