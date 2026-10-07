@@ -92,3 +92,16 @@ def test_normalisation_des_graphies_equivalentes(
 def test_graphies_equivalentes_convergent_vers_une_seule_cle() -> None:
     variants = ["Example.COM", "example.com", "EXAMPLE.COM", "example.com.", "example[.]com"]
     assert {normalize_indicator(v) for v in variants} == {(IndicatorType.DOMAIN, "example.com")}
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "http://hote.example:99999/charge",  # port hors 0-65535 (OTX, 07/10)
+        "https://[::1/chemin",  # hôte IPv6 non refermé
+    ],
+)
+def test_url_malformee_rejetee_sans_exception_brute(value: str) -> None:
+    """Une URL que `urllib` refuse doit être rejetée seule, jamais faire échouer le lot."""
+    with pytest.raises(InvalidIndicatorError):
+        normalize_indicator(value)

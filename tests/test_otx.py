@@ -267,3 +267,43 @@ def test_rythme_nvd_annonce_selon_la_cle(monkeypatch: pytest.MonkeyPatch) -> Non
         assert "avec clé" in _nvd_pace(("nvd",))
     finally:
         get_settings.cache_clear()
+
+
+async def test_reprise_annoncee_seulement_si_l_avancement_est_enregistre(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Une ingestion en échec n'annonce pas « reprise à la page N » (boucle du 07/10)."""
+    from sentry.modules.threat_feeds import collector
+
+    monkeypatch.setenv("OTX_API_KEY", KEY)
+    monkeypatch.setenv("OTX_MAX_PAGES", "1")
+    get_settings.cache_clear()
+    try:
+        feed = await _otx_feed(db_session)
+
+        async def broken(*args: object, **kwargs: object) -> None:
+            raise RuntimeError("ingestion impossible")
+
+        monkeypatch.setattr(collector, "ingest_indicators", broken)
+        report = await collect_feed(db_session, feed, fetch=_two_pages(), clock=lambda: NOW)
+        assert not report.succeeded and feed.status == FeedStatus.DEGRADED
+        assert report.warning is None
+        state = await db_session.get(CollectorState, f"{OTX_STATE_PREFIX}{feed.id}")
+        assert state is not None and state.items == 0  # rien d'enregistré, rien d'annoncé
+    finally:
+        get_settings.cache_clear()
+
+
+async def test_url_a_port_invalide_n_empeche_pas_le_lot(db_session: AsyncSession) -> None:
+    from sentry.modules.threat_feeds.indicators import Observation, ingest_indicators
+
+    result = await ingest_indicators(
+        db_session,
+        [
+            Observation(value="http://hote.example:99999/x", type=IndicatorType.URL),
+            Observation(value="https://valide.example/x", type=IndicatorType.URL),
+        ],
+        feed_id=None,
+        now=NOW,
+    )
+    assert result.inserted == 1 and result.rejected_count == 1

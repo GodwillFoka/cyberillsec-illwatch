@@ -178,22 +178,24 @@ async def _fetch_otx_feed(
         start_page=start_page,
     )
     next_page = start_page + outcome.pages
-    if outcome.truncated:
-        report.warning = (
-            f"Collecte OTX limitée à {outcome.pages} pages (OTX_MAX_PAGES) : reprise à la "
-            f"page {next_page} à la prochaine collecte."
-        )
-    elif outcome.interrupted is not None:
-        report.warning = _safe_message(
-            f"Collecte OTX interrompue page {next_page} ({outcome.interrupted}) : "
-            f"{outcome.pages} page(s) conservée(s), reprise à la prochaine collecte."
-        )
 
     def record_progress() -> None:
+        # Appelée une fois les IOC ingérés : l'avertissement de reprise n'est annoncé que si
+        # l'avancement est réellement enregistré (sinon la collecte suivante relit ces pages).
         if outcome.complete:
             state.cursor, state.items, state.last_success_at = window_start, 0, None
+            return
+        state.items, state.last_success_at = next_page - 1, window_start
+        if outcome.truncated:
+            report.warning = (
+                f"Collecte OTX limitée à {outcome.pages} pages (OTX_MAX_PAGES) : reprise à la "
+                f"page {next_page} à la prochaine collecte."
+            )
         else:
-            state.items, state.last_success_at = next_page - 1, window_start
+            report.warning = _safe_message(
+                f"Collecte OTX interrompue page {next_page} ({outcome.interrupted}) : "
+                f"{outcome.pages} page(s) conservée(s), reprise à la prochaine collecte."
+            )
 
     return outcome.parsed, record_progress
 

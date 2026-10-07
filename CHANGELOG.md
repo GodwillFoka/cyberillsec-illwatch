@@ -7,6 +7,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Corrigé — rattrapage OTX de nuit (07/10)
+- Une URL au port invalide (`http://hote:99999/`) levait une `ValueError` brute qui faisait
+  échouer **tout le lot** d'IOC ; la collecte relisait alors les mêmes pages à l'infini
+  (24 passages sans progrès). La valeur est désormais rejetée seule, comme toute valeur
+  malformée.
+- « Reprise à la page N » n'est plus annoncé quand l'ingestion échoue : l'avancement n'étant
+  pas enregistré, le message était trompeur.
+
 ### Corrigé — collecte OTX (06/10, soirée)
 Constaté lors de la première collecte réelle d'un compte OTX abonné à plus de 1 000 pulses :
 - **Fin du « tout ou rien »** : une erreur réseau après la première page (ex. `ReadTimeout`

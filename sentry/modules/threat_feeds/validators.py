@@ -113,6 +113,18 @@ def normalize_indicator(value: str) -> tuple[IndicatorType, str]:
     plusieurs lignes en base : `Example.COM`, `example.com.` et `example[.]com`
     deviennent tous `example.com`.
     """
+    try:
+        return _normalize(value)
+    except InvalidIndicatorError:
+        raise
+    except ValueError as exc:
+        # `urllib` lève ValueError sur un port hors 0-65535 ou un hôte IPv6 mal formé
+        # (`http://hote:99999/`, vu dans OTX le 07/10) : la valeur seule est rejetée,
+        # jamais le lot entier.
+        raise InvalidIndicatorError(f"Valeur malformée {value!r} : {exc}") from exc
+
+
+def _normalize(value: str) -> tuple[IndicatorType, str]:
     candidate = refang(value.strip())
     if candidate.endswith(".") and "://" not in candidate:
         candidate = candidate.rstrip(".")
