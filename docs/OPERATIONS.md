@@ -252,6 +252,9 @@ système Debian, **aucune avec correctif publié**, aucune dans une dépendance 
 | util-linux : mount, login, libblkid… (4) | acceptées | socle Debian ; outils jamais invoqués par SENTRY |
 | ncurses, libsystemd/libudev, libacl, perl-base (4) | acceptées | socle Debian, non exposés au réseau |
 
+Constat après retrait de curl (pipeline `56ab581`) : 0 Critical, 44 High, 58 Medium, 61 Low,
+2 Unknown (165 au total, contre 240). Analyse de code SAST (Semgrep) : 0 constat.
+
 Mesures compensatoires : processus non privilégié (`USER sentry`, UID 10001), aucun port exposé
 hors Caddy en production, image reconstruite à chaque push sur `main` (base `python:3.12-slim`
 à jour). Revue à chaque analyse : une vulnérabilité **Critical** ou un correctif Debian publié
