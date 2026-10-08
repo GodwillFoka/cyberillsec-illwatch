@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 20 h 05**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 21 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -32,7 +32,7 @@ données réelles, en local et en CI.
 
 | Chantier | Branche | État |
 |---|---|---|
-| **Interface web** | — | ✅ maquette v6 adoptée (6 itérations), ADR-016 accepté ; ⏳ lot 1 à développer |
+| **Interface web** | `bb102d3` | ✅ maquette v6 adoptée, ADR-016 accepté ; ✅ lot 1 côté serveur fusionné (journal des collectes, séries temporelles, flux SSE) ; ⏳ socle `frontend/` et écrans |
 | **Renommage SENTRY → ILLWATCH** | `d92b8c9` | ✅ code (162 fichiers, CI 463/463, validation réelle verte) ; dépôt GitHub renommé ; Kali migré : 528 453 IOC et 26 416 CVE retrouvés, volumes à nom fixe, dossier renommé, scénario 48/48 |
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ constaté sur `56ab581` : 0 Critical ; High 52 → 44, total 240 → 165 (−31 %) ; 44 High Debian sans correctif acceptées |
@@ -45,6 +45,7 @@ données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 08/10 | `bb102d3` | Lot 1 serveur (PR #1) : `collection_runs`, `/feeds/health`, `/feeds/{id}/runs`, `/dashboard/timeseries`, flux SSE `/stream` et bus Redis ; 2 migrations |
 | 08/10 | `9f7fe1f` | ADR-016 interface web, système de design v6 |
 | 08/10 | `d92b8c9` | Projet Compose et volumes à nom fixe : dossier du dépôt renommable sans perte |
 | 08/10 | `57f42fc` | Script de migration : comparaison triée (fausse alerte corrigée), retour arrière fiable |
@@ -104,8 +105,9 @@ Décision du 08/10 : **l'interface web passe avant l'hébergement**. La préprod
 l'interface en place.
 
 1. **Interface web v1, lot 1** — maquette v6 **adoptée**, ADR-016 accepté, système de design
-   documenté (`docs/DESIGN_SYSTEM.md`). À développer : socle `frontend/`, Vue d'ensemble, Triage,
-   IOC, CVE, Incidents, Investigation, Chasse ; côté serveur : flux SSE, séries temporelles,
-   journal de collecte.
+   documenté (`docs/DESIGN_SYSTEM.md`). Côté serveur **fait** (journal de collecte, séries
+   temporelles, flux SSE). À développer : socle `frontend/` (Vite, TypeScript, TanStack Query,
+   types générés depuis OpenAPI, image Docker), puis Vue d'ensemble, Triage, IOC, CVE, Incidents,
+   Investigation, Chasse. Sur Kali : `git pull` puis `alembic upgrade head`.
 2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 3. Ouvrir M8 Detection & Correlation.
