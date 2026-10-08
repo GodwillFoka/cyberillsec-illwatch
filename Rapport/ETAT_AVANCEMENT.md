@@ -1,12 +1,13 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 00 h 45**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 18 h 15**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
 
-> **08/10 — SENTRY devient ILLWATCH** (nom « Sentry » déjà pris). Code renommé et fusionné
-> (`4c1e220`, CI et validation réelle vertes) ; reste à renommer les dépôts et à migrer le poste Kali.
+> **08/10 — SENTRY devient ILLWATCH** (nom « Sentry » déjà pris). Bascule terminée : code
+> renommé (`4c1e220`), dépôt GitHub renommé, poste Kali migré sans perte (13 tables, comptages
+> identiques) dans le dossier `cyberillsec-illwatch` ; scénario SOC **48/48** sous ILLWATCH.
 
 ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
 v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés ; **reste le
@@ -31,7 +32,7 @@ données réelles, en local et en CI.
 
 | Chantier | Branche | État |
 |---|---|---|
-| **Renommage SENTRY → ILLWATCH** | `4c1e220` | ✅ code fusionné : 162 fichiers, CI 463/463, validation réelle verte ; ⏳ dépôts à renommer, poste Kali à migrer (`scripts/migrer-vers-illwatch.sh`) |
+| **Renommage SENTRY → ILLWATCH** | `d92b8c9` | ✅ code (162 fichiers, CI 463/463, validation réelle verte) ; dépôt GitHub renommé ; Kali migré : 528 453 IOC et 26 416 CVE retrouvés, volumes à nom fixe, dossier renommé, scénario 48/48 |
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ constaté sur `56ab581` : 0 Critical ; High 52 → 44, total 240 → 165 (−31 %) ; 44 High Debian sans correctif acceptées |
 | Analyse de code (SAST Semgrep GitLab) | `56ab581` | ✅ constaté : **0 constat** ; concorde avec bandit (CI GitHub) |
@@ -43,6 +44,8 @@ données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 08/10 | `d92b8c9` | Projet Compose et volumes à nom fixe : dossier du dépôt renommable sans perte |
+| 08/10 | `57f42fc` | Script de migration : comparaison triée (fausse alerte corrigée), retour arrière fiable |
 | 08/10 | `4c1e220` | SENTRY → ILLWATCH : paquet, CLI, variables `ILLWATCH_*`, base `illwatch`, infra, docs, logo ; script de migration |
 | 07/10 | `56ab581` | Fusion : détection de secrets gitleaks en CI ; anciennes branches supprimées |
 | 07/10 | `a2fb367` | Fusion : image sans curl |
@@ -62,38 +65,39 @@ données réelles, en local et en CI.
 |---|---|---|
 | Tests (CI) | 463 / 463, Python 3.12 et 3.14 | 08/10 (`4c1e220`) |
 | Couverture | 93-94 % (seuil 80 %) | 07/10 |
-| Scénario SOC | 48 / 48, local (gros volume) et CI | 07/10 |
+| Scénario SOC | 48 / 48 sous ILLWATCH, local (gros volume) et CI | 08/10 |
 | Sources saines | 7 / 9 (DigitalSide hors ligne depuis le 29/09) | 06/10 |
-| IOC en base (Kali) | 480 669, dont 305 286 actifs | 07/10 |
+| IOC en base (Kali) | 528 453, dont 334 311 actifs ; 787 confirmés par ≥ 2 sources | 08/10 |
 | CVE en base (Kali) | 26 416 : P0 495 · P1 1 239 · P2 36 · P3 24 646 ; KEV 1 734, toutes ≥ P1 | 07/10 |
 
-## 6. Performances (480 669 IOC, poste Kali)
+## 6. Performances (528 453 IOC, poste Kali, 08/10 sous ILLWATCH)
 
 | Appel | Avant (07/10) | Après correctif | Cible |
 |---|---|---|---|
-| Export des IOC | 89 s | 12,9 s pendant la collecte ; **16,6 s** (max 17,0 s) au repos, base agrandie ⚠️ | < 15 s |
-| Tableau de bord | 2,0 à 3,9 s | **0,51 s** (max 0,87 s) ✔ | < 1 s |
-| Chasse sur la base complète | 5,7 s | 5,0 s | < 10 s ✔ |
-| Export des CVE | 4,4 s | **2,0 s** (max 2,2 s) ✔ | < 5 s |
+| Export des IOC | 89 s | **12,0 s** (max 12,7 s) ✔ | < 15 s |
+| Tableau de bord | 2,0 à 3,9 s | **0,63 s** (max 1,06 s) ✔ | < 1 s |
+| Chasse sur la base complète | 5,7 s | 7,4 s (334 311 IOC actifs, 345 corresp.) | < 10 s ✔ |
+| Export des CVE | 4,4 s | **1,5 s** (max 1,6 s) ✔ | < 5 s |
 | Autres appels | < 0,6 s | — | ✔ |
 
 ## 7. Risques et points ouverts
 
 | Point | Impact | Action | État |
 |---|---|---|---|
-| Export des IOC légèrement au-dessus de la cible (16,6 s) | acceptable derrière un proxy (délai > 60 s) | sérialisation à optimiser en M8 si besoin | 🟡 |
+| Export des IOC proche de la cible (12,0 s pour 528 453 IOC) | croît avec la base | sérialisation à optimiser en M8 si besoin | 🟡 à surveiller |
 | 612 CVE exploitées (KEV) en P2/P3 | non conforme à la BOD 22-01 | ADR-014 appliqué : 0 CVE KEV sous P1 | ✅ |
 | Plages CIDR rejetées (1 640 chez RedEye) | information perdue | type « réseau » au backlog M8 | ⏳ |
 | Image : 44 High Debian sans correctif (165 au total, 0 Critical) | non exposées, processus non privilégié | acceptées et documentées (OPERATIONS § 7 quinquies) ; revue à chaque analyse | ✅ accepté |
 | Secrets dans l'historique Git | fuite de clés | gitleaks : 0 vrai secret sur 79 commits ; contrôle ajouté à chaque push | ✅ |
 | Analyse de code | vulnérabilités applicatives | SAST Semgrep GitLab : 0 constat (`56ab581`) ; bandit vert | ✅ |
 | Branches GitHub `feature/m7-production-hardening`, `maj/2026-10-06` | aucune (entièrement contenues dans `main`) | supprimées le 07/10 | ✅ |
-| Poste Kali encore sous SENTRY (base `sentry`) | la commande `illwatch` ne trouve pas la base | `scripts/migrer-vers-illwatch.sh` (sauvegarde, comptages, retour arrière) | ⏳ |
+| Anciens volumes SENTRY conservés sur Kali (≈ 2 copies de la base) | espace disque | à supprimer après quelques jours d'usage normal | ⏳ |
+| Dépôt GitLab à renommer (chemin `cyberillsec-illwatch`) | liens de la documentation | Settings → General → Advanced → Change path | ⏳ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
 | Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | — |
 
 ## 8. Prochaines étapes
 
-1. Renommer les dépôts GitHub et GitLab en `cyberillsec-illwatch`, migrer le poste Kali.
+1. Renommer le dépôt GitLab (chemin `cyberillsec-illwatch`) ; supprimer les anciens volumes.
 2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 3. Ouvrir M8 Detection & Correlation.
