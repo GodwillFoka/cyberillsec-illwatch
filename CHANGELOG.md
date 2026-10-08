@@ -16,6 +16,10 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   volumes de la dernière collecte, collectes et échecs sur 7 jours).
 - `GET /api/v1/feeds/{id}/runs?limit=` : historique des collectes d'une source (100 au plus).
 - Lecture ouverte à tous les rôles ; le détail d'une erreur reste réservé aux administrateurs.
+- `GET /api/v1/dashboard/timeseries?metric=iocs|alerts|incidents&window=24h|7d|30d` : comptage
+  par heure ou par jour (UTC), réparti par sévérité ou priorité, tranches vides à zéro.
+  Index `idx_indicators_first_seen` (migration `c5d0a7e94b13`) pour ne pas parcourir les
+  500 000 IOC à chaque appel.
 
 ### Décidé — interface web (08/10)
 - ADR-016 accepté : interface React + TypeScript (Vite, TanStack Query, types générés depuis

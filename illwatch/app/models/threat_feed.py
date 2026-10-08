@@ -71,6 +71,7 @@ class Indicator(UUIDPrimaryKeyMixin, Base):
         UniqueConstraint("type", "value", name="uq_indicator_type_value"),
         Index("idx_indicators_type_val", "type", "value"),
         Index("idx_indicators_last_seen", "last_seen"),
+        Index("idx_indicators_first_seen", "first_seen"),
         CheckConstraint(_in_enum("type", IndicatorType), name="ck_indicators_type"),
         CheckConstraint(_in_enum("severity", Severity), name="ck_indicators_severity"),
     )
