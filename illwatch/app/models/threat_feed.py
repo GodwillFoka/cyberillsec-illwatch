@@ -6,6 +6,7 @@ et `1f3dafc3008c` (format OTX). Le modèle reste la source de vérité du schém
 Les bases créées par `Base.metadata.create_all` (tests SQLite) appliquent les mêmes règles.
 
 `indicator_sources` (ADR-006) porte la provenance multi-sources des IOC.
+`collection_runs` (ADR-016) garde une ligne par collecte : santé et volumes de chaque source.
 """
 
 from datetime import datetime
@@ -127,3 +128,34 @@ class IndicatorSource(Base):
 
     def __repr__(self) -> str:
         return f"<IndicatorSource {self.indicator_id} ← {self.feed_id}>"
+
+
+class CollectionRun(UUIDPrimaryKeyMixin, Base):
+    """Journal des collectes — une ligne par collecte d'un flux (ADR-016, santé des sources).
+
+    Alimente l'écran « Sources CTI » : dernière tentative, durée, nouveaux IOC, IOC déjà
+    connus, rejets, erreurs sur 7 jours. Purgé au-delà de `RUN_RETENTION_DAYS` par
+    l'entretien quotidien du worker.
+    """
+
+    __tablename__ = "collection_runs"
+    __table_args__ = (
+        Index("idx_collection_runs_feed_started", "feed_id", "started_at"),
+        CheckConstraint(_in_enum("status", FeedStatus), name="ck_collection_runs_status"),
+    )
+
+    feed_id: Mapped[UUID] = mapped_column(
+        ForeignKey("threat_feeds.id", ondelete="CASCADE"), nullable=False
+    )
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    duration_ms: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    succeeded: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    inserted: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    updated: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    rejected: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    warning: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    def __repr__(self) -> str:
+        return f"<CollectionRun {self.feed_id} {self.started_at} ok={self.succeeded}>"

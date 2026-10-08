@@ -186,7 +186,8 @@ Hors Compose (proxy existant) :
 ## 6 bis. Entretien automatique
 
 Le worker exécute une fois par jour : purge des jetons de rafraîchissement expirés ou révoqués
-depuis plus de 30 jours (`worker.housekeeping`), contrôle de fraîcheur d'EPSS (`cve.epss_stale`
+depuis plus de 30 jours et du journal des collectes au-delà de 90 jours (`worker.housekeeping`,
+champs `purged` et `runs_purged`), contrôle de fraîcheur d'EPSS (`cve.epss_stale`
 au-delà de 48 h). `illwatch status` affiche le même avertissement : sans EPSS récent, aucune CVE
 ne peut atteindre P0.
 

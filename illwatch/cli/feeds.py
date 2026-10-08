@@ -386,13 +386,15 @@ HOUSEKEEPING_INTERVAL_SECONDS = 24 * 3600
 
 
 async def _maybe_housekeeping(lock: FeedLock) -> None:
-    """Une fois par jour : purge des sessions périmées, contrôle de fraîcheur d'EPSS (M7 lot 3)."""
+    """Une fois par jour : purge des sessions périmées et du journal des collectes (> 90 j),
+    contrôle de fraîcheur d'EPSS (M7 lot 3, ADR-016)."""
     from datetime import UTC, datetime, timedelta
 
     from illwatch.app.database import get_session_factory
     from illwatch.app.models import CollectorState
     from illwatch.modules.foundation.sessions import purge_refresh_tokens
     from illwatch.modules.foundation.status import epss_staleness
+    from illwatch.modules.threat_feeds.runs import purge_runs
 
     settings = get_settings()
     now = datetime.now(UTC)
@@ -409,6 +411,7 @@ async def _maybe_housekeeping(lock: FeedLock) -> None:
     try:
         async with get_session_factory()() as session:
             purged = await purge_refresh_tokens(session, now=now)
+            runs_purged = await purge_runs(session, now=now)
             stale, age = await epss_staleness(session, now)
             state = await session.get(CollectorState, HOUSEKEEPING_STATE)
             if state is None:
@@ -417,7 +420,10 @@ async def _maybe_housekeeping(lock: FeedLock) -> None:
             state.last_success_at = now
             state.items = purged
             await session.commit()
-        collector.log.info("worker.housekeeping", extra={"fields": {"sessions_purged": purged}})
+        collector.log.info(
+            "worker.housekeeping",
+            extra={"fields": {"sessions_purged": purged, "runs_purged": runs_purged}},
+        )
         if stale:
             collector.log.warning(
                 "cve.epss_stale",

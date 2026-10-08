@@ -8,6 +8,15 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — interface web, lot 1 côté serveur (08/10)
+- Journal des collectes : chaque collecte d'un flux laisse une ligne `collection_runs` (début,
+  durée, nouveaux, mis à jour, rejetés, erreur, avertissement) ; conservation 90 jours, purge par
+  l'entretien quotidien du worker. Migration `b8e3f61a2c47`.
+- `GET /api/v1/feeds/health` : santé de toutes les sources (dernière tentative, dernier succès,
+  volumes de la dernière collecte, collectes et échecs sur 7 jours).
+- `GET /api/v1/feeds/{id}/runs?limit=` : historique des collectes d'une source (100 au plus).
+- Lecture ouverte à tous les rôles ; le détail d'une erreur reste réservé aux administrateurs.
+
 ### Décidé — interface web (08/10)
 - ADR-016 accepté : interface React + TypeScript (Vite, TanStack Query, types générés depuis
   OpenAPI), temps réel par Server-Sent Events, servie par le même conteneur que l'API.
