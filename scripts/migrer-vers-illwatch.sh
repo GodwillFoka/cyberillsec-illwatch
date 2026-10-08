@@ -34,7 +34,9 @@ die()  { printf '\033[1;31m✘ %s\033[0m\n' "$1" >&2; exit 1; }
 counts() {  # counts <conteneur> <rôle> <base>
   local sql="" t
   for t in ${TABLES}; do sql+="SELECT '${t}', count(*) FROM ${t} UNION ALL "; done
-  docker exec "$1" psql -U "$2" -d "$3" -tAF' ' -c "${sql% UNION ALL }"
+  # Tri obligatoire : sans ORDER BY, PostgreSQL rend les lignes de UNION ALL dans un ordre
+  # quelconque, et la comparaison avant/après signalait une fausse différence (08/10).
+  docker exec "$1" psql -U "$2" -d "$3" -tAF' ' -c "${sql% UNION ALL }" | sort
 }
 
 [[ -f pyproject.toml && -d illwatch ]] || die "Lancer depuis la racine du dépôt, après git pull du code renommé."
@@ -47,9 +49,12 @@ if [[ "${1:-}" == "--retour" ]]; then
   [[ -f "${WORK}/env.sentry" ]] || die "Sauvegarde ${WORK}/env.sentry introuvable."
   docker stop illwatch-api illwatch-worker illwatch-redis "${NEW_PG}" 2>/dev/null || true
   cp "${WORK}/env.sentry" .env
-  docker start "${OLD_PG}" "${OLD_REDIS}"
-  ok "Anciens conteneurs redémarrés, .env restauré."
-  echo "Reste à faire : git checkout f878deb && pip install -c constraints.txt -e \".[dev]\""
+  # Docker Compose remplace les anciens conteneurs (même service, autre nom) mais garde leur
+  # volume : on revient à l'ancien code, qui les recrée sur le volume sentry_pgdata intact.
+  git checkout f878deb
+  docker compose up -d postgres redis
+  pip install -q -c constraints.txt -e ".[dev]"
+  ok "SENTRY remis en service sur l'ancien volume, .env restauré (git checkout main pour revenir)."
   exit 0
 fi
 
