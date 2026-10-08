@@ -45,7 +45,7 @@ données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
-| 08/10 | (ce commit) | ADR-016 interface web, système de design v6 |
+| 08/10 | `9f7fe1f` | ADR-016 interface web, système de design v6 |
 | 08/10 | `d92b8c9` | Projet Compose et volumes à nom fixe : dossier du dépôt renommable sans perte |
 | 08/10 | `57f42fc` | Script de migration : comparaison triée (fausse alerte corrigée), retour arrière fiable |
 | 08/10 | `4c1e220` | SENTRY → ILLWATCH : paquet, CLI, variables `ILLWATCH_*`, base `illwatch`, infra, docs, logo ; script de migration |
