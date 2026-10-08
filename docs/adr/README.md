@@ -19,8 +19,9 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [011](ADR-011-durcissement-production.md) | Durcissement de production : audit append-only, couche HTTP, limitation compte × IP | Proposé |
 | [012](ADR-012-roles-sessions.md) | Rôles PostgreSQL séparés, sessions révocables, rotation de clé, Redis protégé | Proposé |
 | [013](ADR-013-deploiement-tls.md) | Déploiement : TLS par Caddy, migrations isolées, analyse d'image, entretien quotidien | Proposé |
-| [014](ADR-014-score-dependance-epss.md) | Score : dépendance à EPSS et plancher KEV (proposition M8) | À trancher |
+| [014](ADR-014-score-dependance-epss.md) | Score : dépendance à EPSS et plancher KEV | Accepté (A + B + C) |
 | [015](ADR-015-miroir-github.md) | Miroir GitHub : CI, documentation publiée, image Docker et releases | Accepté |
+| [016](ADR-016-interface-web.md) | Interface web : React + TypeScript, temps réel par SSE, système de design v6 | Accepté |
 
 ## Gabarit
 

@@ -8,6 +8,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Décidé — interface web (08/10)
+- ADR-016 accepté : interface React + TypeScript (Vite, TanStack Query, types générés depuis
+  OpenAPI), temps réel par Server-Sent Events, servie par le même conteneur que l'API.
+- Système de design v6 adopté (`docs/DESIGN_SYSTEM.md`) : indigo CYBERILLSEC, orange d'action,
+  échelle de priorité unique P0–P3, Inter et JetBrains Mono.
+- L'hébergement de préproduction (fin de M7) attend la première version de l'interface.
+
 ### Modifié — SENTRY devient ILLWATCH (08/10)
 - Le nom « Sentry » étant déjà pris (plateforme de suivi d'erreurs), le projet est renommé
   **ILLWATCH**. Tout est renommé, sans compatibilité ascendante :

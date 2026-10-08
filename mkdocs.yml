@@ -91,6 +91,7 @@ nav:
           - ADR-013 Déploiement TLS: adr/ADR-013-deploiement-tls.md
           - ADR-014 Score et EPSS: adr/ADR-014-score-dependance-epss.md
           - ADR-015 Miroir GitHub: adr/ADR-015-miroir-github.md
+          - ADR-016 Interface web: adr/ADR-016-interface-web.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:
