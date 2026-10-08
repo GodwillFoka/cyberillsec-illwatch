@@ -111,6 +111,22 @@ plutôt que depuis `alembic.ini` — pour qu'il n'existe qu'une seule source de 
                             └──────────────┘        └──────────────┘
 ```
 
+## Temps réel (ADR-016)
+
+```
+ API (incidents, alertes)  ─┐   écriture en base          après COMMIT
+ Worker (collecte, chasse) ─┴─► after_flush : événement ─► publication Redis
+                                 déduit, mis en attente     canal illwatch:events
+                                                                   │
+                     navigateur ◄── GET /api/v1/stream (SSE) ◄─────┘
+                     relit la donnée par l'API REST   filtrage par rôle, battement 15 s
+```
+
+Un événement annonce un changement (identifiant, niveau), jamais la donnée elle-même : l'interface
+la relit avec les droits de l'utilisateur. Il n'est publié qu'après le commit ; une transaction
+annulée n'annonce rien. Sans Redis, le bus reste local au processus (l'API voit ses propres
+événements, pas ceux du worker) et un avertissement est journalisé.
+
 ## Modèle de données
 
 Seize tables, créées par huit migrations (`alembic/versions/`). Les contraintes métier sont

@@ -22,6 +22,7 @@ from illwatch.modules.dashboard.service import (
     json_stream,
     recent_activity,
 )
+from illwatch.modules.dashboard.timeseries import Metric, Window, time_series
 
 router = APIRouter(prefix="/dashboard", tags=["tableau de bord SOC"])
 
@@ -32,6 +33,47 @@ class ActivityRead(BaseModel):
     reference: str
     label: str
     level: str
+
+
+class PointRead(BaseModel):
+    at: datetime
+    total: int
+    by_level: dict[str, int]
+
+
+class SeriesRead(BaseModel):
+    metric: Metric
+    window: Window
+    bucket: Literal["hour", "day"]
+    start: datetime
+    end: datetime
+    total: int
+    points: list[PointRead]
+
+
+@router.get(
+    "/timeseries",
+    response_model=SeriesRead,
+    summary="Série temporelle : nouveaux IOC, alertes CVE ou incidents (ADR-016)",
+    description=(
+        "Comptage par heure (24 h) ou par jour (7 et 30 jours), en UTC, avec répartition par "
+        "sévérité (IOC, incidents) ou priorité (alertes). Tranches vides à zéro ; la dernière "
+        "tranche est en cours."
+    ),
+)
+async def timeseries(
+    session: DbSession, _: CurrentUser, metric: Metric, window: Window = Window.H24
+) -> SeriesRead:
+    series = await time_series(session, metric, window)
+    return SeriesRead(
+        metric=series.metric,
+        window=series.window,
+        bucket="hour" if series.bucket == "hour" else "day",
+        start=series.start,
+        end=series.end,
+        total=series.total,
+        points=[PointRead(at=p.at, total=p.total, by_level=p.by_level) for p in series.points],
+    )
 
 
 @router.get("/summary", summary="Indicateurs clés du SOC en temps réel (RF-21)")

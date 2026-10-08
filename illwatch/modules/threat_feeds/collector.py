@@ -21,7 +21,8 @@ Règles :
   fenêtre en cours), `items` (pages déjà lues dans cette fenêtre), `last_success_at`
   (début de la fenêtre, qui devient le curseur suivant une fois la fenêtre épuisée).
 - **Traçabilité (UC-01 étape 8)** : chaque collecte écrit une ligne JSON
-  (`feed.collected`) : volumes, durée, erreur, pic mémoire du processus.
+  (`feed.collected`) : volumes, durée, erreur, pic mémoire du processus ; et une ligne
+  `collection_runs` (ADR-016) qui alimente l'écran de santé des sources.
 """
 
 import logging
@@ -34,7 +35,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.config import get_settings
-from illwatch.app.models import CollectorState, ThreatFeed
+from illwatch.app.models import CollectionRun, CollectorState, ThreatFeed
 from illwatch.modules.threat_feeds.fetcher import FetchError, RateLimitedError, fetch_feed_content
 from illwatch.modules.threat_feeds.indicators import ingest_indicators
 from illwatch.modules.threat_feeds.locks import FeedLock
@@ -114,6 +115,7 @@ async def collect_feed(
         feed_id=str(feed.id), feed_name=feed.name, status=FeedStatus(feed.status)
     )
     started = time.perf_counter()
+    started_at = clock()
     try:
         parsed, record_progress = await _fetch_and_parse(session, feed, fetch, report, clock)
         report.parsed, report.skipped = len(parsed.observations), parsed.skipped
@@ -144,8 +146,22 @@ async def collect_feed(
         feed.status = FeedStatus.DEGRADED
 
     report.status = FeedStatus(feed.status)
-    await session.flush()
     report.duration_ms = int((time.perf_counter() - started) * 1000)
+    session.add(
+        CollectionRun(
+            feed_id=feed.id,
+            started_at=started_at,
+            duration_ms=report.duration_ms,
+            succeeded=report.succeeded,
+            status=str(report.status),
+            inserted=report.inserted,
+            updated=report.updated,
+            rejected=report.rejected,
+            error=report.error,
+            warning=report.warning,
+        )
+    )
+    await session.flush()
     _log_report(feed, report)
     return report
 

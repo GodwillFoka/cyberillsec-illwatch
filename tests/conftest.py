@@ -10,7 +10,7 @@ base n'est jamais polluée d'un test à l'autre.
 
 import asyncio
 import os
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Iterator
 
 import pytest
 
@@ -37,6 +37,7 @@ from illwatch.app.database import Base, get_db  # noqa: E402
 from illwatch.app.main import create_app  # noqa: E402
 from illwatch.app.models import AuditEvent  # noqa: E402
 from illwatch.app.throttle import LocalCounter, LoginThrottle, get_login_throttle  # noqa: E402
+from illwatch.modules.events import LocalEventBus, set_event_bus  # noqa: E402
 from illwatch.modules.foundation.audit import AuditRecorder, get_audit_recorder  # noqa: E402
 
 TEST_DATABASE_URL = os.environ["DATABASE_URL"]
@@ -99,6 +100,15 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 @pytest.fixture(scope="session", autouse=True)
 def _clear_settings_cache() -> None:
     get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
+def event_bus() -> Iterator[LocalEventBus]:
+    """Bus d'événements en mémoire propre à chaque test (jamais le Redis partagé de la CI)."""
+    bus = LocalEventBus()
+    set_event_bus(bus)
+    yield bus
+    set_event_bus(None)
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -12,6 +12,7 @@ from illwatch.app.api.v1.router import api_router
 from illwatch.app.config import get_settings
 from illwatch.app.database import dispose_engine
 from illwatch.app.middleware import SecurityMiddleware, unhandled_error, validation_error
+from illwatch.modules.events import close_event_bus
 from illwatch.shared.logging import configure_logging
 
 
@@ -21,6 +22,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_settings()  # échoue tôt et bruyamment si la config est invalide (MOD-01)
     configure_logging(settings.log_level)  # journal JSON : accès, audit, erreurs (M7)
     yield
+    await close_event_bus()
     await dispose_engine()
 
 

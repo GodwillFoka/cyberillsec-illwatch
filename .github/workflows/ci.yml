@@ -107,6 +107,10 @@ jobs:
           RES=$(grep -E "^=+ .*(passed|failed|error).* =+$" pytest.txt | tail -1 | tr -d '=' | xargs)
           COV=$(grep -E "^TOTAL" pytest.txt | awk '{print $NF}')
           echo "::notice title=Tests Python ${{ matrix.python }}::${RES} · couverture ${COV}"
+          # Un test en échec devient une annotation lisible sans télécharger les journaux.
+          grep -E "^(FAILED|ERROR) " pytest.txt | head -20 | while read -r line; do
+            echo "::error title=Test en échec (Python ${{ matrix.python }})::${line:0:900}"
+          done || true
       - uses: actions/upload-artifact@v7
         if: always()
         with:

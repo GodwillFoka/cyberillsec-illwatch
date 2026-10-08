@@ -8,6 +8,7 @@ from rich.table import Table
 
 from illwatch.app.config import get_settings
 from illwatch.app.security import MIN_PASSWORD_LENGTH
+from illwatch.modules import events as _events  # noqa: F401 - événements temps réel (ADR-016)
 from illwatch.shared.enums import UserRole
 from illwatch.shared.urls import mask_url_password
 

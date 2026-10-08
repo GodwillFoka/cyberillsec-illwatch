@@ -8,6 +8,26 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — interface web, lot 1 côté serveur (08/10)
+- Journal des collectes : chaque collecte d'un flux laisse une ligne `collection_runs` (début,
+  durée, nouveaux, mis à jour, rejetés, erreur, avertissement) ; conservation 90 jours, purge par
+  l'entretien quotidien du worker. Migration `b8e3f61a2c47`.
+- `GET /api/v1/feeds/health` : santé de toutes les sources (dernière tentative, dernier succès,
+  volumes de la dernière collecte, collectes et échecs sur 7 jours).
+- `GET /api/v1/feeds/{id}/runs?limit=` : historique des collectes d'une source (100 au plus).
+- Lecture ouverte à tous les rôles ; le détail d'une erreur reste réservé aux administrateurs.
+- `GET /api/v1/dashboard/timeseries?metric=iocs|alerts|incidents&window=24h|7d|30d` : comptage
+  par heure ou par jour (UTC), réparti par sévérité ou priorité, tranches vides à zéro.
+  Index `idx_indicators_first_seen` (migration `c5d0a7e94b13`) pour ne pas parcourir les
+  500 000 IOC à chaque appel.
+- `GET /api/v1/stream` : flux temps réel (Server-Sent Events) pour l'interface. Événements
+  `alert.created`, `alert.acknowledged`, `incident.created`, `incident.updated`,
+  `feed.collected`, `hunt.completed`, `resync`, `expired`. Filtrés par rôle, battement toutes
+  les 15 s, durée bornée à celle du jeton d'accès, connexion PostgreSQL libérée pendant le flux.
+- Bus d'événements `illwatch.modules.events` : canal Redis `illwatch:events` partagé entre l'API
+  et le worker (repli en mémoire si Redis est injoignable). Les événements sont déduits des
+  écritures en base et publiés **après le commit** uniquement.
+
 ### Décidé — interface web (08/10)
 - ADR-016 accepté : interface React + TypeScript (Vite, TanStack Query, types générés depuis
   OpenAPI), temps réel par Server-Sent Events, servie par le même conteneur que l'API.

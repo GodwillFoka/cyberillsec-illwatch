@@ -5,6 +5,7 @@ Contrôle d'accès :
 | Opération                  | ADMIN | ANALYST | VIEWER |
 |----------------------------|:-----:|:-------:|:------:|
 | Lister / consulter         |   ✅  |   ✅    |   ✅   |
+| Santé, journal de collecte |   ✅  |   ✅    |   ✅   |
 | Créer / modifier / supprimer |  ✅  |   ❌    |   ❌   |
 
 L'écriture est réservée aux administrateurs : l'URL d'un flux déclenche des
@@ -23,6 +24,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from illwatch.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from illwatch.app.config import get_settings
 from illwatch.app.models import User
+from illwatch.modules.threat_feeds import runs as run_journal
 from illwatch.modules.threat_feeds import service
 from illwatch.modules.threat_feeds.service import (
     MAX_NAME_LENGTH,
@@ -134,6 +136,60 @@ def _for_viewer(feed: object, user: User) -> FeedRead:
     return read
 
 
+class FeedHealthRead(BaseModel):
+    """Santé d'une source : état de sa collecte, jamais la dangerosité de ses IOC."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    feed_id: UUID
+    name: str
+    feed_type: FeedType
+    status: FeedStatus
+    is_active: bool
+    last_successful_run: datetime | None
+    last_error: str | None
+    last_attempt_at: datetime | None
+    last_duration_ms: int | None
+    last_inserted: int | None
+    last_updated: int | None
+    last_rejected: int | None
+    errors_7d: int
+    runs_7d: int
+
+
+class CollectionRunRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    feed_id: UUID
+    started_at: datetime
+    duration_ms: int
+    succeeded: bool
+    status: FeedStatus
+    inserted: int
+    updated: int
+    rejected: int
+    error: str | None
+    warning: str | None
+
+
+REDACTED_RUN_ERROR = "Échec de la collecte (détail réservé aux administrateurs)."
+
+
+def _health_for(item: run_journal.FeedHealth, user: User) -> FeedHealthRead:
+    read = FeedHealthRead.model_validate(item)
+    if read.last_error and user.role != UserRole.ADMIN:
+        return read.model_copy(update={"last_error": REDACTED_ERROR})
+    return read
+
+
+def _run_for(run: object, user: User) -> CollectionRunRead:
+    read = CollectionRunRead.model_validate(run)
+    if read.error and user.role != UserRole.ADMIN:
+        return read.model_copy(update={"error": REDACTED_RUN_ERROR})
+    return read
+
+
 # --- Erreurs -------------------------------------------------------------------
 
 
@@ -177,6 +233,39 @@ async def list_feeds(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get(
+    "/health",
+    response_model=list[FeedHealthRead],
+    summary="Santé de toutes les sources (écran Sources CTI)",
+    description=(
+        "Pour chaque source : dernière tentative et dernier succès, volumes de la dernière "
+        "collecte (nouveaux, mis à jour, rejetés), nombre de collectes et d'échecs sur 7 jours."
+    ),
+)
+async def feeds_health(session: DbSession, user: CurrentUser) -> list[FeedHealthRead]:
+    return [_health_for(item, user) for item in await run_journal.feeds_health(session)]
+
+
+@router.get(
+    "/{feed_id}/runs",
+    response_model=list[CollectionRunRead],
+    summary="Journal des collectes d'une source",
+)
+async def feed_runs(
+    feed_id: UUID,
+    session: DbSession,
+    user: CurrentUser,
+    limit: Annotated[int, Query(ge=1, le=run_journal.MAX_RUNS_PAGE)] = 20,
+) -> list[CollectionRunRead]:
+    try:
+        await service.get_feed(session, feed_id)
+    except FeedNotFoundError:
+        raise _not_found(feed_id) from None
+    return [
+        _run_for(run, user) for run in await run_journal.list_runs(session, feed_id, limit=limit)
+    ]
 
 
 @router.get("/{feed_id}", response_model=FeedRead, summary="Consulter une source de flux")
