@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 21 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 22 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -45,6 +45,7 @@ données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 08/10 | `1e1fff2` | Correctif (PR #2) : journal de collecte en point de sauvegarde, verrou toujours rendu ; avertissement si `alembic upgrade` est lancé sans `illwatch db upgrade` |
 | 08/10 | `bb102d3` | Lot 1 serveur (PR #1) : `collection_runs`, `/feeds/health`, `/feeds/{id}/runs`, `/dashboard/timeseries`, flux SSE `/stream` et bus Redis ; 2 migrations |
 | 08/10 | `9f7fe1f` | ADR-016 interface web, système de design v6 |
 | 08/10 | `d92b8c9` | Projet Compose et volumes à nom fixe : dossier du dépôt renommable sans perte |
@@ -108,6 +109,6 @@ l'interface en place.
    documenté (`docs/DESIGN_SYSTEM.md`). Côté serveur **fait** (journal de collecte, séries
    temporelles, flux SSE). À développer : socle `frontend/` (Vite, TypeScript, TanStack Query,
    types générés depuis OpenAPI, image Docker), puis Vue d'ensemble, Triage, IOC, CVE, Incidents,
-   Investigation, Chasse. Sur Kali : `git pull` puis `alembic upgrade head`.
+   Investigation, Chasse. Kali migré (`c5d0a7e94b13`) ; droits du rôle applicatif à réappliquer (`illwatch db app-role illwatch_app`).
 2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 3. Ouvrir M8 Detection & Correlation.
