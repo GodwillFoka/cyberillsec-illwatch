@@ -264,6 +264,10 @@ _tasks: set[asyncio.Task[None]] = set()
 def emit(session: AsyncSession | Session, event: Event) -> None:
     """Publie `event` après le commit de la transaction de `session` (jamais avant)."""
     target = session.sync_session if isinstance(session, AsyncSession) else session
+    if not target.in_transaction():
+        # Sans transaction ouverte, un `rollback()` ne ferait rien et l'événement survivrait
+        # jusqu'au prochain commit. `begin()` est paresseux : aucune connexion n'est prise.
+        target.begin()
     target.info.setdefault(_PENDING_KEY, []).append(event)
 
 
