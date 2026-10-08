@@ -64,3 +64,14 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+    if _settings.migration_database_url and not config.attributes.get("illwatch_cli"):
+        # `alembic upgrade` seul ne donne aucun droit au rôle applicatif sur une table nouvelle :
+        # l'API et le worker échoueraient ensuite sur « permission denied ».
+        import sys
+
+        print(
+            "\n⚠  Droits du rôle applicatif non réappliqués. Préférez « illwatch db upgrade »,\n"
+            "   ou lancez maintenant : illwatch db app-role "
+            f"{_settings.database_app_role or 'illwatch_app'}\n",
+            file=sys.stderr,
+        )

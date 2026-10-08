@@ -32,6 +32,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.config import get_settings
@@ -103,6 +104,46 @@ async def due_feeds(session: AsyncSession, now: datetime) -> Sequence[ThreatFeed
     return [f for f in active if is_due(f, now)]
 
 
+async def _record_run(
+    session: AsyncSession, feed: ThreatFeed, report: CollectionReport, started_at: datetime
+) -> None:
+    """Inscrit la collecte au journal, dans un point de sauvegarde.
+
+    Le journal sert l'écran de santé des sources ; il ne doit jamais faire perdre une collecte.
+    Si l'écriture échoue (droits du rôle applicatif non posés après une migration, par exemple),
+    la collecte est conservée et l'échec est journalisé.
+    """
+    try:
+        async with session.begin_nested():
+            session.add(
+                CollectionRun(
+                    feed_id=feed.id,
+                    started_at=started_at,
+                    duration_ms=report.duration_ms,
+                    succeeded=report.succeeded,
+                    status=str(report.status),
+                    inserted=report.inserted,
+                    updated=report.updated,
+                    rejected=report.rejected,
+                    error=report.error,
+                    warning=report.warning,
+                )
+            )
+    except SQLAlchemyError as exc:
+        log.error(
+            "feed.run_not_recorded",
+            extra={
+                "fields": {
+                    "feed_id": report.feed_id,
+                    "error": _safe_message(
+                        f"{type(exc).__name__}: {getattr(exc, 'orig', None) or exc}"
+                    ),
+                    "hint": "droits du rôle applicatif : illwatch db upgrade",
+                }
+            },
+        )
+
+
 async def collect_feed(
     session: AsyncSession,
     feed: ThreatFeed,
@@ -147,21 +188,7 @@ async def collect_feed(
 
     report.status = FeedStatus(feed.status)
     report.duration_ms = int((time.perf_counter() - started) * 1000)
-    session.add(
-        CollectionRun(
-            feed_id=feed.id,
-            started_at=started_at,
-            duration_ms=report.duration_ms,
-            succeeded=report.succeeded,
-            status=str(report.status),
-            inserted=report.inserted,
-            updated=report.updated,
-            rejected=report.rejected,
-            error=report.error,
-            warning=report.warning,
-        )
-    )
-    await session.flush()
+    await _record_run(session, feed, report, started_at)
     _log_report(feed, report)
     return report
 
@@ -291,11 +318,14 @@ async def collect_due_feeds(
     reports = []
     ttl = get_settings().collect_lock_ttl_seconds
     for feed in sorted(feeds, key=lambda f: f.name.lower()):
-        token = await lock.acquire(str(feed.id), ttl) if lock is not None else None
+        # Lu avant la collecte : après une erreur SQL, la session refuse tout accès à `feed`,
+        # et le verrou ne pourrait plus être rendu (flux bloqué jusqu'à expiration du TTL).
+        feed_id = str(feed.id)
+        token = await lock.acquire(feed_id, ttl) if lock is not None else None
         if lock is not None and token is None:
             log.info(
                 "feed.skipped_locked",
-                extra={"fields": {"feed_id": str(feed.id), "feed_name": feed.name}},
+                extra={"fields": {"feed_id": feed_id, "feed_name": feed.name}},
             )
             continue
         try:
@@ -305,5 +335,5 @@ async def collect_due_feeds(
             await session.commit()
         finally:
             if lock is not None and token is not None:
-                await lock.release(str(feed.id), token)
+                await lock.release(feed_id, token)
     return reports
