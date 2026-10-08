@@ -20,6 +20,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   par heure ou par jour (UTC), réparti par sévérité ou priorité, tranches vides à zéro.
   Index `idx_indicators_first_seen` (migration `c5d0a7e94b13`) pour ne pas parcourir les
   500 000 IOC à chaque appel.
+- `GET /api/v1/stream` : flux temps réel (Server-Sent Events) pour l'interface. Événements
+  `alert.created`, `alert.acknowledged`, `incident.created`, `incident.updated`,
+  `feed.collected`, `hunt.completed`, `resync`, `expired`. Filtrés par rôle, battement toutes
+  les 15 s, durée bornée à celle du jeton d'accès, connexion PostgreSQL libérée pendant le flux.
+- Bus d'événements `illwatch.modules.events` : canal Redis `illwatch:events` partagé entre l'API
+  et le worker (repli en mémoire si Redis est injoignable). Les événements sont déduits des
+  écritures en base et publiés **après le commit** uniquement.
 
 ### Décidé — interface web (08/10)
 - ADR-016 accepté : interface React + TypeScript (Vite, TanStack Query, types générés depuis
