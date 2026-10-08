@@ -225,7 +225,7 @@ async def test_un_journal_inaccessible_ne_fait_pas_perdre_la_collecte(
     from illwatch.modules.threat_feeds import collector
 
     def broken_run(**fields: object) -> CollectionRun:
-        return CollectionRun(**{**fields, "duration_ms": None})  # NOT NULL : écriture refusée
+        return CollectionRun(**{**fields, "status": "INVALIDE"})  # CHECK : écriture refusée
 
     monkeypatch.setattr(collector, "CollectionRun", broken_run)
     feed = await _feed(db_session, "Journal-refuse")
