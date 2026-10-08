@@ -1,12 +1,12 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 18 h 15**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 18 h 20**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
 
 > **08/10 — SENTRY devient ILLWATCH** (nom « Sentry » déjà pris). Bascule terminée : code
-> renommé (`4c1e220`), dépôt GitHub renommé, poste Kali migré sans perte (13 tables, comptages
+> renommé (`4c1e220`), dépôts GitHub et GitLab renommés, poste Kali migré sans perte (13 tables, comptages
 > identiques) dans le dossier `cyberillsec-illwatch` ; scénario SOC **48/48** sous ILLWATCH.
 
 ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
@@ -91,13 +91,12 @@ données réelles, en local et en CI.
 | Secrets dans l'historique Git | fuite de clés | gitleaks : 0 vrai secret sur 79 commits ; contrôle ajouté à chaque push | ✅ |
 | Analyse de code | vulnérabilités applicatives | SAST Semgrep GitLab : 0 constat (`56ab581`) ; bandit vert | ✅ |
 | Branches GitHub `feature/m7-production-hardening`, `maj/2026-10-06` | aucune (entièrement contenues dans `main`) | supprimées le 07/10 | ✅ |
-| Anciens volumes SENTRY conservés sur Kali (≈ 2 copies de la base) | espace disque | à supprimer après quelques jours d'usage normal | ⏳ |
-| Dépôt GitLab à renommer (chemin `cyberillsec-illwatch`) | liens de la documentation | Settings → General → Advanced → Change path | ⏳ |
+| Anciens volumes SENTRY sur Kali | espace disque | supprimés le 08/10 ; dernière sauvegarde `~/illwatch-migration/sentry.dump` conservée | ✅ |
+| Dépôt GitLab à renommer | liens de la documentation | renommé, `main` synchronisé (`955e2a1`) | ✅ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
 | Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | — |
 
 ## 8. Prochaines étapes
 
-1. Renommer le dépôt GitLab (chemin `cyberillsec-illwatch`) ; supprimer les anciens volumes.
-2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
-3. Ouvrir M8 Detection & Correlation.
+1. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
+2. Ouvrir M8 Detection & Correlation.
