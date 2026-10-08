@@ -8,6 +8,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Corrigé — journal des collectes (08/10)
+- Une écriture refusée dans `collection_runs` (droits du rôle applicatif absents après un
+  `alembic upgrade` lancé seul) faisait échouer tout le cycle du worker et laissait les verrous
+  de collecte tenus jusqu'à expiration. Le journal est désormais écrit dans un point de
+  sauvegarde : en cas d'échec, la collecte est conservée et `feed.run_not_recorded` est
+  journalisé. Le verrou est toujours rendu.
+- `alembic upgrade` lancé seul avertit que les droits du rôle applicatif restent à poser.
+
 ### Ajouté — interface web, lot 1 côté serveur (08/10)
 - Journal des collectes : chaque collecte d'un flux laisse une ligne `collection_runs` (début,
   durée, nouveaux, mis à jour, rejetés, erreur, avertissement) ; conservation 90 jours, purge par

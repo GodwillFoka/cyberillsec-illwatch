@@ -212,3 +212,29 @@ async def test_api_journal_flux_inconnu_et_limite(
 
 async def test_api_sante_anonyme_refuse(client: AsyncClient) -> None:
     assert (await client.get(f"{FEEDS}/health")).status_code == 401
+
+
+# --- Résilience ------------------------------------------------------------------------------
+
+
+async def test_un_journal_inaccessible_ne_fait_pas_perdre_la_collecte(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Cas réel du 08/10 : migration appliquée sans les droits du rôle applicatif."""
+    from illwatch.app.models import Indicator
+    from illwatch.modules.threat_feeds import collector
+
+    def broken_run(**fields: object) -> CollectionRun:
+        return CollectionRun(**{**fields, "duration_ms": None})  # NOT NULL : écriture refusée
+
+    monkeypatch.setattr(collector, "CollectionRun", broken_run)
+    feed = await _feed(db_session, "Journal-refuse")
+    fetch = _serving((FIXTURES / "urlhaus_recent.csv").read_bytes())
+
+    report = await collect_feed(db_session, feed, fetch=fetch, clock=_clock)  # type: ignore[arg-type]
+    await db_session.commit()  # la session reste utilisable
+
+    assert report.succeeded and report.inserted == 2
+    assert feed.status == FeedStatus.HEALTHY
+    assert await db_session.scalar(select(func.count()).select_from(Indicator)) == 2
+    assert await db_session.scalar(select(func.count()).select_from(CollectionRun)) == 0

@@ -46,6 +46,8 @@ def alembic_config() -> Config:
     # Alembic stocke l'URL dans un ConfigParser : un mot de passe encodé (« %3A ») y serait
     # pris pour une interpolation et ferait échouer toute migration. « % » doit être doublé.
     cfg.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
+    # Signale à `alembic/env.py` que les droits du rôle applicatif seront posés ensuite.
+    cfg.attributes["illwatch_cli"] = True
     return cfg
 
 

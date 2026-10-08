@@ -200,6 +200,11 @@ scripts/backup.sh                              # avant toute migration
 illwatch db upgrade && curl -fsS localhost:8000/ready
 ```
 
+Toujours `illwatch db upgrade`, jamais `alembic upgrade head` seul : seule la commande ILLWATCH
+donne au rôle applicatif ses droits sur les tables nouvelles. Sans eux, l'API et le worker
+échouent sur `permission denied for table …` (incident du 08/10). Rattrapage :
+`illwatch db app-role illwatch_app`.
+
 Ajout d'une dépendance : modifier `pyproject.toml`, puis régénérer les contraintes :
 
 ```bash
