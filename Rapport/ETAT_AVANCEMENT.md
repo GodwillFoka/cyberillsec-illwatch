@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 18 h 20**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **08/10/2026, 18 h 45**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -98,5 +98,12 @@ données réelles, en local et en CI.
 
 ## 8. Prochaines étapes
 
-1. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
-2. Ouvrir M8 Detection & Correlation.
+Décision du 08/10 : **l'interface web passe avant l'hébergement**. La préproduction se fera avec
+l'interface en place.
+
+1. **Interface web v1** — React + TypeScript (Vite), TanStack Query, temps réel par
+   Server-Sent Events, types générés depuis le schéma OpenAPI de l'API, graphiques ECharts ;
+   servie par le même conteneur. Écrans : connexion, tableau de bord SOC, IOC, CVE, incidents,
+   chasse, sources, audit. **Maquette en cours de validation**, puis ADR-016 et développement.
+2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
+3. Ouvrir M8 Detection & Correlation.
