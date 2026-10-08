@@ -23,6 +23,9 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   (`docs/pdf/`) et les rapports datés.
 - `scripts/migrer-vers-illwatch.sh` : migration d'un poste existant (sauvegarde, `.env`
   réécrit, restauration, comptages comparés, retour arrière `--retour`). Voir OPERATIONS § 7 sexies.
+- Projet Compose et volumes à nom fixe (`illwatch`, `illwatch_pgdata`, `illwatch_redisdata`) :
+  renommer le dossier du dépôt ne démarre plus une base vide ; `scripts/deplacer-volumes-illwatch.sh`
+  déplace les données d'un poste existant.
 - Les anciens mots de passe de développement (`sentry`, `sentry-app-dev`, `sentry-dev-redis`)
   restent refusés en production.
 

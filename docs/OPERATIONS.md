@@ -282,6 +282,12 @@ que l'activité n'a pas repris sous ILLWATCH.
 Les fonctions de base `sentry_refuse_rewrite` et `sentry_refuse_timeline_rewrite` gardent leur
 nom : elles sont créées par des migrations déjà appliquées, qu'on ne réécrit pas.
 
+**Nom du dossier.** Depuis le 08/10, `docker-compose.yml` fixe le nom du projet (`illwatch`) et
+des volumes (`illwatch_pgdata`, `illwatch_redisdata`) : le dossier du dépôt peut porter n'importe
+quel nom. Un poste migré avant cette date copie ses données une fois avec
+`./scripts/deplacer-volumes-illwatch.sh` (comptages comparés, anciens volumes conservés), puis
+renomme le dossier et recrée son venv (un venv contient des chemins absolus).
+
 ## 8. Spécificités Kali Linux
 
 - Le paquet système `python3-sqlalchemy` peut être plus ancien que celui de la CI : toujours
