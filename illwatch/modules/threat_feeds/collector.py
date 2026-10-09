@@ -11,7 +11,12 @@ Règles :
   vidé. Échec → `DEGRADED` et message d'erreur. Limite de débit (429) → erreur notée,
   **statut inchangé** : la source va bien, elle demande seulement d'attendre.
 - **Échéance** : un flux est dû si actif et jamais réussi, ou si son dernier succès date
-  de plus de `polling_interval` secondes. Un flux en échec est donc retenté à chaque cycle.
+  de plus de `polling_interval` secondes.
+- **Retrait progressif** : un flux en échec n'est pas retenté à chaque cycle. Après `n`
+  échecs consécutifs (lus dans `collection_runs`), la tentative suivante attend
+  `RETRY_BASE × 2^(n-1)` (1, 2, 4, 8… minutes), jamais plus que `polling_interval`. Une
+  source en panne n'est plus sollicitée toutes les minutes et ne retarde plus les autres.
+  `fetch-all` (forcé) ignore ce délai.
 - **Exclusivité (T2.6)** : avec un verrou (`locks.py`), un flux déjà en cours de collecte
   ailleurs est sauté, pas attendu.
 - **Reprise OTX** : une collecte OTX tronquée (`OTX_MAX_PAGES`) ou interrompue par une
@@ -95,13 +100,64 @@ def is_due(feed: ThreatFeed, now: datetime) -> bool:
     )
 
 
+RETRY_BASE = timedelta(minutes=1)
+_FAILURE_LOOKBACK = timedelta(days=7)
+_MAX_COUNTED_FAILURES = 16
+
+
+def retry_delay(failures: int, polling_interval: int) -> timedelta:
+    """Délai avant la prochaine tentative après `failures` échecs consécutifs."""
+    if failures <= 0:
+        return timedelta(0)
+    exponent = min(failures, _MAX_COUNTED_FAILURES) - 1
+    return min(RETRY_BASE * (2**exponent), timedelta(seconds=polling_interval))
+
+
+async def _failure_streaks(
+    session: AsyncSession, feed_ids: Sequence[object], now: datetime
+) -> dict[object, tuple[int, datetime]]:
+    """Par flux : nombre d'échecs consécutifs récents et heure de la dernière tentative."""
+    rows = await session.execute(
+        select(CollectionRun.feed_id, CollectionRun.started_at, CollectionRun.succeeded)
+        .where(
+            CollectionRun.feed_id.in_(feed_ids),
+            CollectionRun.started_at >= now - _FAILURE_LOOKBACK,
+        )
+        .order_by(CollectionRun.feed_id, CollectionRun.started_at.desc())
+    )
+    streaks: dict[object, tuple[int, datetime]] = {}
+    closed: set[object] = set()
+    for feed_id, started_at, succeeded in rows:
+        if feed_id in closed:
+            continue
+        count, last = streaks.get(feed_id, (0, _as_utc(started_at) or now))
+        if succeeded:
+            closed.add(feed_id)
+            streaks[feed_id] = (count, last)
+            continue
+        streaks[feed_id] = (count + 1, last)
+        if count + 1 >= _MAX_COUNTED_FAILURES:
+            closed.add(feed_id)
+    return streaks
+
+
 async def due_feeds(session: AsyncSession, now: datetime) -> Sequence[ThreatFeed]:
     active = (
         (await session.execute(select(ThreatFeed).where(ThreatFeed.is_active.is_(True))))
         .scalars()
         .all()
     )
-    return [f for f in active if is_due(f, now)]
+    candidates = [f for f in active if is_due(f, now)]
+    if not candidates:
+        return []
+    streaks = await _failure_streaks(session, [f.id for f in candidates], now)
+    due = []
+    for feed in candidates:
+        failures, last_attempt = streaks.get(feed.id, (0, now))
+        if failures and last_attempt + retry_delay(failures, feed.polling_interval) > now:
+            continue
+        due.append(feed)
+    return due
 
 
 async def _record_run(
