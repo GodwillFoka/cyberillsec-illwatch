@@ -46,7 +46,7 @@ Kali sur données réelles. **Reste pour clore M7** : la préproduction sur un V
 
 | Date | Commit | Contenu |
 |---|---|---|
-| 10/10 | PR #26 | Écran Chasse : sessions, périmètre, correspondances paginées et filtrées (liens IOC/CVE), nouvelle chasse ; API `GET /hunting/sessions/{id}/matches` — **lot 1 de l'interface complet** |
+| 10/10 | PR #26 | Écran Chasse : sessions, périmètre, correspondances paginées et filtrées (liens IOC/CVE), nouvelle chasse ; API `GET /hunting/sessions/{id}/matches` — **lot 1 de l'interface complet** ; revue indépendante des 3 écrans : 5 constats moyens corrigés (dont un sécurité : identifiants d'adresse validés) |
 | 10/10 | PR #25 | Écran CVE et priorités : liste par risque, recherche, filtres priorité/KEV, fiche (signaux, score décomposé, historique, alertes, incidents), association ou ouverture d'incident ; jokers SQL échappés dans la recherche |
 | 10/10 | PR #24 | Écran Indicateurs (IOC) : recherche normalisée, filtres, fiche (provenance, incidents associés, association), soumission d'un lot, export CSV audité ; API incidents filtrés par IOC/CVE |
 | 10/10 | `8f6599b` | Vérification : `ci-local.sh` en une commande (réseau, outils, interface web, image en option, journal) ; workflow « Branches » : les 12 branches fusionnées supprimées, seules `main` et `release/v0.1.1` restent |
