@@ -8,6 +8,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Sécurité — dépendances de l'interface (10/10)
+- `npm audit` (premier `npm install` sur Kali) : React Router 6 (redirections ouvertes, XSS,
+  toute la branche 6) et ECharts < 6.1.0 (XSS). React Router est **retiré** au profit d'un
+  routage interne de 60 lignes qui refuse toute adresse non interne ; ECharts passe en 6.1.0.
+  Vite 5.4.20 et Vitest 2.1.9 pour les outils de développement.
+- CI : `npm audit --omit=dev --audit-level=high` bloque désormais toute vulnérabilité élevée
+  ou critique dans le code livré au navigateur.
+
 ### Ajouté — interface web, socle et vue d'ensemble (10/10)
 - `frontend/` : React + TypeScript (Vite), TanStack Query, ECharts ; types générés depuis le
   schéma OpenAPI (`illwatch openapi`, `npm run gen:api`).

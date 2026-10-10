@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../lib/router";
 
 /** Écran prévu au lot 1, pas encore livré : on le dit, sans contenu factice. */
 export function Upcoming({ title, description }: { title: string; description: string }) {

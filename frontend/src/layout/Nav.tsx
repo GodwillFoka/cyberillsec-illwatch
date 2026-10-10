@@ -1,7 +1,6 @@
-import { NavLink } from "react-router-dom";
-
 import { useSummary } from "../api/queries";
 import { Logo } from "../components/Logo";
+import { Link as RouterLink, isActive, useLocation } from "../lib/router";
 
 interface Item {
   to: string;
@@ -11,11 +10,13 @@ interface Item {
 }
 
 function Link({ to, label, count, soon }: Item) {
+  const { pathname } = useLocation();
+  const active = isActive(pathname, to);
   return (
-    <NavLink
+    <RouterLink
       to={to}
-      end={to === "/"}
-      className={({ isActive }) => `nav-link${isActive ? " active" : ""}${soon ? " soon" : ""}`}
+      aria-current={active ? "page" : undefined}
+      className={`nav-link${active ? " active" : ""}${soon ? " soon" : ""}`}
     >
       <span>{label}</span>
       {count ? (
@@ -23,7 +24,7 @@ function Link({ to, label, count, soon }: Item) {
           {count}
         </span>
       ) : null}
-    </NavLink>
+    </RouterLink>
   );
 }
 
