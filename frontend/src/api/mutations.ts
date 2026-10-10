@@ -2,8 +2,8 @@
 // réel préviendra aussi les autres analystes connectés).
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiPost } from "./http";
-import type { Alert, IncidentDetail } from "./types";
+import { apiPost, apiSend } from "./http";
+import type { Alert, IncidentDetail, IncidentEvent } from "./types";
 
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
@@ -26,4 +26,56 @@ export function useOpenIncidentFromAlert() {
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
+}
+
+function useIncidentMutation<TVariables, TResult>(run: (variables: TVariables) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["incidents"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+export interface NewIncident {
+  title: string;
+  description: string;
+  severity: string;
+}
+
+export function useCreateIncident() {
+  return useIncidentMutation((body: NewIncident) => apiPost<IncidentDetail>("/incidents", body));
+}
+
+export function useTransition(incidentId: string) {
+  return useIncidentMutation(
+    (body: { target: string; note?: string; closure_summary?: string }) =>
+      apiPost<IncidentDetail>(`/incidents/${incidentId}/transitions`, body),
+  );
+}
+
+export function useAddNote(incidentId: string) {
+  return useIncidentMutation((body: { message: string; kind: "COMMENT" | "ACTION_TAKEN" }) =>
+    apiPost<IncidentEvent>(`/incidents/${incidentId}/notes`, body),
+  );
+}
+
+export function useAssign(incidentId: string) {
+  return useIncidentMutation((userId: string | null) =>
+    apiSend<IncidentDetail>("PUT", `/incidents/${incidentId}/assignee`, { user_id: userId }),
+  );
+}
+
+export function useLinkCve(incidentId: string) {
+  return useIncidentMutation((cveId: string) =>
+    apiPost<{ created: boolean }>(`/incidents/${incidentId}/cves`, { cve_id: cveId }),
+  );
+}
+
+export function useLinkIndicator(incidentId: string) {
+  return useIncidentMutation((value: string) =>
+    apiPost<{ created: boolean }>(`/incidents/${incidentId}/indicators`, { value }),
+  );
 }

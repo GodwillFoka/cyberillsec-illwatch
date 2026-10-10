@@ -8,6 +8,15 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — écran Incidents (10/10)
+- Liste des incidents (ouverts ou tous, filtres statut et sévérité, les plus graves d'abord) et
+  ouverture manuelle d'un incident (ADMIN, ANALYST).
+- Page d'incident : cycle de vie NIST en six étapes, chronologie immuable, transitions
+  permises par la machine d'état (résumé obligatoire à la clôture), commentaires et actions
+  menées (déclarées par l'analyste, jamais présentées comme exécutées par ILLWATCH),
+  assignation, CVE et IOC associés.
+- Erreurs de validation de l'API (422) affichées en clair.
+
 ### Ajouté — écran Triage (10/10)
 - File des alertes CVE triée par priorité puis ancienneté (« À traiter » ou « Toutes »),
   navigation au clavier, alerte choisie dans l'adresse (`/triage?alerte=…`).

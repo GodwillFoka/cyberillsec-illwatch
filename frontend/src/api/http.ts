@@ -26,6 +26,13 @@ async function errorFrom(response: Response): Promise<ApiError> {
     if (body && typeof body === "object" && "detail" in body) {
       const detail = (body as { detail: unknown }).detail;
       if (typeof detail === "string") message = detail;
+      // Erreur de validation (422) : liste de { loc, msg } produite par FastAPI.
+      else if (Array.isArray(detail)) {
+        const parts = detail
+          .map((item) => (item && typeof item === "object" && "msg" in item ? String(item.msg) : ""))
+          .filter(Boolean);
+        if (parts.length) message = parts.join(" ; ");
+      }
     }
   } catch {
     // corps non JSON : message générique
@@ -124,9 +131,13 @@ export async function apiGet<T>(path: string, query?: Query, signal?: AbortSigna
   return (await response.json()) as T;
 }
 
-export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
+export function apiPost<T>(path: string, body?: unknown): Promise<T> {
+  return apiSend<T>("POST", path, body);
+}
+
+export async function apiSend<T>(method: "POST" | "PUT" | "PATCH", path: string, body?: unknown): Promise<T> {
   const response = await apiFetch(path, {
-    method: "POST",
+    method,
     headers: body === undefined ? undefined : { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
