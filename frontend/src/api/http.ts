@@ -79,10 +79,16 @@ export function refreshSession(): Promise<boolean> {
     return renew();
   };
   const locks = typeof navigator !== "undefined" ? navigator.locks : undefined;
-  refreshing = (locks ? locks.request("illwatch-refresh", attempt) : attempt()).finally(() => {
+  // `.then((ok) => ok)` aplatit le résultat : selon la version de TypeScript, `locks.request`
+  // est typé Promise<boolean> ou Promise<Promise<boolean>> (même valeur à l'exécution).
+  const run: Promise<boolean> = locks
+    ? locks.request("illwatch-refresh", attempt).then((ok) => ok)
+    : attempt();
+  const pending = run.finally(() => {
     refreshing = null;
   });
-  return refreshing;
+  refreshing = pending;
+  return pending;
 }
 
 export async function login(username: string, password: string): Promise<void> {
