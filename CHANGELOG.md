@@ -8,6 +8,12 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Modifié — retrait progressif des sources en panne (10/10)
+- Une source en échec n'est plus retentée à chaque cycle du worker (constat Kali du 09/10 :
+  DigitalSide injoignable sollicitée toutes les 3 minutes, 4 essais et 67 s à chaque fois).
+  Après n échecs consécutifs, la tentative suivante attend 1, 2, 4, 8… minutes, jamais plus que
+  l'intervalle normal de la source. Compté depuis `collection_runs` ; `fetch-all` l'ignore.
+
 ### Corrigé — journal des collectes (08/10)
 - Une écriture refusée dans `collection_runs` (droits du rôle applicatif absents après un
   `alembic upgrade` lancé seul) faisait échouer tout le cycle du worker et laissait les verrous

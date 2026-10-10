@@ -238,3 +238,46 @@ async def test_un_journal_inaccessible_ne_fait_pas_perdre_la_collecte(
     assert feed.status == FeedStatus.HEALTHY
     assert await db_session.scalar(select(func.count()).select_from(Indicator)) == 2
     assert await db_session.scalar(select(func.count()).select_from(CollectionRun)) == 0
+
+
+# --- Retrait progressif des sources en échec --------------------------------------------------
+
+
+def test_delai_de_retrait_double_et_plafonne() -> None:
+    from illwatch.modules.threat_feeds.collector import retry_delay
+
+    assert retry_delay(0, 3600) == timedelta(0)
+    assert [retry_delay(n, 3600).total_seconds() for n in (1, 2, 3, 4)] == [60, 120, 240, 480]
+    assert retry_delay(10, 3600) == timedelta(hours=1)  # jamais plus que l'intervalle normal
+    assert retry_delay(50, 900) == timedelta(minutes=15)
+
+
+async def test_source_en_panne_pas_retentee_a_chaque_cycle(db_session: AsyncSession) -> None:
+    from illwatch.modules.threat_feeds.collector import due_feeds
+
+    panne = await _feed(db_session, "Panne-longue")
+    saine = await _feed(db_session, "Jamais-collectee")
+    # Trois échecs consécutifs, le dernier il y a 3 minutes : prochain essai à 4 minutes.
+    for minutes in (10, 6, 3):
+        db_session.add(_run(panne, NOW - timedelta(minutes=minutes), ok=False))
+    await db_session.flush()
+
+    assert {f.name for f in await due_feeds(db_session, NOW)} == {"Jamais-collectee"}
+    later = NOW + timedelta(minutes=1, seconds=1)
+    assert {f.name for f in await due_feeds(db_session, later)} == {"Panne-longue", saine.name}
+
+
+async def test_un_succes_remet_le_compteur_a_zero(db_session: AsyncSession) -> None:
+    from illwatch.modules.threat_feeds.collector import due_feeds
+
+    feed = await _feed(db_session, "Retablie")
+    db_session.add_all(
+        [
+            _run(feed, NOW - timedelta(hours=3), ok=False),
+            _run(feed, NOW - timedelta(hours=2), ok=False),
+            _run(feed, NOW - timedelta(minutes=2), ok=True),
+            _run(feed, NOW - timedelta(seconds=90), ok=False),  # un seul échec depuis : 1 min
+        ]
+    )
+    await db_session.flush()
+    assert [f.name for f in await due_feeds(db_session, NOW)] == ["Retablie"]

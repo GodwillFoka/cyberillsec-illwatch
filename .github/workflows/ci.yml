@@ -41,8 +41,17 @@ jobs:
           # constraints.txt (M7) fige les versions quand il existe.
           if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
       - run: ruff check --output-format=github .
-      - run: ruff format --check .
-      - run: mypy illwatch
+      - name: Formatage (ruff format)
+        run: |
+          ruff format --check . > format.txt 2>&1 || {
+            grep -E "^Would reformat" format.txt | head -20 | while read -r l; do echo "::error title=ruff format::$l"; done
+            exit 1; }
+      - name: Typage (mypy)
+        run: |
+          mypy illwatch > mypy.txt 2>&1 || {
+            cat mypy.txt
+            grep -E "error:" mypy.txt | head -20 | while read -r l; do echo "::error title=mypy::${l:0:900}"; done
+            exit 1; }
 
   # ---------------------------------------------------------------------------
   # Étape 2 — Tests : suite complète contre PostgreSQL 16 et Redis 7 réels
