@@ -8,6 +8,15 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — vérification
+- `scripts/ci-local.sh` couvre tout le pipeline en une commande : contrôle préalable du réseau
+  (DNS de github.com, pypi.org, registry.npmjs.org, avec le remède) et des outils, interface
+  web (`npm ci`, audit, types générés, `tsc`, tests, construction), image Docker en option
+  (`--docker`), `psql` facultatif (repli sur le conteneur), journal dans
+  `/tmp/illwatch-ci-local.log`, durée de chaque étape.
+- Workflow GitHub « Branches » : supprime la branche d'une PR fusionnée et balaie chaque
+  semaine les branches entièrement contenues dans `main` (`main` et `release/*` exclues).
+
 ### Corrigé — audit global du 10/10 (revue indépendante)
 - Test de chasse daté (aurait cassé la CI le 02/11/2026) : données relatives à l'horloge réelle.
 - Bus temps réel : l'écoute Redis se reconnecte seule (1 → 30 s) et demande une relecture ;

@@ -202,7 +202,10 @@ Deux pipelines indépendants exécutent les mêmes étapes — qualité (lint, t
 | **GitLab CI** (référence) | SAST, détection de secrets, analyse des dépendances et de l'image (Container Scanning) |
 | **GitHub Actions** (miroir) | pip-audit et bandit ; [validation réelle](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/validation-reelle.yml) hebdomadaire ; publication de la documentation, de l'image `ghcr.io` et des releases |
 
-`scripts/ci-local.sh` reproduit le pipeline en local avant chaque push.
+`scripts/ci-local.sh` reproduit le pipeline en local avant chaque push : réseau et outils,
+qualité, tests sur PostgreSQL, migrations, interface web (`--docker` ajoute l'image) ; journal
+complet dans `/tmp/illwatch-ci-local.log`. Les branches fusionnées sont supprimées
+automatiquement (workflow « Branches »).
 
 ## Stack technique
 

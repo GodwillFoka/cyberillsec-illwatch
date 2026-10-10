@@ -1,0 +1,72 @@
+# ============================================================================
+# ILLWATCH — Ménage des branches fusionnées
+# 1. À la fusion d'une PR interne : supprime sa branche.
+# 2. Balayage (lancement manuel, hebdomadaire, ou à la modification de ce fichier) :
+#    supprime toute branche entièrement contenue dans main.
+# Jamais supprimées : main, release/*, et les branches avec des commits absents de main.
+# ============================================================================
+name: Branches
+
+on:
+  pull_request:
+    types: [closed]
+  push:
+    branches: [main]
+    paths: [".github/workflows/branches.yml"]
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: branches
+  cancel-in-progress: false
+
+jobs:
+  merged-pr:
+    name: Branche de la PR fusionnée
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref != 'main' &&
+      !startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Supprimer la branche
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${BRANCH}" 2>err.txt; then
+            echo "Supprimée : ${BRANCH}"
+          elif grep -q "Reference does not exist" err.txt; then
+            echo "Déjà supprimée : ${BRANCH}"
+          else
+            cat err.txt; exit 1
+          fi
+
+  sweep:
+    name: Balayage des branches fusionnées
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Supprimer les branches contenues dans main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          deleted=0; kept=0
+          for branch in $(gh api --paginate "repos/${GITHUB_REPOSITORY}/branches" --jq '.[].name'); do
+            case "$branch" in main|release/*) continue ;; esac
+            ahead=$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...${branch}" --jq '.ahead_by')
+            if [ "$ahead" = "0" ]; then
+              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${branch}"
+              echo "Supprimée : ${branch}"; deleted=$((deleted + 1))
+            else
+              echo "Conservée : ${branch} (${ahead} commit(s) hors de main)"; kept=$((kept + 1))
+            fi
+          done
+          echo "### Branches : ${deleted} supprimée(s), ${kept} conservée(s)" >> "$GITHUB_STEP_SUMMARY"
