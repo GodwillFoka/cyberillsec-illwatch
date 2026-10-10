@@ -202,6 +202,17 @@ jobs:
                 console.log("::error title=npm audit " + v.severity + "::" + name + " " + v.range + " — " + via.slice(0, 700));
               }'
             exit 1; }
+      - name: Audit des outils de développement (informatif)
+        working-directory: frontend
+        # Vite, Vitest, esbuild : absents de l'image, mais à surveiller (poste de développement).
+        run: |
+          npm audit --json 2>/dev/null | node -e '
+            const r = JSON.parse(require("fs").readFileSync(0, "utf8"));
+            for (const [name, v] of Object.entries(r.vulnerabilities || {})) {
+              const via = (v.via || []).map((x) => (typeof x === "string" ? x : x.title + " " + (x.url || ""))).join(" | ");
+              const fix = v.fixAvailable && typeof v.fixAvailable === "object" ? " → " + v.fixAvailable.name + " " + v.fixAvailable.version : "";
+              console.log("::warning title=npm audit (dév.) " + v.severity + "::" + name + " " + v.range + fix + " — " + via.slice(0, 600));
+            }' || true
       - name: Types TypeScript générés depuis l'API
         working-directory: frontend
         run: npm run gen:api

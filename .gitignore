@@ -56,3 +56,7 @@ docs/changelog.md
 docs/contributing.md
 docs/security.md
 docs/code_of_conduct.md
+
+# Rapports d'analyse GitLab (Container Scanning, SBOM) téléchargés localement
+gl-*-report*.json
+gl-sbom-*.json
