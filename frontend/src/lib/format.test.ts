@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { formatAge, formatDay, formatNumber, formatTime } from "./format.ts";
-import { rankOf, toneOf } from "./levels.ts";
+import { formatAge, formatDay, formatNumber, formatTime } from "./format.js";
+import { rankOf, toneOf } from "./levels.js";
 
 describe("formats", () => {
   it("formate les nombres à la française", () => {

@@ -1,8 +1,9 @@
-// Tests exécutés par le lanceur intégré de Node (`npm test`), sans dépendance supplémentaire.
+// Tests du lanceur intégré de Node : `npm test` les compile avec tsc (tsconfig.test.json)
+// puis les exécute ; « ./sse.js » désigne sse.ts (convention ESM de TypeScript).
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { SseParser, queriesFor, toLiveEvent } from "./sse.ts";
+import { SseParser, queriesFor, toLiveEvent } from "./sse.js";
 
 describe("SseParser", () => {
   it("assemble un message reçu en plusieurs morceaux", () => {

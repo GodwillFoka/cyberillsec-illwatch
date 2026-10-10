@@ -11,7 +11,7 @@
     "gen:api": "openapi-typescript openapi.json -o src/api/schema.d.ts",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
+    "test": "tsc -p tsconfig.test.json && node --test \".test-build/**/*.test.js\"",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },

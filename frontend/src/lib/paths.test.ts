@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { isActive, isInternalPath } from "./paths.ts";
+import { isActive, isInternalPath } from "./paths.js";
 
 describe("routage", () => {
   it("n'accepte que les adresses internes", () => {
