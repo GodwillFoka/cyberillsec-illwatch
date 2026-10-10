@@ -8,6 +8,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — interface : écran Chasse (lot 1 complet)
+- Sessions de chasse (50 dernières, `?session=`) : origine, état, durée, périmètre, erreurs.
+- Correspondances par pages de 100, les plus graves d'abord, filtres règle (avec effectifs) et
+  sévérité ; liens vers les fiches IOC et CVE.
+- Nouvelle chasse (ADMIN, ANALYST) : observables collés (10 000 au plus), inventaire d'actifs,
+  choix des règles ; sans observable, toute la base.
+- API : `GET /hunting/sessions/{id}/matches` (pagination, filtres, effectifs par règle).
+
 ### Ajouté — interface : écran CVE et priorités
 - Liste par score composite, recherche par identifiant ou texte (`?q=`), filtre de priorité
   avec effectifs, CVE exploitées (KEV) ; pagination par 50.
