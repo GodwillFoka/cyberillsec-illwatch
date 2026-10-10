@@ -3,7 +3,8 @@
 **Périmètre :** dépôt complet sur `main` @ `56f12db` (API, worker, CLI, interface web, migrations,
 CI GitHub et GitLab, documentation, suivi de projet). **Méthode :** revue indépendante (agent
 n'ayant pas écrit le code, lecture seule), puis corrections vérifiées par la CI.
-**Corrections fusionnées :** PR #10 (`9a06937`), politique Dependabot (PR #18).
+**Corrections fusionnées :** PR #10 (`9a06937`), politique Dependabot (PR #18), typage (PR #20),
+mises à jour mineures (#13, #15, #19). `main` @ `12fbe41` : CI et publication vertes.
 
 ## 1. Synthèse
 
@@ -55,9 +56,12 @@ interne, `node --test`, audit npm, coordination des onglets).
   `feature/m7-ui-lot1-api`, `feature/m7-ui-triage`, `fix/audit-2026-10-10`,
   `fix/collect-backoff`, `fix/collection-journal-resilience`, `fix/web-dev-deps`,
   `fix/web-tests-portable`, `rename/illwatch`. `release/v0.1.1` est conservée (maintenance).
-- Dependabot (premier passage npm) : mineures fusionnées si la CI est verte ; majeures
-  (React 19, `@vitejs/plugin-react` 6, Node 25, `@types/node` 26) écartées : migrations à
-  planifier (Vite 8 et React 19 ensemble, après le lot 1).
+- Dependabot (premier passage npm) : #13 (police) et #15 (`setup-node` 7) fusionnées ; les
+  mineures regroupées en #19 (TypeScript 5.9, TanStack Query 5.104, openapi-typescript 7.13,
+  `@types/node` 22.20, police Inter) fusionnées après correction d'un typage révélé par
+  TypeScript 5.9 (#20). Majeures fermées avec explication : React 19 (#17, CI rouge),
+  `@vitejs/plugin-react` 6 (#12, CI rouge), image Node 25 non LTS (#11), `@types/node` 26 (#16).
+  Migration React 19 + Vite 8 à planifier après le lot 1. **Aucune PR ouverte.**
 - GitLab : pipeline non consultable depuis la session (connecteur non autorisé) ; à vérifier
   au prochain `git push gitlab main` (nouveaux jobs `openapi` et `interface`).
 
