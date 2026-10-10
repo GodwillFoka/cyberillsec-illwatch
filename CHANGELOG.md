@@ -14,7 +14,9 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   routage interne de 60 lignes qui refuse toute adresse non interne ; ECharts passe en 6.1.0.
   Outils de développement : Vite 5.4.21 ; Vitest **retiré** (vulnérabilités critiques
   corrigées seulement en version 5) au profit du lanceur de tests intégré à Node
-  (`node --test`, aucune dépendance).
+  (`node --test`, aucune dépendance). Restent signalées sur Vite 5 des failles du seul
+  serveur de développement (corrigées en Vite 8, migration à planifier) : ne pas exposer
+  `npm run dev` hors du poste (`--host` à proscrire).
 - CI : `npm audit --omit=dev --audit-level=high` bloque désormais toute vulnérabilité élevée
   ou critique dans le code livré au navigateur.
 
@@ -30,7 +32,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   (`script-src 'self'`), assets immuables, routage côté navigateur ; l'API garde ses 404 JSON.
 - `GET /api/v1/dashboard/summary` typé (`SummaryRead`) pour la génération des types.
 - Image Docker multi-étapes (Node pour compiler, aucun Node à l'exécution) ; job CI
-  « Interface web » (types, tests Vitest, build).
+  « Interface web » (types, tests, build).
 
 ### Modifié — retrait progressif des sources en panne (10/10)
 - Une source en échec n'est plus retentée à chaque cycle du worker (constat Kali du 09/10 :
