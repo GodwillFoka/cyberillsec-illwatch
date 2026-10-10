@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from illwatch.app.api.deps import CurrentUser, DbSession, require_roles
 from illwatch.app.config import get_settings
 from illwatch.app.models import Incident, User
+from illwatch.modules.cve_tracker.queries import CVENotFoundError, get_cve
 from illwatch.modules.incidents import service
 from illwatch.modules.incidents.service import (
     IncidentClosedError,
@@ -53,6 +54,11 @@ class IncidentCreate(BaseModel):
     description: str = Field(min_length=1, max_length=20_000)
     severity: Severity
     assigned_to: UUID | None = None
+    cve_ids: list[Annotated[str, Field(max_length=32)]] = Field(
+        default_factory=list,
+        max_length=20,
+        description="CVE à associer dès l'ouverture (même transaction : tout ou rien).",
+    )
 
 
 class TransitionRequest(BaseModel):
@@ -226,6 +232,14 @@ async def list_incidents(
 async def create_incident(
     payload: IncidentCreate, session: DbSession, user: Responder, response: Response
 ) -> IncidentDetail:
+    # CVE vérifiées avant toute écriture : un identifiant inconnu n'ouvre pas d'incident orphelin.
+    for cve_id in payload.cve_ids:
+        try:
+            await get_cve(session, cve_id)
+        except CVENotFoundError:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, detail=f"{cve_id} n'est pas suivie par ILLWATCH."
+            ) from None
     try:
         incident = await service.create_incident(
             session,
@@ -235,6 +249,8 @@ async def create_incident(
             assigned_to=payload.assigned_to,
             author_id=user.id,
         )
+        for cve_id in dict.fromkeys(payload.cve_ids):
+            await service.attach_cve(session, incident.id, cve_id, author_id=user.id)
         detail = _detail(await service.get_incident(session, incident.id))
     except _HANDLED as exc:
         raise _translate(exc) from None

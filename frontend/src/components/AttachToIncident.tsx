@@ -7,7 +7,7 @@ import { levelLabel } from "../lib/levels";
 import { Link } from "../lib/router";
 
 export function AttachToIncident({ target, label }: { target: AttachTarget; label: string }) {
-  const open = useOpenIncidents(50);
+  const open = useOpenIncidents(200);
   const attach = useAttachToIncident();
   const [incidentId, setIncidentId] = useState("");
   const [result, setResult] = useState<{ id: string; created: boolean } | null>(null);

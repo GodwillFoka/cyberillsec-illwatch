@@ -140,7 +140,7 @@ export function useIncident(incidentId: string) {
   const refetchInterval = useFallbackInterval();
   return useQuery({
     queryKey: ["incidents", "detail", incidentId],
-    queryFn: ({ signal }) => apiGet<IncidentDetail>(`/incidents/${incidentId}`, undefined, signal),
+    queryFn: ({ signal }) => apiGet<IncidentDetail>(`/incidents/${encodeURIComponent(incidentId)}`, undefined, signal),
     refetchInterval,
   });
 }
@@ -148,7 +148,7 @@ export function useIncident(incidentId: string) {
 export function useIndicator(indicatorId: string) {
   return useQuery({
     queryKey: ["indicators", "detail", indicatorId],
-    queryFn: ({ signal }) => apiGet<IndicatorDetail>(`/indicators/${indicatorId}`, undefined, signal),
+    queryFn: ({ signal }) => apiGet<IndicatorDetail>(`/indicators/${encodeURIComponent(indicatorId)}`, undefined, signal),
     staleTime: 5 * 60_000,
   });
 }
@@ -261,7 +261,7 @@ export function useHunts() {
 export function useHunt(huntId: string | null, enabled: boolean) {
   return useQuery({
     queryKey: ["hunts", "detail", huntId],
-    queryFn: ({ signal }) => apiGet<HuntDetail>(`/hunting/sessions/${huntId}`, undefined, signal),
+    queryFn: ({ signal }) => apiGet<HuntDetail>(`/hunting/sessions/${encodeURIComponent(huntId ?? "")}`, undefined, signal),
     enabled: Boolean(huntId) && enabled,
   });
 }
@@ -278,7 +278,7 @@ export function useHuntMatches(huntId: string, filters: MatchFilters, offset: nu
     queryKey: ["hunts", "matches", huntId, filters, offset],
     queryFn: ({ signal }) =>
       apiGet<HuntMatchPage>(
-        `/hunting/sessions/${huntId}/matches`,
+        `/hunting/sessions/${encodeURIComponent(huntId)}/matches`,
         {
           rule_id: filters.ruleId || undefined,
           severity: filters.severity || undefined,

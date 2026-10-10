@@ -131,6 +131,22 @@ async def test_chasse_sur_observables(db_session: AsyncSession) -> None:
     assert next(m for m in loaded.matches if m.rule_id == "RULE-05").cve_id == "CVE-2026-2001"
 
 
+async def test_inventaire_seul_sans_charger_la_base(db_session: AsyncSession) -> None:
+    """RULE-05 seule : l'inventaire est confronté aux CVE, la base d'IOC n'est pas lue."""
+    await _seed_base(db_session)
+    hunt = await engine.run_hunt(
+        db_session,
+        settings=SETTINGS,
+        fetch=tor,
+        rule_ids=["RULE-05"],
+        assets=["FortiOS"],
+        clock=lambda: NOW,
+    )
+    loaded = await engine.get_hunt(db_session, hunt.id)
+    assert loaded.observables_count == 0 and loaded.status == HuntStatus.TERMINEE
+    assert [(m.rule_id, m.cve_id) for m in loaded.matches] == [("RULE-05", "CVE-2026-2001")]
+
+
 async def test_chasse_sur_la_base_planifiee(db_session: AsyncSession) -> None:
     await _seed_base(db_session)
     hunt = await engine.run_hunt(

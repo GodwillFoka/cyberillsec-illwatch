@@ -39,6 +39,8 @@ log = logging.getLogger("illwatch.hunting")
 
 MAX_OBSERVABLES = 10_000
 MAX_ASSETS = 200
+# Règles qui n'examinent que l'inventaire d'actifs, jamais les observables.
+ASSET_ONLY_RULES = frozenset({"RULE-05"})
 _CHUNK = 500
 HUNT_STATE = "hunt"
 
@@ -166,6 +168,9 @@ async def run_hunt(
         known = await _known_for(session, items, now)
         # Un observable connu porte son identifiant d'IOC et sa description de source.
         items = [known.get((o.type, o.value), o) for o in items]
+    elif all(r.id in ASSET_ONLY_RULES for r in selected):
+        # RULE-05 seule confronte l'inventaire aux CVE : inutile de charger toute la base d'IOC.
+        items, known = [], {}
     else:
         items = await _base_iocs(session, now)
         known = {(o.type, o.value): o for o in items}

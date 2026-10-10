@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiPost, apiSend } from "./http";
-import type { Alert, HuntDetail, IncidentDetail, IncidentEvent, IngestResult } from "./types";
+import type { Alert, Hunt, HuntDetail, IncidentDetail, IncidentEvent, IngestResult } from "./types";
 
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
@@ -119,20 +119,18 @@ export function useAttachToIncident() {
   });
 }
 
-/** Ouvre un incident pour une CVE et l'y associe (deux écritures, chacune dans la chronologie). */
+/** Ouvre un incident de remédiation déjà associé à sa CVE : une seule écriture, tout ou rien. */
 export function useOpenIncidentForCve() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ cveId, severity, description }: { cveId: string; severity: string; description: string }) => {
-      const incident = await apiPost<IncidentDetail>("/incidents", {
+    mutationFn: ({ cveId, severity, description }: { cveId: string; severity: string; description: string }) =>
+      apiPost<IncidentDetail>("/incidents", {
         title: `Remédiation ${cveId}`,
         description,
         severity,
-      });
-      await apiPost<{ created: boolean }>(`/incidents/${incident.id}/cves`, { cve_id: cveId });
-      return incident;
-    },
-    onSettled: () => {
+        cve_ids: [cveId],
+      }),
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["incidents"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
@@ -150,7 +148,15 @@ export function useRunHunt() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: HuntRequest) => apiPost<HuntDetail>("/hunting/sessions", body),
-    onSuccess: () => {
+    onSuccess: (hunt) => {
+      const { matches, ...summary } = hunt;
+      void matches;
+      // La nouvelle session entre tout de suite dans la liste : l'écran n'a pas à relire son
+      // détail complet (toutes les correspondances) en attendant la relecture de la liste.
+      queryClient.setQueryData<Hunt[]>(["hunts", "list"], (old) => [
+        summary,
+        ...(old ?? []).filter((h) => h.id !== summary.id),
+      ]);
       void queryClient.invalidateQueries({ queryKey: ["hunts"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },

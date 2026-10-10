@@ -20,7 +20,7 @@ import { QueryState } from "../components/QueryState";
 import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { MAX_HUNT_OBSERVABLES, splitAssets, splitBatch } from "../lib/iocs";
 import { SEVERITY_ORDER, levelLabel } from "../lib/levels";
-import { Link, useLocation } from "../lib/router";
+import { Link, asUuid, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
 import { useFresh } from "../lib/useFresh";
 import { RESPONDER_ROLES } from "./Incidents";
@@ -31,6 +31,9 @@ const STATUS: Record<string, [string, string]> = {
   PARTIELLE: ["Partielle", "p1"],
   ECHEC: ["Échec", "p0"],
 };
+
+/** Règles qui n'examinent que l'inventaire (ASSET_ONLY_RULES côté serveur). */
+const ASSET_ONLY_RULES = new Set(["RULE-05"]);
 
 const TRIGGER: Record<string, string> = { MANUAL: "Manuelle", SCHEDULED: "Planifiée" };
 
@@ -66,7 +69,11 @@ function NewHunt({
   const [selected, setSelected] = useState<Set<string>>(() => new Set(rules.map((r) => r.id)));
   const batch = splitBatch(text, MAX_HUNT_OBSERVABLES);
   const assets = splitAssets(assetsText);
-  const wholeBase = batch.values.length === 0;
+  const assetOnly = [...selected].every((id) => ASSET_ONLY_RULES.has(id));
+  // Sans observable, la chasse lit toute la base d'IOC actifs : seulement sur confirmation.
+  const wholeBase = batch.values.length === 0 && !assetOnly;
+  const [confirmed, setConfirmed] = useState(false);
+  const ready = selected.size > 0 && (!wholeBase || confirmed) && !(assetOnly && assets.length === 0 && batch.values.length === 0);
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -79,7 +86,7 @@ function NewHunt({
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (selected.size === 0) return;
+    if (!ready) return;
     run.mutate(
       {
         observables: batch.values,
@@ -105,9 +112,11 @@ function NewHunt({
         />
       </label>
       <p className="muted" aria-live="polite">
-        {wholeBase
-          ? "Aucun observable : la chasse portera sur toute la base d'IOC actifs (plus long)."
-          : `${plural(batch.values.length, "observable")}`}
+        {batch.values.length > 0
+          ? `${plural(batch.values.length, "observable")}`
+          : assetOnly
+            ? "Inventaire seul : la base d'IOC n'est pas lue."
+            : "Aucun observable : la chasse portera sur toute la base d'IOC actifs."}
         {batch.duplicates > 0 ? ` · ${plural(batch.duplicates, "doublon")} retiré${batch.duplicates > 1 ? "s" : ""}` : ""}
         {batch.overflow > 0
           ? ` · ${formatNumber(batch.overflow)} au-delà de ${formatNumber(MAX_HUNT_OBSERVABLES)} non envoyés`
@@ -136,6 +145,18 @@ function NewHunt({
           </label>
         ))}
       </fieldset>
+      {wholeBase && (
+        <label className="check">
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
+          Je confirme la chasse sur toute la base (des centaines de milliers d'IOC : plusieurs
+          minutes, comme la chasse planifiée du worker)
+        </label>
+      )}
+      {assetOnly && assets.length === 0 && batch.values.length === 0 && (
+        <p className="reason" style={{ textAlign: "left" }}>
+          La règle des CVE exploitables a besoin d'un inventaire d'actifs.
+        </p>
+      )}
       {run.error && (
         <p className="notice error" role="alert">
           Chasse refusée : {run.error.message}
@@ -145,7 +166,7 @@ function NewHunt({
         <button className="btn quiet" type="button" onClick={onClose}>
           Fermer
         </button>
-        <button className="btn primary" type="submit" disabled={selected.size === 0 || run.isPending}>
+        <button className="btn primary" type="submit" disabled={!ready || run.isPending}>
           {run.isPending ? "Chasse en cours…" : wholeBase ? "Chasser sur toute la base" : "Lancer la chasse"}
         </button>
       </div>
@@ -367,7 +388,7 @@ export function Hunting() {
   const { user } = useAuth();
   const canAct = user ? RESPONDER_ROLES.has(user.role) : false;
   const { search, navigate } = useLocation();
-  const requested = new URLSearchParams(search).get("session");
+  const requested = asUuid(new URLSearchParams(search).get("session"));
   const [creating, setCreating] = useState(false);
 
   const rules = useHuntRules();
