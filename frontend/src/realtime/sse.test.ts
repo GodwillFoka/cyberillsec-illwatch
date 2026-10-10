@@ -1,13 +1,15 @@
-import { describe, expect, it } from "vitest";
+// Tests exécutés par le lanceur intégré de Node (`npm test`), sans dépendance supplémentaire.
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 
-import { SseParser, queriesFor, toLiveEvent } from "./sse";
+import { SseParser, queriesFor, toLiveEvent } from "./sse.ts";
 
 describe("SseParser", () => {
   it("assemble un message reçu en plusieurs morceaux", () => {
     const parser = new SseParser();
-    expect(parser.push("retry: 5000\n: illwatch\n\nid: a1\nevent: alert.cr").messages).toEqual([]);
+    assert.deepEqual(parser.push("retry: 5000\n: illwatch\n\nid: a1\nevent: alert.cr").messages, []);
     const feed = parser.push('eated\ndata: {"kind":"alert.created"}\n\n');
-    expect(feed.messages).toEqual([
+    assert.deepEqual(feed.messages, [
       { id: "a1", event: "alert.created", data: '{"kind":"alert.created"}' },
     ]);
   });
@@ -15,15 +17,15 @@ describe("SseParser", () => {
   it("lit le délai de reconnexion et ignore les battements", () => {
     const parser = new SseParser();
     const feed = parser.push("retry: 5000\n\n: ping\n\n");
-    expect(feed.retryMs).toBe(5000);
-    expect(feed.messages).toEqual([]);
+    assert.equal(feed.retryMs, 5000);
+    assert.deepEqual(feed.messages, []);
   });
 
   it("accepte les fins de ligne CRLF et les données sur plusieurs lignes", () => {
     const parser = new SseParser();
     const feed = parser.push("data: a\r\ndata: b\r\n\r\n");
-    expect(feed.messages[0]?.data).toBe("a\nb");
-    expect(feed.messages[0]?.event).toBe("message");
+    assert.equal(feed.messages[0]?.data, "a\nb");
+    assert.equal(feed.messages[0]?.event, "message");
   });
 });
 
@@ -34,17 +36,17 @@ describe("événements ILLWATCH", () => {
       event: "feed.collected",
       data: '{"id":"e1","kind":"feed.collected","data":{"feed_id":"f"},"at":"2026-10-10T08:00:00Z"}',
     });
-    expect(event).toEqual({
+    assert.deepEqual(event, {
       id: "e1",
       kind: "feed.collected",
       data: { feed_id: "f" },
       at: "2026-10-10T08:00:00Z",
     });
-    expect(toLiveEvent({ id: null, event: "x", data: "pas du json" })).toBeNull();
+    assert.equal(toLiveEvent({ id: null, event: "x", data: "pas du json" }), null);
   });
 
   it("associe chaque type aux données à relire", () => {
-    expect(queriesFor("alert.created")).toEqual([["dashboard"], ["alerts"]]);
-    expect(queriesFor("inconnu")).toEqual([]);
+    assert.deepEqual(queriesFor("alert.created"), [["dashboard"], ["alerts"]]);
+    assert.deepEqual(queriesFor("inconnu"), []);
   });
 });

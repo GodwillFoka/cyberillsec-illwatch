@@ -36,7 +36,8 @@ from illwatch.shared.enums import (
 NOW = datetime(2026, 10, 3, 12, 0, tzinfo=UTC)
 
 
-async def _populate(session: AsyncSession) -> None:
+async def _populate(session: AsyncSession, now: datetime = NOW) -> None:
+    """Jeu de données daté par rapport à `now` (l'API, elle, lit l'heure réelle)."""
     session.add_all(
         [
             ThreatFeed(
@@ -44,7 +45,7 @@ async def _populate(session: AsyncSession) -> None:
                 url="https://a.example.org/f",
                 feed_type=FeedType.CSV,
                 status=FeedStatus.HEALTHY,
-                last_successful_run=NOW - timedelta(hours=1),
+                last_successful_run=now - timedelta(hours=1),
             ),
             ThreatFeed(
                 name="En panne",
@@ -60,9 +61,9 @@ async def _populate(session: AsyncSession) -> None:
             Observation("fresh.example.com"),
             Observation("relay.example.net", description="=cmd|' /C calc'!A0"),
         ],
-        now=NOW - timedelta(hours=2),
+        now=now - timedelta(hours=2),
     )
-    await ingest_indicators(session, [Observation("198.51.100.9")], now=NOW - timedelta(days=60))
+    await ingest_indicators(session, [Observation("198.51.100.9")], now=now - timedelta(days=60))
     for cve_id, score, priority in (
         ("CVE-2026-0001", 92.0, RiskPriority.P0_CRITIQUE),
         ("CVE-2026-0002", 65.0, RiskPriority.P1_ELEVE),
@@ -72,8 +73,8 @@ async def _populate(session: AsyncSession) -> None:
             CVE(
                 id=cve_id,
                 description=f"=HYPERLINK({cve_id})",
-                published_date=NOW,
-                last_modified_date=NOW,
+                published_date=now,
+                last_modified_date=now,
                 composite_risk_score=score,
                 priority=priority,
                 is_kev=score > 90,
@@ -88,7 +89,7 @@ async def _populate(session: AsyncSession) -> None:
             old_score=70,
             new_score=92,
             reason="kev",
-            changed_at=NOW - timedelta(hours=3),
+            changed_at=now - timedelta(hours=3),
         )
     )
     session.add(
@@ -98,7 +99,7 @@ async def _populate(session: AsyncSession) -> None:
             priority="P0_CRITIQUE",
             reason="kev",
             delivery_attempts=0,
-            created_at=NOW - timedelta(hours=3),
+            created_at=now - timedelta(hours=3),
         )
     )
     session.add_all(
@@ -108,15 +109,15 @@ async def _populate(session: AsyncSession) -> None:
                 description="x",
                 severity=Severity.CRITICAL,
                 status=IncidentStatus.ANALYSE,
-                created_at=NOW - timedelta(hours=5),
+                created_at=now - timedelta(hours=5),
             ),
             Incident(
                 title="Clos",
                 description="x",
                 severity=Severity.LOW,
                 status=IncidentStatus.CLOTURE,
-                created_at=NOW - timedelta(days=3),
-                closed_at=NOW - timedelta(days=2),
+                created_at=now - timedelta(days=3),
+                closed_at=now - timedelta(days=2),
             ),
         ]
     )
@@ -173,7 +174,8 @@ async def test_exports_et_injection_csv(db_session: AsyncSession) -> None:
 
 
 async def test_api_tableau_de_bord(client: AsyncClient, db_session: AsyncSession) -> None:
-    await _populate(db_session)
+    # Daté de l'instant réel : l'API calcule « les 7 derniers jours » depuis l'horloge.
+    await _populate(db_session, now=datetime.now(UTC))
     name = f"viewer-{uuid4().hex[:6]}"
     user = await create_user(
         db_session,
