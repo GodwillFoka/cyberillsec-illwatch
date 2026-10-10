@@ -42,7 +42,7 @@ export function Nav() {
       <Link to="/" label="Vue d'ensemble" />
       <div className="nav-section">Opérations SOC</div>
       <Link to="/triage" label="Triage" count={summary?.alerts.unacknowledged} />
-      <Link to="/incidents" label="Incidents" count={summary?.incidents.open} soon />
+      <Link to="/incidents" label="Incidents" count={summary?.incidents.open} />
       <div className="nav-section">Renseignement</div>
       <Link to="/indicateurs" label="Indicateurs (IOC)" soon />
       <Link to="/sources" label="Sources CTI" count={summary?.feeds.degraded.length} soon />

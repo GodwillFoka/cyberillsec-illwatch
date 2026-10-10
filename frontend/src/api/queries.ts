@@ -8,6 +8,8 @@ import type {
   Activity,
   AlertPage,
   CveDetail,
+  IncidentDetail,
+  IndicatorDetail,
   FeedHealth,
   IncidentPage,
   Metric,
@@ -99,6 +101,48 @@ export function useCveDetail(cveId: string | undefined) {
     queryKey: ["cves", "detail", cveId],
     queryFn: ({ signal }) => apiGet<CveDetail>(`/cves/${encodeURIComponent(cveId ?? "")}`, undefined, signal),
     enabled: Boolean(cveId),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export interface IncidentFilters {
+  openOnly: boolean;
+  status?: string;
+  severity?: string;
+}
+
+export function useIncidents(filters: IncidentFilters) {
+  const refetchInterval = useFallbackInterval();
+  return useQuery({
+    queryKey: ["incidents", "list", filters],
+    queryFn: ({ signal }) =>
+      apiGet<IncidentPage>(
+        "/incidents",
+        {
+          open_only: filters.openOnly,
+          status: filters.status || undefined,
+          severity: filters.severity || undefined,
+          limit: 200,
+        },
+        signal,
+      ),
+    refetchInterval,
+  });
+}
+
+export function useIncident(incidentId: string) {
+  const refetchInterval = useFallbackInterval();
+  return useQuery({
+    queryKey: ["incidents", "detail", incidentId],
+    queryFn: ({ signal }) => apiGet<IncidentDetail>(`/incidents/${incidentId}`, undefined, signal),
+    refetchInterval,
+  });
+}
+
+export function useIndicator(indicatorId: string) {
+  return useQuery({
+    queryKey: ["indicators", "detail", indicatorId],
+    queryFn: ({ signal }) => apiGet<IndicatorDetail>(`/indicators/${indicatorId}`, undefined, signal),
     staleTime: 5 * 60_000,
   });
 }
