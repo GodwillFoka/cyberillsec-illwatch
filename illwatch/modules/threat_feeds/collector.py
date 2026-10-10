@@ -110,7 +110,8 @@ def retry_delay(failures: int, polling_interval: int) -> timedelta:
     if failures <= 0:
         return timedelta(0)
     exponent = min(failures, _MAX_COUNTED_FAILURES) - 1
-    return min(RETRY_BASE * (2**exponent), timedelta(seconds=polling_interval))
+    factor: int = 1 << exponent  # 2^exponent, typé int (2**n est typé Any)
+    return min(RETRY_BASE * factor, timedelta(seconds=polling_interval))
 
 
 async def _failure_streaks(
