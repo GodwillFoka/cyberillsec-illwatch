@@ -18,6 +18,9 @@ export type IncidentDetail = Schemas["IncidentDetail"];
 export type CveDetail = Schemas["CVEDetail"];
 export type IncidentEvent = Schemas["EventRead"];
 export type IndicatorDetail = Schemas["IndicatorDetail"];
+export type Indicator = Schemas["IndicatorRead"];
+export type IndicatorPage = Schemas["IndicatorPage"];
+export type IngestResult = Schemas["IngestResponse"];
 export type IncidentStatus = Incident["status"];
 export type Severity = Incident["severity"];
 

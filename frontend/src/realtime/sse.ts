@@ -104,7 +104,8 @@ export function queriesFor(kind: string): string[][] {
     case "incident.updated":
       return [["dashboard"], ["incidents"]];
     case "feed.collected":
-      return [["dashboard"], ["feeds"]];
+      // Une collecte ajoute ou met à jour des IOC : liste et détail sont relus.
+      return [["dashboard"], ["feeds"], ["indicators"]];
     case "hunt.completed":
       return [["dashboard"], ["hunts"]];
     default:

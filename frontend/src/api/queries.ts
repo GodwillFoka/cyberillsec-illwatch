@@ -1,6 +1,6 @@
 // Requêtes TanStack Query partagées. Les clés commencent par le domaine (« dashboard »,
 // « alerts », « incidents », « feeds ») : le flux temps réel relit un domaine entier.
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { useRealtime } from "../realtime/RealtimeProvider";
 import { apiGet } from "./http";
@@ -10,6 +10,7 @@ import type {
   CveDetail,
   IncidentDetail,
   IndicatorDetail,
+  IndicatorPage,
   FeedHealth,
   IncidentPage,
   Metric,
@@ -144,5 +145,53 @@ export function useIndicator(indicatorId: string) {
     queryKey: ["indicators", "detail", indicatorId],
     queryFn: ({ signal }) => apiGet<IndicatorDetail>(`/indicators/${indicatorId}`, undefined, signal),
     staleTime: 5 * 60_000,
+  });
+}
+
+export interface IndicatorFilters {
+  /** Recherche exacte, normalisée par le serveur (`evil[.]com` trouve `evil.com`). */
+  value?: string;
+  type?: string;
+  minSeverity?: string;
+  feedId?: string;
+  /** « actifs » : non expirés ; « expirés » ; « tous ». */
+  state: "actifs" | "expires" | "tous";
+}
+
+export const INDICATOR_PAGE_SIZE = 50;
+
+export function useIndicators(filters: IndicatorFilters, offset: number) {
+  return useQuery({
+    queryKey: ["indicators", "list", filters, offset],
+    queryFn: ({ signal }) =>
+      apiGet<IndicatorPage>(
+        "/indicators",
+        {
+          value: filters.value || undefined,
+          type: filters.type || undefined,
+          min_severity: filters.minSeverity || undefined,
+          feed_id: filters.feedId || undefined,
+          active: filters.state === "tous" ? undefined : filters.state === "actifs",
+          limit: INDICATOR_PAGE_SIZE,
+          offset,
+        },
+        signal,
+      ),
+    // Changement de page ou de filtre : l'ancienne page reste affichée pendant la lecture.
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Incidents auxquels un IOC (ou une CVE) est associé. */
+export function useLinkedIncidents(link: { indicatorId?: string; cveId?: string }) {
+  return useQuery({
+    queryKey: ["incidents", "linked", link],
+    queryFn: ({ signal }) =>
+      apiGet<IncidentPage>(
+        "/incidents",
+        { indicator_id: link.indicatorId, cve_id: link.cveId, limit: 50 },
+        signal,
+      ),
+    enabled: Boolean(link.indicatorId || link.cveId),
   });
 }

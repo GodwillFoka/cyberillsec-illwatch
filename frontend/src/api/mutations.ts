@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiPost, apiSend } from "./http";
-import type { Alert, IncidentDetail, IncidentEvent } from "./types";
+import type { Alert, IncidentDetail, IncidentEvent, IngestResult } from "./types";
 
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
@@ -78,4 +78,39 @@ export function useLinkIndicator(incidentId: string) {
   return useIncidentMutation((value: string) =>
     apiPost<{ created: boolean }>(`/incidents/${incidentId}/indicators`, { value }),
   );
+}
+
+export interface IndicatorBatch {
+  values: string[];
+  severity: string;
+  description?: string;
+}
+
+/** Soumission d'un lot d'IOC (ADMIN, ANALYST) : normalisé, validé et dédupliqué par le serveur. */
+export function useSubmitIndicators() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ values, severity, description }: IndicatorBatch) =>
+      apiPost<IngestResult>("/indicators", {
+        items: values.map((value) => ({ value, severity, description: description || undefined })),
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["indicators"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+/** Associe un IOC à un incident ouvert, depuis l'écran Indicateurs. */
+export function useAttachIndicator() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ incidentId, indicatorId }: { incidentId: string; indicatorId: string }) =>
+      apiPost<{ created: boolean }>(`/incidents/${incidentId}/indicators`, {
+        indicator_id: indicatorId,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["incidents"] });
+    },
+  });
 }

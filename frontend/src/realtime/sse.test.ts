@@ -48,6 +48,7 @@ describe("événements ILLWATCH", () => {
 
   it("associe chaque type aux données à relire", () => {
     assert.deepEqual(queriesFor("alert.created"), [["dashboard"], ["alerts"], ["cves"]]);
+    assert.deepEqual(queriesFor("feed.collected"), [["dashboard"], ["feeds"], ["indicators"]]);
     assert.deepEqual(queriesFor("inconnu"), []);
   });
 });

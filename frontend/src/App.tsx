@@ -5,11 +5,11 @@ import { isActive, Router, useLocation } from "./lib/router";
 import { Overview } from "./pages/Overview";
 import { IncidentPage } from "./pages/IncidentPage";
 import { Incidents } from "./pages/Incidents";
+import { Indicators } from "./pages/Indicators";
 import { Triage } from "./pages/Triage";
 import { NotFound, Upcoming } from "./pages/Upcoming";
 
 const UPCOMING: [string, string, string][] = [
-  ["/indicateurs", "Indicateurs (IOC)", "Recherche et détail des indicateurs de compromission."],
   ["/sources", "Sources CTI", "Santé et historique de collecte de chaque source."],
   ["/cve", "CVE et priorités", "Vulnérabilités classées par priorité de remédiation."],
   ["/chasse", "Chasse", "Sessions de chasse, règles et correspondances."],
@@ -37,6 +37,7 @@ function Screen() {
   const { pathname } = useLocation();
   if (pathname === "/") return <Overview />;
   if (isActive(pathname, "/triage")) return <Triage />;
+  if (pathname === "/indicateurs") return <Indicators />;
   if (pathname === "/incidents") return <Incidents />;
   const incident = /^\/incidents\/([0-9a-f-]{36})$/i.exec(pathname);
   if (incident) return <IncidentPage key={incident[1]} incidentId={incident[1]} />;

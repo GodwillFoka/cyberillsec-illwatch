@@ -827,3 +827,59 @@ select.compact {
 .tt-dot.p3 {
   background: var(--p3-fg);
 }
+
+/* --- Indicateurs (IOC) ------------------------------------------------------------------ */
+
+.grow {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+input.compact {
+  min-height: 32px;
+  padding: 0 var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  background: var(--panel-head);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.toolbar form.grow {
+  flex-wrap: nowrap;
+}
+
+.value-box {
+  margin: var(--s3) 0 var(--s2);
+  padding: var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  background: var(--panel-head);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-top: var(--s3);
+  flex-wrap: wrap;
+}
+
+.stack {
+  display: grid;
+  gap: var(--s4);
+}
+
+.export {
+  display: grid;
+  justify-items: end;
+  gap: var(--s1);
+}
+
+.error-text {
+  color: var(--p0-fg);
+}

@@ -134,8 +134,13 @@ async def list_incidents(
     severity: Severity | None = None,
     assigned_to: UUID | None = None,
     open_only: bool = False,
+    indicator_id: UUID | None = None,
+    cve_id: str | None = None,
 ) -> IncidentPage:
-    """Les plus graves d'abord, puis les plus récents."""
+    """Les plus graves d'abord, puis les plus récents.
+
+    `indicator_id` / `cve_id` : incidents auxquels cet IOC / cette CVE est associé (RF-20).
+    """
     conditions: list[ColumnElement[bool]] = []
     if status is not None:
         conditions.append(Incident.status == status)
@@ -145,6 +150,21 @@ async def list_incidents(
         conditions.append(Incident.assigned_to == assigned_to)
     if open_only:
         conditions.append(Incident.status != IncidentStatus.CLOTURE)
+    if indicator_id is not None:
+        conditions.append(
+            select(IncidentIndicator.incident_id)
+            .where(
+                IncidentIndicator.incident_id == Incident.id,
+                IncidentIndicator.indicator_id == indicator_id,
+            )
+            .exists()
+        )
+    if cve_id is not None:
+        conditions.append(
+            select(IncidentCVE.incident_id)
+            .where(IncidentCVE.incident_id == Incident.id, IncidentCVE.cve_id == cve_id.upper())
+            .exists()
+        )
     rank = case(*((Incident.severity == s.value, r) for s, r in SEVERITY_ORDER.items()), else_=0)
     total = await session.scalar(select(func.count()).select_from(Incident).where(*conditions))
     rows = await session.execute(

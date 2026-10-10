@@ -190,6 +190,13 @@ async def list_incidents(
     severity: Severity | None = None,
     assigned_to: UUID | None = None,
     open_only: bool = False,
+    indicator_id: Annotated[
+        UUID | None, Query(description="Incidents auxquels cet IOC est associé.")
+    ] = None,
+    cve_id: Annotated[
+        str | None,
+        Query(max_length=32, description="Incidents auxquels cette CVE est associée."),
+    ] = None,
 ) -> IncidentPage:
     page = await service.list_incidents(
         session,
@@ -199,6 +206,8 @@ async def list_incidents(
         severity=severity,
         assigned_to=assigned_to,
         open_only=open_only,
+        indicator_id=indicator_id,
+        cve_id=cve_id,
     )
     return IncidentPage(
         items=[IncidentRead.model_validate(i) for i in page.items],
