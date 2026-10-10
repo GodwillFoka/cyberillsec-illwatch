@@ -8,6 +8,15 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — écran Triage (10/10)
+- File des alertes CVE triée par priorité puis ancienneté (« À traiter » ou « Toutes »),
+  navigation au clavier, alerte choisie dans l'adresse (`/triage?alerte=…`).
+- Panneau de détail en cinq sections : priorité, statut (score, émission, notification),
+  vulnérabilité (CVSS, EPSS, KEV, action CISA, décomposition du score), historique de
+  priorité, actions.
+- Actions « Acquitter » et « Ouvrir l'incident » (ADMIN, ANALYST ; désactivées avec la raison
+  pour VIEWER) ; après acquittement, la file passe à l'alerte suivante.
+
 ### Sécurité — dépendances de l'interface (10/10)
 - `npm audit` (premier `npm install` sur Kali) : React Router 6 (redirections ouvertes, XSS,
   toute la branche 6) et ECharts < 6.1.0 (XSS). React Router est **retiré** au profit d'un

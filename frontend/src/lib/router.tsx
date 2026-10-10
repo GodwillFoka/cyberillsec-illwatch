@@ -21,7 +21,7 @@ export { isActive, isInternalPath } from "./paths";
 interface RouterValue {
   pathname: string;
   search: string;
-  navigate: (to: string) => void;
+  navigate: (to: string, options?: { replace?: boolean }) => void;
 }
 
 const RouterContext = createContext<RouterValue | null>(null);
@@ -39,11 +39,16 @@ export function Router({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  const navigate = useCallback((to: string) => {
+  const navigate = useCallback((to: string, options?: { replace?: boolean }) => {
     if (!isInternalPath(to)) return;
-    window.history.pushState(null, "", to);
+    if (options?.replace) {
+      // Changement d'état dans le même écran (sélection) : pas d'entrée d'historique en plus.
+      window.history.replaceState(null, "", to);
+    } else {
+      window.history.pushState(null, "", to);
+      document.getElementById("contenu")?.scrollTo(0, 0);
+    }
     setLocation(current());
-    document.getElementById("contenu")?.scrollTo(0, 0);
   }, []);
 
   const value = useMemo(() => ({ ...location, navigate }), [location, navigate]);

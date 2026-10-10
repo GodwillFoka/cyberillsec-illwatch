@@ -3,10 +3,10 @@ import { LoginPage } from "./auth/LoginPage";
 import { Shell } from "./layout/Shell";
 import { isActive, Router, useLocation } from "./lib/router";
 import { Overview } from "./pages/Overview";
+import { Triage } from "./pages/Triage";
 import { NotFound, Upcoming } from "./pages/Upcoming";
 
 const UPCOMING: [string, string, string][] = [
-  ["/triage", "Triage", "Alertes à qualifier, acquitter ou transformer en incident."],
   ["/incidents", "Incidents", "Suivi des incidents, de l'ouverture à la clôture."],
   ["/indicateurs", "Indicateurs (IOC)", "Recherche et détail des indicateurs de compromission."],
   ["/sources", "Sources CTI", "Santé et historique de collecte de chaque source."],
@@ -35,6 +35,7 @@ export function App() {
 function Screen() {
   const { pathname } = useLocation();
   if (pathname === "/") return <Overview />;
+  if (isActive(pathname, "/triage")) return <Triage />;
   const upcoming = UPCOMING.find(([path]) => isActive(pathname, path));
   if (upcoming) return <Upcoming title={upcoming[1]} description={upcoming[2]} />;
   return <NotFound />;

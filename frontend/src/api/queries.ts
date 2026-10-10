@@ -7,6 +7,7 @@ import { apiGet } from "./http";
 import type {
   Activity,
   AlertPage,
+  CveDetail,
   FeedHealth,
   IncidentPage,
   Metric,
@@ -74,5 +75,30 @@ export function useOpenIncidents(limit = 20) {
     queryFn: ({ signal }) =>
       apiGet<IncidentPage>("/incidents", { open_only: true, limit }, signal),
     refetchInterval,
+  });
+}
+
+/** Alertes du triage : à traiter (non acquittées) ou toutes les récentes. */
+export function useTriageAlerts(scope: "pending" | "all") {
+  const refetchInterval = useFallbackInterval();
+  return useQuery({
+    queryKey: ["alerts", "triage", scope],
+    queryFn: ({ signal }) =>
+      apiGet<AlertPage>(
+        "/alerts",
+        { acknowledged: scope === "pending" ? false : undefined, limit: 200 },
+        signal,
+      ),
+    refetchInterval,
+  });
+}
+
+/** Détail d'une CVE : décomposition du score et historique de priorité. */
+export function useCveDetail(cveId: string | undefined) {
+  return useQuery({
+    queryKey: ["cves", "detail", cveId],
+    queryFn: ({ signal }) => apiGet<CveDetail>(`/cves/${encodeURIComponent(cveId ?? "")}`, undefined, signal),
+    enabled: Boolean(cveId),
+    staleTime: 5 * 60_000,
   });
 }

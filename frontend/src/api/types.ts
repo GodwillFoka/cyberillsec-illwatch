@@ -14,6 +14,8 @@ export type Alert = Schemas["AlertRead"];
 export type AlertPage = Schemas["AlertPage"];
 export type Incident = Schemas["IncidentRead"];
 export type IncidentPage = Schemas["IncidentPage"];
+export type IncidentDetail = Schemas["IncidentDetail"];
+export type CveDetail = Schemas["CVEDetail"];
 
 export type Metric = Series["metric"];
 export type SeriesWindow = Series["window"];

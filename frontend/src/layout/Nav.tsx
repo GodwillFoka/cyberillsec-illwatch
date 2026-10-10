@@ -41,7 +41,7 @@ export function Nav() {
       </div>
       <Link to="/" label="Vue d'ensemble" />
       <div className="nav-section">Opérations SOC</div>
-      <Link to="/triage" label="Triage" count={summary?.alerts.unacknowledged} soon />
+      <Link to="/triage" label="Triage" count={summary?.alerts.unacknowledged} />
       <Link to="/incidents" label="Incidents" count={summary?.incidents.open} soon />
       <div className="nav-section">Renseignement</div>
       <Link to="/indicateurs" label="Indicateurs (IOC)" soon />
