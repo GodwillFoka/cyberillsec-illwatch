@@ -50,7 +50,7 @@ CMD ["sh", "-c", "illwatch db upgrade && exec uvicorn illwatch.app.main:app --ho
 FROM base AS openapi
 RUN ILLWATCH_ENV_FILE= illwatch openapi -o /tmp/openapi.json
 
-FROM node:22-alpine AS web
+FROM node:25-alpine AS web
 WORKDIR /web
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
