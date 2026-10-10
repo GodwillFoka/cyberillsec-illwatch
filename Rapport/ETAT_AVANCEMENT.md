@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 12 h 00**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 15 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -32,7 +32,7 @@ données réelles, en local et en CI.
 
 | Chantier | Branche | État |
 |---|---|---|
-| **Interface web** | `bb102d3` | ✅ maquette v6 adoptée, ADR-016 accepté ; ✅ lot 1 côté serveur ; ✅ socle `frontend/` et vue d'ensemble (PR #4) ; ⏳ triage, IOC, CVE, incidents, investigation, chasse |
+| **Interface web** | `bb102d3` | ✅ maquette v6 adoptée, ADR-016 accepté ; ✅ lot 1 côté serveur ; ✅ socle `frontend/`, vue d'ensemble (PR #4), triage (PR #8) ; ⏳ IOC, CVE, incidents, investigation, chasse |
 | **Renommage SENTRY → ILLWATCH** | `d92b8c9` | ✅ code (162 fichiers, CI 463/463, validation réelle verte) ; dépôt GitHub renommé ; Kali migré : 528 453 IOC et 26 416 CVE retrouvés, volumes à nom fixe, dossier renommé, scénario 48/48 |
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ constaté sur `56ab581` : 0 Critical ; High 52 → 44, total 240 → 165 (−31 %) ; 44 High Debian sans correctif acceptées |
@@ -45,6 +45,7 @@ données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 10/10 | PR #8 | Écran Triage : file priorisée, panneau 5 sections (score décomposé, historique), acquitter, ouvrir l'incident selon le rôle |
 | 10/10 | `26d9bdb` | Sécurité interface (PR #5) : React Router retiré (XSS, redirections ouvertes), ECharts 6.1.0 ; `npm audit` bloquant en CI |
 | 10/10 | PR #6 | Vitest remplacé par `node --test`, Vite 5.4.21 ; test du tableau de bord rendu indépendant de la date |
 | 10/10 | PR #4 | Interface web : socle React/TypeScript, temps réel SSE, vue d'ensemble v6 ; servie par FastAPI, image multi-étapes, job CI « Interface web » |
@@ -111,8 +112,8 @@ l'interface en place.
 
 1. **Interface web v1, lot 1** — maquette v6 **adoptée**, ADR-016 accepté, système de design
    documenté (`docs/DESIGN_SYSTEM.md`). **Faits** : côté serveur (journal de collecte, séries
-   temporelles, flux SSE), socle `frontend/` et Vue d'ensemble. À développer : Triage, IOC,
-   CVE, Incidents, Investigation, Chasse. Sur Kali : `npm install` une fois (fichier de
+   temporelles, flux SSE), socle `frontend/`, Vue d'ensemble, Triage. À développer : Incidents
+   (et Investigation), IOC, CVE, Chasse. Sur Kali : `npm install` une fois (fichier de
    verrouillage à valider). Kali migré (`c5d0a7e94b13`) ; droits du rôle applicatif réappliqués le 09/10 ; worker sain, DNS instable sur la VM à surveiller.
 2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 3. Ouvrir M8 Detection & Correlation.
