@@ -1,7 +1,7 @@
 // Vue d'ensemble (maquette v6) : ce qui demande votre attention, puis la situation, puis le
 // contexte. Chaque chiffre vient du serveur ; une donnée absente s'affiche « — ».
 import { useState } from "react";
-import { Link } from "react-router-dom";
+
 
 import {
   useFeedsHealth,
@@ -19,6 +19,7 @@ import { SeriesChart } from "../components/SeriesChart";
 import { formatAge, formatDateTime, formatNumber, formatTime, parseDate } from "../lib/format";
 import { ALERT_REASON, INCIDENT_STATUS, PRIORITY_ORDER, rankOf, TONE_COLORS, toneOf } from "../lib/levels";
 import { useTimeZone } from "../lib/time";
+import { Link } from "../lib/router";
 import { useFresh } from "../lib/useFresh";
 import { useRealtime } from "../realtime/RealtimeProvider";
 

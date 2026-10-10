@@ -1,17 +1,17 @@
-import { Outlet } from "react-router-dom";
+import type { ReactNode } from "react";
 
 import { RealtimeProvider } from "../realtime/RealtimeProvider";
 import { Nav } from "./Nav";
 import { TopBar } from "./TopBar";
 
-export function Shell() {
+export function Shell({ children }: { children: ReactNode }) {
   return (
     <RealtimeProvider>
       <div className="shell">
         <Nav />
         <TopBar />
         <main className="main" id="contenu">
-          <Outlet />
+          {children}
         </main>
       </div>
     </RealtimeProvider>
