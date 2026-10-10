@@ -191,6 +191,14 @@ champs `purged` et `runs_purged`), contrôle de fraîcheur d'EPSS (`cve.epss_sta
 au-delà de 48 h). `illwatch status` affiche le même avertissement : sans EPSS récent, aucune CVE
 ne peut atteindre P0.
 
+## 6 ter. Interface web
+
+L'image Docker contient l'interface compilée (`/app/web`) : elle est servie à la racine du site
+(`https://hote/`), l'API restant sous `/api/v1`. Hors Docker, `frontend/dist/` est servi s'il
+existe (`cd frontend && npm install && npm run gen:api && npm run build`, après
+`illwatch openapi -o frontend/openapi.json`) ; `WEB_DIR` désigne un autre dossier. Sans
+interface compilée, seule l'API répond. Développement : voir `frontend/README.md`.
+
 ## 7. Mise à jour
 
 ```bash

@@ -1,0 +1,40 @@
+/* Jetons du système de design v6 (docs/DESIGN_SYSTEM.md). Une couleur porte une information. */
+:root {
+  --bg: #0a0e1a;
+  --panel: #121a2b;
+  --panel-head: #0f1626;
+  --line: #222c42;
+  --nav: #0d1220;
+  --text: #eceff5;
+  --muted: #a3acbf;
+  --indigo: #20155c;
+  --indigo-light: #9d8cff;
+  --orange: #e6681b;
+  --on-orange: #1b0d04;
+  --critical: #e5484d;
+  --success: #3fb27f;
+  --warning: #f2b33d;
+
+  --p0-bg: #3b1518;
+  --p0-fg: #ff9b9e;
+  --p1-bg: #3a2c0c;
+  --p1-fg: #f7cb70;
+  --p2-bg: #122848;
+  --p2-fg: #9bc2ff;
+  --p3-bg: #1e2535;
+  --p3-fg: #c6cdd9;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+
+  --r-card: 12px;
+  --r-btn: 8px;
+  --r-badge: 6px;
+
+  --font: "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}

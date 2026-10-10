@@ -43,6 +43,7 @@ les 100 % de couverture sur `scoring.py` et `state_machine.py`.
 | `illwatch/modules/` | Logique métier pure par domaine | `models`, `shared` |
 | `illwatch/app/api/` | Contrôleurs REST | `modules`, `database` |
 | `illwatch/cli/` | Commandes Click | `modules`, `config` |
+| `frontend/` | Interface web React (ADR-016), servie par `illwatch/app/web.py` | l'API REST et SSE uniquement |
 
 Une importation qui remonte cette liste est un défaut d'architecture, pas un raccourci.
 

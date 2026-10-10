@@ -85,6 +85,9 @@ class Settings(BaseSettings):
     docs_enabled: bool | None = None
     # En-tête HSTS : par défaut en production uniquement (l'API y est servie derrière TLS).
     hsts_enabled: bool | None = None
+    # Interface web compilée (ADR-016) : dossier contenant `index.html` et `assets/`. Par défaut
+    # `frontend/dist` du dépôt s'il existe ; dans l'image Docker, `/app/web`.
+    web_dir: str | None = None
 
     # --- Sécurité ------------------------------------------------------------
     secret_key: str = Field(

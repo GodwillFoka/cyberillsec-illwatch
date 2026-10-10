@@ -76,7 +76,69 @@ async def timeseries(
     )
 
 
-@router.get("/summary", summary="Indicateurs clés du SOC en temps réel (RF-21)")
+class IocSummary(BaseModel):
+    total: int
+    active: int
+    new_24h: int
+    multi_source: int
+    active_by_type: dict[str, int]
+    active_by_severity: dict[str, int]
+
+
+class CveSummary(BaseModel):
+    total: int
+    by_priority: dict[str, int]
+    critical_ratio: float
+    kev: int
+    public_exploit: int
+    escalated_24h: int
+
+
+class IncidentSummary(BaseModel):
+    open: int
+    open_by_severity: dict[str, int]
+    by_status: dict[str, int]
+    opened_24h: int
+    mttr_hours_90d: float | None
+
+
+class AlertSummary(BaseModel):
+    unacknowledged: int
+    last_24h: int
+    undelivered: int
+
+
+class FeedSummary(BaseModel):
+    total: int
+    active: int
+    by_status: dict[str, int]
+    degraded: list[str]
+    last_success: datetime | None
+
+
+class CollectorSummary(BaseModel):
+    last_success_at: datetime | None
+    items: int | None
+    error: str | None
+
+
+class SummaryRead(BaseModel):
+    """Synthèse typée : l'interface web en génère ses types TypeScript (ADR-016)."""
+
+    generated_at: datetime
+    iocs: IocSummary
+    cves: CveSummary
+    incidents: IncidentSummary
+    alerts: AlertSummary
+    feeds: FeedSummary
+    collectors: dict[str, CollectorSummary]
+
+
+@router.get(
+    "/summary",
+    response_model=SummaryRead,
+    summary="Indicateurs clés du SOC en temps réel (RF-21)",
+)
 async def summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
     return (await compute_summary(session)).as_dict()
 
