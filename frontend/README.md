@@ -26,8 +26,10 @@ Contrôles (les mêmes qu'en CI) : `npm run typecheck`, `npm test`, `npm run bui
 ## Production
 
 L'image Docker compile l'interface (étape Node) et la copie dans `/app/web` ; FastAPI la sert
-à la racine du site, l'API restant sous `/api/v1`. Sans image, `npm run build` produit
-`frontend/dist/`, servi automatiquement par `uvicorn` s'il existe (ou `WEB_DIR=/chemin`).
+à la racine du site, l'API restant sous `/api/v1`. Sans image, `./scripts/build-web.sh`
+(à la racine) produit `frontend/dist/`, servi automatiquement par `uvicorn` s'il existe (ou
+`WEB_DIR=/chemin`). Il régénère d'abord le schéma OpenAPI et les types : `npm run build` seul,
+après un changement de l'API, compile avec l'ancien schéma et échoue (`TS2339`).
 
 ## Organisation
 

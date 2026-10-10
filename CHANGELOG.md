@@ -8,6 +8,10 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — construction de l'interface
+- `scripts/build-web.sh` : schéma OpenAPI, dépendances, types générés et construction en une
+  commande (un `npm run build` seul après un changement d'API compilait avec l'ancien schéma).
+
 ### Ajouté — interface : écran Chasse (lot 1 complet)
 - Sessions de chasse (50 dernières, `?session=`) : origine, état, durée, périmètre, erreurs.
 - Correspondances par pages de 100, les plus graves d'abord, filtres règle (avec effectifs) et
