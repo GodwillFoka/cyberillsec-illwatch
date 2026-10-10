@@ -4,19 +4,20 @@
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 
 import { apiDownload } from "../api/http";
-import { useAttachIndicator, useSubmitIndicators } from "../api/mutations";
+import { useSubmitIndicators } from "../api/mutations";
 import {
   INDICATOR_PAGE_SIZE,
   useFeedsHealth,
   useIndicator,
   useIndicators,
   useLinkedIncidents,
-  useOpenIncidents,
   type IndicatorFilters,
 } from "../api/queries";
 import type { Indicator, IngestResult } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
+import { AttachToIncident } from "../components/AttachToIncident";
 import { LevelBadge } from "../components/Badge";
+import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
 import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { IOC_TYPES, MAX_BATCH, iocTypeLabel, splitBatch } from "../lib/iocs";
@@ -231,48 +232,6 @@ function IndicatorTable({
   );
 }
 
-function Pager({
-  offset,
-  shown,
-  total,
-  busy,
-  onOffset,
-}: {
-  offset: number;
-  shown: number;
-  total: number;
-  busy: boolean;
-  onOffset: (offset: number) => void;
-}) {
-  if (total <= INDICATOR_PAGE_SIZE && offset === 0) return null;
-  return (
-    <div className="pager">
-      <span className="muted">
-        {formatNumber(offset + 1)}–{formatNumber(offset + shown)} sur {formatNumber(total)}
-        {busy ? " · lecture…" : ""}
-      </span>
-      <div className="row">
-        <button
-          className="btn"
-          type="button"
-          disabled={offset === 0 || busy}
-          onClick={() => onOffset(Math.max(0, offset - INDICATOR_PAGE_SIZE))}
-        >
-          ← Précédents
-        </button>
-        <button
-          className="btn"
-          type="button"
-          disabled={offset + shown >= total || busy}
-          onClick={() => onOffset(offset + INDICATOR_PAGE_SIZE)}
-        >
-          Suivants →
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // --- Détail ---------------------------------------------------------------------------------
 
 function CopyButton({ value }: { value: string }) {
@@ -296,64 +255,6 @@ function CopyButton({ value }: { value: string }) {
     >
       {state === "done" ? "Copié" : state === "failed" ? "Copie impossible" : "Copier"}
     </button>
-  );
-}
-
-function AttachToIncident({ indicatorId }: { indicatorId: string }) {
-  const open = useOpenIncidents(50);
-  const attach = useAttachIndicator();
-  const [incidentId, setIncidentId] = useState("");
-  const [result, setResult] = useState<{ id: string; created: boolean } | null>(null);
-
-  useEffect(() => {
-    setResult(null);
-    attach.reset();
-  }, [indicatorId]);
-
-  const incidents = open.data?.items ?? [];
-  if (open.isSuccess && incidents.length === 0) {
-    return <p className="muted">Aucun incident ouvert auquel l'associer.</p>;
-  }
-
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    if (!incidentId) return;
-    attach.mutate(
-      { incidentId, indicatorId },
-      { onSuccess: (body) => setResult({ id: incidentId, created: body.created }) },
-    );
-  }
-
-  return (
-    <form className="form" onSubmit={submit}>
-      <label className="field">
-        Associer à un incident ouvert
-        <select value={incidentId} onChange={(e) => setIncidentId(e.target.value)} required>
-          <option value="">Choisir…</option>
-          {incidents.map((incident) => (
-            <option key={incident.id} value={incident.id}>
-              [{levelLabel(incident.severity)}] {incident.title}
-            </option>
-          ))}
-        </select>
-      </label>
-      {result && (
-        <p className="notice ok" role="status">
-          {result.created ? "IOC associé à " : "Déjà associé à "}
-          <Link to={`/incidents/${result.id}`}>l'incident</Link> (chronologie mise à jour).
-        </p>
-      )}
-      {attach.error && (
-        <p className="notice error" role="alert">
-          Association refusée : {attach.error.message}
-        </p>
-      )}
-      <div className="actions">
-        <button className="btn primary" type="submit" disabled={!incidentId || attach.isPending}>
-          {attach.isPending ? "Association…" : "Associer"}
-        </button>
-      </div>
-    </form>
   );
 }
 
@@ -454,7 +355,7 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
               {/* 5. Actions */}
               <section>
                 {canAct ? (
-                  <AttachToIncident indicatorId={ioc.id} />
+                  <AttachToIncident target={{ indicatorId: ioc.id }} label="cet IOC" />
                 ) : (
                   <p className="reason">Association réservée aux rôles analyste et administrateur.</p>
                 )}
@@ -704,6 +605,7 @@ export function Indicators() {
               <>
                 <IndicatorTable items={page.items} selectedId={selectedId} onSelect={select} />
                 <Pager
+                  pageSize={INDICATOR_PAGE_SIZE}
                   offset={offset}
                   shown={page.items.length}
                   total={page.total}

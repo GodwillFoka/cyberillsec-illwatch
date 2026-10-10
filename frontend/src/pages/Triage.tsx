@@ -5,9 +5,10 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 
 import { useAcknowledgeAlert, useOpenIncidentFromAlert } from "../api/mutations";
 import { useCveDetail, useTriageAlerts } from "../api/queries";
-import type { Alert, CveDetail, IncidentDetail } from "../api/types";
+import type { Alert, IncidentDetail } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
+import { Breakdown, formatEpss, formatScore } from "../components/CveScore";
 import { QueryState } from "../components/QueryState";
 import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { ALERT_REASON, levelLabel, rankOf } from "../lib/levels";
@@ -23,8 +24,7 @@ function byPriorityThenAge(a: Alert, b: Alert): number {
   return rankOf(a.priority) - rankOf(b.priority) || a.created_at.localeCompare(b.created_at);
 }
 
-const score = (value: number | null | undefined) =>
-  value === null || value === undefined ? "—" : value.toFixed(1).replace(".", ",");
+const score = formatScore;
 
 // --- File des alertes -----------------------------------------------------------------------
 
@@ -106,31 +106,6 @@ function AlertTable({
 
 // --- Panneau de détail ----------------------------------------------------------------------
 
-function Breakdown({ cve }: { cve: CveDetail }) {
-  const parts: [string, number][] = [
-    ["Gravité (CVSS)", cve.breakdown.cvss],
-    ["Probabilité d'exploitation (EPSS)", cve.breakdown.epss],
-    ["Exploitation avérée (KEV)", cve.breakdown.kev],
-    ["Exploit public", cve.breakdown.exploit],
-    ["Campagnes de rançongiciel", cve.breakdown.ransomware],
-  ];
-  return (
-    <dl className="facts">
-      {parts.map(([label, value]) => (
-        <div key={label} style={{ display: "contents" }}>
-          <dt>{label}</dt>
-          <dd className="mono">+{score(value)}</dd>
-        </div>
-      ))}
-      <dt>Score composite</dt>
-      <dd className="mono">
-        <strong>{score(cve.breakdown.total)}</strong> / 100
-        {cve.breakdown.kev_floor ? " · relevé en P1 (plancher KEV)" : ""}
-      </dd>
-    </dl>
-  );
-}
-
 function AlertDetail({
   alert,
   onAcknowledged,
@@ -166,7 +141,9 @@ function AlertDetail({
       <section>
         <div className="title">
           <LevelBadge level={alert.priority} />
-          <span className="mono">{alert.cve_id}</span>
+          <Link className="mono" to={`/cve?cve=${encodeURIComponent(alert.cve_id)}`}>
+            {alert.cve_id}
+          </Link>
         </div>
         <p className="muted" style={{ margin: "4px 0 0" }}>
           Seuil de risque franchi · {ALERT_REASON[alert.reason] ?? alert.reason}
@@ -212,9 +189,7 @@ function AlertDetail({
                 <dd className="mono">{score(detail.cvss_score)}</dd>
                 <dt>EPSS</dt>
                 <dd className="mono">
-                  {detail.epss_score === null
-                    ? "—"
-                    : `${(detail.epss_score * 100).toFixed(1).replace(".", ",")} %`}
+                  {formatEpss(detail.epss_score)}
                 </dd>
                 <dt>Catalogue KEV</dt>
                 <dd>

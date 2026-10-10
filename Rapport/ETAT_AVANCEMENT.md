@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 17 h 45**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 18 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -12,7 +12,7 @@ Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci
 ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
 v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés. Décision du
 08/10 (ADR-016) : l'interface web passe avant l'hébergement. **Reste pour clore M7** : le lot 1
-de l'interface (vue d'ensemble, triage, incidents et IOC faits ; CVE et chasse à faire), puis la
+de l'interface (vue d'ensemble, triage, incidents, IOC et CVE faits ; chasse à faire), puis la
 préproduction sur un VPS européen. M1 à M6 sont constatés sur données réelles, en local et en CI.
 
 ## 2. Jalons
@@ -46,6 +46,7 @@ préproduction sur un VPS européen. M1 à M6 sont constatés sur données réel
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 10/10 | PR #25 | Écran CVE et priorités : liste par risque, recherche, filtres priorité/KEV, fiche (signaux, score décomposé, historique, alertes, incidents), association ou ouverture d'incident ; jokers SQL échappés dans la recherche |
 | 10/10 | PR #24 | Écran Indicateurs (IOC) : recherche normalisée, filtres, fiche (provenance, incidents associés, association), soumission d'un lot, export CSV audité ; API incidents filtrés par IOC/CVE |
 | 10/10 | `8f6599b` | Vérification : `ci-local.sh` en une commande (réseau, outils, interface web, image en option, journal) ; workflow « Branches » : les 12 branches fusionnées supprimées, seules `main` et `release/v0.1.1` restent |
 | 10/10 | `12fbe41` | Dépendances : politique Dependabot (mineures regroupées, majeures planifiées), TypeScript 5.9 et 4 autres mises à jour mineures ; React 19 / Vite 8 à planifier |
@@ -121,7 +122,7 @@ l'interface en place.
 1. **Interface web v1, lot 1** — maquette v6 **adoptée**, ADR-016 accepté, système de design
    documenté (`docs/DESIGN_SYSTEM.md`). **Faits** : côté serveur (journal de collecte, séries
    temporelles, flux SSE), socle `frontend/`, Vue d'ensemble, Triage, Incidents (et
-   Investigation), Indicateurs (IOC). À développer : CVE, Chasse. Fichier de verrouillage npm versionné
+   Investigation), Indicateurs (IOC), CVE. À développer : Chasse. Fichier de verrouillage npm versionné
    (`237c477`) ; Kali migré (`c5d0a7e94b13`) ; droits du rôle applicatif réappliqués le 09/10 ; worker sain, DNS instable sur la VM à surveiller.
 2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 3. Ouvrir M8 Detection & Correlation.

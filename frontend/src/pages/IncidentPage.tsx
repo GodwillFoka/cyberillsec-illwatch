@@ -240,7 +240,7 @@ function Links({ incident, canAct }: { incident: IncidentDetail; canAct: boolean
         <ul className="list">
           {incident.cve_ids.map((id) => (
             <li key={id} className="mono">
-              {id}
+              <Link to={`/cve?cve=${encodeURIComponent(id)}`}>{id}</Link>
             </li>
           ))}
         </ul>

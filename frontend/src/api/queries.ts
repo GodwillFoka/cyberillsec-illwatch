@@ -8,6 +8,7 @@ import type {
   Activity,
   AlertPage,
   CveDetail,
+  CvePage,
   IncidentDetail,
   IndicatorDetail,
   IndicatorPage,
@@ -193,5 +194,41 @@ export function useLinkedIncidents(link: { indicatorId?: string; cveId?: string 
         signal,
       ),
     enabled: Boolean(link.indicatorId || link.cveId),
+  });
+}
+
+export interface CveFilters {
+  /** Identifiant ou texte de la description. */
+  q?: string;
+  priority?: string;
+  kevOnly: boolean;
+}
+
+export const CVE_PAGE_SIZE = 50;
+
+export function useCves(filters: CveFilters, offset: number) {
+  return useQuery({
+    queryKey: ["cves", "list", filters, offset],
+    queryFn: ({ signal }) =>
+      apiGet<CvePage>(
+        "/cves",
+        {
+          q: filters.q || undefined,
+          priority: filters.priority || undefined,
+          is_kev: filters.kevOnly ? true : undefined,
+          limit: CVE_PAGE_SIZE,
+          offset,
+        },
+        signal,
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Alertes émises pour une CVE (seuils de risque franchis). */
+export function useCveAlerts(cveId: string) {
+  return useQuery({
+    queryKey: ["alerts", "cve", cveId],
+    queryFn: ({ signal }) => apiGet<AlertPage>("/alerts", { cve_id: cveId, limit: 20 }, signal),
   });
 }
