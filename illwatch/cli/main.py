@@ -30,6 +30,25 @@ def version() -> None:
 
 
 @cli.command()
+@click.option(
+    "-o", "--output", type=click.Path(dir_okay=False, writable=True), help="Fichier de sortie."
+)
+def openapi(output: str | None) -> None:
+    """Exporte le schéma OpenAPI de l'API (source des types TypeScript de l'interface)."""
+    import json
+
+    from illwatch.app.main import create_app
+
+    document = json.dumps(create_app().openapi(), ensure_ascii=False, indent=2)
+    if output:
+        with open(output, "w", encoding="utf-8") as handle:
+            handle.write(document + "\n")
+        console.print(f"Schéma OpenAPI écrit dans {output}.")
+    else:
+        click.echo(document)
+
+
+@cli.command()
 def config() -> None:
     """Affiche la configuration effective (secrets masqués)."""
     settings = get_settings()

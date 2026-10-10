@@ -41,3 +41,25 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 # --no-access-log : le journal d'accès JSON d'ILLWATCH (illwatch.http) remplace celui d'uvicorn,
 # qui doublait chaque ligne en texte libre.
 CMD ["sh", "-c", "illwatch db upgrade && exec uvicorn illwatch.app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --no-server-header --no-access-log"]
+
+# ---------------------------------------------------------------------------
+# Interface web (ADR-016) : compilée dans une étape Node, servie par FastAPI (même origine).
+# ---------------------------------------------------------------------------
+
+# Schéma OpenAPI de l'API : source des types TypeScript de l'interface.
+FROM base AS openapi
+RUN ILLWATCH_ENV_FILE= illwatch openapi -o /tmp/openapi.json
+
+FROM node:22-alpine AS web
+WORKDIR /web
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; \
+    else npm install --no-audit --no-fund; fi
+COPY frontend/ ./
+COPY --from=openapi /tmp/openapi.json ./openapi.json
+RUN npm run gen:api && npm run build
+
+# Image finale : l'API et l'interface compilée (aucun outil Node à l'exécution).
+FROM base AS final
+COPY --from=web --chown=illwatch:illwatch /web/dist /app/web
+ENV WEB_DIR=/app/web

@@ -12,6 +12,7 @@ from illwatch.app.api.v1.router import api_router
 from illwatch.app.config import get_settings
 from illwatch.app.database import dispose_engine
 from illwatch.app.middleware import SecurityMiddleware, unhandled_error, validation_error
+from illwatch.app.web import mount_web_ui, resolve_web_dir
 from illwatch.modules.events import close_event_bus
 from illwatch.shared.logging import configure_logging
 
@@ -61,6 +62,8 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(api_router, prefix=settings.api_v1_prefix)
+    # Interface web (ADR-016) : déclarée en dernier, elle ne capte que les adresses hors API.
+    mount_web_ui(app, resolve_web_dir(settings))
 
     return app
 

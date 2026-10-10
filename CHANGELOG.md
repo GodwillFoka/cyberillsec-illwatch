@@ -8,6 +8,20 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — interface web, socle et vue d'ensemble (10/10)
+- `frontend/` : React + TypeScript (Vite), TanStack Query, ECharts ; types générés depuis le
+  schéma OpenAPI (`illwatch openapi`, `npm run gen:api`).
+- Connexion avec renouvellement anticipé du jeton ; flux temps réel SSE avec pause, reprise,
+  reconnexion progressive et relecture des seules données concernées.
+- Vue d'ensemble (maquette v6) : file prioritaire des alertes, incident le plus grave,
+  indicateurs, évolution 24 h / 7 j / 30 j, CVE par priorité, activité récente, santé des
+  sources, IOC par type. Les autres écrans du lot 1 sont annoncés, sans contenu factice.
+- Servie par FastAPI à la racine (`illwatch/app/web.py`) : politique de sécurité stricte
+  (`script-src 'self'`), assets immuables, routage côté navigateur ; l'API garde ses 404 JSON.
+- `GET /api/v1/dashboard/summary` typé (`SummaryRead`) pour la génération des types.
+- Image Docker multi-étapes (Node pour compiler, aucun Node à l'exécution) ; job CI
+  « Interface web » (types, tests Vitest, build).
+
 ### Modifié — retrait progressif des sources en panne (10/10)
 - Une source en échec n'est plus retentée à chaque cycle du worker (constat Kali du 09/10 :
   DigitalSide injoignable sollicitée toutes les 3 minutes, 4 essais et 67 s à chaque fois).
