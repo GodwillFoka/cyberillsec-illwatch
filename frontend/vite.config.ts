@@ -1,5 +1,5 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite";
 
 // En développement, Vite sert l'interface sur :5173 et relaie l'API vers FastAPI (:8000) :
 // même origine vue du navigateur, comme en production (ADR-016), donc ni CORS ni jeton exposé.
@@ -20,9 +20,5 @@ export default defineConfig({
     // Pas de script ni de style en ligne : compatible avec la politique `script-src 'self'`.
     assetsInlineLimit: 0,
     chunkSizeWarningLimit: 900,
-  },
-  test: {
-    environment: "node",
-    include: ["src/**/*.test.ts"],
   },
 });

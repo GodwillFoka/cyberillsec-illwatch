@@ -190,7 +190,7 @@ jobs:
         run: if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
       - name: Audit des dépendances livrées au navigateur
         working-directory: frontend
-        # Les outils de développement (Vite, Vitest) ne sont pas dans l'image ; ce qui part au
+        # Les outils de développement (Vite, esbuild) ne sont pas dans l'image ; ce qui part au
         # navigateur ne doit porter aucune vulnérabilité élevée ou critique connue.
         run: |
           npm audit --omit=dev --audit-level=high > audit.txt 2>&1 || {
@@ -204,7 +204,7 @@ jobs:
             exit 1; }
       - name: Audit des outils de développement (informatif)
         working-directory: frontend
-        # Vite, Vitest, esbuild : absents de l'image, mais à surveiller (poste de développement).
+        # Vite, esbuild : absents de l'image, mais à surveiller (poste de développement).
         run: |
           npm audit --json 2>/dev/null | node -e '
             const r = JSON.parse(require("fs").readFileSync(0, "utf8"));
@@ -226,9 +226,9 @@ jobs:
       - name: Tests
         working-directory: frontend
         run: |
-          npx vitest run > vitest.txt 2>&1 || {
-            cat vitest.txt
-            grep -E "FAIL|AssertionError|Error:" vitest.txt | head -20 | while read -r l; do echo "::error title=Vitest::${l:0:900}"; done
+          npm test > tests.txt 2>&1 || {
+            cat tests.txt
+            grep -E "^not ok|AssertionError|Error" tests.txt | head -20 | while read -r l; do echo "::error title=Tests interface::${l:0:900}"; done
             exit 1; }
       - name: Build de production
         working-directory: frontend

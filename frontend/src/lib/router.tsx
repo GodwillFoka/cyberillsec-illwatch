@@ -14,6 +14,10 @@ import {
   type ReactNode,
 } from "react";
 
+import { isInternalPath } from "./paths";
+
+export { isActive, isInternalPath } from "./paths";
+
 interface RouterValue {
   pathname: string;
   search: string;
@@ -21,11 +25,6 @@ interface RouterValue {
 }
 
 const RouterContext = createContext<RouterValue | null>(null);
-
-/** Adresse interne valide : « /chemin », jamais « //hote », « /\hote » ni « https:… ». */
-export function isInternalPath(to: string): boolean {
-  return /^\/(?![/\\])[^\s\\]*$/.test(to);
-}
 
 function current() {
   return { pathname: window.location.pathname, search: window.location.search };
@@ -75,10 +74,4 @@ export function Link({ to, onClick, children, ...rest }: LinkProps) {
       {children}
     </a>
   );
-}
-
-/** Vrai si `to` désigne l'écran courant (ou un de ses sous-écrans, sauf pour « / »). */
-export function isActive(pathname: string, to: string): boolean {
-  if (to === "/") return pathname === "/";
-  return pathname === to || pathname.startsWith(`${to}/`);
 }
