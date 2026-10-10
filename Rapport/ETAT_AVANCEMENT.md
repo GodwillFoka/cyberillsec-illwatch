@@ -46,7 +46,7 @@ préproduction sur un VPS européen. M1 à M6 sont constatés sur données réel
 
 | Date | Commit | Contenu |
 |---|---|---|
-| 10/10 | PR #22 | Vérification : `ci-local.sh` en une commande (réseau, outils, interface web, image en option, journal) ; workflow « Branches » (suppression automatique des branches fusionnées) |
+| 10/10 | `8f6599b` | Vérification : `ci-local.sh` en une commande (réseau, outils, interface web, image en option, journal) ; workflow « Branches » : les 12 branches fusionnées supprimées, seules `main` et `release/v0.1.1` restent |
 | 10/10 | `12fbe41` | Dépendances : politique Dependabot (mineures regroupées, majeures planifiées), TypeScript 5.9 et 4 autres mises à jour mineures ; React 19 / Vite 8 à planifier |
 | 10/10 | PR #10 | **Audit global** (revue indépendante) : 1 élevé, 6 moyens corrigés — test daté, bus Redis auto-réparant, onglets coordonnés, double collecte, CSP de l'infobulle, SSE derrière Caddy ; jobs GitLab interface ; docs ([rapport](AUDIT_GLOBAL_2026-10-10.md)) |
 | 10/10 | PR #9 | Écran Incidents : liste, ouverture, page d'investigation (cycle NIST, chronologie, transitions, notes, assignation, éléments liés) |

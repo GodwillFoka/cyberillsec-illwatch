@@ -3,7 +3,7 @@
 **Périmètre :** dépôt complet sur `main` @ `56f12db` (API, worker, CLI, interface web, migrations,
 CI GitHub et GitLab, documentation, suivi de projet). **Méthode :** revue indépendante (agent
 n'ayant pas écrit le code, lecture seule), puis corrections vérifiées par la CI.
-**Corrections fusionnées :** PR #10 (`9a06937`), politique Dependabot (PR #18), typage (PR #20),
+**Corrections fusionnées :** PR #22 (vérification, branches), PR #10 (`9a06937`), politique Dependabot (PR #18), typage (PR #20),
 mises à jour mineures (#13, #15, #19). `main` @ `12fbe41` : CI et publication vertes.
 
 ## 1. Synthèse
@@ -13,7 +13,7 @@ mises à jour mineures (#13, #15, #19). `main` @ `12fbe41` : CI et publication v
 | Santé générale | **bonne** : CI verte sur toutes les plateformes, aucun secret versionné, chaîne de 10 migrations linéaire avec descentes, toutes les routes `/api/v1` authentifiées (sauf `/auth/*`, publiques à dessein), droits d'écriture ADMIN/ANALYST vérifiés, protection SSRF solide |
 | Constats | 1 élevé, 6 moyens, 7 faibles, 3 informatifs |
 | Corrigés | l'élevé, les 6 moyens, 5 faibles, les 3 informatifs |
-| Restent ouverts | 2 faibles (ci-dessous), suppression des branches fusionnées (droits) |
+| Restent ouverts | 2 faibles (ci-dessous) |
 
 ## 2. Constats et suite donnée
 
@@ -51,11 +51,9 @@ interne, `node --test`, audit npm, coordination des onglets).
 ## 4. Dépôts et CI
 
 - GitHub `main` : CI, Documentation, Publication verts. Aucune PR humaine ouverte.
-- **Branches fusionnées à supprimer** (droits d'écriture refusés depuis la session) :
-  `chore/dev-audit`, `feature/m7-ui-frontend`, `feature/m7-ui-incidents`,
-  `feature/m7-ui-lot1-api`, `feature/m7-ui-triage`, `fix/audit-2026-10-10`,
-  `fix/collect-backoff`, `fix/collection-journal-resilience`, `fix/web-dev-deps`,
-  `fix/web-tests-portable`, `rename/illwatch`. `release/v0.1.1` est conservée (maintenance).
+- **Branches fusionnées** : supprimées le 10/10 par le nouveau workflow « Branches » (PR #22),
+  qui supprime désormais la branche de chaque PR fusionnée et balaie chaque semaine les
+  branches contenues dans `main`. Restent `main` et `release/v0.1.1` (maintenance).
 - Dependabot (premier passage npm) : #13 (police) et #15 (`setup-node` 7) fusionnées ; les
   mineures regroupées en #19 (TypeScript 5.9, TanStack Query 5.104, openapi-typescript 7.13,
   `@types/node` 22.20, police Inter) fusionnées après correction d'un typage révélé par
