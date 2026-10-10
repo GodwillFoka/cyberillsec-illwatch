@@ -558,3 +558,119 @@ button {
   color: var(--text);
   font: inherit;
 }
+
+/* --- Liste et panneau de détail (triage, puis IOC, CVE, incidents) ----------------------- */
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
+  gap: var(--s4);
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  margin-bottom: var(--s3);
+  flex-wrap: wrap;
+}
+
+.table.selectable tbody tr {
+  cursor: pointer;
+}
+
+.table.selectable tbody tr:hover td {
+  background: #151e31;
+}
+
+.table tbody tr[aria-selected="true"] td {
+  background: var(--indigo);
+}
+
+.table tbody tr[aria-selected="true"] td:first-child {
+  box-shadow: inset 3px 0 0 var(--orange);
+}
+
+.table tbody tr.done td {
+  color: var(--muted);
+}
+
+.detail {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: var(--s4);
+}
+
+.detail section + section {
+  padding-top: var(--s4);
+  border-top: 1px solid var(--line);
+}
+
+.detail h3 {
+  margin: 0 0 var(--s2);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detail .title {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--s2) var(--s4);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.description {
+  max-height: 160px;
+  overflow-y: auto;
+  margin: 0;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  gap: var(--s3);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.reason {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.notice.ok {
+  border-color: #1f4d36;
+  color: #8fe0b8;
+}
