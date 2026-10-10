@@ -8,6 +8,18 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — interface : écran CVE et priorités
+- Liste par score composite, recherche par identifiant ou texte (`?q=`), filtre de priorité
+  avec effectifs, CVE exploitées (KEV) ; pagination par 50.
+- Fiche : signaux (CVSS et vecteur, EPSS et centile, KEV, exploit public, rançongiciels),
+  décomposition du score, historique de priorité, alertes, incidents associés ; associer à un
+  incident ouvert ou ouvrir un incident de remédiation (ADMIN, ANALYST) ; lien vers la NVD.
+- Depuis le triage et la page d'incident, chaque CVE mène à sa fiche.
+
+### Corrigé
+- Recherche de CVE : `%`, `_` et `\` saisis sont cherchés tels quels (n'agissent plus comme
+  jokers SQL).
+
 ### Ajouté — interface : écran Indicateurs (IOC)
 - Recherche exacte normalisée (`evil[.]com` trouve `evil.com`), partageable (`?valeur=`) ;
   filtres type, sévérité minimale, source, validité ; pagination par 50.
