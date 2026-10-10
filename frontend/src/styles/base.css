@@ -883,3 +883,22 @@ input.compact {
 .error-text {
   color: var(--p0-fg);
 }
+
+/* --- CVE -------------------------------------------------------------------------------- */
+
+.row.tight {
+  gap: var(--s1);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.check input {
+  accent-color: var(--orange);
+}

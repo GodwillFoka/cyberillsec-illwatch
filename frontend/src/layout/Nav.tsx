@@ -47,7 +47,7 @@ export function Nav() {
       <Link to="/indicateurs" label="Indicateurs (IOC)" />
       <Link to="/sources" label="Sources CTI" count={summary?.feeds.degraded.length} soon />
       <div className="nav-section">Vulnérabilités</div>
-      <Link to="/cve" label="CVE et priorités" soon />
+      <Link to="/cve" label="CVE et priorités" />
       <div className="nav-section">Chasse</div>
       <Link to="/chasse" label="Recherches et règles" soon />
       <div className="nav-spacer" />

@@ -75,6 +75,10 @@ async def test_liste_triee_par_risque_et_filtres(
     assert {c["id"] for c in kev["items"]} == {"CVE-2021-44228", "CVE-2020-1472"}
     found = (await client.get("/api/v1/cves?q=netlogon", headers=viewer)).json()
     assert [c["id"] for c in found["items"]] == ["CVE-2020-1472"]
+    # Les jokers SQL saisis sont des caractères ordinaires (aucune description n'en contient).
+    for literal in ("%", "_", "\\"):
+        none = (await client.get("/api/v1/cves", params={"q": literal}, headers=viewer)).json()
+        assert none["total"] == 0, literal
     high = (await client.get("/api/v1/cves?min_score=40", headers=viewer)).json()
     assert high["total"] == 2
 

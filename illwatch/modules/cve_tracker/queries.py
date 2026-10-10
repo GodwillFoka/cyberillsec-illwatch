@@ -51,8 +51,12 @@ async def list_cves(
     if modified_since is not None:
         conditions.append(CVE.last_modified_date >= modified_since)
     if search:
-        pattern = f"%{search.strip()}%"
-        conditions.append(or_(CVE.id.ilike(pattern), CVE.description.ilike(pattern)))
+        # « % » et « _ » saisis sont cherchés tels quels, pas comme jokers SQL.
+        literal = search.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{literal}%"
+        conditions.append(
+            or_(CVE.id.ilike(pattern, escape="\\"), CVE.description.ilike(pattern, escape="\\"))
+        )
 
     total = await session.scalar(select(func.count()).select_from(CVE).where(*conditions))
     rows = await session.execute(

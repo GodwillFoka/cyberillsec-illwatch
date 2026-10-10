@@ -101,16 +101,40 @@ export function useSubmitIndicators() {
   });
 }
 
-/** Associe un IOC à un incident ouvert, depuis l'écran Indicateurs. */
-export function useAttachIndicator() {
+export type AttachTarget = { indicatorId: string } | { cveId: string };
+
+/** Associe un IOC ou une CVE à un incident ouvert, depuis sa fiche (RF-20). */
+export function useAttachToIncident() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ incidentId, indicatorId }: { incidentId: string; indicatorId: string }) =>
-      apiPost<{ created: boolean }>(`/incidents/${incidentId}/indicators`, {
-        indicator_id: indicatorId,
-      }),
+    mutationFn: ({ incidentId, target }: { incidentId: string; target: AttachTarget }) =>
+      "indicatorId" in target
+        ? apiPost<{ created: boolean }>(`/incidents/${incidentId}/indicators`, {
+            indicator_id: target.indicatorId,
+          })
+        : apiPost<{ created: boolean }>(`/incidents/${incidentId}/cves`, { cve_id: target.cveId }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["incidents"] });
+    },
+  });
+}
+
+/** Ouvre un incident pour une CVE et l'y associe (deux écritures, chacune dans la chronologie). */
+export function useOpenIncidentForCve() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ cveId, severity, description }: { cveId: string; severity: string; description: string }) => {
+      const incident = await apiPost<IncidentDetail>("/incidents", {
+        title: `Remédiation ${cveId}`,
+        description,
+        severity,
+      });
+      await apiPost<{ created: boolean }>(`/incidents/${incident.id}/cves`, { cve_id: cveId });
+      return incident;
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ["incidents"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
