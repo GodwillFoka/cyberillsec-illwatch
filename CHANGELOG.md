@@ -8,6 +8,18 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — interface : écran Indicateurs (IOC)
+- Recherche exacte normalisée (`evil[.]com` trouve `evil.com`), partageable (`?valeur=`) ;
+  filtres type, sévérité minimale, source, validité ; pagination par 50.
+- Fiche : copie de la valeur, statut, provenance par source (ADR-006), incidents associés,
+  association à un incident ouvert (ADMIN, ANALYST).
+- Soumission d'un lot collé (1 000 au plus, doublons retirés, rejets listés par le serveur).
+- Export CSV de la base (consigné au journal d'audit `data.export`).
+- API : `GET /incidents?indicator_id=…&cve_id=…` liste les incidents associés à un IOC ou à
+  une CVE.
+- Temps réel : une collecte relit la liste des IOC ; depuis un incident, chaque IOC mène à
+  sa fiche.
+
 ### Ajouté — vérification
 - `scripts/ci-local.sh` couvre tout le pipeline en une commande : contrôle préalable du réseau
   (DNS de github.com, pypi.org, registry.npmjs.org, avec le remède) et des outils, interface

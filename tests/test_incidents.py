@@ -163,6 +163,28 @@ async def test_liens_ioc_et_cve_idempotents(db_session: AsyncSession) -> None:
     assert kinds.count("IOC_ATTACHED") == 1 and kinds.count("CVE_ATTACHED") == 1
 
 
+async def test_liste_filtree_par_ioc_et_cve(db_session: AsyncSession) -> None:
+    """Écrans IOC et CVE : retrouver les incidents auxquels un élément est associé."""
+    linked = await service.create_incident(
+        db_session, title="Lié", description="x", severity=Severity.HIGH, author_id=None
+    )
+    await service.create_incident(
+        db_session, title="Autre", description="x", severity=Severity.CRITICAL, author_id=None
+    )
+    await ingest_indicators(db_session, [Observation("198.51.100.7")])
+    await _cve(db_session)
+    await service.attach_indicator(db_session, linked.id, author_id=None, value="198.51.100.7")
+    await service.attach_cve(db_session, linked.id, "CVE-2026-1234", author_id=None)
+    indicator_id = (await service.get_incident(db_session, linked.id)).indicators[0].indicator_id
+
+    by_ioc = await service.list_incidents(db_session, limit=10, offset=0, indicator_id=indicator_id)
+    by_cve = await service.list_incidents(db_session, limit=10, offset=0, cve_id="cve-2026-1234")
+    assert [i.id for i in by_ioc.items] == [linked.id] and by_ioc.total == 1
+    assert [i.id for i in by_cve.items] == [linked.id] and by_cve.total == 1
+    none = await service.list_incidents(db_session, limit=10, offset=0, indicator_id=uuid4())
+    assert none.total == 0
+
+
 async def test_assignation(db_session: AsyncSession) -> None:
     analyst, viewer = await _user(db_session), await _user(db_session, UserRole.VIEWER)
     incident = await service.create_incident(

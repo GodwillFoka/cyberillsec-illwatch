@@ -6,6 +6,7 @@ import {
   getRefreshToken,
   storeTokens,
 } from "../auth/tokens";
+import { filenameFrom } from "../lib/iocs";
 import type { TokenResponse } from "./types";
 
 export const API = "/api/v1";
@@ -165,4 +166,24 @@ export async function apiSend<T>(method: "POST" | "PUT" | "PATCH", path: string,
   });
   if (!response.ok) throw await errorFrom(response);
   return (await response.json()) as T;
+}
+
+/** Téléchargement authentifié (export) : le fichier est enregistré sous le nom donné par le serveur. */
+export async function apiDownload(path: string, query: Query, fallbackName: string): Promise<string> {
+  const response = await apiFetch(path, {}, query);
+  if (!response.ok) throw await errorFrom(response);
+  const name = filenameFrom(response.headers.get("Content-Disposition"), fallbackName);
+  const url = URL.createObjectURL(await response.blob());
+  try {
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = name;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+  } finally {
+    // Laisse au navigateur le temps de démarrer l'enregistrement.
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }
+  return name;
 }

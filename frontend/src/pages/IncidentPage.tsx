@@ -217,9 +217,9 @@ function IndicatorItem({ id }: { id: string }) {
   return (
     <li>
       <LevelBadge level={query.data.severity} />
-      <span className="mono ellipsis" title={query.data.value}>
+      <Link to={`/indicateurs?ioc=${id}`} className="mono ellipsis" title={query.data.value}>
         {query.data.type} {query.data.value}
-      </span>
+      </Link>
     </li>
   );
 }

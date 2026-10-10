@@ -44,7 +44,7 @@ export function Nav() {
       <Link to="/triage" label="Triage" count={summary?.alerts.unacknowledged} />
       <Link to="/incidents" label="Incidents" count={summary?.incidents.open} />
       <div className="nav-section">Renseignement</div>
-      <Link to="/indicateurs" label="Indicateurs (IOC)" soon />
+      <Link to="/indicateurs" label="Indicateurs (IOC)" />
       <Link to="/sources" label="Sources CTI" count={summary?.feeds.degraded.length} soon />
       <div className="nav-section">Vulnérabilités</div>
       <Link to="/cve" label="CVE et priorités" soon />
