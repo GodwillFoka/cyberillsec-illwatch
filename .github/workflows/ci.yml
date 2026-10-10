@@ -187,7 +187,7 @@ jobs:
           node-version: "22"
       - name: Dépendances
         working-directory: frontend
-        run: if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+        run: npm ci --no-audit --no-fund
       - name: Audit des dépendances livrées au navigateur
         working-directory: frontend
         # Les outils de développement (Vite, esbuild) ne sont pas dans l'image ; ce qui part au
@@ -241,14 +241,6 @@ jobs:
           test -f dist/index.html
           # Aucun script en ligne : la politique `script-src 'self'` de l'interface le refuserait.
           ! grep -E "<script>[^<]" dist/index.html
-      - name: Fichier de verrouillage proposé
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: interface-package-lock
-          path: frontend/package-lock.json
-          if-no-files-found: ignore
-          retention-days: 7
 
   # ---------------------------------------------------------------------------
   # Étape 3 — Build : l'image doit se construire et la CLI répondre

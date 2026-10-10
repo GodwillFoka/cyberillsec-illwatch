@@ -6,9 +6,9 @@ changé » ; l'interface relit la donnée par l'API REST.
 
 - Battement toutes les 15 s (commentaire SSE) : les proxys ne coupent pas une connexion muette,
   et le navigateur détecte une coupure.
-- Durée bornée à celle du jeton d'accès : à l'expiration, le serveur ferme le flux et le client
-  se reconnecte avec un jeton rafraîchi. Un compte désactivé ou rétrogradé perd donc le flux
-  au plus tard à l'expiration de son jeton.
+- Durée bornée à l'expiration réelle du jeton présenté : le serveur ferme alors le flux et le
+  client se reconnecte avec un jeton rafraîchi (rôle relu en base). Un compte désactivé ou
+  rétrogradé perd donc le flux au plus tard à l'expiration de son jeton (15 min).
 - La session de base de données est libérée avant l'ouverture du flux : une connexion SSE ne
   monopolise pas une connexion PostgreSQL.
 """
@@ -20,8 +20,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from illwatch.app.api.deps import CurrentUser, DbSession
-from illwatch.app.config import get_settings
+from illwatch.app.api.deps import CurrentUser, DbSession, oauth2_scheme
+from illwatch.app.security import InvalidTokenError, decode_access_token
 from illwatch.modules.events import Event, EventBus, can_see, get_event_bus
 
 router = APIRouter(tags=["temps réel"])
@@ -72,11 +72,16 @@ async def event_stream(
 async def stream(
     user: CurrentUser,
     session: DbSession,
+    token: Annotated[str, Depends(oauth2_scheme)],
     bus: Annotated[EventBus, Depends(get_event_bus)],
 ) -> StreamingResponse:
     role = str(user.role)
     await session.close()  # libère la connexion avant un flux de plusieurs minutes
-    max_seconds = get_settings().access_token_expire_minutes * 60
+    try:
+        expires_at = decode_access_token(token).expires_at  # déjà validé par CurrentUser
+    except InvalidTokenError:
+        expires_at = 0
+    max_seconds = max(1.0, expires_at - time.time())
     return StreamingResponse(
         event_stream(bus, role, max_seconds=max_seconds),
         media_type="text/event-stream",

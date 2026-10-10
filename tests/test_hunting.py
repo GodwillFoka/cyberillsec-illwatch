@@ -71,7 +71,8 @@ def test_outils() -> None:
 # --- Moteur ---------------------------------------------------------------------------------
 
 
-async def _seed_base(session: AsyncSession) -> None:
+async def _seed_base(session: AsyncSession, now: datetime = NOW) -> None:
+    """Jeu de données daté par rapport à `now` : l'API, elle, lit l'horloge réelle."""
     await ingest_indicators(
         session,
         [
@@ -81,14 +82,14 @@ async def _seed_base(session: AsyncSession) -> None:
             Observation("xjq8wz0vkp3mlq7b.com"),
             Observation("185.220.101.1", description="Scanner"),
         ],
-        now=NOW - timedelta(hours=1),
+        now=now - timedelta(hours=1),
     )
     session.add(
         CVE(
             id="CVE-2026-2001",
             description="Fortinet FortiOS SSL-VPN heap overflow allows RCE.",
-            published_date=NOW,
-            last_modified_date=NOW,
+            published_date=now,
+            last_modified_date=now,
             composite_risk_score=95,
             priority=RiskPriority.P0_CRITIQUE,
             has_public_exploit=True,
@@ -201,7 +202,8 @@ async def test_api_hunting(
     from illwatch.app.api.v1 import hunting
 
     monkeypatch.setattr(hunting, "fetch_feed_content", tor)
-    await _seed_base(db_session)
+    # Horloge réelle : la chasse lancée par l'API ignore les IOC expirés (30 j pour une IP).
+    await _seed_base(db_session, now=datetime.now(UTC))
     analyst = await _headers(db_session, UserRole.ANALYST)
     viewer = await _headers(db_session, UserRole.VIEWER)
 

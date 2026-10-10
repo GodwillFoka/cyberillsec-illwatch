@@ -8,6 +8,26 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Corrigé — audit global du 10/10 (revue indépendante)
+- Test de chasse daté (aurait cassé la CI le 02/11/2026) : données relatives à l'horloge réelle.
+- Bus temps réel : l'écoute Redis se reconnecte seule (1 → 30 s) et demande une relecture ;
+  une publication impossible est livrée aux abonnés du processus ; Redis absent au démarrage
+  n'oblige plus au bus local définitif.
+- Sessions : les onglets d'une même session se coordonnent (diffusion des jetons, verrou de
+  renouvellement) ; un onglet dupliqué ne révoque plus la session de l'autre.
+- Collecte : `feeds fetch` valide avant de rendre le verrou ; le worker relit l'échéance d'un
+  flux sous verrou (pas de double collecte avec une autre instance) ; fenêtre de retrait
+  ramenée à 2 jours ; événements des commandes CLI publiés avant la sortie.
+- Flux SSE borné à l'expiration réelle du jeton présenté.
+- Interface : infobulle des graphiques compatible avec la politique `style-src 'self'` ; détail
+  d'une CVE relu après une alerte ; sélection du triage annoncée (`aria-current`).
+- Caddy : le flux SSE n'est plus compressé ni mis en tampon.
+- CI : jobs `openapi` et `interface` sur GitLab (référence), image vérifiée servant
+  l'interface ; `npm ci` obligatoire (Dockerfile, GitHub) ; Dependabot et Renovate suivent
+  `frontend/`.
+- Documentation : README, feuille de route, état d'avancement, ONBOARDING (`illwatch db
+  upgrade`), architecture, design system, addendum à l'ADR-016.
+
 ### Ajouté — écran Incidents (10/10)
 - Liste des incidents (ouverts ou tous, filtres statut et sévérité, les plus graves d'abord) et
   ouverture manuelle d'un incident (ADMIN, ANALYST).

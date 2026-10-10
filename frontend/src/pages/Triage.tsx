@@ -77,7 +77,7 @@ function AlertTable({
               key={alert.id}
               id={`alerte-${alert.id}`}
               tabIndex={0}
-              aria-selected={alert.id === selectedId}
+              aria-current={alert.id === selectedId ? "true" : undefined}
               className={classes || undefined}
               onClick={() => onSelect(alert.id)}
               onKeyDown={(event) => onKey(event, index)}

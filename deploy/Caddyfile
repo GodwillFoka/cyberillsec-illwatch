@@ -16,8 +16,16 @@
 }
 
 {$ILLWATCH_DOMAIN:localhost} {
-	encode zstd gzip
-	reverse_proxy {$ILLWATCH_UPSTREAM:api:8000} {
+	# Le flux temps réel (Server-Sent Events) n'est ni compressé ni mis en tampon : une
+	# compression retiendrait les trames et l'interface ne verrait plus les changements.
+	@stream path /api/v1/stream
+	@compressible not path /api/v1/stream
+	encode @compressible zstd gzip
+	reverse_proxy @stream {$ILLWATCH_UPSTREAM:api:8000} {
+		flush_interval -1
+		header_down -Server
+	}
+	reverse_proxy @compressible {$ILLWATCH_UPSTREAM:api:8000} {
 		header_down -Server
 	}
 	header {

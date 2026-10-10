@@ -165,7 +165,7 @@ pytest --cov-report=html && open htmlcov/index.html
 
 # Nouvelle migration après modification d'un modèle
 alembic revision --autogenerate -m "add threat_feeds table"
-alembic upgrade head
+illwatch db upgrade      # jamais « alembic upgrade » seul : il ne pose pas les droits du rôle applicatif
 
 # CLI
 illwatch version

@@ -135,6 +135,36 @@ migrations:
 # Étape 3 — Build : l'image doit se construire et la CLI répondre
 # ---------------------------------------------------------------------------
 
+# Interface web (ADR-016), miroir du job GitHub « Interface web » : schéma OpenAPI produit
+# par l'API (Python), puis types générés, audit, compilation, tests et build (Node).
+openapi:
+  extends: .python
+  stage: tests
+  script:
+    - SECRET_KEY=ci-secret-key-not-for-production ENVIRONMENT=development illwatch openapi -o frontend/openapi.json
+  artifacts:
+    paths: [frontend/openapi.json]
+    expire_in: 1 day
+
+interface:
+  stage: tests
+  image: node:22-bookworm-slim
+  needs: [openapi]
+  cache:
+    key:
+      files: [frontend/package-lock.json]
+    paths: [frontend/.npm]
+  script:
+    - cd frontend
+    - npm ci --no-audit --no-fund --cache .npm
+    - npm audit --omit=dev --audit-level=high
+    - npm run gen:api
+    - npx tsc --noEmit --pretty false
+    - npm test
+    - npx vite build
+    - test -f dist/index.html
+    - "! grep -E '<script>[^<]' dist/index.html"
+
 image-docker:
   stage: build
   image: docker:26-cli
@@ -148,6 +178,7 @@ image-docker:
   script:
     - docker build -t illwatch:$CI_COMMIT_SHORT_SHA .
     - docker run --rm --entrypoint illwatch illwatch:$CI_COMMIT_SHORT_SHA version
+    - docker run --rm --entrypoint test illwatch:$CI_COMMIT_SHORT_SHA -f /app/web/index.html
     # M7 lot 3 : l'image est publiée sous son SHA dans le registre du projet pour que
     # container_scanning l'analyse. Registre désactivé : avertissement, pas d'échec du build.
     - |

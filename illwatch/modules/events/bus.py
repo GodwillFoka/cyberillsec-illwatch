@@ -10,8 +10,8 @@ jamais le détail d'une donnée.
   pas encore écrite, et n'annonce jamais une modification annulée.
 - `RedisEventBus` : publication sur le canal Redis `illwatch:events`, partagée entre l'API et le
   worker de collecte (processus distincts).
-- `LocalEventBus` : même contrat dans un seul processus ; utilisé si Redis est injoignable
-  (avertissement journalisé) et en test.
+- `LocalEventBus` : même contrat dans un seul processus (tests). Si Redis est injoignable, le
+  bus Redis livre localement et se reconnecte seul (avertissement journalisé).
 
 Chaque événement porte le rôle minimal requis pour le recevoir (`min_role`) : le flux SSE ne
 transmet à un utilisateur que ce que son rôle lui permet de lire.
@@ -156,16 +156,35 @@ class RedisEventBus:
     """Bus Redis pub/sub : un message par événement sur `illwatch:events`.
 
     Chaque abonné (une connexion SSE) écoute le canal via une file locale alimentée par une
-    seule souscription Redis par processus.
+    seule souscription Redis par processus. Redis peut tomber et revenir :
+
+    - l'écoute se reconnecte d'elle-même (1, 2, 4… 30 s) et envoie `resync` aux abonnés, qui
+      relisent tout (des événements ont pu manquer) ;
+    - une publication impossible est remise aux abonnés du processus courant : l'API voit au
+      moins ses propres changements pendant la panne.
     """
+
+    RETRY_FIRST_SECONDS = 1.0
+    RETRY_MAX_SECONDS = 30.0
 
     def __init__(self, client: Any) -> None:
         self._client = client
         self._local = LocalEventBus()
         self._listener: asyncio.Task[None] | None = None
+        self._publish_failing = False
 
     async def publish(self, event: Event) -> None:
-        await self._client.publish(CHANNEL, event.to_json())
+        try:
+            await self._client.publish(CHANNEL, event.to_json())
+            self._publish_failing = False
+        except (RedisError, OSError) as exc:
+            if not self._publish_failing:  # une ligne par panne, pas une par événement
+                log.warning(
+                    "events.publish_local_only",
+                    extra={"fields": {"error": type(exc).__name__}},
+                )
+            self._publish_failing = True
+            await self._local.publish(event)
 
     @asynccontextmanager
     async def subscribe(self) -> AsyncIterator[Subscription]:
@@ -178,26 +197,40 @@ class RedisEventBus:
             self._listener = asyncio.create_task(self._listen(), name="illwatch-events")
 
     async def _listen(self) -> None:
-        pubsub = self._client.pubsub()
-        try:
-            await pubsub.subscribe(CHANNEL)
-            while True:
-                message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=5.0)
-                if message is None or message.get("type") != "message":
-                    continue
-                try:
-                    event = Event.from_json(message["data"])
-                except (ValueError, KeyError, TypeError):
-                    log.warning("events.invalid_message")
-                    continue
-                await self._local.publish(event)
-        except (RedisError, OSError) as exc:
-            log.warning("events.redis_lost", extra={"fields": {"error": f"{type(exc).__name__}"}})
-            # Les abonnés relisent tout : des événements ont pu être perdus.
-            await self._local.publish(Event(kind=RESYNC))
-        finally:
-            with contextlib.suppress(RedisError, OSError, AttributeError):
-                await pubsub.aclose()
+        delay = self.RETRY_FIRST_SECONDS
+        lost = False
+        while True:
+            pubsub = self._client.pubsub()
+            try:
+                await pubsub.subscribe(CHANNEL)
+                if lost:
+                    log.info("events.redis_restored")
+                    # Des événements ont pu être publiés pendant la coupure : tout relire.
+                    await self._local.publish(Event(kind=RESYNC))
+                    lost = False
+                delay = self.RETRY_FIRST_SECONDS
+                while True:
+                    message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=5.0)
+                    if message is None or message.get("type") != "message":
+                        continue
+                    try:
+                        event = Event.from_json(message["data"])
+                    except (ValueError, KeyError, TypeError):
+                        log.warning("events.invalid_message")
+                        continue
+                    await self._local.publish(event)
+            except (RedisError, OSError) as exc:
+                if not lost:
+                    log.warning(
+                        "events.redis_lost", extra={"fields": {"error": type(exc).__name__}}
+                    )
+                    await self._local.publish(Event(kind=RESYNC))
+                lost = True
+            finally:
+                with contextlib.suppress(RedisError, OSError, AttributeError):
+                    await pubsub.aclose()
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, self.RETRY_MAX_SECONDS)
 
     async def close(self) -> None:
         if self._listener is not None:
@@ -213,22 +246,21 @@ _bus_lock = asyncio.Lock()
 
 
 async def open_event_bus(redis_url: str) -> EventBus:
-    """Bus Redis si le serveur répond, sinon bus local (avec avertissement)."""
+    """Bus Redis. Si Redis ne répond pas au démarrage, le bus est créé quand même : il se
+    reconnecte seul, et publie localement en attendant (avertissement journalisé)."""
     client: Any = Redis.from_url(redis_url, socket_connect_timeout=2, socket_timeout=None)
     try:
         await client.ping()
     except (RedisError, OSError) as exc:
-        await client.aclose()
         log.warning(
             "events.redis_unavailable",
             extra={
                 "fields": {
                     "error": f"{type(exc).__name__}: {exc}",
-                    "fallback": "bus local : pas d'événements entre processus",
+                    "fallback": "événements locaux au processus jusqu'au retour de Redis",
                 }
             },
         )
-        return LocalEventBus()
     return RedisEventBus(client)
 
 
@@ -278,6 +310,15 @@ async def _publish_all(events: list[Event]) -> None:
             await bus.publish(item)
     except Exception as exc:  # noqa: BLE001 - un événement perdu ne doit jamais casser l'appelant
         log.warning("events.publish_failed", extra={"fields": {"error": type(exc).__name__}})
+
+
+async def flush_events(wait_seconds: float = 3.0) -> None:
+    """Attend les publications en cours puis ferme le bus (commandes CLI ponctuelles) : sans
+    cela, `asyncio.run` annulerait les tâches de publication en sortant."""
+    pending = [task for task in _tasks if not task.done()]
+    if pending:
+        await asyncio.wait(pending, timeout=wait_seconds)
+    await close_event_bus()
 
 
 def _schedule(coro_factory: Callable[[], Any]) -> None:

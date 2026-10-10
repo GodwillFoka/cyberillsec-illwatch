@@ -52,18 +52,18 @@ que les décisions :
   depuis une alerte ;
 - **chasse** les menaces dans les journaux d'une organisation (Tor, DNS dynamique, DGA,
   infrastructures ransomware, CVE exploitables sur l'inventaire) ;
-- **expose** tout cela par une API REST (35 opérations), une CLI riche (40 commandes) et un tableau
-  de bord SOC, dans **moins de 256 Mo de mémoire**.
+- **expose** tout cela par une API REST, une CLI riche, une **interface web temps réel** (React,
+  ADR-016) et un tableau de bord SOC, dans **moins de 256 Mo de mémoire**.
 
 ## État du projet
 
 | | |
 |---|---|
 | **Version** | `0.2.0.dev0` sur `main` · dernière release : [`v0.1.1`](https://github.com/GodwillFoka/cyberillsec-illwatch/releases) (baseline M1–M6) |
-| **Intégré dans `main`** | M1 → M6 (six modules) **et** M7 « Production Hardening » (lots 1 à 3) |
-| **Vérifié en continu** | CI à chaque push (qualité, 438 tests sur PostgreSQL réel, migrations, image, sécurité) ; **validation sur données réelles** chaque lundi (flux IOC, KEV, NVD, EPSS, scénario SOC complet) |
+| **Intégré dans `main`** | M1 → M6 (six modules), M7 « Production Hardening » (lots 1 à 3) et l'interface web en cours (vue d'ensemble, triage, incidents) |
+| **Vérifié en continu** | CI à chaque push (qualité, plus de 510 tests sur PostgreSQL réel, interface web, migrations, image, sécurité) ; **validation sur données réelles** chaque lundi (flux IOC, KEV, NVD, EPSS, scénario SOC complet) |
 | **Jalons constatés** (`illwatch status`, 06/10) | M1 ✅ · M2 ◐ (volume et sources ✅, OTX et STIX attendent leurs clés) · **M3 ✅** · M4 ✅ · M5 ✅ (scénario SOC) · M6 ✅ |
-| **Prochaine étape** | Préproduction sur un VPS européen (clôture de M7), puis M8 « Detection & Correlation » |
+| **Prochaine étape** | Fin du lot 1 de l'interface (IOC, CVE, chasse), puis préproduction sur un VPS européen (clôture de M7), puis M8 |
 | **Dernier rapport** | [`Rapport/03_06-10-2026.md`](Rapport/03_06-10-2026.md) |
 
 ## Le problème
@@ -184,7 +184,7 @@ protéger.
 
 | Indicateur | Valeur |
 |---|---|
-| Tests automatisés | **438** (+ 4 tests réseau hebdomadaires), sur PostgreSQL 16 réel, Python 3.12 **et** 3.14 |
+| Tests automatisés | **plus de 510** (+ 4 tests réseau hebdomadaires) et tests de l'interface, sur PostgreSQL 16 réel, Python 3.12 **et** 3.14 |
 | Couverture | **≈ 94 %** (seuil bloquant : 80 %) |
 | Typage | `mypy --strict`, 0 erreur sur 78 modules |
 | Lint / format | `ruff`, 0 erreur |
@@ -318,7 +318,7 @@ rassemble toute la documentation, régénérée à chaque fusion sur `main` :
 | [Prise en main](docs/ONBOARDING.md) | Nouveaux contributeurs | Installation pas à pas, standards, première tâche |
 | [Exploitation](docs/OPERATIONS.md) | Opérateurs | Sondes, journaux, audit, sauvegarde, TLS, mise à jour |
 | [Feuille de route](docs/ROADMAP.md) | Tous | M7 → M11, critères de sortie |
-| [Décisions (ADR)](docs/adr/README.md) | Développeurs | 15 décisions tracées avec leurs coûts |
+| [Décisions (ADR)](docs/adr/README.md) | Développeurs | 16 décisions tracées avec leurs coûts |
 | [Rapports](Rapport/) | Pilotage | Bilans d'étape, audits, rapports d'avancement |
 | [Changelog](CHANGELOG.md) | Tous | Évolutions par version |
 
@@ -328,20 +328,21 @@ rassemble toute la documentation, régénérée à chaque fusion sur `main` :
 cyberillsec-illwatch/
 ├── .gitlab-ci.yml          # Pipeline GitLab : qualité, tests 3.12/3.14, migrations, image, sécurité
 ├── .github/workflows/      # CI miroir, validation réelle, documentation (Pages), publication (GHCR)
-├── alembic/versions/       # 8 migrations, historique immuable
+├── alembic/versions/       # 10 migrations, historique immuable
 ├── deploy/Caddyfile        # Reverse proxy TLS de production
 ├── docker-compose.yml      # Développement : PostgreSQL 16, Redis 7, API, worker
 ├── docker-compose.prod.yml # Production : Caddy, migrations isolées, secrets obligatoires
-├── docs/                   # Cahier des charges, vision, architecture, exploitation, 15 ADR
+├── frontend/               # Interface web React + TypeScript (Vite), servie par l'API (ADR-016)
+├── docs/                   # Cahier des charges, vision, architecture, exploitation, 16 ADR, design system
 ├── mkdocs.yml              # Site de documentation
 ├── Rapport/                # Rapports d'avancement, bilans d'étape, audits
 ├── scripts/                # ci-local, scénario SOC, sauvegarde/restauration
 ├── illwatch/
 │   ├── app/                # API FastAPI, modèles, configuration, sécurité, middleware
 │   ├── cli/                # Commandes Click
-│   ├── modules/            # foundation, threat_feeds, cve_tracker, incidents, dashboard, threat_hunting
+│   ├── modules/            # foundation, threat_feeds, cve_tracker, incidents, dashboard, threat_hunting, events
 │   └── shared/             # Énumérations, journal JSON
-└── tests/                  # 438 tests, fixtures tirées de sources réelles
+└── tests/                  # plus de 510 tests, fixtures tirées de sources réelles
 ```
 
 ## Feuille de route
@@ -354,7 +355,7 @@ plateforme **déployable et démontrable** :
 | Étape | Objectif | État |
 |---|---|---|
 | M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés, release `v0.1.1` |
-| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, TLS (Caddy), migrations isolées, analyse d'image, sauvegardes | ✅ lots 1–3 fusionnés dans `main` ; préproduction VPS UE à constater |
+| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, TLS (Caddy), migrations isolées, analyse d'image, sauvegardes | ✅ lots 1–3 fusionnés ; 🟡 interface web lot 1 (ADR-016) en cours ; préproduction VPS UE à constater |
 | M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif, plancher KEV (ADR-014 à trancher) | ⏳ |
 | M9 | SOC Operations : triage L1/L2/L3, faux positifs, séries temporelles | ⏳ |
 | M10 | CTI Intelligence : acteurs, campagnes, MITRE ATT&CK, export STIX | ⏳ |

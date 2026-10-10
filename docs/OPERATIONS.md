@@ -195,7 +195,7 @@ ne peut atteindre P0.
 
 L'image Docker contient l'interface compilée (`/app/web`) : elle est servie à la racine du site
 (`https://hote/`), l'API restant sous `/api/v1`. Hors Docker, `frontend/dist/` est servi s'il
-existe (`cd frontend && npm install && npm run gen:api && npm run build`, après
+existe (`cd frontend && npm ci && npm run gen:api && npm run build`, après
 `illwatch openapi -o frontend/openapi.json`) ; `WEB_DIR` désigne un autre dossier. Sans
 interface compilée, seule l'API répond. Développement : voir `frontend/README.md`.
 

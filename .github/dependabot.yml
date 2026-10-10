@@ -1,4 +1,4 @@
-# Mises à jour des actions GitHub et des images de base (les dépendances Python sont figées par
+# Mises à jour des actions GitHub, des images de base et de l'interface web (npm) (les dépendances Python sont figées par
 # constraints.txt et suivies par Renovate côté GitLab).
 version: 2
 updates:
@@ -16,3 +16,10 @@ updates:
     labels: [dependencies]
     commit-message:
       prefix: "chore(docker)"
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    labels: [dependencies]
+    commit-message:
+      prefix: "chore(web)"

@@ -98,7 +98,8 @@ export function queriesFor(kind: string): string[][] {
   switch (kind) {
     case "alert.created":
     case "alert.acknowledged":
-      return [["dashboard"], ["alerts"]];
+      // Une alerte suit un recalcul de score : le détail de la CVE a changé lui aussi.
+      return [["dashboard"], ["alerts"], ["cves"]];
     case "incident.created":
     case "incident.updated":
       return [["dashboard"], ["incidents"]];

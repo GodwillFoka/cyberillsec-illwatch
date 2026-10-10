@@ -1,5 +1,6 @@
 // Client HTTP de l'API : jeton Bearer, renouvellement transparent sur 401, erreurs lisibles.
 import {
+  accessExpiresInMs,
   clearTokens,
   getAccessToken,
   getRefreshToken,
@@ -42,30 +43,45 @@ async function errorFrom(response: Response): Promise<ApiError> {
 
 let refreshing: Promise<boolean> | null = null;
 
-/** Renouvelle le jeton d'accès. Une seule tentative à la fois, partagée par les appelants. */
+async function renew(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+  try {
+    const response = await fetch(`${API}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!response.ok) {
+      clearTokens();
+      return false;
+    }
+    storeTokens((await response.json()) as TokenResponse);
+    return true;
+  } catch {
+    return false; // réseau coupé : on garde le jeton de rafraîchissement
+  }
+}
+
+/**
+ * Renouvelle le jeton d'accès. Une seule tentative à la fois dans l'onglet, et un seul onglet
+ * à la fois (verrou partagé) : si un autre onglet vient de renouveler, ses jetons, reçus par
+ * diffusion, sont repris tels quels au lieu de rejouer l'ancien jeton (ce qui révoquerait la
+ * session).
+ */
 export function refreshSession(): Promise<boolean> {
   if (refreshing) return refreshing;
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return Promise.resolve(false);
-  refreshing = (async () => {
-    try {
-      const response = await fetch(`${API}/auth/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      });
-      if (!response.ok) {
-        clearTokens();
-        return false;
-      }
-      storeTokens((await response.json()) as TokenResponse);
-      return true;
-    } catch {
-      return false; // réseau coupé : on garde le jeton de rafraîchissement
-    } finally {
-      refreshing = null;
-    }
-  })();
+  const before = getRefreshToken();
+  if (!before) return Promise.resolve(false);
+  const attempt = async () => {
+    const current = getRefreshToken();
+    if (current !== before && getAccessToken() && accessExpiresInMs() > 60_000) return true;
+    return renew();
+  };
+  const locks = typeof navigator !== "undefined" ? navigator.locks : undefined;
+  refreshing = (locks ? locks.request("illwatch-refresh", attempt) : attempt()).finally(() => {
+    refreshing = null;
+  });
   return refreshing;
 }
 

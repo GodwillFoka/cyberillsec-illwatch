@@ -26,6 +26,12 @@
       "commitMessagePrefix": "chore(docker):"
     },
     {
+      "matchManagers": [
+        "npm"
+      ],
+      "commitMessagePrefix": "chore(web):"
+    },
+    {
       "matchUpdateTypes": [
         "minor",
         "patch"
