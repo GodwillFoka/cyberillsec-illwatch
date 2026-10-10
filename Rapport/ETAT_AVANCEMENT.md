@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 11 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 12 h 00**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -45,7 +45,8 @@ données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
-| 10/10 | `26d9bdb` | Sécurité interface (PR #5) : React Router retiré (XSS, redirections ouvertes), ECharts 6.1.0, Vite 5.4.20, Vitest 2.1.9 ; `npm audit` bloquant en CI |
+| 10/10 | `26d9bdb` | Sécurité interface (PR #5) : React Router retiré (XSS, redirections ouvertes), ECharts 6.1.0 ; `npm audit` bloquant en CI |
+| 10/10 | PR #6 | Vitest remplacé par `node --test`, Vite 5.4.21 ; test du tableau de bord rendu indépendant de la date |
 | 10/10 | PR #4 | Interface web : socle React/TypeScript, temps réel SSE, vue d'ensemble v6 ; servie par FastAPI, image multi-étapes, job CI « Interface web » |
 | 10/10 | `84c0511` | Retrait progressif des sources en panne (PR #3) : 1, 2, 4… min entre deux essais, plafonné à l'intervalle de la source |
 | 08/10 | `1e1fff2` | Correctif (PR #2) : journal de collecte en point de sauvegarde, verrou toujours rendu ; avertissement si `alembic upgrade` est lancé sans `illwatch db upgrade` |
