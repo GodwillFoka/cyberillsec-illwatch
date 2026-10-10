@@ -12,6 +12,29 @@ import { PRIORITY_ORDER, SEVERITY_ORDER, TONE_COLORS, levelLabel, toneOf } from 
 
 echarts.use([BarChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer]);
 
+const escapeHtml = (text: string) =>
+  text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] ?? c);
+
+interface TooltipItem {
+  axisValueLabel?: string;
+  seriesName?: string;
+  seriesIndex?: number;
+  value?: unknown;
+}
+
+function tooltipHtml(raw: unknown, tones: string[]): string {
+  const items = (Array.isArray(raw) ? raw : [raw]) as TooltipItem[];
+  const title = escapeHtml(String(items[0]?.axisValueLabel ?? ""));
+  const rows = items
+    .filter((item) => Number(item.value) > 0)
+    .map(
+      (item) =>
+        `<div class="tt-row"><span class="tt-dot ${tones[item.seriesIndex ?? 0] ?? "p3"}"></span>` +
+        `<span>${escapeHtml(String(item.seriesName ?? ""))}</span><b>${Number(item.value)}</b></div>`,
+    );
+  return `<div class="tt-title">${title}</div>${rows.join("") || '<div class="tt-row">Aucun</div>'}`;
+}
+
 export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const chart = useRef<ReturnType<typeof echarts.init> | null>(null);
@@ -33,6 +56,7 @@ export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
     const instance = chart.current;
     if (!instance) return;
     const order = series.metric === "alerts" ? PRIORITY_ORDER : SEVERITY_ORDER;
+    const tones = order.map((level) => toneOf(level));
     const labels = series.points.map((point) => {
       const date = parseDate(point.at) ?? new Date(0);
       return series.bucket === "hour" ? formatTime(date, utc) : formatDay(date, utc);
@@ -55,6 +79,9 @@ export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
           backgroundColor: "#0F1626",
           borderColor: "#222C42",
           textStyle: { color: "#ECEFF5" },
+          // Contenu en classes CSS uniquement : la politique `style-src 'self'` de l'interface
+          // refuse les attributs style que l'infobulle par défaut d'ECharts insère.
+          formatter: (raw: unknown) => tooltipHtml(raw, tones),
         },
         xAxis: {
           type: "category",
@@ -66,7 +93,7 @@ export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
         yAxis: {
           type: "value",
           minInterval: 1,
-          splitLine: { lineStyle: { color: "#1A2236" } },
+          splitLine: { lineStyle: { color: "#1A2236" } }, // grille : plus discrète que --line
           axisLabel: { color: "#A3ACBF" },
         },
         series: order.map((level) => ({

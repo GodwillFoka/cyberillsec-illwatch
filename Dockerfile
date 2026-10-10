@@ -52,9 +52,8 @@ RUN ILLWATCH_ENV_FILE= illwatch openapi -o /tmp/openapi.json
 
 FROM node:22-alpine AS web
 WORKDIR /web
-COPY frontend/package.json frontend/package-lock.json* ./
-RUN if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; \
-    else npm install --no-audit --no-fund; fi
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
 COPY --from=openapi /tmp/openapi.json ./openapi.json
 RUN npm run gen:api && npm run build

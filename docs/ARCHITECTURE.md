@@ -178,8 +178,8 @@ Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_la
   avant d'en avoir besoin coûterait la simplicité de déploiement, qui est un argument produit.
 - **Pas d'Elasticsearch.** PostgreSQL avec des index adaptés couvre les besoins de recherche de la
   v1.0 (P95 de 8 ms sur 30 000 CVE). C'est la lourdeur des alternatives qu'ILLWATCH évite.
-- **Pas d'IHM web** *(levé le 08/10/2026 par l'ADR-016 : interface React + TypeScript, temps réel par SSE)*. API et CLI d'abord ; le tableau de bord SOC est une vue console `rich` plus des
-  endpoints d'agrégation et d'export. Une interface web est la première évolution après la v1.0.
+- ~~Pas d'IHM web~~ *(levé le 08/10/2026 par l'ADR-016)* : la v1.0 n'avait qu'une API et une CLI ;
+  l'interface web React + TypeScript (temps réel par SSE) est en cours dans `frontend/`.
 - **Pas de moteur Sigma complet.** Les règles de chasse portent sur des observables, pas sur des
   journaux structurés : six règles déterministes suffisent (ADR-009).
 - **Pas de facteur CWE dans le scoring.** Voir [ADR-001](adr/ADR-001-scoring-composite.md).

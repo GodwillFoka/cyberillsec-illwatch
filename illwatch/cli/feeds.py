@@ -29,6 +29,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.config import get_settings
 from illwatch.app.models import ThreatFeed
+from illwatch.modules.events import flush_events
 from illwatch.modules.threat_feeds import collector, service
 from illwatch.modules.threat_feeds.collector import CollectionReport
 from illwatch.modules.threat_feeds.fetcher import fetch_feed_content
@@ -56,6 +57,7 @@ def _run[T](work: Callable[[AsyncSession], Awaitable[T]]) -> T:
                 await session.commit()
                 return result
         finally:
+            await flush_events()
             await dispose_engine()
 
     return asyncio.run(_main())
@@ -278,7 +280,11 @@ def feeds_fetch(reference: str) -> None:
             if token is None:
                 return _Busy()
             try:
-                return await collector.collect_feed(session, feed, fetch=fetch_feed_content)
+                report = await collector.collect_feed(session, feed, fetch=fetch_feed_content)
+                # Validé avant de rendre le verrou : une autre instance qui le prendrait
+                # aussitôt doit voir cette collecte (dernier succès, avancement OTX).
+                await session.commit()
+                return report
             finally:
                 await lock.release(str(feed.id), token)
         finally:
@@ -496,6 +502,7 @@ async def run_worker(
     finally:
         if own_lock:
             await active_lock.close()
+        await flush_events()
         await dispose_engine()
     return cycles
 

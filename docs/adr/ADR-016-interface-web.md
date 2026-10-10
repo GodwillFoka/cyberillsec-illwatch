@@ -40,7 +40,9 @@ détail uniformes, mouvement discret.
   génération des types depuis OpenAPI fait échouer la compilation quand l'API change, au lieu de
   casser l'écran en silence. Coût : une chaîne Node en CI et dans l'image.
 - **SSE** plutôt que WebSocket : le flux est descendant (serveur → navigateur) ; SSE passe par HTTP
-  standard, derrière Caddy, avec reconnexion native. Les actions restent des requêtes REST.
+  standard, derrière Caddy. Les actions restent des requêtes REST. (`EventSource` ne permet pas
+  d'envoyer l'en-tête Authorization : le flux est lu avec `fetch`, reconnexion progressive
+  maison ; voir l'addendum.)
 - **Même origine** : pas de CORS en production, jetons sur le même domaine, un seul conteneur.
 - **Design v6** plutôt que v4/v5 (plus « spectaculaires ») : un analyste lit l'écran des heures ;
   pulsations, halos et cartes d'attaques sans données réelles nuisent à la lecture et à la confiance.
@@ -62,3 +64,21 @@ détail uniformes, mouvement discret.
 | 3 | Alertes de chasse dans le triage, score de confiance des IOC, géolocalisation, graphe de relations | M8 |
 | 4 | Faux positifs, niveaux L1/L2/L3, tâches d'incident, délais mesurés | M9 |
 | 5 | ATT&CK, inventaire d'actifs et exposition | M10 |
+
+## Addendum (10/10/2026) — choix d'outillage revus après le premier `npm audit`
+
+- **Routage** : React Router est retiré (toute la branche 6 présentait des failles de
+  redirection ouverte et de XSS ; correctif seulement en version 7). Un routeur interne de
+  quelques dizaines de lignes (`frontend/src/lib/router.tsx`, règles testées dans `paths.ts`)
+  n'accepte que des adresses internes.
+- **Tests de l'interface** : Vitest est retiré (failles critiques corrigées seulement en version
+  5). Les tests sont compilés par `tsc` puis exécutés par le lanceur intégré de Node
+  (`node --test`), sur toute version de Node ≥ 20, y compris celle de Debian/Kali.
+- **Graphiques** : ECharts 6.1 ; l'infobulle est produite en classes CSS pour respecter la
+  politique `style-src 'self'`.
+- **CI** : `npm audit --omit=dev --audit-level=high` bloque toute faille élevée ou critique du
+  code livré au navigateur ; job « Interface web » sur GitHub, jobs `openapi` et `interface`
+  sur GitLab ; Dependabot et Renovate suivent `frontend/`.
+- **Sessions** : jeton de rafraîchissement par onglet (`sessionStorage`) ; les onglets d'une
+  même session se coordonnent (diffusion des nouveaux jetons, verrou de renouvellement) pour ne
+  jamais présenter deux fois le même jeton.

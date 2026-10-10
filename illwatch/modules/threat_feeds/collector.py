@@ -101,7 +101,7 @@ def is_due(feed: ThreatFeed, now: datetime) -> bool:
 
 
 RETRY_BASE = timedelta(minutes=1)
-_FAILURE_LOOKBACK = timedelta(days=7)
+_FAILURE_LOOKBACK = timedelta(days=2)  # suffit : le délai plafonne vite à l'intervalle
 _MAX_COUNTED_FAILURES = 16
 
 
@@ -386,6 +386,12 @@ async def collect_due_feeds(
             )
             continue
         try:
+            if lock is not None and not force:
+                # Liste établie en début de cycle : une autre instance a pu collecter ce flux
+                # entre-temps. On relit son état sous verrou avant de le collecter à nouveau.
+                await session.refresh(feed)
+                if not is_due(feed, clock()):
+                    continue
             reports.append(await collect_feed(session, feed, fetch=fetch, clock=clock))
             # Validation après chaque flux : un arrêt en cours de cycle ne perd que le flux
             # en cours, et aucune transaction ne reste ouverte pendant tout le cycle.

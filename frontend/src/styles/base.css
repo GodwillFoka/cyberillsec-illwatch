@@ -591,11 +591,11 @@ button {
   background: #151e31;
 }
 
-.table tbody tr[aria-selected="true"] td {
+.table tbody tr[aria-current="true"] td {
   background: var(--indigo);
 }
 
-.table tbody tr[aria-selected="true"] td:first-child {
+.table tbody tr[aria-current="true"] td:first-child {
   box-shadow: inset 3px 0 0 var(--orange);
 }
 
@@ -785,4 +785,45 @@ select.compact {
   .page-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* --- Infobulle des graphiques (classes seulement : CSP style-src 'self') ------------------ */
+
+.tt-title {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.tt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.tt-row b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.tt-dot.p0 {
+  background: var(--p0-fg);
+}
+
+.tt-dot.p1 {
+  background: var(--p1-fg);
+}
+
+.tt-dot.p2 {
+  background: var(--p2-fg);
+}
+
+.tt-dot.p3 {
+  background: var(--p3-fg);
 }

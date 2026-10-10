@@ -20,6 +20,8 @@ mouvement transmettent une information ; ils ne décorent jamais.
 | `orange` | `#E6681B` | action principale (une par vue), repère de sélection ; texte `#1B0D04` dessus |
 | `critical` | `#E5484D` | P0 / critique uniquement |
 | `success` | `#3FB27F` | état sain uniquement |
+| `warning` | `#F2B33D` | direct en pause ou en reconnexion (pastille de la barre supérieure) |
+| `grid` | `#1A2236` | lignes de grille des graphiques (plus discrètes que `line`) |
 
 ## Échelle de priorité (identique dans tous les modules)
 

@@ -203,3 +203,81 @@ def test_pas_de_boucle_pas_d_erreur() -> None:
     from illwatch.modules.events.bus import _schedule
 
     _schedule(lambda: asyncio.sleep(0))
+
+
+# --- Bus Redis : panne et retour ---------------------------------------------------------------
+
+
+class _FakeRedis:
+    """Redis simulé : `down` coupe publish et subscribe ; les messages publiés sont relayés."""
+
+    def __init__(self) -> None:
+        self.down = False
+        self.queue: list[str] = []
+
+    async def publish(self, channel: str, data: str) -> None:
+        from redis.exceptions import ConnectionError as RedisConnectionError
+
+        if self.down:
+            raise RedisConnectionError("panne simulée")
+        self.queue.append(data)
+
+    def pubsub(self) -> "_FakePubSub":
+        return _FakePubSub(self)
+
+    async def aclose(self) -> None:
+        return None
+
+
+class _FakePubSub:
+    def __init__(self, redis: _FakeRedis) -> None:
+        self.redis = redis
+
+    async def subscribe(self, channel: str) -> None:
+        from redis.exceptions import ConnectionError as RedisConnectionError
+
+        if self.redis.down:
+            raise RedisConnectionError("panne simulée")
+
+    async def get_message(self, **_: object) -> dict[str, object] | None:
+        from redis.exceptions import ConnectionError as RedisConnectionError
+
+        if self.redis.down:
+            raise RedisConnectionError("panne simulée")
+        if self.redis.queue:
+            return {"type": "message", "data": self.redis.queue.pop(0)}
+        await asyncio.sleep(0.01)
+        return None
+
+    async def aclose(self) -> None:
+        return None
+
+
+async def test_bus_redis_publie_localement_pendant_une_panne() -> None:
+    from illwatch.modules.events.bus import RedisEventBus
+
+    redis = _FakeRedis()
+    bus = RedisEventBus(redis)
+    bus.RETRY_FIRST_SECONDS = 0.01
+    async with bus.subscribe() as sub:
+        redis.down = True
+        await bus.publish(Event("incident.updated"))
+        kinds = [e.kind for e in await _received(sub, 0.5)]
+    await bus.close()
+    assert "incident.updated" in kinds  # livré aux abonnés du processus malgré la panne
+
+
+async def test_bus_redis_se_reconnecte_et_demande_une_relecture() -> None:
+    from illwatch.modules.events.bus import RedisEventBus
+
+    redis = _FakeRedis()
+    bus = RedisEventBus(redis)
+    bus.RETRY_FIRST_SECONDS = 0.01
+    redis.down = True
+    async with bus.subscribe() as sub:
+        assert (await sub.next(1.0)).kind == RESYNC  # écoute perdue : tout relire
+        redis.down = False
+        assert (await sub.next(1.0)).kind == RESYNC  # écoute rétablie : tout relire
+        await bus.publish(Event("alert.created"))
+        assert (await sub.next(1.0)).kind == "alert.created"
+    await bus.close()

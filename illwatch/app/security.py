@@ -46,6 +46,7 @@ class TokenPayload:
 
     user_id: UUID
     role: str
+    expires_at: int = 0  # horodatage Unix de l'expiration (`exp`)
 
 
 def validate_password_policy(password: str) -> None:
@@ -135,4 +136,6 @@ def decode_access_token(token: str, *, settings: Settings | None = None) -> Toke
     except ValueError as exc:
         raise InvalidTokenError("Sujet de jeton invalide.") from exc
 
-    return TokenPayload(user_id=user_id, role=str(claims.get("role", "")))
+    return TokenPayload(
+        user_id=user_id, role=str(claims.get("role", "")), expires_at=int(claims["exp"])
+    )

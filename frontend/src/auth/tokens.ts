@@ -6,6 +6,14 @@ import type { TokenResponse } from "../api/types";
 
 const REFRESH_KEY = "illwatch.refresh";
 
+// Onglets d'une même session (onglet dupliqué : même jeton de rafraîchissement copié).
+// Le serveur révoque toute la session si un jeton déjà renouvelé est présenté de nouveau :
+// chaque renouvellement est donc diffusé aux autres onglets, qui adoptent les nouveaux jetons.
+const channel: BroadcastChannel | null =
+  typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("illwatch-session") : null;
+
+type SessionMessage = { type: "tokens"; tokens: TokenResponse } | { type: "logout" };
+
 let accessToken: string | null = null;
 let accessExpiresAt = 0;
 const listeners = new Set<() => void>();
@@ -26,7 +34,8 @@ export function getRefreshToken(): string | null {
   }
 }
 
-export function storeTokens(tokens: TokenResponse): void {
+export function storeTokens(tokens: TokenResponse, broadcast = true): void {
+  if (broadcast) channel?.postMessage({ type: "tokens", tokens } satisfies SessionMessage);
   accessToken = tokens.access_token;
   accessExpiresAt = Date.now() + tokens.expires_in * 1000;
   try {
@@ -37,7 +46,8 @@ export function storeTokens(tokens: TokenResponse): void {
   listeners.forEach((notify) => notify());
 }
 
-export function clearTokens(): void {
+export function clearTokens(broadcast = true): void {
+  if (broadcast) channel?.postMessage({ type: "logout" } satisfies SessionMessage);
   accessToken = null;
   accessExpiresAt = 0;
   try {
@@ -51,4 +61,11 @@ export function clearTokens(): void {
 export function onTokensChange(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
+}
+
+if (channel) {
+  channel.onmessage = (event: MessageEvent<SessionMessage>) => {
+    if (event.data.type === "tokens") storeTokens(event.data.tokens, false);
+    else if (event.data.type === "logout") clearTokens(false);
+  };
 }

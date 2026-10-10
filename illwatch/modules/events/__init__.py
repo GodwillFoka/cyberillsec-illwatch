@@ -12,6 +12,7 @@ from illwatch.modules.events.bus import (
     can_see,
     close_event_bus,
     emit,
+    flush_events,
     get_event_bus,
     set_event_bus,
 )
@@ -27,6 +28,7 @@ __all__ = [
     "can_see",
     "close_event_bus",
     "emit",
+    "flush_events",
     "get_event_bus",
     "set_event_bus",
 ]

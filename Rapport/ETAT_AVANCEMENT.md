@@ -10,9 +10,10 @@ Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci
 > identiques) dans le dossier `cyberillsec-illwatch` ; scénario SOC **48/48** sous ILLWATCH.
 
 ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
-v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés ; **reste le
-déploiement de préproduction sur un VPS européen** pour clore M7. M1 à M6 sont constatés sur
-données réelles, en local et en CI.
+v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés. Décision du
+08/10 (ADR-016) : l'interface web passe avant l'hébergement. **Reste pour clore M7** : le lot 1
+de l'interface (vue d'ensemble, triage et incidents faits ; IOC, CVE et chasse à faire), puis la
+préproduction sur un VPS européen. M1 à M6 sont constatés sur données réelles, en local et en CI.
 
 ## 2. Jalons
 
@@ -24,7 +25,7 @@ données réelles, en local et en CI.
 | M4 Incidents | ✅ | incident mené jusqu'à la clôture |
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
-| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; **reste uniquement le VPS UE** |
+| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface web lot 1 en cours ; **puis VPS UE** |
 | M8 Detection & Correlation | ⏳ | — |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
@@ -32,7 +33,7 @@ données réelles, en local et en CI.
 
 | Chantier | Branche | État |
 |---|---|---|
-| **Interface web** | `bb102d3` | ✅ maquette v6 adoptée, ADR-016 accepté ; ✅ lot 1 côté serveur ; ✅ socle `frontend/`, vue d'ensemble (PR #4), triage (PR #8) ; ⏳ IOC, CVE, incidents, investigation, chasse |
+| **Interface web** | `main` | ✅ maquette v6 adoptée, ADR-016 accepté ; ✅ lot 1 côté serveur ; ✅ socle `frontend/`, vue d'ensemble (PR #4), triage (PR #8), incidents et investigation (PR #9) ; ⏳ IOC, CVE, chasse |
 | **Renommage SENTRY → ILLWATCH** | `d92b8c9` | ✅ code (162 fichiers, CI 463/463, validation réelle verte) ; dépôt GitHub renommé ; Kali migré : 528 453 IOC et 26 416 CVE retrouvés, volumes à nom fixe, dossier renommé, scénario 48/48 |
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ constaté sur `56ab581` : 0 Critical ; High 52 → 44, total 240 → 165 (−31 %) ; 44 High Debian sans correctif acceptées |
@@ -112,8 +113,8 @@ l'interface en place.
 
 1. **Interface web v1, lot 1** — maquette v6 **adoptée**, ADR-016 accepté, système de design
    documenté (`docs/DESIGN_SYSTEM.md`). **Faits** : côté serveur (journal de collecte, séries
-   temporelles, flux SSE), socle `frontend/`, Vue d'ensemble, Triage. À développer : Incidents
-   (et Investigation), IOC, CVE, Chasse. Sur Kali : `npm install` une fois (fichier de
-   verrouillage à valider). Kali migré (`c5d0a7e94b13`) ; droits du rôle applicatif réappliqués le 09/10 ; worker sain, DNS instable sur la VM à surveiller.
+   temporelles, flux SSE), socle `frontend/`, Vue d'ensemble, Triage, Incidents (et
+   Investigation). À développer : IOC, CVE, Chasse. Fichier de verrouillage npm versionné
+   (`237c477`) ; Kali migré (`c5d0a7e94b13`) ; droits du rôle applicatif réappliqués le 09/10 ; worker sain, DNS instable sur la VM à surveiller.
 2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 3. Ouvrir M8 Detection & Correlation.

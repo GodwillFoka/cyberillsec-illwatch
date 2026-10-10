@@ -13,7 +13,7 @@ cd ~/Documents/cyberillsec-illwatch && source .venv/bin/activate
 uvicorn illwatch.app.main:app --port 8000          # terminal 1 : l'API
 illwatch openapi -o frontend/openapi.json          # schéma de l'API (à refaire si l'API change)
 cd frontend
-npm install                                        # première fois : crée package-lock.json
+npm ci                                             # versions exactes de package-lock.json
 npm run gen:api                                    # types TypeScript générés depuis l'API
 npm run dev                                        # http://localhost:5173
 ```
