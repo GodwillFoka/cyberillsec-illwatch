@@ -88,6 +88,16 @@ class HuntDetail(HuntRead):
     matches: list[MatchRead]
 
 
+class MatchPage(BaseModel):
+    items: list[MatchRead]
+    total: int
+    limit: int
+    offset: int
+    by_rule: dict[str, int] = Field(
+        description="Correspondances par règle (filtre de sévérité appliqué, pas celui de règle)."
+    )
+
+
 def _detail(hunt: HuntingSession) -> HuntDetail:
     return HuntDetail(
         **HuntRead.model_validate(hunt).model_dump(),
@@ -158,3 +168,34 @@ async def read(hunt_id: UUID, session: DbSession, _: CurrentUser) -> HuntDetail:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"Session {hunt_id} introuvable."
         ) from None
+
+
+@router.get(
+    "/sessions/{hunt_id}/matches",
+    response_model=MatchPage,
+    summary="Correspondances d'une session, paginées (les plus graves d'abord)",
+)
+async def matches(
+    hunt_id: UUID,
+    session: DbSession,
+    _: CurrentUser,
+    limit: Annotated[int, Query(ge=1, le=500)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    rule_id: Annotated[str | None, Query(max_length=20)] = None,
+    severity: Severity | None = None,
+) -> MatchPage:
+    try:
+        page = await engine.list_matches(
+            session, hunt_id, limit=limit, offset=offset, rule_id=rule_id, severity=severity
+        )
+    except HuntNotFoundError:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=f"Session {hunt_id} introuvable."
+        ) from None
+    return MatchPage(
+        items=[MatchRead.model_validate(m) for m in page.items],
+        total=page.total,
+        limit=limit,
+        offset=offset,
+        by_rule=page.by_rule,
+    )

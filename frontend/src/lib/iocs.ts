@@ -3,6 +3,9 @@
 /** Taille maximale d'un lot accepté par `POST /indicators` (MAX_BATCH_SIZE côté serveur). */
 export const MAX_BATCH = 1000;
 
+/** Observables au plus par session de chasse (MAX_OBSERVABLES côté serveur). */
+export const MAX_HUNT_OBSERVABLES = 10_000;
+
 export const IOC_TYPES: [string, string][] = [
   ["IPV4", "IPv4"],
   ["IPV6", "IPv6"],
@@ -25,7 +28,7 @@ export interface Batch {
   values: string[];
   /** Doublons exacts retirés avant l'envoi. */
   duplicates: number;
-  /** Valeurs au-delà de MAX_BATCH, non envoyées. */
+  /** Valeurs au-delà du plafond, non envoyées. */
   overflow: number;
 }
 
@@ -35,7 +38,7 @@ export interface Batch {
  * commentaires. La validation et la normalisation (`evil[.]com`, `hxxp://`) restent au serveur,
  * qui renvoie la liste des rejets : rien n'est écarté ici en silence.
  */
-export function splitBatch(text: string): Batch {
+export function splitBatch(text: string, max: number = MAX_BATCH): Batch {
   const seen = new Set<string>();
   const values: string[] = [];
   let duplicates = 0;
@@ -53,9 +56,9 @@ export function splitBatch(text: string): Batch {
     }
   }
   return {
-    values: values.slice(0, MAX_BATCH),
+    values: values.slice(0, max),
     duplicates,
-    overflow: Math.max(0, values.length - MAX_BATCH),
+    overflow: Math.max(0, values.length - max),
   };
 }
 
@@ -63,4 +66,18 @@ export function splitBatch(text: string): Batch {
 export function filenameFrom(disposition: string | null, fallback: string): string {
   const match = /filename="([^"/\\]+)"/.exec(disposition ?? "");
   return match ? match[1] : fallback;
+}
+
+/** Liste d'actifs saisie (« FortiOS, Exchange ; Confluence ») : virgules, points-virgules ou lignes. */
+export function splitAssets(text: string): string[] {
+  const seen = new Set<string>();
+  const assets: string[] = [];
+  for (const raw of text.split(/[,;\r\n]+/)) {
+    const asset = raw.trim();
+    const key = asset.toLowerCase();
+    if (!asset || seen.has(key)) continue;
+    seen.add(key);
+    assets.push(asset);
+  }
+  return assets;
 }

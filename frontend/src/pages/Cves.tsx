@@ -399,6 +399,9 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                             <span className="muted">{INCIDENT_STATUS[incident.status] ?? incident.status}</span>
                           </li>
                         ))}
+                        {page.total > page.items.length && (
+                          <li className="muted">… et {formatNumber(page.total - page.items.length)} autres.</li>
+                        )}
                       </ul>
                     )
                   }
@@ -454,6 +457,13 @@ export function Cves() {
   };
 
   const total = query.data?.total;
+
+  useEffect(() => setOffset(0), [searched]);
+  useEffect(() => {
+    if (total !== undefined && total > 0 && offset >= total) {
+      setOffset(Math.floor((total - 1) / CVE_PAGE_SIZE) * CVE_PAGE_SIZE);
+    }
+  }, [total, offset]);
 
   return (
     <>

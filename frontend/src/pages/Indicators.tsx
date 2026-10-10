@@ -22,7 +22,7 @@ import { QueryState } from "../components/QueryState";
 import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { IOC_TYPES, MAX_BATCH, iocTypeLabel, splitBatch } from "../lib/iocs";
 import { INCIDENT_STATUS, SEVERITY_ORDER, levelLabel } from "../lib/levels";
-import { Link, useLocation } from "../lib/router";
+import { Link, asUuid, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
 import { useFresh } from "../lib/useFresh";
 import { RESPONDER_ROLES } from "./Incidents";
@@ -346,6 +346,9 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                             <span className="muted">{INCIDENT_STATUS[incident.status] ?? incident.status}</span>
                           </li>
                         ))}
+                        {page.total > page.items.length && (
+                          <li className="muted">… et {formatNumber(page.total - page.items.length)} autres.</li>
+                        )}
                       </ul>
                     )
                   }
@@ -497,8 +500,14 @@ function ExportButton() {
   }
   return (
     <div className="export">
-      <button className="btn" type="button" disabled={state.busy} onClick={() => void run()}>
-        {state.busy ? "Export en cours…" : "Exporter (CSV)"}
+      <button
+        className="btn"
+        type="button"
+        disabled={state.busy}
+        title="Toute la base d'IOC : plusieurs dizaines de Mo, une quinzaine de secondes"
+        onClick={() => void run()}
+      >
+        {state.busy ? "Export en cours…" : "Exporter la base (CSV)"}
       </button>
       {state.message && (
         <p className={state.error ? "reason error-text" : "reason"} role={state.error ? "alert" : "status"}>
@@ -516,7 +525,7 @@ export function Indicators() {
   const canAct = user ? RESPONDER_ROLES.has(user.role) : false;
   const { search, navigate } = useLocation();
   const params = new URLSearchParams(search);
-  const requested = params.get("ioc");
+  const requested = asUuid(params.get("ioc"));
   const searched = params.get("valeur") ?? "";
 
   const [filters, setFilters] = useState<IndicatorFilters>({ state: "actifs" });
@@ -525,9 +534,8 @@ export function Indicators() {
   const [report, setReport] = useState<IngestResult | null>(null);
 
   // Une recherche par valeur porte sur tous les états : un IOC expiré reste une trace utile.
-  const effective: IndicatorFilters = searched
-    ? { ...filters, value: searched, state: "tous" }
-    : filters;
+  // Les filtres, masqués pendant la recherche, ne s'y appliquent pas non plus.
+  const effective: IndicatorFilters = searched ? { value: searched, state: "tous" } : filters;
   const query = useIndicators(effective, offset);
   const items = query.data?.items ?? [];
   const selectedId = requested ?? items[0]?.id ?? null;
@@ -543,6 +551,15 @@ export function Indicators() {
   };
 
   const total = query.data?.total;
+
+  // Nouvelle recherche (ou retour arrière) : première page.
+  useEffect(() => setOffset(0), [searched]);
+  // La liste a rétréci sous la page affichée (expiration, collecte) : dernière page valide.
+  useEffect(() => {
+    if (total !== undefined && total > 0 && offset >= total) {
+      setOffset(Math.floor((total - 1) / INDICATOR_PAGE_SIZE) * INDICATOR_PAGE_SIZE);
+    }
+  }, [total, offset]);
 
   return (
     <>

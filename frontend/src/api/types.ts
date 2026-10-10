@@ -26,5 +26,11 @@ export type IngestResult = Schemas["IngestResponse"];
 export type IncidentStatus = Incident["status"];
 export type Severity = Incident["severity"];
 
+export type HuntRule = Schemas["RuleRead"];
+export type Hunt = Schemas["HuntRead"];
+export type HuntDetail = Schemas["HuntDetail"];
+export type HuntMatch = Schemas["MatchRead"];
+export type HuntMatchPage = Schemas["MatchPage"];
+
 export type Metric = Series["metric"];
 export type SeriesWindow = Series["window"];

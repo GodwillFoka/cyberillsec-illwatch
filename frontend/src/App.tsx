@@ -5,6 +5,7 @@ import { isActive, Router, useLocation } from "./lib/router";
 import { Overview } from "./pages/Overview";
 import { IncidentPage } from "./pages/IncidentPage";
 import { Cves } from "./pages/Cves";
+import { Hunting } from "./pages/Hunting";
 import { Incidents } from "./pages/Incidents";
 import { Indicators } from "./pages/Indicators";
 import { Triage } from "./pages/Triage";
@@ -12,7 +13,6 @@ import { NotFound, Upcoming } from "./pages/Upcoming";
 
 const UPCOMING: [string, string, string][] = [
   ["/sources", "Sources CTI", "Santé et historique de collecte de chaque source."],
-  ["/chasse", "Chasse", "Sessions de chasse, règles et correspondances."],
   ["/administration", "Administration", "Comptes, journal d'audit et paramètres."],
 ];
 
@@ -39,6 +39,7 @@ function Screen() {
   if (isActive(pathname, "/triage")) return <Triage />;
   if (pathname === "/indicateurs") return <Indicators />;
   if (pathname === "/cve") return <Cves />;
+  if (pathname === "/chasse") return <Hunting />;
   if (pathname === "/incidents") return <Incidents />;
   const incident = /^\/incidents\/([0-9a-f-]{36})$/i.exec(pathname);
   if (incident) return <IncidentPage key={incident[1]} incidentId={incident[1]} />;

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { MAX_BATCH, filenameFrom, iocTypeLabel, splitBatch } from "./iocs.js";
+import { MAX_BATCH, filenameFrom, iocTypeLabel, splitAssets, splitBatch } from "./iocs.js";
 
 describe("lot d'IOC collé", () => {
   it("découpe par ligne et par séparateur, ignore commentaires et doublons", () => {
@@ -25,6 +25,13 @@ describe("lot d'IOC collé", () => {
     assert.equal(batch.overflow, 5);
   });
 
+  it("plafond propre à la chasse", () => {
+    const text = Array.from({ length: 12 }, (_, i) => `10.0.0.${i}`).join(" ");
+    const batch = splitBatch(text, 10);
+    assert.equal(batch.values.length, 10);
+    assert.equal(batch.overflow, 2);
+  });
+
   it("texte vide : rien à envoyer", () => {
     assert.deepEqual(splitBatch("  \n# rien\n"), { values: [], duplicates: 0, overflow: 0 });
   });
@@ -43,5 +50,16 @@ describe("affichage", () => {
     );
     assert.equal(filenameFrom('attachment; filename="../../etc/passwd"', "x.csv"), "x.csv");
     assert.equal(filenameFrom(null, "x.csv"), "x.csv");
+  });
+});
+
+describe("inventaire d'actifs", () => {
+  it("sépare, nettoie et déduplique sans tenir compte de la casse", () => {
+    assert.deepEqual(splitAssets(" FortiOS, Exchange ;\nfortios\n\nConfluence Server "), [
+      "FortiOS",
+      "Exchange",
+      "Confluence Server",
+    ]);
+    assert.deepEqual(splitAssets(" , ;"), []);
   });
 });

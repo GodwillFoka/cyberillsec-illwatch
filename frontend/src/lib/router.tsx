@@ -16,7 +16,7 @@ import {
 
 import { isInternalPath } from "./paths";
 
-export { isActive, isInternalPath } from "./paths";
+export { asUuid, isActive, isInternalPath } from "./paths";
 
 interface RouterValue {
   pathname: string;

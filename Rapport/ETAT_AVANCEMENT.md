@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 18 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 19 h 15**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -11,9 +11,9 @@ Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci
 
 ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
 v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés. Décision du
-08/10 (ADR-016) : l'interface web passe avant l'hébergement. **Reste pour clore M7** : le lot 1
-de l'interface (vue d'ensemble, triage, incidents, IOC et CVE faits ; chasse à faire), puis la
-préproduction sur un VPS européen. M1 à M6 sont constatés sur données réelles, en local et en CI.
+08/10 (ADR-016) : l'interface web passe avant l'hébergement. Le lot 1 de l'interface est **codé et
+fusionné** (vue d'ensemble, triage, incidents, IOC, CVE, chasse) : il reste à le constater sur
+Kali sur données réelles. **Reste pour clore M7** : la préproduction sur un VPS européen. M1 à M6 sont constatés sur données réelles, en local et en CI.
 
 ## 2. Jalons
 
@@ -25,7 +25,7 @@ préproduction sur un VPS européen. M1 à M6 sont constatés sur données réel
 | M4 Incidents | ✅ | incident mené jusqu'à la clôture |
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
-| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface web lot 1 en cours ; **puis VPS UE** |
+| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface web lot 1 fusionné (6 écrans) ; **reste le VPS UE** |
 | M8 Detection & Correlation | ⏳ | — |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
@@ -33,7 +33,7 @@ préproduction sur un VPS européen. M1 à M6 sont constatés sur données réel
 
 | Chantier | Branche | État |
 |---|---|---|
-| **Interface web** | `main` | ✅ maquette v6 adoptée, ADR-016 accepté ; ✅ lot 1 côté serveur ; ✅ socle `frontend/`, vue d'ensemble (PR #4), triage (PR #8), incidents et investigation (PR #9) ; ⏳ IOC, CVE, chasse |
+| **Interface web** | `main` | ✅ maquette v6 adoptée, ADR-016 accepté ; ✅ lot 1 côté serveur ; ✅ socle `frontend/`, vue d'ensemble (PR #4), triage (PR #8), incidents et investigation (PR #9), IOC (PR #24), CVE (PR #25), chasse (PR #26) ; ⏳ constat sur Kali |
 | **Renommage SENTRY → ILLWATCH** | `d92b8c9` | ✅ code (162 fichiers, CI 463/463, validation réelle verte) ; dépôt GitHub renommé ; Kali migré : 528 453 IOC et 26 416 CVE retrouvés, volumes à nom fixe, dossier renommé, scénario 48/48 |
 | Performances sur gros volume (export, tableau de bord) | `5b55f64` | ✅ fusionné et mesuré : tableau de bord 3,9 s → 0,5 s ; export IOC 89 s → 13 à 17 s |
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ constaté sur `56ab581` : 0 Critical ; High 52 → 44, total 240 → 165 (−31 %) ; 44 High Debian sans correctif acceptées |
@@ -46,6 +46,7 @@ préproduction sur un VPS européen. M1 à M6 sont constatés sur données réel
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 10/10 | PR #26 | Écran Chasse : sessions, périmètre, correspondances paginées et filtrées (liens IOC/CVE), nouvelle chasse ; API `GET /hunting/sessions/{id}/matches` — **lot 1 de l'interface complet** ; revue indépendante des 3 écrans : 5 constats moyens corrigés (dont un sécurité : identifiants d'adresse validés) |
 | 10/10 | PR #25 | Écran CVE et priorités : liste par risque, recherche, filtres priorité/KEV, fiche (signaux, score décomposé, historique, alertes, incidents), association ou ouverture d'incident ; jokers SQL échappés dans la recherche |
 | 10/10 | PR #24 | Écran Indicateurs (IOC) : recherche normalisée, filtres, fiche (provenance, incidents associés, association), soumission d'un lot, export CSV audité ; API incidents filtrés par IOC/CVE |
 | 10/10 | `8f6599b` | Vérification : `ci-local.sh` en une commande (réseau, outils, interface web, image en option, journal) ; workflow « Branches » : les 12 branches fusionnées supprimées, seules `main` et `release/v0.1.1` restent |
@@ -122,7 +123,7 @@ l'interface en place.
 1. **Interface web v1, lot 1** — maquette v6 **adoptée**, ADR-016 accepté, système de design
    documenté (`docs/DESIGN_SYSTEM.md`). **Faits** : côté serveur (journal de collecte, séries
    temporelles, flux SSE), socle `frontend/`, Vue d'ensemble, Triage, Incidents (et
-   Investigation), Indicateurs (IOC), CVE. À développer : Chasse. Fichier de verrouillage npm versionné
+   Investigation), Indicateurs (IOC), CVE, Chasse : **lot 1 complet**, à constater sur Kali. Fichier de verrouillage npm versionné
    (`237c477`) ; Kali migré (`c5d0a7e94b13`) ; droits du rôle applicatif réappliqués le 09/10 ; worker sain, DNS instable sur la VM à surveiller.
 2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
 3. Ouvrir M8 Detection & Correlation.

@@ -351,3 +351,28 @@ async def test_api_liens_et_alerte(
         headers=analyst,
     )
     assert missing.status_code == 404
+
+
+async def test_ouverture_avec_cve_tout_ou_rien(
+    client: AsyncClient, db_session: AsyncSession, auth_as: Any
+) -> None:
+    """Écran CVE : l'incident de remédiation naît avec sa CVE, ou pas du tout."""
+    analyst, _ = await auth_as(UserRole.ANALYST)
+    await _cve(db_session)
+    body = {"title": "Remédiation", "description": "x", "severity": "HIGH"}
+
+    created = await client.post(
+        "/api/v1/incidents",
+        json={**body, "cve_ids": ["cve-2026-1234", "CVE-2026-1234"]},
+        headers=analyst,
+    )
+    assert created.status_code == 201, created.text
+    assert created.json()["cve_ids"] == ["CVE-2026-1234"]
+
+    before = (await client.get("/api/v1/incidents", headers=analyst)).json()["total"]
+    refused = await client.post(
+        "/api/v1/incidents", json={**body, "cve_ids": ["CVE-1999-0001"]}, headers=analyst
+    )
+    assert refused.status_code == 404
+    after = (await client.get("/api/v1/incidents", headers=analyst)).json()["total"]
+    assert after == before
