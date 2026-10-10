@@ -230,6 +230,24 @@ async def test_api_hunting(
     assert listed[0]["id"] == result["id"]
     detail = await client.get(f"/api/v1/hunting/sessions/{result['id']}", headers=viewer)
     assert detail.status_code == 200 and detail.json()["matches"]
+
+    # Correspondances paginées : les plus graves d'abord, filtres et effectifs par règle.
+    url = f"/api/v1/hunting/sessions/{result['id']}/matches"
+    page = (await client.get(url, params={"limit": 2}, headers=viewer)).json()
+    assert page["total"] == result["matches_count"] and len(page["items"]) == 2
+    assert page["items"][0]["severity"] == "CRITICAL"
+    assert sum(page["by_rule"].values()) == page["total"] and page["by_rule"]["RULE-04"] >= 1
+    rest = (await client.get(url, params={"limit": 500, "offset": 2}, headers=viewer)).json()
+    seen = [(m["rule_id"], m["observable"]) for m in page["items"] + rest["items"]]
+    assert len(seen) == len(set(seen)) == result["matches_count"]
+    only = (await client.get(url, params={"rule_id": "RULE-02"}, headers=viewer)).json()
+    assert only["total"] == page["by_rule"]["RULE-02"]
+    assert {m["rule_id"] for m in only["items"]} == {"RULE-02"}
+    critical = (await client.get(url, params={"severity": "CRITICAL"}, headers=viewer)).json()
+    assert {m["severity"] for m in critical["items"]} == {"CRITICAL"}
+    assert set(critical["by_rule"]) <= {"RULE-04", "RULE-05"}
+    missing = await client.get(f"/api/v1/hunting/sessions/{uuid4()}/matches", headers=viewer)
+    assert missing.status_code == 404
     assert (
         await client.get(f"/api/v1/hunting/sessions/{uuid4()}", headers=viewer)
     ).status_code == 404

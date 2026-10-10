@@ -11,10 +11,11 @@ Tor injoignable) n'empêche pas les autres : la session est alors `PARTIELLE`.
 
 import logging
 from collections.abc import Awaitable, Callable, Sequence
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from sqlalchemy import select, tuple_
+from sqlalchemy import ColumnElement, case, func, select, tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -31,7 +32,7 @@ from illwatch.modules.threat_hunting.rules import (
     Match,
     Observable,
 )
-from illwatch.shared.enums import HuntStatus, HuntTrigger, IndicatorType, RiskPriority
+from illwatch.shared.enums import HuntStatus, HuntTrigger, IndicatorType, RiskPriority, Severity
 from illwatch.shared.logging import peak_rss_mb
 
 log = logging.getLogger("illwatch.hunting")
@@ -244,6 +245,60 @@ async def get_hunt(session: AsyncSession, hunt_id: UUID) -> HuntingSession:
     if hunt is None:
         raise HuntNotFoundError(str(hunt_id))
     return hunt
+
+
+_SEVERITY_RANK = case(
+    (HuntingMatch.severity == Severity.CRITICAL.value, 4),
+    (HuntingMatch.severity == Severity.HIGH.value, 3),
+    (HuntingMatch.severity == Severity.MEDIUM.value, 2),
+    (HuntingMatch.severity == Severity.LOW.value, 1),
+    else_=0,
+)
+
+
+@dataclass(slots=True)
+class MatchPage:
+    items: list[HuntingMatch]
+    total: int
+    by_rule: dict[str, int]
+
+
+async def list_matches(
+    session: AsyncSession,
+    hunt_id: UUID,
+    *,
+    limit: int,
+    offset: int,
+    rule_id: str | None = None,
+    severity: Severity | None = None,
+) -> MatchPage:
+    """Correspondances d'une session, les plus graves d'abord, filtrables et paginées.
+
+    Une chasse planifiée sur toute la base peut en produire des milliers : l'interface les
+    lit par pages. `by_rule` compte les correspondances de chaque règle (filtres compris,
+    hors filtre de règle) pour présenter les filtres avec leurs effectifs.
+    """
+    if await session.get(HuntingSession, hunt_id) is None:
+        raise HuntNotFoundError(str(hunt_id))
+    base: list[ColumnElement[bool]] = [HuntingMatch.session_id == hunt_id]
+    if severity is not None:
+        base.append(HuntingMatch.severity == severity.value)
+    counts = await session.execute(
+        select(HuntingMatch.rule_id, func.count()).where(*base).group_by(HuntingMatch.rule_id)
+    )
+    by_rule: dict[str, int] = dict(counts.tuples().all())
+    conditions = [*base, HuntingMatch.rule_id == rule_id] if rule_id else base
+    total = by_rule.get(rule_id, 0) if rule_id else sum(by_rule.values())
+    rows = await session.execute(
+        select(HuntingMatch)
+        .where(*conditions)
+        .order_by(
+            _SEVERITY_RANK.desc(), HuntingMatch.rule_id, HuntingMatch.observable, HuntingMatch.id
+        )
+        .limit(limit)
+        .offset(offset)
+    )
+    return MatchPage(items=list(rows.scalars().all()), total=total, by_rule=by_rule)
 
 
 async def list_hunts(session: AsyncSession, *, limit: int, offset: int) -> list[HuntingSession]:

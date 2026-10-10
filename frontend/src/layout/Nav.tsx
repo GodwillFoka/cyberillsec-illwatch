@@ -49,7 +49,7 @@ export function Nav() {
       <div className="nav-section">Vulnérabilités</div>
       <Link to="/cve" label="CVE et priorités" />
       <div className="nav-section">Chasse</div>
-      <Link to="/chasse" label="Recherches et règles" soon />
+      <Link to="/chasse" label="Recherches et règles" />
       <div className="nav-spacer" />
       <div className="nav-section">Administration</div>
       <Link to="/administration" label="Comptes, audit, paramètres" soon />

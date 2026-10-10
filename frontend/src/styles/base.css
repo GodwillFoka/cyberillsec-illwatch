@@ -902,3 +902,33 @@ input.compact {
 .check input {
   accent-color: var(--orange);
 }
+
+/* --- Chasse ----------------------------------------------------------------------------- */
+
+fieldset.rules {
+  display: grid;
+  gap: var(--s2);
+  margin: 0;
+  padding: var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+}
+
+fieldset.rules legend {
+  padding: 0 var(--s1);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.check.rule {
+  align-items: flex-start;
+  color: var(--text);
+}
+
+.check.rule input {
+  margin-top: 4px;
+}
+
+.list.matches li {
+  align-items: flex-start;
+}

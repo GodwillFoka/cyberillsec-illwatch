@@ -13,6 +13,10 @@ import type {
   IndicatorDetail,
   IndicatorPage,
   FeedHealth,
+  Hunt,
+  HuntDetail,
+  HuntMatchPage,
+  HuntRule,
   IncidentPage,
   Metric,
   Series,
@@ -230,5 +234,59 @@ export function useCveAlerts(cveId: string) {
   return useQuery({
     queryKey: ["alerts", "cve", cveId],
     queryFn: ({ signal }) => apiGet<AlertPage>("/alerts", { cve_id: cveId, limit: 20 }, signal),
+  });
+}
+
+export function useHuntRules() {
+  return useQuery({
+    queryKey: ["hunts", "rules"],
+    queryFn: ({ signal }) => apiGet<HuntRule[]>("/hunting/rules", undefined, signal),
+    staleTime: Infinity,
+  });
+}
+
+export function useHunts() {
+  const refetchInterval = useFallbackInterval();
+  return useQuery({
+    queryKey: ["hunts", "list"],
+    queryFn: ({ signal }) => apiGet<Hunt[]>("/hunting/sessions", { limit: 50 }, signal),
+    refetchInterval,
+  });
+}
+
+/**
+ * Résumé d'une session absente des 50 dernières (adresse partagée). Le détail renvoie aussi
+ * toutes les correspondances : il n'est lu que dans ce cas, la liste paginée sert sinon.
+ */
+export function useHunt(huntId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: ["hunts", "detail", huntId],
+    queryFn: ({ signal }) => apiGet<HuntDetail>(`/hunting/sessions/${huntId}`, undefined, signal),
+    enabled: Boolean(huntId) && enabled,
+  });
+}
+
+export interface MatchFilters {
+  ruleId?: string;
+  severity?: string;
+}
+
+export const MATCH_PAGE_SIZE = 100;
+
+export function useHuntMatches(huntId: string, filters: MatchFilters, offset: number) {
+  return useQuery({
+    queryKey: ["hunts", "matches", huntId, filters, offset],
+    queryFn: ({ signal }) =>
+      apiGet<HuntMatchPage>(
+        `/hunting/sessions/${huntId}/matches`,
+        {
+          rule_id: filters.ruleId || undefined,
+          severity: filters.severity || undefined,
+          limit: MATCH_PAGE_SIZE,
+          offset,
+        },
+        signal,
+      ),
+    placeholderData: keepPreviousData,
   });
 }

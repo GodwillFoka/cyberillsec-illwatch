@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiPost, apiSend } from "./http";
-import type { Alert, IncidentDetail, IncidentEvent, IngestResult } from "./types";
+import type { Alert, HuntDetail, IncidentDetail, IncidentEvent, IngestResult } from "./types";
 
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
@@ -134,6 +134,24 @@ export function useOpenIncidentForCve() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ["incidents"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+export interface HuntRequest {
+  observables: string[];
+  assets: string[];
+  rules: string[];
+}
+
+/** Lance une session de chasse (ADMIN, ANALYST) : exécutée pendant la requête, puis enregistrée. */
+export function useRunHunt() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: HuntRequest) => apiPost<HuntDetail>("/hunting/sessions", body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["hunts"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
