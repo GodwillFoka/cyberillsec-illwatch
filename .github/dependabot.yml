@@ -16,6 +16,11 @@ updates:
     labels: [dependencies]
     commit-message:
       prefix: "chore(docker)"
+    ignore:
+      # Image de construction de l'interface : versions LTS paires de Node uniquement (22, 24…),
+      # changées par décision explicite, pas par mise à jour automatique.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /frontend
     schedule:
@@ -23,3 +28,11 @@ updates:
     labels: [dependencies]
     commit-message:
       prefix: "chore(web)"
+    # Mineures et correctives seulement, regroupées ; une version majeure (React 19, Vite 8…)
+    # est une migration planifiée, avec sa branche et ses vérifications.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      interface:
+        update-types: [minor, patch]

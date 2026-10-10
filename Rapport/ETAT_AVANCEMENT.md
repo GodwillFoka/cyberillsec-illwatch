@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 15 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 17 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -46,6 +46,8 @@ préproduction sur un VPS européen. M1 à M6 sont constatés sur données réel
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 10/10 | PR #10 | **Audit global** (revue indépendante) : 1 élevé, 6 moyens corrigés — test daté, bus Redis auto-réparant, onglets coordonnés, double collecte, CSP de l'infobulle, SSE derrière Caddy ; jobs GitLab interface ; docs ([rapport](AUDIT_GLOBAL_2026-10-10.md)) |
+| 10/10 | PR #9 | Écran Incidents : liste, ouverture, page d'investigation (cycle NIST, chronologie, transitions, notes, assignation, éléments liés) |
 | 10/10 | PR #8 | Écran Triage : file priorisée, panneau 5 sections (score décomposé, historique), acquitter, ouvrir l'incident selon le rôle |
 | 10/10 | `26d9bdb` | Sécurité interface (PR #5) : React Router retiré (XSS, redirections ouvertes), ECharts 6.1.0 ; `npm audit` bloquant en CI |
 | 10/10 | PR #6 | Vitest remplacé par `node --test`, Vite 5.4.21 ; test du tableau de bord rendu indépendant de la date |
