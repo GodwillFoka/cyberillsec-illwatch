@@ -106,7 +106,7 @@ function SourceTable({
               onClick={() => onSelect(feed.feed_id)}
               onKeyDown={(event) => onKey(event, index)}
             >
-              <td>
+              <td className="wrap">
                 <div className="cell-title">{feed.name}</div>
                 <div className="cell-sub">
                   {feed.feed_type}, fiabilité {feed.reliability}

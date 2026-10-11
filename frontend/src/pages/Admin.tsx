@@ -452,7 +452,7 @@ function AuditLog() {
                         <span className={`badge ${tone}`}>{label}</span>
                       </td>
                       <td>{event.actor_name ?? "—"}</td>
-                      <td className="ellipsis muted" style={{ maxWidth: 360 }} title={detail}>
+                      <td className="ellipsis muted" style={{ maxWidth: 320 }} title={detail}>
                         {detail || "—"}
                       </td>
                       <td className="mono muted">{event.ip ?? "—"}</td>
