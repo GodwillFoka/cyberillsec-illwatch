@@ -3,7 +3,8 @@
 # 1. À la fusion d'une PR interne : supprime sa branche.
 # 2. Balayage (lancement manuel, hebdomadaire, ou à la modification de ce fichier) :
 #    supprime toute branche entièrement contenue dans main.
-# Jamais supprimées : main, release/*, et les branches avec des commits absents de main.
+# Jamais supprimées : main, release/*, captures (revue visuelle), et les branches avec des
+# commits absents de main.
 # ============================================================================
 name: Branches
 
@@ -60,7 +61,7 @@ jobs:
           set -euo pipefail
           deleted=0; kept=0
           for branch in $(gh api --paginate "repos/${GITHUB_REPOSITORY}/branches" --jq '.[].name'); do
-            case "$branch" in main|release/*) continue ;; esac
+            case "$branch" in main|release/*|captures) continue ;; esac
             ahead=$(gh api "repos/${GITHUB_REPOSITORY}/compare/main...${branch}" --jq '.ahead_by')
             if [ "$ahead" = "0" ]; then
               gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${branch}"
