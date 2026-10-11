@@ -5,8 +5,9 @@
 #   ./scripts/preprod-local.sh up       # construit l'image, démarre, crée le compte admin
 #   ./scripts/preprod-local.sh check    # contrôles : HTTPS, en-têtes, API, SSE via Caddy,
 #                                       #   rôle applicatif, worker, sauvegarde/restauration
-#   ./scripts/preprod-local.sh demo     # charge des données de démonstration FICTIVES
-#                                       #   (base vide uniquement ; sinon la collecte réelle)
+#   ./scripts/preprod-local.sh demo     # données de démonstration FICTIVES (base vide) ; le
+#                                       #   worker est arrêté pour ne jamais les mélanger à une
+#                                       #   collecte réelle (mode « démonstration », mémorisé)
 #   ./scripts/preprod-local.sh logs     # journaux (Ctrl+C pour quitter)
 #   ./scripts/preprod-local.sh down     # arrête (données conservées)
 #   ./scripts/preprod-local.sh purge    # arrête et SUPPRIME les données de préproduction
@@ -15,6 +16,9 @@
 # accepter l'avertissement du navigateur, ou importer la racine affichée par `check`).
 # « illwatch.localhost » plutôt que « localhost » : l'en-tête HSTS de la préproduction ne doit
 # pas s'appliquer à http://localhost:8000 (pile de développement).
+#
+# Démonstration dès le départ (CI, captures) : PREPROD_MODE=demo ./scripts/preprod-local.sh up
+# démarre sans worker, puis `demo` charge les données sur une base restée vide.
 #
 # Isolation : projet Compose « illwatch-preprod », conteneurs et volumes à part. La pile de
 # développement et ses données ne sont jamais touchées. Secrets générés dans .env.preprod
@@ -92,7 +96,12 @@ cmd_up() {
   need
   secrets
   step "Construction de l'image et démarrage (projet ${COMPOSE_PROJECT_NAME})"
-  docker compose up -d --build
+  if [[ "${PREPROD_MODE:-}" == "demo" ]]; then
+    docker compose up -d --build --scale worker=0
+    ok "mode démonstration : worker non démarré (aucune collecte réelle)"
+  else
+    docker compose up -d --build
+  fi
   wait_ready
   ok "API prête derrière Caddy : ${BASE}"
   step "Sources de référence et compte administrateur"
@@ -114,8 +123,12 @@ cmd_up() {
 cmd_demo() {
   need
   secrets
+  # Jamais de collecte réelle à côté de données fictives.
+  docker compose stop worker >/dev/null 2>&1 || true
   docker compose exec -T -e DEMO_PASSWORD="${ADMIN_PASSWORD}" api illwatch demo load --users
+  grep -q '^PREPROD_MODE=' "${ENV_FILE}" || echo 'PREPROD_MODE=demo' >> "${ENV_FILE}"
   ok "démonstration chargée (comptes analyst et viewer : même mot de passe que admin)"
+  ok "worker arrêté (mode démonstration) ; pour la collecte réelle : purge, puis up"
 }
 
 cmd_check() {
@@ -128,7 +141,14 @@ cmd_check() {
   local redirect
   redirect=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' --resolve "${DOMAIN}:8080:127.0.0.1" "http://${DOMAIN}:8080/") || true
   [[ "${redirect}" == 30[18]\ https://* ]] && ok "HTTP redirigé vers HTTPS (${redirect})" || ko "redirection HTTP → HTTPS : ${redirect}"
-  pcurl -o /dev/null -w '%{ssl_verify_result}' "${BASE}/health" >/dev/null && ok "TLS négocié ($(pcurl -o /dev/null -w '%{scheme}' "${BASE}/health"))"
+  local ca="/tmp/illwatch-preprod-ca.$$.crt"
+  if docker compose exec -T caddy cat /data/caddy/pki/authorities/local/root.crt > "${ca}" 2>/dev/null \
+     && curl -sS -o /dev/null --cacert "${ca}" --resolve "${DOMAIN}:8443:127.0.0.1" "${BASE}/health"; then
+    ok "certificat vérifié contre l'autorité interne de Caddy (TLS sans --insecure)"
+  else
+    ko "certificat non vérifiable contre l'autorité de Caddy"
+  fi
+  rm -f "${ca}"
 
   step "En-têtes de sécurité (page et API)"
   local page api
@@ -177,15 +197,20 @@ cmd_check() {
   fi
 
   step "Base : rôle applicatif sans droit de structure"
-  if docker compose exec -T postgres psql -U illwatch_app -d illwatch -v ON_ERROR_STOP=1 \
-      -c 'DROP TABLE users;' >/dev/null 2>&1; then
-    ko "le rôle applicatif peut supprimer une table"
+  # Modification de structure dans une transaction annulée : seul le propriétaire le peut.
+  local probe
+  probe=$(docker compose exec -T postgres psql -U illwatch_app -d illwatch -v ON_ERROR_STOP=1 \
+    -c 'BEGIN; ALTER TABLE users ADD COLUMN preprod_probe int; ROLLBACK;' 2>&1 || true)
+  if grep -qiE 'must be owner|permission denied|doit être le propriétaire|droit refusé' <<<"${probe}"; then
+    ok "ALTER TABLE refusé au rôle applicatif"
   else
-    ok "DROP TABLE refusé au rôle applicatif"
+    ko "rôle applicatif : refus attendu, obtenu « $(head -c 160 <<<"${probe}" | tr '\n' ' ') »"
   fi
 
   step "Worker de collecte"
-  if docker compose ps --status running --services | grep -qx worker; then
+  if [[ "${PREPROD_MODE:-}" == "demo" ]]; then
+    ok "worker arrêté volontairement (mode démonstration)"
+  elif docker compose ps --status running --services | grep -qx worker; then
     ok "worker en marche"
   else
     ko "worker arrêté : $(docker compose ps worker --format '{{.Status}}')"
@@ -194,7 +219,11 @@ cmd_check() {
   step "Sauvegarde puis restauration dans une base jetable"
   local dump="/tmp/illwatch-preprod-$$.dump"
   docker compose exec -T postgres pg_dump -U illwatch -d illwatch -Fc > "${dump}"
-  docker compose exec -T postgres pg_restore --list < "${dump}" >/dev/null && ok "sauvegarde lisible ($(du -h "${dump}" | cut -f1))"
+  if docker compose exec -T postgres pg_restore --list < "${dump}" >/dev/null; then
+    ok "sauvegarde lisible ($(du -h "${dump}" | cut -f1))"
+  else
+    ko "sauvegarde illisible"
+  fi
   docker compose exec -T postgres psql -U illwatch -d postgres -q -c 'DROP DATABASE IF EXISTS restore_check;' -c 'CREATE DATABASE restore_check;' >/dev/null
   if docker compose exec -T postgres pg_restore -U illwatch -d restore_check --no-owner --exit-on-error < "${dump}" 2>/dev/null; then
     local original restored
@@ -227,6 +256,8 @@ case "${1:-}" in
     read -r -p "Supprimer TOUTES les données de préproduction ? Taper PURGER : " answer
     [[ "${answer}" == "PURGER" ]] || die "abandon"
     docker compose down --volumes
+    # Volumes de la préproduction nommés explicitement : ceux du développement ne sont jamais visés.
+    docker volume rm illwatch_preprod_pgdata illwatch_preprod_redisdata >/dev/null 2>&1 || true
     rm -f "${ENV_FILE}"
     ok "préproduction supprimée (la pile de développement est intacte)"
     ;;

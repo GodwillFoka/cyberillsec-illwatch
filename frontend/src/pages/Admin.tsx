@@ -609,7 +609,7 @@ export function Admin() {
             role="tab"
             type="button"
             aria-selected={tab === value}
-            aria-controls={`panneau-${value}`}
+            aria-controls={tab === value ? `panneau-${value}` : undefined}
             tabIndex={tab === value ? 0 : -1}
             className="tab"
             onClick={() => open(value)}

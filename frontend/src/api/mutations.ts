@@ -171,6 +171,8 @@ function useFeedsMutation<TVariables, TResult>(run: (variables: TVariables) => P
     mutationFn: run,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["feeds"] });
+      // La fiabilité d'une source change la confiance de ses IOC (ADR-017).
+      void queryClient.invalidateQueries({ queryKey: ["indicators"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });

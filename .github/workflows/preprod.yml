@@ -28,8 +28,13 @@ jobs:
     name: Pile de production locale (HTTPS, contrôles, captures)
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    # Démonstration : worker non démarré, base restée vide pour les données fictives.
+    env:
+      PREPROD_MODE: demo
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Démarrage (image de production derrière Caddy)
         run: ./scripts/preprod-local.sh up 2>&1 | tee up.log
@@ -69,8 +74,32 @@ jobs:
               | sed "s/^/::error title=$svc::/" || true
           done
 
-      - name: Publication des captures (branche « captures »)
-        if: always() && hashFiles('captures/*.png') != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      - name: Captures en artefact (pour la publication)
+        if: always() && hashFiles('captures/*.png') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: captures
+          path: captures/
+          retention-days: 7
+
+  # Seul ce job écrit dans le dépôt : il ne reçoit que les images, n'exécute aucun code du
+  # dépôt et n'a pas fait de checkout (aucun jeton laissé dans un .git/config).
+  publish:
+    name: Publication des captures (branche « captures »)
+    needs: preprod
+    if: always() && needs.preprod.result != 'cancelled' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        id: download
+        continue-on-error: true
+        with:
+          name: captures
+          path: captures
+      - name: Pousser les captures
+        if: steps.download.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_REF: ${{ github.head_ref || github.ref_name }}
@@ -84,5 +113,3 @@ jobs:
           git add -A
           git commit -qm "Captures ${SOURCE_REF} @ ${GITHUB_SHA::7}"
           git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" captures
-    permissions:
-      contents: write

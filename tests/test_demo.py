@@ -29,9 +29,9 @@ async def test_chargement_complet_et_fictif(db_session: AsyncSession) -> None:
     assert await _count(db_session, Incident) == 5
     hunt = await db_session.scalar(select(HuntingSession))
     assert hunt is not None and hunt.matches_count > 0
-    # Fictif : CVE du bloc 9xxxx étiquetées, adresses des plages de documentation.
+    # Fictif : CVE de l'année 2099 étiquetées, adresses des plages de documentation.
     ids = (await db_session.scalars(select(CVE.id))).all()
-    assert all(i.startswith("CVE-2026-9") for i in ids)
+    assert all(i.startswith("CVE-2099-9") for i in ids)
     descriptions = (await db_session.scalars(select(CVE.description))).all()
     assert all(d.startswith(DEMO_TAG) for d in descriptions)
     ipv4 = (await db_session.scalars(select(Indicator.value).where(Indicator.type == "IPV4"))).all()

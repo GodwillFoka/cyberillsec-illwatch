@@ -147,15 +147,6 @@ async def seed_reference_feeds(session: AsyncSession) -> list[str]:
 
     for feed in REFERENCE_FEEDS:
         if feed.name in existing:
-            # Cote de fiabilité (ADR-017) appliquée aux sources de référence déjà présentes
-            # tant qu'elles portent la valeur par défaut « C » (jamais une cote choisie).
-            current = existing[feed.name]
-            if (
-                current.reliability == SourceReliability.C
-                and feed.reliability != current.reliability
-            ):
-                current.reliability = feed.reliability
-                created.append(f"{feed.name} (fiabilité {feed.reliability})")
             continue
         session.add(
             ThreatFeed(

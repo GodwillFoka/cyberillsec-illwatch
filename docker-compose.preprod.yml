@@ -9,7 +9,9 @@
 #   (illwatch-postgres sur 5433, uvicorn sur 8000) et ses données ne sont jamais touchées ;
 # - Caddy n'écoute que sur 127.0.0.1, ports 8443 (HTTPS) et 8080 (HTTP) : rien n'est exposé
 #   au réseau, aucun conflit avec un service déjà présent sur 80/443 ;
-# - certificat de l'autorité interne de Caddy pour « localhost » (ILLWATCH_DOMAIN=localhost).
+# - certificat de l'autorité interne de Caddy pour « illwatch.localhost » (ILLWATCH_DOMAIN) ;
+# - même sous-réseau fixe que docker-compose.prod.yml (172.30.0.0/24) : ne pas lancer en même
+#   temps qu'une pile de production locale.
 # ============================================================================
 name: illwatch-preprod
 

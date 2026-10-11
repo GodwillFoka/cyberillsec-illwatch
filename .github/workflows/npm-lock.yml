@@ -44,7 +44,8 @@ jobs:
           [ -z "$dev" ] || npm install --save-exact --save-dev --no-audit --no-fund $dev
           echo "### Versions installées" >> "$GITHUB_STEP_SUMMARY"
           for p in $prod $dev; do
-            name="${p%@*}"
+            # Nom sans version, y compris pour un paquet à portée sans version (@org/paquet).
+            if [[ "$p" == @* ]]; then rest="${p#@}"; name="@${rest%%@*}"; else name="${p%%@*}"; fi
             echo "- $name $(node -p "require('./node_modules/$name/package.json').version")" | tee -a "$GITHUB_STEP_SUMMARY"
             echo "::notice title=npm::$name $(node -p "require('./node_modules/$name/package.json').version")"
           done

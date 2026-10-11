@@ -102,14 +102,16 @@ async def _target(session: DbSession, user_id: UUID) -> User:
 
 
 async def _other_active_admins(session: DbSession, user_id: UUID) -> int:
-    return int(
-        await session.scalar(
-            select(func.count())
-            .select_from(User)
-            .where(User.role == UserRole.ADMIN, User.is_active.is_(True), User.id != user_id)
-        )
-        or 0
+    """Administrateurs actifs autres que `user_id`, lignes verrouillées jusqu'à la fin de la
+    transaction : deux administrateurs qui se rétrogradent au même instant ne peuvent pas
+    laisser l'instance sans administrateur (le second attend le premier, puis recompte)."""
+    rows = await session.scalars(
+        select(User.id)
+        .where(User.role == UserRole.ADMIN, User.is_active.is_(True))
+        .order_by(User.id)
+        .with_for_update()
     )
+    return sum(1 for admin_id in rows.all() if admin_id != user_id)
 
 
 @router.get("", response_model=list[AccountRead], summary="Comptes (ADMIN)")
