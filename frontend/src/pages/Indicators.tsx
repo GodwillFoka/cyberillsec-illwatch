@@ -216,7 +216,7 @@ function IndicatorTable({
                 <LevelBadge level={indicator.severity} />
               </td>
               <td className="muted">{iocTypeLabel(indicator.type)}</td>
-              <td className="mono ellipsis" style={{ maxWidth: 360 }} title={indicator.value}>
+              <td className="mono ellipsis" style={{ maxWidth: 280 }} title={indicator.value}>
                 {indicator.value}
               </td>
               <td>
