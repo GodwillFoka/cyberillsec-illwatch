@@ -72,6 +72,8 @@ button {
 
 .sr-only {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
@@ -1452,8 +1454,11 @@ textarea {
   white-space: normal;
 }
 
-/* Toute carte qui contient un tableau le fait défiler chez elle, jamais la page entière. */
+/* Toute carte qui contient un tableau le fait défiler chez elle, jamais la page entière.
+ * `position: relative` : les éléments positionnés (textes pour lecteurs d'écran) restent
+ * dans la carte au lieu d'élargir la page. */
 .card {
+  position: relative;
   overflow-x: auto;
 }
 
@@ -1479,8 +1484,13 @@ textarea {
 }
 
 @media (max-width: 640px) {
+  .live-chip {
+    position: relative;
+  }
   .live-chip .live-text {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 1px;
     height: 1px;
     overflow: hidden;

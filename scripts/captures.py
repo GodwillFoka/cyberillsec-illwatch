@@ -60,7 +60,9 @@ OVERFLOW_PROBE = """() => {
     if (box.width === 0 || box.right <= limit) continue;
     // Contenu d'une zone qui défile volontairement (tableau dans sa carte) : ignoré.
     // La zone principale (<main>) ne compte pas : elle ne défile que verticalement.
-    let node = el.parentElement;
+    // Un élément positionné hors flux échappe aux zones qui défilent : jamais ignoré.
+    const position = getComputedStyle(el).position;
+    let node = position === "absolute" || position === "fixed" ? null : el.parentElement;
     let clipped = false;
     while (node && node !== main && node !== document.body) {
       const ox = getComputedStyle(node).overflowX;
