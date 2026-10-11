@@ -892,7 +892,7 @@ button {
   border-radius: 50%;
   background:
     repeating-radial-gradient(circle, transparent 0 94px, rgba(142, 128, 255, 0.1) 94px 95px),
-    conic-gradient(from 0deg, rgba(242, 122, 46, 0.16), transparent 40deg 360deg);
+    conic-gradient(from 0deg, rgba(242, 122, 46, 0.1), transparent 32deg 360deg);
   mask-image: radial-gradient(circle, #000 55%, transparent 72%);
   animation: sweep 2.4s var(--ease) 1 both;
   pointer-events: none;
@@ -1417,4 +1417,73 @@ fieldset.rules legend {
 
 .back-link:hover {
   color: var(--text);
+}
+
+/* --- Corrections relevées sur les captures (v7) ------------------------------------------- */
+
+/* Une liste déroulante prend la largeur de sa plus longue option : sans plafond, le titre
+ * d'un incident élargissait tout le panneau de détail au-delà de l'écran. */
+select,
+input,
+textarea {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.field select,
+.field input,
+.field textarea {
+  width: 100%;
+}
+
+.split > *,
+.page-grid > *,
+.grid > * {
+  min-width: 0;
+}
+
+/* Les cellules ne se coupent pas (identifiants, âges, scores) : le tableau défile dans sa
+ * carte plutôt que de déborder sur le panneau voisin. */
+.table td {
+  white-space: nowrap;
+}
+
+.table td.wrap {
+  white-space: normal;
+}
+
+.split > .card,
+.card.flush {
+  overflow-x: auto;
+}
+
+/* Étiquettes de signaux (KEV, exploit…) : plus compactes que les badges de gravité. */
+.badge.tag {
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.badge.tag::before {
+  display: none;
+}
+
+/* « Nouvelle » doit rester visible sur une ligne sélectionnée (fond indigo). */
+.badge.new {
+  background: #3b2fa3;
+  color: #e4e0ff;
+}
+
+@media (max-width: 640px) {
+  .live-chip .live-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .live-chip {
+    padding: 0 10px;
+  }
 }
