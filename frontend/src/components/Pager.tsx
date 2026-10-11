@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import { formatNumber } from "../lib/format";
 
 /** Pagination « précédents / suivants » d'une liste longue (IOC, CVE). */
@@ -30,7 +32,8 @@ export function Pager({
           disabled={offset === 0 || busy}
           onClick={() => onOffset(Math.max(0, offset - pageSize))}
         >
-          ← Précédents
+          <ChevronLeft size={16} aria-hidden="true" />
+          Précédents
         </button>
         <button
           className="btn"
@@ -38,7 +41,8 @@ export function Pager({
           disabled={offset + shown >= total || busy}
           onClick={() => onOffset(offset + pageSize)}
         >
-          Suivants →
+          Suivants
+          <ChevronRight size={16} aria-hidden="true" />
         </button>
       </div>
     </div>

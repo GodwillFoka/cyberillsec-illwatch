@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 
 import type { Series } from "../api/types";
 import { formatDay, formatTime, parseDate } from "../lib/format";
-import { PRIORITY_ORDER, SEVERITY_ORDER, TONE_COLORS, levelLabel, toneOf } from "../lib/levels";
+import { CHART, PRIORITY_ORDER, SEVERITY_ORDER, TONE_COLORS, levelLabel, toneOf } from "../lib/levels";
 
 echarts.use([BarChart, GridComponent, LegendComponent, TooltipComponent, CanvasRenderer]);
 
@@ -61,24 +61,30 @@ export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
       const date = parseDate(point.at) ?? new Date(0);
       return series.bucket === "hour" ? formatTime(date, utc) : formatDay(date, utc);
     });
+    const last = order.length - 1;
     instance.setOption(
       {
-        animationDuration: 250,
-        textStyle: { fontFamily: "IBM Plex Sans, sans-serif", color: "#A3ACBF" },
-        grid: { left: 8, right: 8, top: 32, bottom: 8, containLabel: true },
+        animationDuration: 300,
+        animationEasing: "cubicOut",
+        textStyle: { fontFamily: CHART.font, color: CHART.text },
+        grid: { left: 4, right: 4, top: 36, bottom: 4, containLabel: true },
         legend: {
           top: 0,
-          right: 0,
+          left: 0,
+          icon: "roundRect",
           itemWidth: 10,
           itemHeight: 10,
-          textStyle: { color: "#A3ACBF" },
+          itemGap: 16,
+          textStyle: { color: CHART.text, fontSize: 12 },
         },
         tooltip: {
           trigger: "axis",
-          axisPointer: { type: "shadow" },
-          backgroundColor: "#0F1626",
-          borderColor: "#222C42",
-          textStyle: { color: "#ECEFF5" },
+          axisPointer: { type: "shadow", shadowStyle: { color: "rgba(142, 128, 255, 0.08)" } },
+          backgroundColor: CHART.panel,
+          borderColor: CHART.line,
+          borderWidth: 1,
+          padding: [10, 12],
+          textStyle: { color: CHART.strong, fontFamily: CHART.font, fontSize: 12 },
           // Contenu en classes CSS uniquement : la politique `style-src 'self'` de l'interface
           // refuse les attributs style que l'infobulle par défaut d'ECharts insère.
           formatter: (raw: unknown) => tooltipHtml(raw, tones),
@@ -86,22 +92,28 @@ export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
         xAxis: {
           type: "category",
           data: labels,
-          axisLine: { lineStyle: { color: "#222C42" } },
+          axisLine: { lineStyle: { color: CHART.line } },
           axisTick: { show: false },
-          axisLabel: { color: "#A3ACBF", hideOverlap: true },
+          axisLabel: { color: CHART.text, hideOverlap: true, fontSize: 11, margin: 10 },
         },
         yAxis: {
           type: "value",
           minInterval: 1,
-          splitLine: { lineStyle: { color: "#1A2236" } }, // grille : plus discrète que --line
-          axisLabel: { color: "#A3ACBF" },
+          splitNumber: 4,
+          splitLine: { lineStyle: { color: CHART.grid } },
+          axisLabel: { color: CHART.text, fontSize: 11 },
         },
-        series: order.map((level) => ({
+        series: order.map((level, index) => ({
           name: levelLabel(level),
           type: "bar",
           stack: "total",
-          barMaxWidth: 18,
-          itemStyle: { color: TONE_COLORS[toneOf(level)] },
+          barMaxWidth: 16,
+          barCategoryGap: "38%",
+          // Seul le haut de la pile est arrondi : la barre se lit comme un seul total.
+          itemStyle: {
+            color: TONE_COLORS[toneOf(level)],
+            borderRadius: index === last ? [3, 3, 0, 0] : 0,
+          },
           emphasis: { focus: "series" },
           data: series.points.map((point) => point.by_level[level] ?? 0),
         })),

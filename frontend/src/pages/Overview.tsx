@@ -129,7 +129,7 @@ function TopIncident({ incident }: { incident: Incident | undefined }) {
         Phase : {INCIDENT_STATUS[incident.status] ?? incident.status}
         {opened ? ` · ouvert il y a ${formatAge(opened)}` : ""}
       </p>
-      <Link to={`/incidents/${incident.id}`}>Ouvrir l'investigation →</Link>
+      <Link to={`/incidents/${incident.id}`}>Ouvrir l'investigation</Link>
     </section>
   );
 }
@@ -411,7 +411,7 @@ function IocTypes({ summary }: { summary: Summary | undefined }) {
         <div className="bar-row" key={type}>
           <span className="mono muted">{type}</span>
           <div className="bar-track">
-            <div className="bar-fill" style={{ width: `${(count / max) * 100}%`, background: "#9D8CFF" }} />
+            <div className="bar-fill" style={{ width: `${(count / max) * 100}%`, background: "#8E80FF" }} />
           </div>
           <span className="num mono">{formatNumber(count)}</span>
         </div>

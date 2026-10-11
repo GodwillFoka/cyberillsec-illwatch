@@ -1,6 +1,7 @@
 // CVE et priorités : vulnérabilités classées par score composite (ADR-001, ADR-014), fiche
 // justifiant chaque point du score, alertes et incidents liés. La CVE choisie est dans
 // l'adresse (?cve=…), la recherche aussi (?q=…).
+import { ExternalLink } from "lucide-react";
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 
 import { useOpenIncidentForCve } from "../api/mutations";
@@ -289,7 +290,8 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    fiche NVD ↗
+                    fiche NVD
+                    <ExternalLink className="inline-icon" size={13} aria-hidden="true" />
                   </a>
                 </p>
                 <p className="description">{cve.description}</p>

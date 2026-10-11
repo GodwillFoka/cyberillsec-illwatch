@@ -1,6 +1,7 @@
 // Page d'un incident (investigation) : cycle de vie, chronologie immuable, transitions,
 // notes, assignation, éléments associés. Une « action menée » est une déclaration de
 // l'analyste : ILLWATCH l'enregistre, il ne l'exécute pas (et le dit).
+import { ArrowLeft } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import {
@@ -340,7 +341,10 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
   return (
     <>
       <p style={{ margin: "0 0 12px" }}>
-        <Link to="/incidents">← Tous les incidents</Link>
+        <Link to="/incidents" className="back-link">
+          <ArrowLeft size={14} aria-hidden="true" />
+          Tous les incidents
+        </Link>
       </p>
       <QueryState query={query}>
         {(incident) => {
