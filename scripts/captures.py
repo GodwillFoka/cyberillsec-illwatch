@@ -62,9 +62,11 @@ def main() -> int:
         page = context.new_page()
         page.on(
             "console",
-            lambda m: problems.append(f"console {m.type} : {m.text[:200]}")
-            if m.type == "error" or "Content Security Policy" in m.text
-            else None,
+            lambda m: (
+                problems.append(f"console {m.type} : {m.text[:200]}")
+                if m.type == "error" or "Content Security Policy" in m.text
+                else None
+            ),
         )
         page.on("pageerror", lambda e: problems.append(f"exception : {e}"[:240]))
 
@@ -110,4 +112,17 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as exc:  # noqa: BLE001 - rendre l'échec lisible dans les annotations CI
+        import traceback
+
+        frames = traceback.extract_tb(exc.__traceback__)
+        where = next(
+            (f for f in reversed(frames) if f.filename.endswith("captures.py")), frames[-1]
+        )
+        message = f"{type(exc).__name__} : {str(exc).splitlines()[0][:300]}"
+        print(f"::error title=Capture (ligne {where.lineno})::{message}")
+        for problem in problems:
+            print(f"::error title=Capture::{problem}")
+        sys.exit(1)
