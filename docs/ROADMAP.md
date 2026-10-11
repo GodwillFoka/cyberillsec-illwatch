@@ -6,8 +6,9 @@ audit `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`)
 **État au 06/10/2026 :** `v0.1.1` taguée ; M7 (lots 1 à 3) **fusionné dans `main`**, qui porte
 la version de développement `0.2.0.dev0`. Validation sur données réelles automatisée sur GitHub
 Actions (hebdomadaire). Décision du 08/10 (ADR-016) : l'interface web passe avant l'hébergement.
-Lot 1 de l'interface fusionné (vue d'ensemble, triage, incidents, IOC, CVE, chasse). Reste pour
-clore M7 : la préproduction sur un VPS européen.
+Interface complète (lot 1 et écrans Sources CTI, Administration), design v7. Préproduction
+publique sur VPS **reportée le 11/10** : une préproduction locale identique tourne en CI à chaque
+modification ; M7 se clôt au passage sur le VPS. M8 démarré en parallèle (ADR-017).
 
 Règle de conduite : un jalon est clos quand ses **critères de sortie sont constatés**, pas quand
 le code est fusionné. Chaque jalon part d'une branche créée depuis `main` à jour et se termine par
