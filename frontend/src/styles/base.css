@@ -1751,8 +1751,9 @@ textarea {
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* Horodatages et durées d'une liste : jamais coupés en deux lignes. */
-.list li > .mono {
+/* Horodatages et durées d'une liste : jamais coupés en deux lignes (les valeurs longues,
+ * marquées .ellipsis, gardent leur troncature). */
+.list li > .mono:not(.ellipsis) {
   flex: none;
   white-space: nowrap;
 }
