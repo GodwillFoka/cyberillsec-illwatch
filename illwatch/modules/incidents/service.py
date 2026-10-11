@@ -399,7 +399,7 @@ async def open_from_alert(
     priority = RiskPriority(alert.priority)
     sla = remediation_sla_hours(priority)
     description = (
-        f"Alerte ILLWATCH : {alert.cve_id} a franchi le seuil de risque "
+        f"Alerte ILL Watch : {alert.cve_id} a franchi le seuil de risque "
         f"(score {float(alert.score):.1f}/100, {priority}, remédiation sous {sla} h, "
         f"déclencheur : {alert.reason}).\n\n{cve.description if cve else ''}"
     )

@@ -1,4 +1,4 @@
-"""ILLWATCH — Security Monitoring & Cyber Threat Intelligence Platform.
+"""ILL Watch — Security Monitoring & Cyber Threat Intelligence Platform.
 
 CyberillSec, a CYBERILL initiative. Licence MIT.
 """

@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Mise à jour des dépendances npm et du fichier de verrouillage
+# ILL Watch — Mise à jour des dépendances npm et du fichier de verrouillage
 #
 # Sur une branche deps/**, déposer .github/npm-request.txt (une ligne par paquet) :
 #     prod react@^19.2.0

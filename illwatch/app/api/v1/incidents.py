@@ -238,7 +238,7 @@ async def create_incident(
             await get_cve(session, cve_id)
         except CVENotFoundError:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND, detail=f"{cve_id} n'est pas suivie par ILLWATCH."
+                status.HTTP_404_NOT_FOUND, detail=f"{cve_id} n'est pas suivie par ILL Watch."
             ) from None
     try:
         incident = await service.create_incident(

@@ -79,7 +79,7 @@ async def resolve_host(host: str, port: int) -> list[str]:
 async def assert_public_destination(url: str, resolver: Resolver = resolve_host) -> None:
     """Refuse une URL non conforme ou dont **une** des adresses résolues n'est pas publique.
 
-    Partagée par tous les clients HTTP d'ILLWATCH (fetcher maison, client TAXII) : la règle
+    Partagée par tous les clients HTTP d'ILL Watch (fetcher maison, client TAXII) : la règle
     SSRF ne doit pas dépendre de la bibliothèque qui émet la requête.
     """
     try:

@@ -307,7 +307,7 @@ def _known_ioc(ctx: HuntContext) -> Iterable[Match]:
                 "RULE-06",
                 Severity.HIGH,
                 o.value,
-                f"IOC actif connu d'ILLWATCH ({known.description or 'sans description'}).",
+                f"IOC actif connu d'ILL Watch ({known.description or 'sans description'}).",
                 known.indicator_id,
             )
 
@@ -356,7 +356,7 @@ CATALOG: tuple[Rule, ...] = (
     Rule(
         "RULE-06",
         "IOC connu",
-        "Observable soumis déjà présent comme IOC actif dans ILLWATCH.",
+        "Observable soumis déjà présent comme IOC actif dans ILL Watch.",
         Severity.HIGH,
         False,
         _known_ioc,

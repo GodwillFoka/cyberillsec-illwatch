@@ -30,7 +30,7 @@ describe("SseParser", () => {
   });
 });
 
-describe("événements ILLWATCH", () => {
+describe("événements ILL Watch", () => {
   it("convertit un message valide et rejette le reste", () => {
     const event = toLiveEvent({
       id: "x",

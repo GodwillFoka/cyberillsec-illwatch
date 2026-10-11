@@ -1,4 +1,4 @@
-# Interface web d'ILLWATCH
+# Interface web d'ILL Watch
 
 React + TypeScript (Vite), données par TanStack Query, temps réel par Server-Sent Events
 (`GET /api/v1/stream`). Décision : [ADR-016](../docs/adr/ADR-016-interface-web.md) ; apparence :
@@ -6,7 +6,7 @@ React + TypeScript (Vite), données par TanStack Query, temps réel par Server-S
 
 ## Développer (poste Kali)
 
-Prérequis : Node.js 20 ou plus (`node --version`), l'API ILLWATCH lancée sur le port 8000.
+Prérequis : Node.js 20 ou plus (`node --version`), l'API ILL Watch lancée sur le port 8000.
 
 ```bash
 cd ~/Documents/cyberillsec-illwatch && source .venv/bin/activate

@@ -1,11 +1,11 @@
-# Architecture technique d'ILLWATCH
+# Architecture technique d'ILL Watch
 
 Ce document décrit comment le code est organisé et pourquoi. Pour les spécifications
 fonctionnelles, voir le [Cahier des charges](CAHIER_DES_CHARGES.md).
 
 ## Principe directeur
 
-ILLWATCH suit une Clean Architecture en couches, avec une dépendance strictement descendante : une
+ILL Watch suit une Clean Architecture en couches, avec une dépendance strictement descendante : une
 couche ne connaît que celle du dessous.
 
 ```
@@ -76,7 +76,7 @@ workers concurrents. La normalisation en amont (`normalize_indicator`) garantit 
 
 Trois tentatives avec backoff exponentiel (`tenacity`), timeout de 15 s, respect de l'en-tête
 `Retry-After` sur HTTP 429, cache Redis pour amortir le rate limiting des API publiques (RSK-01).
-Les clés API sont optionnelles : ILLWATCH fonctionne sans, plus lentement.
+Les clés API sont optionnelles : ILL Watch fonctionne sans, plus lentement.
 
 ### Migrations
 
@@ -87,7 +87,7 @@ plutôt que depuis `alembic.ini` — pour qu'il n'existe qu'une seule source de 
 ## Flux de données — pipeline de collecte
 
 ```
-   Sources externes            ILLWATCH                          Sorties
+   Sources externes            ILL Watch                          Sorties
    ────────────────            ──────                          ───────
    NVD 2.0        ─┐
    CISA KEV       ─┤        ┌──────────────┐
@@ -177,7 +177,7 @@ Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_la
 - **Pas de microservices.** Le monolithe modulaire tient jusqu'à 100 000 événements/jour. Découper
   avant d'en avoir besoin coûterait la simplicité de déploiement, qui est un argument produit.
 - **Pas d'Elasticsearch.** PostgreSQL avec des index adaptés couvre les besoins de recherche de la
-  v1.0 (P95 de 8 ms sur 30 000 CVE). C'est la lourdeur des alternatives qu'ILLWATCH évite.
+  v1.0 (P95 de 8 ms sur 30 000 CVE). C'est la lourdeur des alternatives qu'ILL Watch évite.
 - ~~Pas d'IHM web~~ *(levé le 08/10/2026 par l'ADR-016)* : la v1.0 n'avait qu'une API et une CLI ;
   l'interface web React + TypeScript (temps réel par SSE) est en cours dans `frontend/`.
 - **Pas de moteur Sigma complet.** Les règles de chasse portent sur des observables, pas sur des

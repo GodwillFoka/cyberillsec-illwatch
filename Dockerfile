@@ -1,6 +1,6 @@
 FROM python:3.12-slim AS base
 
-LABEL org.opencontainers.image.title="ILLWATCH" \
+LABEL org.opencontainers.image.title="ILL Watch" \
       org.opencontainers.image.description="Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec)" \
       org.opencontainers.image.source="https://github.com/GodwillFoka/cyberillsec-illwatch" \
       org.opencontainers.image.licenses="MIT" \
@@ -38,7 +38,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 # Adapté à une instance unique ; en multi-réplicas, sortir la migration dans un job dédié.
 # --proxy-headers : derrière un reverse proxy listé dans FORWARDED_ALLOW_IPS, l'adresse client
 # réelle est lue dans X-Forwarded-For (limitation de débit, journal d'audit).
-# --no-access-log : le journal d'accès JSON d'ILLWATCH (illwatch.http) remplace celui d'uvicorn,
+# --no-access-log : le journal d'accès JSON d'ILL Watch (illwatch.http) remplace celui d'uvicorn,
 # qui doublait chaque ligne en texte libre.
 CMD ["sh", "-c", "illwatch db upgrade && exec uvicorn illwatch.app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --no-server-header --no-access-log"]
 

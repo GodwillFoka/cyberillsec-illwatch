@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Publication : image Docker (GHCR) et release GitHub
+# ILL Watch — Publication : image Docker (GHCR) et release GitHub
 #
 #   push sur main  → ghcr.io/godwillfoka/cyberillsec-illwatch:edge   (+ :sha-xxxxxxx)
 #   tag vX.Y.Z     → ghcr.io/godwillfoka/cyberillsec-illwatch:X.Y.Z, :X.Y, :latest
@@ -48,7 +48,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
           labels: |
-            org.opencontainers.image.title=ILLWATCH
+            org.opencontainers.image.title=ILL Watch
             org.opencontainers.image.description=Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec)
             org.opencontainers.image.vendor=CYBERILL
       - uses: docker/build-push-action@v7
@@ -93,6 +93,6 @@ jobs:
           } >> notes.md
       - uses: softprops/action-gh-release@v3
         with:
-          name: ILLWATCH ${{ github.ref_name }}
+          name: ILL Watch ${{ github.ref_name }}
           body_path: notes.md
           make_latest: true

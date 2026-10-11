@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Ménage des branches fusionnées
+# ILL Watch — Ménage des branches fusionnées
 # 1. À la fusion d'une PR interne : supprime sa branche.
 # 2. Balayage (lancement manuel, hebdomadaire, ou à la modification de ce fichier) :
 #    supprime toute branche entièrement contenue dans main.

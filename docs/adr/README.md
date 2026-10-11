@@ -21,8 +21,9 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [013](ADR-013-deploiement-tls.md) | Déploiement : TLS par Caddy, migrations isolées, analyse d'image, entretien quotidien | Proposé |
 | [014](ADR-014-score-dependance-epss.md) | Score : dépendance à EPSS et plancher KEV | Accepté (A + B + C) |
 | [015](ADR-015-miroir-github.md) | Miroir GitHub : CI, documentation publiée, image Docker et releases | Accepté |
-| [016](ADR-016-interface-web.md) | Interface web : React + TypeScript, temps réel par SSE, système de design v6 (v7 le 11/10) | Accepté |
+| [016](ADR-016-interface-web.md) | Interface web : React + TypeScript, temps réel par SSE, système de design v6 (v7 puis v8 le 11/10) | Accepté |
 | [017](ADR-017-detection-correlation.md) | M8 : confiance des IOC d'abord (Amirauté, fraîcheur, récurrence), corrélation ensuite | Accepté |
+| [018](ADR-018-identite-ill-watch.md) | Identité ILL Watch : le brand book v2 fait autorité sur l'interface (logo, jetons, Inter, voix) | Accepté |
 
 ## Gabarit
 

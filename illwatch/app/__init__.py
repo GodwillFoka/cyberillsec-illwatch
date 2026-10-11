@@ -1,1 +1,1 @@
-"""Noyau de l'API web ILLWATCH (FastAPI, configuration, accès données)."""
+"""Noyau de l'API web ILL Watch (FastAPI, configuration, accès données)."""

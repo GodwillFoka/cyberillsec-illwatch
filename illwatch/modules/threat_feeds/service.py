@@ -6,7 +6,7 @@ exactement les mêmes règles.
 
 Sécurité : l'URL d'un flux est une adresse que le serveur ira lui-même
 contacter (T2.3). Enregistrer une URL revient donc à piloter une requête
-sortante depuis l'infrastructure ILLWATCH : c'est la surface d'attaque SSRF
+sortante depuis l'infrastructure ILL Watch : c'est la surface d'attaque SSRF
 (Server-Side Request Forgery). La validation ci-dessous refuse tout ce qui
 vise le réseau interne *tel qu'écrit dans l'URL*. Elle ne suffit pas seule :
 un nom de domaine public peut résoudre vers une adresse privée (DNS

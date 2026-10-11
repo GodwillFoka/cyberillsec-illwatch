@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/illwatch-logo-dark.svg">
-  <img alt="CyberillSec ILLWATCH" src="docs/assets/illwatch-logo-light.svg" width="420">
+  <img alt="CyberillSec ILL Watch" src="docs/assets/illwatch-logo-light.svg" width="420">
 </picture>
 
 **Security Monitoring & Cyber Threat Intelligence Platform**
@@ -23,7 +23,7 @@
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
 
-<sub>Anciennement SENTRY — renommé ILLWATCH le 08/10/2026 ; poste existant : <a href="docs/OPERATIONS.md">OPERATIONS § 7 sexies</a>.</sub>
+<sub>Anciennement SENTRY — renommé ILL Watch le 08/10/2026 ; poste existant : <a href="docs/OPERATIONS.md">OPERATIONS § 7 sexies</a>.</sub>
 
 [**📖 Documentation**](https://godwillfoka.github.io/cyberillsec-illwatch/) ·
 [Démarrage rapide](#démarrage-rapide) ·
@@ -39,7 +39,7 @@ Dépôts : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-ill
 
 ## En 30 secondes
 
-ILLWATCH est une plateforme de **Cyber Threat Intelligence** open source qui fait le travail
+ILL Watch est une plateforme de **Cyber Threat Intelligence** open source qui fait le travail
 répétitif d'un analyste SOC — collecter, dédupliquer, prioriser, corréler — pour qu'il ne garde
 que les décisions :
 
@@ -80,7 +80,7 @@ Pendant ce temps, les attaquants exploitent une vulnérabilité publiée en moin
 
 ## La réponse
 
-| | Plateformes commerciales | Plateformes open source complètes | **ILLWATCH** |
+| | Plateformes commerciales | Plateformes open source complètes | **ILL Watch** |
 |---|---|---|---|
 | Coût annuel | 40 à 150 k€ | 0 € (hors infrastructure) | **0 €** |
 | Licence | Propriétaire | AGPL / Apache | **MIT** |
@@ -88,7 +88,7 @@ Pendant ce temps, les attaquants exploitent une vulnérabilité publiée en moin
 | Priorisation CVE par l'exploitation réelle | Oui | Via connecteurs | **Native (KEV + EPSS + exploit)** |
 | Souveraineté | Variable | Auto-hébergé | **Auto-hébergé, UE** |
 
-ILLWATCH ne cherche pas à remplacer un graphe de connaissances CTI complet : il donne à une
+ILL Watch ne cherche pas à remplacer un graphe de connaissances CTI complet : il donne à une
 équipe de 1 à 10 personnes ce dont elle a besoin **le lundi matin** — quoi patcher d'abord, quoi
 bloquer, qu'est-ce qui a changé, et la preuve de ce qui a été fait.
 
@@ -108,7 +108,7 @@ que lorsque `illwatch status` le constate sur données réelles.
 
 ## Score de risque composite
 
-Le cœur d'ILLWATCH. Pour chaque CVE :
+Le cœur d'ILL Watch. Pour chaque CVE :
 
 ```
 R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + KEV × 25 + Exploit × 10 + Ransomware × 10)
@@ -137,7 +137,7 @@ flowchart LR
         C[AlienVault OTX]:::src
         D[NVD 2.0 · KEV · EPSS]:::src
     end
-    subgraph ILLWATCH
+    subgraph ILL Watch
         W[Worker planifié<br/>verrou Redis]
         F[Fetcher durci<br/>SSRF · taille · délai]
         N[Normalisation<br/>déduplication]
