@@ -6,7 +6,7 @@
 # celui-ci coûte une minute. Mêmes étapes, même ordre, même seuils.
 #
 # Prérequis : venv activé (pip install -e ".[dev]"), PostgreSQL joignable (par défaut la base
-# Docker Compose, port hôte 5433), Node.js ≥ 20 pour l'interface. `psql` n'est pas requis :
+# Docker Compose, port hôte 5433), Node.js ≥ 20.19 pour l'interface (Vite 7). `psql` n'est pas requis :
 # à défaut, il est appelé dans le conteneur illwatch-postgres.
 #
 #   ./scripts/ci-local.sh                  # réseau, qualité, tests, migrations, interface
@@ -53,8 +53,8 @@ done
 command -v ruff >/dev/null || fail "ruff absent : activez le venv (source .venv/bin/activate)"
 if [[ $WITH_UI == 1 ]]; then
   command -v node >/dev/null || fail "Node.js absent (sudo apt install nodejs npm) ou relancez avec --sans-interface"
-  node_major=$(node -p 'process.versions.node.split(".")[0]')
-  (( node_major >= 20 )) || fail "Node.js $node_major trop ancien (≥ 20 requis)"
+  node -e 'const [a,b]=process.versions.node.split(".").map(Number); process.exit(a>20||(a===20&&b>=19)?0:1)' \
+    || fail "Node.js $(node -v) trop ancien (≥ 20.19 requis par Vite 7)"
 fi
 ok "réseau et outils"
 
@@ -101,7 +101,7 @@ if [[ $WITH_UI == 1 ]]; then
   (
     cd frontend
     npm ci --no-audit --no-fund
-    npm audit --omit=dev --audit-level=high
+    npm audit --audit-level=high
     npm run gen:api
     npx tsc --noEmit --pretty false
     npm test

@@ -7,7 +7,7 @@
 # Ce script enchaîne tout, dans l'ordre de la CI :
 #   schéma OpenAPI → dépendances npm → types → compilation → construction.
 #
-# Prérequis : venv activé (commande `illwatch`), Node.js ≥ 20.
+# Prérequis : venv activé (commande `illwatch`), Node.js ≥ 20.19 (Vite 7).
 #   ./scripts/build-web.sh
 # Puis redémarrer uvicorn (il sert frontend/dist).
 # ============================================================================

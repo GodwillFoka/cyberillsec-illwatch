@@ -35,6 +35,6 @@
   --r-btn: 8px;
   --r-badge: 6px;
 
-  --font: "Inter", system-ui, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --font: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
 }

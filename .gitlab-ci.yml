@@ -157,7 +157,7 @@ interface:
   script:
     - cd frontend
     - npm ci --no-audit --no-fund --cache .npm
-    - npm audit --omit=dev --audit-level=high
+    - npm audit --audit-level=high   # outils de développement compris (0 depuis React 19 / Vite 7)
     - npm run gen:api
     - npx tsc --noEmit --pretty false
     - npm test
