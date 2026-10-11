@@ -238,11 +238,11 @@ async def load_demo_data(
         batch = observations[day::31]
         if not batch:
             continue
-        feed = sources[day % len(sources)]
+        source = sources[day % len(sources)]
         result = await ingest_indicators(
             session,
             batch,
-            feed_id=feed.id if feed else None,
+            feed_id=source.id if source else None,
             now=moment - timedelta(days=day, hours=rng.randint(0, 20)),
         )
         report.indicators += result.inserted

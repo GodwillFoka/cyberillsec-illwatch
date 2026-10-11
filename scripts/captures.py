@@ -35,7 +35,8 @@ problems: list[str] = []
 
 
 def settle(page: Page) -> None:
-    page.wait_for_load_state("networkidle")
+    # Pas de « networkidle » : le flux temps réel (SSE) garde une connexion ouverte en permanence.
+    page.wait_for_load_state("load")
     # Laisse finir chargements et animations (graphiques, mise en évidence des nouveautés).
     # Attente côté Python : la CSP de l'interface (script-src 'self') refuse, à juste titre,
     # le JavaScript passé en chaîne par wait_for_function.
