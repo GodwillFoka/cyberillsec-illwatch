@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/10/2026, 19 h 15**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **11/10/2026, 10 h 00**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -46,6 +46,7 @@ Kali sur données réelles. **Reste pour clore M7** : la préproduction sur un V
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 11/10 | PR #28 | Re-vérification complète des écrans IOC, CVE, chasse : CI relancée sur `main`, validation réelle, seconde revue indépendante (verdict OK) ; 4 points mineurs corrigés (chemins d'API encodés partout, garde-fou du formulaire de chasse, docs). Interface construite sur Kali avec `scripts/build-web.sh` |
 | 10/10 | PR #26 | Écran Chasse : sessions, périmètre, correspondances paginées et filtrées (liens IOC/CVE), nouvelle chasse ; API `GET /hunting/sessions/{id}/matches` — **lot 1 de l'interface complet** ; revue indépendante des 3 écrans : 5 constats moyens corrigés (dont un sécurité : identifiants d'adresse validés) |
 | 10/10 | PR #25 | Écran CVE et priorités : liste par risque, recherche, filtres priorité/KEV, fiche (signaux, score décomposé, historique, alertes, incidents), association ou ouverture d'incident ; jokers SQL échappés dans la recherche |
 | 10/10 | PR #24 | Écran Indicateurs (IOC) : recherche normalisée, filtres, fiche (provenance, incidents associés, association), soumission d'un lot, export CSV audité ; API incidents filtrés par IOC/CVE |

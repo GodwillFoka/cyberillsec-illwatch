@@ -8,7 +8,7 @@ import type { Alert, Hunt, HuntDetail, IncidentDetail, IncidentEvent, IngestResu
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (alertId: string) => apiPost<Alert>(`/alerts/${alertId}/ack`),
+    mutationFn: (alertId: string) => apiPost<Alert>(`/alerts/${encodeURIComponent(alertId)}/ack`),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["alerts"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
@@ -19,7 +19,7 @@ export function useAcknowledgeAlert() {
 export function useOpenIncidentFromAlert() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (alertId: string) => apiPost<IncidentDetail>(`/alerts/${alertId}/incident`),
+    mutationFn: (alertId: string) => apiPost<IncidentDetail>(`/alerts/${encodeURIComponent(alertId)}/incident`),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["alerts"] });
       void queryClient.invalidateQueries({ queryKey: ["incidents"] });
@@ -52,31 +52,31 @@ export function useCreateIncident() {
 export function useTransition(incidentId: string) {
   return useIncidentMutation(
     (body: { target: string; note?: string; closure_summary?: string }) =>
-      apiPost<IncidentDetail>(`/incidents/${incidentId}/transitions`, body),
+      apiPost<IncidentDetail>(`/incidents/${encodeURIComponent(incidentId)}/transitions`, body),
   );
 }
 
 export function useAddNote(incidentId: string) {
   return useIncidentMutation((body: { message: string; kind: "COMMENT" | "ACTION_TAKEN" }) =>
-    apiPost<IncidentEvent>(`/incidents/${incidentId}/notes`, body),
+    apiPost<IncidentEvent>(`/incidents/${encodeURIComponent(incidentId)}/notes`, body),
   );
 }
 
 export function useAssign(incidentId: string) {
   return useIncidentMutation((userId: string | null) =>
-    apiSend<IncidentDetail>("PUT", `/incidents/${incidentId}/assignee`, { user_id: userId }),
+    apiSend<IncidentDetail>("PUT", `/incidents/${encodeURIComponent(incidentId)}/assignee`, { user_id: userId }),
   );
 }
 
 export function useLinkCve(incidentId: string) {
   return useIncidentMutation((cveId: string) =>
-    apiPost<{ created: boolean }>(`/incidents/${incidentId}/cves`, { cve_id: cveId }),
+    apiPost<{ created: boolean }>(`/incidents/${encodeURIComponent(incidentId)}/cves`, { cve_id: cveId }),
   );
 }
 
 export function useLinkIndicator(incidentId: string) {
   return useIncidentMutation((value: string) =>
-    apiPost<{ created: boolean }>(`/incidents/${incidentId}/indicators`, { value }),
+    apiPost<{ created: boolean }>(`/incidents/${encodeURIComponent(incidentId)}/indicators`, { value }),
   );
 }
 
@@ -109,10 +109,10 @@ export function useAttachToIncident() {
   return useMutation({
     mutationFn: ({ incidentId, target }: { incidentId: string; target: AttachTarget }) =>
       "indicatorId" in target
-        ? apiPost<{ created: boolean }>(`/incidents/${incidentId}/indicators`, {
+        ? apiPost<{ created: boolean }>(`/incidents/${encodeURIComponent(incidentId)}/indicators`, {
             indicator_id: target.indicatorId,
           })
-        : apiPost<{ created: boolean }>(`/incidents/${incidentId}/cves`, { cve_id: target.cveId }),
+        : apiPost<{ created: boolean }>(`/incidents/${encodeURIComponent(incidentId)}/cves`, { cve_id: target.cveId }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["incidents"] });
     },
