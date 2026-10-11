@@ -9,12 +9,9 @@ import { Hunting } from "./pages/Hunting";
 import { Incidents } from "./pages/Incidents";
 import { Indicators } from "./pages/Indicators";
 import { Triage } from "./pages/Triage";
-import { NotFound, Upcoming } from "./pages/Upcoming";
-
-const UPCOMING: [string, string, string][] = [
-  ["/sources", "Sources CTI", "Santé et historique de collecte de chaque source."],
-  ["/administration", "Administration", "Comptes, journal d'audit et paramètres."],
-];
+import { Admin } from "./pages/Admin";
+import { NotFound } from "./pages/NotFound";
+import { Sources } from "./pages/Sources";
 
 export function App() {
   const { status } = useAuth();
@@ -43,7 +40,7 @@ function Screen() {
   if (pathname === "/incidents") return <Incidents />;
   const incident = /^\/incidents\/([0-9a-f-]{36})$/i.exec(pathname);
   if (incident) return <IncidentPage key={incident[1]} incidentId={incident[1]} />;
-  const upcoming = UPCOMING.find(([path]) => isActive(pathname, path));
-  if (upcoming) return <Upcoming title={upcoming[1]} description={upcoming[2]} />;
+  if (pathname === "/sources") return <Sources />;
+  if (pathname === "/administration") return <Admin />;
   return <NotFound />;
 }

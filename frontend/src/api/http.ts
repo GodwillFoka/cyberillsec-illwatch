@@ -158,6 +158,12 @@ export function apiPost<T>(path: string, body?: unknown): Promise<T> {
   return apiSend<T>("POST", path, body);
 }
 
+/** Suppression : 204 attendu, aucun corps renvoyé. */
+export async function apiDelete(path: string): Promise<void> {
+  const response = await apiFetch(path, { method: "DELETE" });
+  if (!response.ok) throw await errorFrom(response);
+}
+
 export async function apiSend<T>(method: "POST" | "PUT" | "PATCH", path: string, body?: unknown): Promise<T> {
   const response = await apiFetch(path, {
     method,
