@@ -24,12 +24,23 @@ const LABELS: Record<string, string> = {
   P3_FAIBLE: "P3",
 };
 
-/** Couleur de texte des badges, reprise par les graphiques. */
+/** Marque pleine de chaque niveau (graphiques, barres) : jetons --p0-mark à --p3-mark. */
 export const TONE_COLORS: Record<Tone, string> = {
-  p0: "#FF9B9E",
-  p1: "#F7CB70",
-  p2: "#9BC2FF",
-  p3: "#C6CDD9",
+  p0: "#E5484D",
+  p1: "#E9A23B",
+  p2: "#4C8DF0",
+  p3: "#66728A",
+};
+
+/** Couleurs du thème des graphiques (jetons du système de design v7). */
+export const CHART = {
+  text: "#97A3BA",
+  strong: "#E6EBF5",
+  line: "#1F2A42",
+  grid: "#18223A",
+  panel: "#0E1627",
+  accent: "#8E80FF",
+  font: "IBM Plex Sans, system-ui, sans-serif",
 };
 
 export const SEVERITY_ORDER = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];

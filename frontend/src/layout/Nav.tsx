@@ -1,27 +1,44 @@
+// Rail de navigation (v7) : une icône par écran, sections en casse normale, repère orange sur
+// l'écran actif. Les compteurs n'apparaissent que s'il y a quelque chose à traiter.
+import {
+  Bug,
+  Crosshair,
+  Fingerprint,
+  LayoutDashboard,
+  RadioTower,
+  Settings,
+  ShieldAlert,
+  Siren,
+  type LucideIcon,
+} from "lucide-react";
+
 import { useSummary } from "../api/queries";
-import { Logo } from "../components/Logo";
+import { useAuth } from "../auth/AuthProvider";
+import { Lockup } from "../components/Logo";
 import { Link as RouterLink, isActive, useLocation } from "../lib/router";
 
 interface Item {
   to: string;
   label: string;
+  icon: LucideIcon;
   count?: number;
-  soon?: boolean;
+  tone?: "p0" | "p1";
 }
 
-function Link({ to, label, count, soon }: Item) {
+function Link({ to, label, icon: Icon, count, tone = "p1" }: Item) {
   const { pathname } = useLocation();
   const active = isActive(pathname, to);
   return (
     <RouterLink
       to={to}
       aria-current={active ? "page" : undefined}
-      className={`nav-link${active ? " active" : ""}${soon ? " soon" : ""}`}
+      className={`nav-link${active ? " active" : ""}`}
     >
-      <span>{label}</span>
+      <Icon className="nav-icon" size={18} strokeWidth={1.75} aria-hidden="true" />
+      <span className="nav-label">{label}</span>
       {count ? (
-        <span className="count" aria-label={`${count} à traiter`}>
-          {count}
+        <span className={`count ${tone}`} aria-label={`${count} à traiter`}>
+          {count > 999 ? "999+" : count}
         </span>
       ) : null}
     </RouterLink>
@@ -30,29 +47,53 @@ function Link({ to, label, count, soon }: Item) {
 
 export function Nav() {
   const summary = useSummary().data;
+  const { user } = useAuth();
   return (
     <nav className="nav" aria-label="Navigation principale">
-      <div className="nav-brand">
-        <Logo />
-        <div>
-          <strong>ILLWATCH</strong>
-          <small>BY CYBERILLSEC</small>
-        </div>
+      <RouterLink to="/" className="nav-brand" aria-label="ILLWATCH, vue d'ensemble">
+        <Lockup />
+      </RouterLink>
+      <div className="nav-group">
+        <Link to="/" label="Vue d'ensemble" icon={LayoutDashboard} />
       </div>
-      <Link to="/" label="Vue d'ensemble" />
-      <div className="nav-section">Opérations SOC</div>
-      <Link to="/triage" label="Triage" count={summary?.alerts.unacknowledged} />
-      <Link to="/incidents" label="Incidents" count={summary?.incidents.open} />
-      <div className="nav-section">Renseignement</div>
-      <Link to="/indicateurs" label="Indicateurs (IOC)" />
-      <Link to="/sources" label="Sources CTI" count={summary?.feeds.degraded.length} soon />
-      <div className="nav-section">Vulnérabilités</div>
-      <Link to="/cve" label="CVE et priorités" />
-      <div className="nav-section">Chasse</div>
-      <Link to="/chasse" label="Recherches et règles" />
+      <div className="nav-group" role="group" aria-labelledby="nav-soc">
+        <div className="nav-section" id="nav-soc">
+          Opérations SOC
+        </div>
+        <Link to="/triage" label="Triage" icon={Siren} count={summary?.alerts.unacknowledged} />
+        <Link to="/incidents" label="Incidents" icon={ShieldAlert} count={summary?.incidents.open} />
+      </div>
+      <div className="nav-group" role="group" aria-labelledby="nav-cti">
+        <div className="nav-section" id="nav-cti">
+          Renseignement
+        </div>
+        <Link to="/indicateurs" label="Indicateurs" icon={Fingerprint} />
+        <Link
+          to="/sources"
+          label="Sources CTI"
+          icon={RadioTower}
+          count={summary?.feeds.degraded.length}
+          tone="p0"
+        />
+      </div>
+      <div className="nav-group" role="group" aria-labelledby="nav-vuln">
+        <div className="nav-section" id="nav-vuln">
+          Vulnérabilités
+        </div>
+        <Link to="/cve" label="CVE et priorités" icon={Bug} />
+      </div>
+      <div className="nav-group" role="group" aria-labelledby="nav-detect">
+        <div className="nav-section" id="nav-detect">
+          Détection
+        </div>
+        <Link to="/chasse" label="Chasse" icon={Crosshair} />
+      </div>
       <div className="nav-spacer" />
-      <div className="nav-section">Administration</div>
-      <Link to="/administration" label="Comptes, audit, paramètres" soon />
+      {user?.role === "ADMIN" && (
+        <div className="nav-group">
+          <Link to="/administration" label="Administration" icon={Settings} />
+        </div>
+      )}
     </nav>
   );
 }

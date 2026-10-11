@@ -1,9 +1,17 @@
+// Barre supérieure (v7) : état du direct (toujours visible), pause, heure UTC/locale, compte.
+import { LogOut, Pause, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "../auth/AuthProvider";
 import { formatTime } from "../lib/format";
 import { useTimeZone } from "../lib/time";
 import { useRealtime } from "../realtime/RealtimeProvider";
+
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: "Administrateur",
+  ANALYST: "Analyste",
+  VIEWER: "Lecteur",
+};
 
 function Clock({ utc }: { utc: boolean }) {
   const [now, setNow] = useState(() => new Date());
@@ -22,39 +30,59 @@ export function TopBar() {
   const state = paused ? "paused" : status;
   const label = paused
     ? pending > 0
-      ? `Direct en pause · ${pending} mise${pending > 1 ? "s" : ""} à jour en attente`
-      : "Direct en pause"
+      ? `En pause, ${pending} mise${pending > 1 ? "s" : ""} à jour en attente`
+      : "En pause"
     : status === "live"
-      ? "Connecté · en direct"
+      ? "En direct"
       : status === "connecting"
         ? "Connexion au direct…"
-        : "Direct interrompu · nouvel essai, données relues chaque minute";
+        : "Direct interrompu, relecture chaque minute";
 
   return (
     <header className="topbar">
-      <span className="live" role="status" aria-live="polite">
+      <span className={`live-chip ${state}`} role="status" aria-live="polite" title={label}>
         <span className={`dot ${state}`} aria-hidden="true" />
-        {label}
+        <span className="live-text">{label}</span>
       </span>
-      <button className="btn quiet" type="button" aria-pressed={paused} onClick={togglePause}>
-        {paused ? "Reprendre le direct" : "Mettre en pause"}
+      <button
+        className="btn quiet icon-btn"
+        type="button"
+        aria-pressed={paused}
+        onClick={togglePause}
+        title={paused ? "Reprendre le direct" : "Mettre le direct en pause"}
+      >
+        {paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}
+        <span className="hide-narrow">{paused ? "Reprendre" : "Pause"}</span>
       </button>
       <span className="grow" />
       <button
-        className="btn quiet"
+        className="btn quiet clock"
         type="button"
         onClick={toggle}
         title="Basculer entre UTC et l'heure locale"
       >
-        {utc ? "UTC" : "Local"} · <Clock utc={utc} />
+        <span className="clock-zone">{utc ? "UTC" : "Local"}</span>
+        <Clock utc={utc} />
       </button>
       {user && (
-        <span className="muted" title={user.email}>
-          {user.username} · {user.role}
+        <span className="user-chip" title={user.email}>
+          <span className="avatar" aria-hidden="true">
+            {user.username.slice(0, 2).toUpperCase()}
+          </span>
+          <span className="hide-narrow">
+            <strong>{user.username}</strong>
+            <small>{ROLE_LABEL[user.role] ?? user.role}</small>
+          </span>
         </span>
       )}
-      <button className="btn" type="button" onClick={() => void signOut()}>
-        Se déconnecter
+      <button
+        className="btn quiet icon-btn"
+        type="button"
+        onClick={() => void signOut()}
+        aria-label="Se déconnecter"
+        title="Se déconnecter"
+      >
+        <LogOut size={16} aria-hidden="true" />
       </button>
     </header>
   );

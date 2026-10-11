@@ -1,6 +1,7 @@
 // CVE et priorités : vulnérabilités classées par score composite (ADR-001, ADR-014), fiche
 // justifiant chaque point du score, alertes et incidents liés. La CVE choisie est dans
 // l'adresse (?cve=…), la recherche aussi (?q=…).
+import { ExternalLink } from "lucide-react";
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 
 import { useOpenIncidentForCve } from "../api/mutations";
@@ -44,16 +45,26 @@ function urlFor(params: { cve?: string; q?: string }): string {
   return text ? `/cve?${text}` : "/cve";
 }
 
+const SIGNAL_TITLE: Record<string, string> = {
+  KEV: "Exploitée selon le catalogue KEV de la CISA",
+  Exploit: "Exploit public disponible",
+  "Rançon": "Utilisée dans des campagnes de rançongiciel",
+};
+
 function Signals({ cve }: { cve: Cve }) {
   const tags: string[] = [];
   if (cve.is_kev) tags.push("KEV");
   if (cve.has_public_exploit) tags.push("Exploit");
-  if (cve.has_ransomware_campaign) tags.push("Rançongiciel");
+  if (cve.has_ransomware_campaign) tags.push("Rançon");
   if (tags.length === 0) return <span className="muted">—</span>;
   return (
     <span className="row tight">
       {tags.map((tag) => (
-        <span key={tag} className={`badge ${tag === "KEV" ? "p0" : "p1"}`}>
+        <span
+          key={tag}
+          className={`badge tag ${tag === "KEV" ? "p0" : "p1"}`}
+          title={SIGNAL_TITLE[tag]}
+        >
           {tag}
         </span>
       ))}
@@ -289,7 +300,8 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    fiche NVD ↗
+                    fiche NVD
+                    <ExternalLink className="inline-icon" size={13} aria-hidden="true" />
                   </a>
                 </p>
                 <p className="description">{cve.description}</p>

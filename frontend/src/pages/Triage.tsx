@@ -279,7 +279,7 @@ function AlertDetail({
         {opened && (
           <div className="actions" style={{ marginTop: 8 }}>
             <button className="btn quiet" type="button" onClick={() => navigate(`/incidents/${opened.id}`)}>
-              Aller à l'incident →
+              Aller à l'incident
             </button>
           </div>
         )}
