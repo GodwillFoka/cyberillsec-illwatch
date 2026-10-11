@@ -1750,3 +1750,9 @@ textarea {
 .detail {
   grid-template-columns: minmax(0, 1fr);
 }
+
+/* Horodatages et durées d'une liste : jamais coupés en deux lignes. */
+.list li > .mono {
+  flex: none;
+  white-space: nowrap;
+}
