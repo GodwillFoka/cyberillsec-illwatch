@@ -1744,3 +1744,9 @@ textarea {
     position: relative;
   }
 }
+
+/* Panneau de détail : une seule colonne qui ne s'élargit jamais au contenu. Sans cela, un
+ * titre ou une adresse sur une ligne fixait la largeur minimale et le panneau défilait. */
+.detail {
+  grid-template-columns: minmax(0, 1fr);
+}

@@ -55,6 +55,13 @@ OVERFLOW_PROBE = """() => {
   if (root.scrollWidth > root.clientWidth + 1) {
     out.push(`page : ${root.scrollWidth} px de large pour ${root.clientWidth} px visibles`);
   }
+  // Un panneau de détail ne défile jamais latéralement : son contenu doit s'y plier.
+  for (const panel of document.querySelectorAll(".detail")) {
+    if (panel.scrollWidth > panel.clientWidth + 1) {
+      const wide = panel.scrollWidth;
+      out.push(`panneau de détail : contenu de ${wide} px pour ${panel.clientWidth} px`);
+    }
+  }
   for (const el of document.querySelectorAll("body *")) {
     const box = el.getBoundingClientRect();
     if (box.width === 0 || box.right <= limit) continue;
