@@ -1,0 +1,4 @@
+remove @fontsource/ibm-plex-sans
+remove @fontsource/ibm-plex-mono
+prod @fontsource/inter@^5
+prod @fontsource/jetbrains-mono@^5
