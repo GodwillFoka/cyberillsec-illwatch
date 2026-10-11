@@ -27,7 +27,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from illwatch.app.database import Base, TimestampMixin, UUIDPrimaryKeyMixin
-from illwatch.shared.enums import FeedStatus, FeedType, IndicatorType, Severity
+from illwatch.shared.enums import FeedStatus, FeedType, IndicatorType, Severity, SourceReliability
 
 
 def _in_enum(column: str, enum: type[StrEnum]) -> str:
@@ -44,6 +44,9 @@ class ThreatFeed(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __table_args__ = (
         CheckConstraint(_in_enum("feed_type", FeedType), name="ck_threat_feeds_feed_type"),
         CheckConstraint(_in_enum("status", FeedStatus), name="ck_threat_feeds_status"),
+        CheckConstraint(
+            _in_enum("reliability", SourceReliability), name="ck_threat_feeds_reliability"
+        ),
     )
 
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
@@ -56,6 +59,10 @@ class ThreatFeed(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=FeedStatus.PENDING)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Fiabilité de la source (A–F, ADR-017) : pondère le score de confiance de ses IOC.
+    reliability: Mapped[str] = mapped_column(
+        String(1), nullable=False, default=SourceReliability.C, server_default="C"
+    )
 
     indicators: Mapped[list["Indicator"]] = relationship(back_populates="feed")
 

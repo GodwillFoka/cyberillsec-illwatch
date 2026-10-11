@@ -17,6 +17,7 @@ import type { Indicator, IngestResult } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { AttachToIncident } from "../components/AttachToIncident";
 import { LevelBadge } from "../components/Badge";
+import { CONFIDENCE_LABEL, ConfidenceMeter } from "../components/Confidence";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
 import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
@@ -187,8 +188,8 @@ function IndicatorTable({
           <th>Sévérité</th>
           <th>Type</th>
           <th>Valeur</th>
+          <th>Confiance</th>
           <th className="num">Sources</th>
-          <th className="num">Observations</th>
           <th>Vu</th>
         </tr>
       </thead>
@@ -218,8 +219,10 @@ function IndicatorTable({
               <td className="mono ellipsis" style={{ maxWidth: 360 }} title={indicator.value}>
                 {indicator.value}
               </td>
+              <td>
+                <ConfidenceMeter value={indicator.confidence} level={indicator.confidence_level} />
+              </td>
               <td className="num mono">{formatNumber(indicator.source_count)}</td>
-              <td className="num mono">{formatNumber(indicator.hit_count)}</td>
               <td className="muted">
                 {seen ? `il y a ${formatAge(seen)}` : "—"}
                 {indicator.is_active ? "" : " · expiré"}
@@ -305,6 +308,23 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                 {ioc.description && <p className="description">{ioc.description}</p>}
               </section>
 
+              {/* Confiance (ADR-017) : chaque point justifié. */}
+              <section>
+                <h3>Confiance</h3>
+                <div className="row">
+                  <ConfidenceMeter value={ioc.confidence} level={ioc.confidence_level} />
+                  <span>{CONFIDENCE_LABEL[ioc.confidence_level] ?? ioc.confidence_level}</span>
+                </div>
+                <dl className="facts" style={{ marginTop: 10 }}>
+                  <dt>Sources et fiabilité</dt>
+                  <dd className="mono">+{ioc.confidence_breakdown.sources.toFixed(1).replace(".", ",")} / 60</dd>
+                  <dt>Fraîcheur</dt>
+                  <dd className="mono">+{ioc.confidence_breakdown.freshness.toFixed(1).replace(".", ",")} / 30</dd>
+                  <dt>Récurrence</dt>
+                  <dd className="mono">+{ioc.confidence_breakdown.recurrence.toFixed(1).replace(".", ",")} / 10</dd>
+                </dl>
+              </section>
+
               {/* 3. Provenance (ADR-006) */}
               <section>
                 <h3>Provenance ({ioc.sources.length})</h3>
@@ -316,7 +336,10 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                       const seen = parseDate(source.last_seen);
                       return (
                         <li key={source.feed_id}>
-                          <span>{source.feed_name}</span>
+                          <span className="reliability" title="Fiabilité de la source (échelle de l'Amirauté)">
+                            {source.reliability}
+                          </span>
+                          <span className="grow ellipsis">{source.feed_name}</span>
                           <span className="muted">
                             {plural(source.hit_count, "observation")}
                             {seen ? ` · il y a ${formatAge(seen)}` : ""}

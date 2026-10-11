@@ -32,6 +32,7 @@ class FeedHealth:
     feed_type: str
     status: str
     is_active: bool
+    reliability: str
     last_successful_run: datetime | None
     last_error: str | None
     last_attempt_at: datetime | None
@@ -100,6 +101,7 @@ async def feeds_health(session: AsyncSession, *, now: datetime | None = None) ->
                 feed_type=feed.feed_type,
                 status=feed.status,
                 is_active=feed.is_active,
+                reliability=feed.reliability,
                 last_successful_run=_utc(feed.last_successful_run),
                 last_error=feed.last_error,
                 last_attempt_at=_utc(run.started_at) if run else None,

@@ -12,7 +12,7 @@ une donnée d'enquête. La gestion des faux positifs fera l'objet d'une évoluti
 """
 
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -20,6 +20,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from illwatch.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from illwatch.app.models import Indicator, User
+from illwatch.modules.correlation.confidence import (
+    ConfidenceBreakdown,
+    compute_confidence,
+    source_reliabilities,
+)
 from illwatch.modules.threat_feeds import indicators as service
 from illwatch.modules.threat_feeds.indicators import (
     MAX_BATCH_SIZE,
@@ -27,7 +32,7 @@ from illwatch.modules.threat_feeds.indicators import (
     Observation,
 )
 from illwatch.modules.threat_feeds.service import FeedNotFoundError, get_feed
-from illwatch.shared.enums import IndicatorType, Severity, UserRole
+from illwatch.shared.enums import IndicatorType, Severity, SourceReliability, UserRole
 
 router = APIRouter(prefix="/indicators", tags=["indicateurs (IOC)"])
 
@@ -88,20 +93,33 @@ class IndicatorRead(BaseModel):
     is_active: bool
     feed_id: UUID | None = Field(description="Première source connue.")
     source_count: int = Field(description="Nombre de flux distincts ayant rapporté l'IOC.")
+    confidence: int = Field(ge=0, le=100, description="Score de confiance (ADR-017).")
+    confidence_level: Literal["ELEVEE", "MOYENNE", "FAIBLE"]
 
 
 class IndicatorSourceRead(BaseModel):
     feed_id: UUID
     feed_name: str
+    reliability: SourceReliability
     first_seen: datetime
     last_seen: datetime
     hit_count: int
+
+
+class ConfidenceRead(BaseModel):
+    """Décomposition du score de confiance : chaque point est justifiable (ADR-017)."""
+
+    sources: float = Field(description="Corroboration pondérée par la fiabilité (sur 60).")
+    freshness: float = Field(description="Fraîcheur selon la demi-vie du type (sur 30).")
+    recurrence: float = Field(description="Observations répétées (sur 10).")
+    total: int
 
 
 class IndicatorDetail(IndicatorRead):
     sources: list[IndicatorSourceRead] = Field(
         description="Provenance : chaque flux ayant rapporté l'IOC (ADR-006)."
     )
+    confidence_breakdown: ConfidenceRead
 
 
 class IndicatorPage(BaseModel):
@@ -115,16 +133,31 @@ def _utc(value: datetime) -> datetime:
     return value if value.tzinfo is not None else value.replace(tzinfo=UTC)  # SQLite : naïf
 
 
-_COMPUTED = {"is_active", "source_count"}
+_COMPUTED = {"is_active", "source_count", "confidence", "confidence_level"}
 
 
-def _to_read(indicator: Indicator, now: datetime, source_count: int) -> IndicatorRead:
+def _confidence(
+    indicator: Indicator, reliabilities: list[str], now: datetime
+) -> ConfidenceBreakdown:
+    return compute_confidence(
+        reliabilities=reliabilities,
+        ioc_type=indicator.type,
+        last_seen=_utc(indicator.last_seen),
+        hit_count=indicator.hit_count,
+        now=now,
+    )
+
+
+def _to_read(indicator: Indicator, now: datetime, reliabilities: list[str]) -> IndicatorRead:
     expires_at = indicator.expires_at
+    score = _confidence(indicator, reliabilities, now)
     return IndicatorRead.model_validate(
         {
             **{f: getattr(indicator, f) for f in IndicatorRead.model_fields if f not in _COMPUTED},
             "is_active": expires_at is None or _utc(expires_at) > now,
-            "source_count": source_count,
+            "source_count": len(reliabilities),
+            "confidence": score.total,
+            "confidence_level": score.level,
         }
     )
 
@@ -134,14 +167,26 @@ def _to_detail(indicator: Indicator, now: datetime) -> IndicatorDetail:
         IndicatorSourceRead(
             feed_id=s.feed_id,
             feed_name=s.feed.name,
+            reliability=SourceReliability(s.feed.reliability),
             first_seen=_utc(s.first_seen),
             last_seen=_utc(s.last_seen),
             hit_count=s.hit_count,
         )
         for s in indicator.sources
     ]
-    base = _to_read(indicator, now, len(sources))
-    return IndicatorDetail(**base.model_dump(), sources=sources)
+    reliabilities = [str(src.reliability) for src in sources]
+    base = _to_read(indicator, now, reliabilities)
+    score = _confidence(indicator, reliabilities, now)
+    return IndicatorDetail(
+        **base.model_dump(),
+        sources=sources,
+        confidence_breakdown=ConfidenceRead(
+            sources=score.sources,
+            freshness=score.freshness,
+            recurrence=score.recurrence,
+            total=score.total,
+        ),
+    )
 
 
 # --- Routes --------------------------------------------------------------------
@@ -178,9 +223,9 @@ async def list_indicators(
         active=active,
         value=value,
     )
-    counts = await service.source_counts(session, [i.id for i in page.items])
+    cotes = await source_reliabilities(session, [i.id for i in page.items])
     return IndicatorPage(
-        items=[_to_read(i, now, counts.get(i.id, 0)) for i in page.items],
+        items=[_to_read(i, now, cotes.get(i.id, [])) for i in page.items],
         total=page.total,
         limit=limit,
         offset=offset,

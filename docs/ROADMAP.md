@@ -42,6 +42,11 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 
 **But.** Passer de l'agrégation à la détection : un évènement corrélé produit une alerte priorisée.
 
+**Démarré le 11/10/2026** (ADR-017), en quatre incréments : 1. confiance des IOC ✅ (score
+0–100 décomposé : sources pondérées par leur fiabilité A–F, fraîcheur par type, récurrence) ;
+2. enrichissement local (ASN, pays) ; 3. corrélation IOC × CVE × actif × KEV ; 4. jeu de données
+figé et taux de faux positifs publié.
+
 - Enrichissement des IOC : ASN/pays (base locale), réputation multi-sources, âge.
 - Score de confiance d'un IOC (nombre et fiabilité des sources, fraîcheur).
 - Règles de corrélation : IOC × CVE × actif × KEV → évènement corrélé.

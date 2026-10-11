@@ -8,6 +8,7 @@ import { useCreateFeed, useDeleteFeed, useUpdateFeed } from "../api/mutations";
 import { useFeed, useFeedRuns, useFeedsHealth } from "../api/queries";
 import type { CollectionRun, FeedHealth } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
+import { RELIABILITY } from "../components/Confidence";
 import { QueryState } from "../components/QueryState";
 import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { POLLING_CHOICES, formatDuration, formatMs, successRate } from "../lib/ops";
@@ -107,7 +108,9 @@ function SourceTable({
             >
               <td>
                 <div className="cell-title">{feed.name}</div>
-                <div className="cell-sub">{feed.feed_type}</div>
+                <div className="cell-sub">
+                  {feed.feed_type}, fiabilité {feed.reliability}
+                </div>
               </td>
               <td>
                 <StatusBadge health={feed} />
@@ -139,7 +142,17 @@ function RunStrip({ runs }: { runs: CollectionRun[] }) {
   );
 }
 
-function AdminControls({ feedId, active, interval }: { feedId: string; active: boolean; interval: number }) {
+function AdminControls({
+  feedId,
+  active,
+  interval,
+  reliability,
+}: {
+  feedId: string;
+  active: boolean;
+  interval: number;
+  reliability: string;
+}) {
   const update = useUpdateFeed(feedId);
   const remove = useDeleteFeed();
   const { navigate } = useLocation();
@@ -160,6 +173,20 @@ function AdminControls({ feedId, active, interval }: { feedId: string; active: b
           {choices.map((seconds) => (
             <option key={seconds} value={seconds}>
               toutes les {formatDuration(seconds)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field">
+        Fiabilité de la source (pondère la confiance de ses IOC)
+        <select
+          value={reliability}
+          disabled={update.isPending}
+          onChange={(e) => update.mutate({ reliability: e.target.value })}
+        >
+          {RELIABILITY.map(([code, label]) => (
+            <option key={code} value={code}>
+              {label}
             </option>
           ))}
         </select>
@@ -237,6 +264,8 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
         <dl className="facts">
           <dt>Format</dt>
           <dd>{health.feed_type}</dd>
+          <dt>Fiabilité</dt>
+          <dd>{RELIABILITY.find(([code]) => code === health.reliability)?.[1] ?? health.reliability}</dd>
           <dt>Fréquence</dt>
           <dd>{feed.data ? `toutes les ${formatDuration(feed.data.polling_interval)}` : "…"}</dd>
           <dt>Dernier essai</dt>
@@ -296,7 +325,12 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
         <section>
           <h3>Réglages</h3>
           {feed.data ? (
-            <AdminControls feedId={health.feed_id} active={feed.data.is_active} interval={feed.data.polling_interval} />
+            <AdminControls
+              feedId={health.feed_id}
+              active={feed.data.is_active}
+              interval={feed.data.polling_interval}
+              reliability={feed.data.reliability}
+            />
           ) : (
             <p className="muted">Chargement…</p>
           )}
@@ -314,11 +348,12 @@ function NewSource({ onClose, onCreated }: { onClose: () => void; onCreated: (id
   const [url, setUrl] = useState("https://");
   const [feedType, setFeedType] = useState("JSON");
   const [pollEvery, setPollEvery] = useState(3600);
+  const [reliability, setReliability] = useState("C");
 
   function submit(event: FormEvent) {
     event.preventDefault();
     create.mutate(
-      { name: name.trim(), url: url.trim(), feed_type: feedType, polling_interval: pollEvery },
+      { name: name.trim(), url: url.trim(), feed_type: feedType, polling_interval: pollEvery, reliability },
       { onSuccess: (feed) => onCreated(feed.id) },
     );
   }
@@ -352,6 +387,16 @@ function NewSource({ onClose, onCreated }: { onClose: () => void; onCreated: (id
           </select>
         </label>
       </div>
+      <label className="field">
+        Fiabilité (échelle de l'Amirauté)
+        <select value={reliability} onChange={(e) => setReliability(e.target.value)}>
+          {RELIABILITY.map(([code, label]) => (
+            <option key={code} value={code}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
       <label className="field">
         Adresse (HTTPS publique ; les adresses internes sont refusées)
         <input className="mono" required type="url" maxLength={500} value={url} onChange={(e) => setUrl(e.target.value)} />

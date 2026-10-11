@@ -1678,3 +1678,47 @@ textarea {
   margin: var(--s3) 0 0;
   font-size: 12px;
 }
+
+/* --- Confiance des IOC (ADR-017) ---------------------------------------------------------- */
+
+.confidence {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.pips {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.pip {
+  width: 6px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--line);
+}
+
+.confidence.elevee .pip.on {
+  background: var(--indigo-light);
+}
+
+.confidence.moyenne .pip.on {
+  background: #6a5fc0;
+}
+
+.confidence.faible .pip.on {
+  background: var(--p3-mark);
+}
+
+.reliability {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-badge);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}

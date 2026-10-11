@@ -179,6 +179,7 @@ function useFeedsMutation<TVariables, TResult>(run: (variables: TVariables) => P
 export interface FeedChanges {
   is_active?: boolean;
   polling_interval?: number;
+  reliability?: string;
 }
 
 export function useUpdateFeed(feedId: string) {
@@ -192,6 +193,7 @@ export interface NewFeed {
   url: string;
   feed_type: string;
   polling_interval: number;
+  reliability: string;
 }
 
 export function useCreateFeed() {

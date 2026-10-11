@@ -131,3 +131,10 @@ async def test_api_detail_expose_la_provenance(
     listing = (await client.get("/api/v1/indicators", headers=await viewer())).json()
     assert listing["items"][0]["source_count"] == 2
     assert "sources" not in listing["items"][0]  # détail seulement : liste légère
+
+    # Confiance (ADR-017) : deux sources « C » fraîches → élevée, décomposition justifiée.
+    assert {s["reliability"] for s in body["sources"]} == {"C"}
+    parts = body["confidence_breakdown"]
+    assert parts["total"] == body["confidence"] == listing["items"][0]["confidence"]
+    assert body["confidence_level"] == "ELEVEE"
+    assert parts["sources"] == 45.0 and parts["freshness"] > 29
