@@ -64,7 +64,7 @@ export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
     instance.setOption(
       {
         animationDuration: 250,
-        textStyle: { fontFamily: "Inter, sans-serif", color: "#A3ACBF" },
+        textStyle: { fontFamily: "IBM Plex Sans, sans-serif", color: "#A3ACBF" },
         grid: { left: 8, right: 8, top: 32, bottom: 8, containLabel: true },
         legend: {
           top: 0,

@@ -202,17 +202,20 @@ jobs:
                 console.log("::error title=npm audit " + v.severity + "::" + name + " " + v.range + " — " + via.slice(0, 700));
               }'
             exit 1; }
-      - name: Audit des outils de développement (informatif)
+      - name: Audit des outils de développement
         working-directory: frontend
-        # Vite, esbuild : absents de l'image, mais à surveiller (poste de développement).
+        # Depuis React 19 / Vite 7 (11/10/2026) : 0 vulnérabilité, outils compris. Une alerte
+        # élevée sur un outil de développement bloque désormais aussi.
         run: |
-          npm audit --json 2>/dev/null | node -e '
-            const r = JSON.parse(require("fs").readFileSync(0, "utf8"));
-            for (const [name, v] of Object.entries(r.vulnerabilities || {})) {
-              const via = (v.via || []).map((x) => (typeof x === "string" ? x : x.title + " " + (x.url || ""))).join(" | ");
-              const fix = v.fixAvailable && typeof v.fixAvailable === "object" ? " → " + v.fixAvailable.name + " " + v.fixAvailable.version : "";
-              console.log("::warning title=npm audit (dév.) " + v.severity + "::" + name + " " + v.range + fix + " — " + via.slice(0, 600));
-            }' || true
+          npm audit --audit-level=high > audit-dev.txt 2>&1 || {
+            cat audit-dev.txt
+            npm audit --json 2>/dev/null | node -e '
+              const r = JSON.parse(require("fs").readFileSync(0, "utf8"));
+              for (const [name, v] of Object.entries(r.vulnerabilities || {})) {
+                const via = (v.via || []).map((x) => (typeof x === "string" ? x : x.title + " " + (x.url || ""))).join(" | ");
+                console.log("::error title=npm audit (dév.) " + v.severity + "::" + name + " " + v.range + " — " + via.slice(0, 600));
+              }'
+            exit 1; }
       - name: Types TypeScript générés depuis l'API
         working-directory: frontend
         run: npm run gen:api

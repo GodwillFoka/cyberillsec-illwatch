@@ -5,7 +5,7 @@
   "description": "Interface web d'ILLWATCH (ADR-016) : React, TypeScript, TanStack Query, temps réel SSE.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19"
   },
   "scripts": {
     "gen:api": "openapi-typescript openapi.json -o src/api/schema.d.ts",
@@ -16,20 +16,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/inter": "5.3.0",
-    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
     "@tanstack/react-query": "5.104.1",
     "echarts": "6.1.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "lucide-react": "1.55.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
-    "@types/react": "18.3.11",
-    "@types/react-dom": "18.3.0",
-    "@vitejs/plugin-react": "4.7.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
     "openapi-typescript": "7.13.0",
     "typescript": "5.9.3",
-    "vite": "5.4.21"
+    "vite": "7.3.7"
   }
 }

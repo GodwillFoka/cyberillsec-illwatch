@@ -8,6 +8,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Modifié — interface : React 19, Vite 7
+- React 19.3, Vite 7.3, `@vitejs/plugin-react` 5.2 : `npm audit` à **0 vulnérabilité, outils
+  de développement compris** (les deux alertes Vite 5 / esbuild disparaissent). Node.js ≥ 20.19.
+- Polices IBM Plex Sans et IBM Plex Mono (remplacent Inter et JetBrains Mono) ; icônes
+  `lucide-react`.
+- Workflow « Verrouillage npm » : sur une branche `deps/**`, le fichier de verrouillage est
+  régénéré par npm en CI à partir d'une demande versionnée (`.github/npm-request.txt`).
+
 ### Ajouté — construction de l'interface
 - `scripts/build-web.sh` : schéma OpenAPI, dépendances, types générés et construction en une
   commande (un `npm run build` seul après un changement d'API compilait avec l'ancien schéma).
