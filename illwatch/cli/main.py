@@ -419,6 +419,7 @@ def _register_subcommands() -> None:
     from illwatch.cli.audit import audit
     from illwatch.cli.cves import cves
     from illwatch.cli.dashboard import dashboard
+    from illwatch.cli.demo import demo
     from illwatch.cli.feeds import feeds
     from illwatch.cli.hunt import hunt
     from illwatch.cli.incidents import incidents
@@ -428,6 +429,7 @@ def _register_subcommands() -> None:
     cli.add_command(audit)
     cli.add_command(cves)
     cli.add_command(dashboard)
+    cli.add_command(demo)
     cli.add_command(feeds)
     cli.add_command(hunt)
     cli.add_command(incidents)

@@ -201,6 +201,28 @@ seul échoue (`TS2339 … does not exist`) : les types viennent de l'ancien sch�
 désigne un autre dossier. Sans
 interface compilée, seule l'API répond. Développement : voir `frontend/README.md`.
 
+## 6 quater. Préproduction locale
+
+La pile de **production** (image finale, migrations éphémères, rôle applicatif, Redis protégé,
+Caddy en HTTPS) tourne sur un poste, à côté de la pile de développement et sans la toucher :
+
+```bash
+./scripts/preprod-local.sh up      # construit, démarre, crée le compte admin (mot de passe affiché)
+./scripts/preprod-local.sh check   # HTTPS, en-têtes, API, temps réel via Caddy, droits, worker,
+                                   # sauvegarde puis restauration dans une base jetable
+./scripts/preprod-local.sh demo    # données FICTIVES (sinon : laisser le worker collecter)
+./scripts/preprod-local.sh down    # arrêt, données conservées ; `purge` pour tout supprimer
+```
+
+Adresse : **https://illwatch.localhost:8443** (certificat de l'autorité interne de Caddy, à
+accepter dans le navigateur). Projet Compose `illwatch-preprod` : conteneurs, volumes et réseau
+distincts ; Caddy n'écoute que sur 127.0.0.1 (8443, 8080). Secrets générés dans `.env.preprod`
+(600, ignoré par Git). Le même scénario tourne en CI (workflow « Préproduction ») à chaque
+modification, avec des captures d'écran de chaque écran publiées sur la branche `captures`.
+
+Le VPS (préproduction publique) reprend exactement cette pile avec `ILLWATCH_DOMAIN` réel :
+seuls changent le nom de domaine, le certificat (Let's Encrypt) et l'ouverture des ports 80/443.
+
 ## 7. Mise à jour
 
 ```bash
