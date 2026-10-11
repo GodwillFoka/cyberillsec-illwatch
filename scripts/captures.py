@@ -37,7 +37,12 @@ problems: list[str] = []
 def settle(page: Page) -> None:
     page.wait_for_load_state("networkidle")
     # Laisse finir chargements et animations (graphiques, mise en évidence des nouveautés).
-    page.wait_for_function("() => !document.body.innerText.includes('Chargement…')", timeout=15_000)
+    # Attente côté Python : la CSP de l'interface (script-src 'self') refuse, à juste titre,
+    # le JavaScript passé en chaîne par wait_for_function.
+    for _ in range(60):
+        if "Chargement…" not in page.inner_text("body"):
+            break
+        page.wait_for_timeout(250)
     page.wait_for_timeout(900)
 
 

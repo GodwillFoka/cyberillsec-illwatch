@@ -231,7 +231,9 @@ async def load_demo_data(
 
     # IOC répartis sur 30 jours, attribués à plusieurs sources.
     observations = _observations(rng, 640)
-    sources = [f for f in feeds if f.is_active][:4] or [None]
+    sources: list[ThreatFeed | None] = []
+    sources.extend(f for f in feeds if f.is_active)
+    sources = sources[:4] or [None]
     for day in range(30, -1, -1):
         batch = observations[day::31]
         if not batch:
