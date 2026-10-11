@@ -4,6 +4,7 @@
 # Sur une branche deps/**, déposer .github/npm-request.txt (une ligne par paquet) :
 #     prod react@^19.2.0
 #     dev  vite@^7
+#     remove @fontsource/inter
 # Le workflow installe les versions demandées (épinglées exactement dans package.json),
 # régénère frontend/package-lock.json, retire la demande et pousse le résultat sur la
 # branche. La CI se déclenche ensuite au push suivant (un push fait avec le jeton du
@@ -36,7 +37,9 @@ jobs:
         run: |
           prod=$(awk '$1=="prod"{print $2}' ../.github/npm-request.txt | xargs)
           dev=$(awk '$1=="dev"{print $2}' ../.github/npm-request.txt | xargs)
+          remove=$(awk '$1=="remove"{print $2}' ../.github/npm-request.txt | xargs)
           npm ci --no-audit --no-fund
+          [ -z "$remove" ] || npm uninstall --no-audit --no-fund $remove
           [ -z "$prod" ] || npm install --save-exact --no-audit --no-fund $prod
           [ -z "$dev" ] || npm install --save-exact --save-dev --no-audit --no-fund $dev
           echo "### Versions installées" >> "$GITHUB_STEP_SUMMARY"
