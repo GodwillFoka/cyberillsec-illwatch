@@ -194,7 +194,7 @@ function NoteForm({ incident }: { incident: IncidentDetail }) {
       </div>
       <label className="field">
         {kind === "ACTION_TAKEN"
-          ? "Action menée (déclarée par vous, enregistrée telle quelle : ILLWATCH ne l'exécute pas)"
+          ? "Action menée (déclarée par vous, enregistrée telle quelle : ILL Watch ne l'exécute pas)"
           : "Commentaire"}
         <textarea required value={message} maxLength={20000} onChange={(e) => setMessage(e.target.value)} />
       </label>

@@ -1,6 +1,6 @@
-# Site de documentation ILLWATCH — publié sur GitHub Pages par .github/workflows/docs.yml
+# Site de documentation ILL Watch — publié sur GitHub Pages par .github/workflows/docs.yml
 # Aperçu local : pip install "mkdocs-material>=9.5,<10" && python scripts/docs_prepare.py && mkdocs serve
-site_name: ILLWATCH — Documentation
+site_name: ILL Watch — Documentation
 site_description: Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)
 site_author: Godwill FOKA
 site_url: https://godwillfoka.github.io/cyberillsec-illwatch/
@@ -14,8 +14,11 @@ docs_dir: docs
 theme:
   name: material
   language: fr
-  logo: assets/illwatch-mark-mono.svg
+  logo: assets/illwatch-mark.svg
   favicon: assets/favicon.svg
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

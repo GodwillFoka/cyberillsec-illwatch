@@ -41,7 +41,7 @@ function Summary({ feeds }: { feeds: FeedHealth[] }) {
   const items: [string, string, string][] = [
     ["Sources actives", formatNumber(active.length), `sur ${formatNumber(feeds.length)} déclarées`],
     ["Saines", formatNumber(healthy), degraded ? `${formatNumber(degraded)} dégradée${degraded > 1 ? "s" : ""}` : "aucune dégradée"],
-    ["Collectes sur 7 jours", formatNumber(runs), rate === null ? "aucune collecte" : `${rate} % réussies`],
+    ["Collectes sur 7 jours", formatNumber(runs), rate === null ? "aucune collecte" : `${rate}\u202f% réussies`],
   ];
   return (
     <div className="stat-strip">
@@ -118,7 +118,7 @@ function SourceTable({
               <td className="muted">{success ? `il y a ${formatAge(success)}` : "jamais"}</td>
               <td className="num mono">{feed.last_inserted === null ? "—" : formatNumber(feed.last_inserted)}</td>
               <td className={`num mono${rate !== null && rate < 80 ? " error-text" : ""}`}>
-                {rate === null ? "—" : `${rate} %`}
+                {rate === null ? "—" : `${rate}\u202f%`}
               </td>
             </tr>
           );
@@ -283,7 +283,7 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
           <dt>Sur 7 jours</dt>
           <dd>
             {formatNumber(health.runs_7d)} collectes, {formatNumber(health.errors_7d)} en échec
-            {rate === null ? "" : ` (${rate} % réussies)`}
+            {rate === null ? "" : ` (${rate}\u202f% réussies)`}
           </dd>
         </dl>
         {health.last_error && (

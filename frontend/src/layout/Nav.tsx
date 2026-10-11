@@ -1,5 +1,6 @@
-// Rail de navigation (v7) : une icône par écran, sections en casse normale, repère orange sur
-// l'écran actif. Les compteurs n'apparaissent que s'il y a quelque chose à traiter.
+// Menu latéral (brand book v2) : symbole 32 px et « ILL Watch / PAR CYBERILL », sections en
+// capitales espacées, icônes Lucide 20 px trait 1,5 en muted, élément actif indigo avec repère
+// orange de 3 px. Les compteurs n'apparaissent que s'il y a quelque chose à traiter.
 import {
   Bug,
   Crosshair,
@@ -34,7 +35,7 @@ function Link({ to, label, icon: Icon, count, tone = "p1" }: Item) {
       aria-current={active ? "page" : undefined}
       className={`nav-link${active ? " active" : ""}`}
     >
-      <Icon className="nav-icon" size={18} strokeWidth={1.75} aria-hidden="true" />
+      <Icon className="nav-icon" size={20} strokeWidth={1.5} aria-hidden="true" />
       <span className="nav-label">{label}</span>
       {count ? (
         <span className={`count ${tone}`} aria-label={`${count} à traiter`}>
@@ -50,7 +51,7 @@ export function Nav() {
   const { user } = useAuth();
   return (
     <nav className="nav" aria-label="Navigation principale">
-      <RouterLink to="/" className="nav-brand" aria-label="ILLWATCH, vue d'ensemble">
+      <RouterLink to="/" className="nav-brand" aria-label="ILL Watch, vue d'ensemble">
         <Lockup />
       </RouterLink>
       <div className="nav-group">

@@ -1,9 +1,10 @@
-// Connexion (v7) : l'identité ILLWATCH à gauche, le formulaire à droite. Le balayage radar
-// du fond fait un seul tour au chargement (aucun mouvement si l'utilisateur l'a désactivé).
+// Connexion (brand book v2) : le logotype ILL Watch et la signature à gauche, le formulaire
+// à droite. Le motif radar du fond fait un seul balayage de 1,2 s au chargement, jamais sous
+// le texte, et aucun si l'utilisateur a réduit les animations.
 import { useState, type FormEvent } from "react";
 
 import { ApiError } from "../api/http";
-import { Logo } from "../components/Logo";
+import { BrandLogo } from "../components/Logo";
 import { useAuth } from "./AuthProvider";
 
 export function LoginPage() {
@@ -20,7 +21,7 @@ export function LoginPage() {
     try {
       await signIn(username.trim(), password);
     } catch (exc) {
-      setError(exc instanceof ApiError ? exc.message : "Serveur injoignable. Vérifiez qu'ILLWATCH tourne, puis réessayez.");
+      setError(exc instanceof ApiError ? exc.message : "Serveur injoignable. Vérifiez qu'ILL Watch tourne, puis réessayez.");
       setPassword("");
     } finally {
       setBusy(false);
@@ -32,20 +33,19 @@ export function LoginPage() {
       <section className="login-brand" aria-hidden="true">
         <div className="radar" />
         <div className="login-identity">
-          <Logo size={72} />
-          <p className="wordmark">ILLWATCH</p>
+          <BrandLogo />
+          <p className="brand-signature">Voir la menace avant qu'elle ne vous voie.</p>
           <p className="tagline">
             Renseignement sur les menaces, priorisation des vulnérabilités et réponse aux
             incidents, sur un seul poste de veille.
           </p>
         </div>
-        <p className="login-owner">CYBERILLSEC</p>
+        <p className="login-owner">Veille CTI · triage · réponse aux incidents</p>
       </section>
       <section className="login-panel">
         <form className="login-form" onSubmit={submit} aria-labelledby="login-title">
           <div className="login-mobile-brand">
-            <Logo size={40} />
-            <span className="wordmark">ILLWATCH</span>
+            <BrandLogo />
           </div>
           <h1 id="login-title">Connexion</h1>
           <p className="muted">Accès réservé aux analystes autorisés. Chaque connexion est journalisée.</p>

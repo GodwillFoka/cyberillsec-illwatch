@@ -6,7 +6,7 @@ export function NotFound() {
       <div className="page-head">
         <div>
           <h1>Page introuvable</h1>
-          <p>Cette adresse ne correspond à aucun écran d'ILLWATCH.</p>
+          <p>Cette adresse ne correspond à aucun écran d'ILL Watch.</p>
         </div>
       </div>
       <Link className="btn" to="/">

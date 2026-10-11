@@ -17,7 +17,7 @@ import { Kpi } from "../components/Kpi";
 import { QueryState } from "../components/QueryState";
 import { SeriesChart } from "../components/SeriesChart";
 import { formatAge, formatDateTime, formatNumber, formatTime, parseDate } from "../lib/format";
-import { ALERT_REASON, INCIDENT_STATUS, PRIORITY_ORDER, rankOf, TONE_COLORS, toneOf } from "../lib/levels";
+import { ALERT_REASON, CHART, INCIDENT_STATUS, PRIORITY_ORDER, rankOf, TONE_COLORS, toneOf } from "../lib/levels";
 import { useTimeZone } from "../lib/time";
 import { Link } from "../lib/router";
 import { useFresh } from "../lib/useFresh";
@@ -411,7 +411,7 @@ function IocTypes({ summary }: { summary: Summary | undefined }) {
         <div className="bar-row" key={type}>
           <span className="mono muted">{type}</span>
           <div className="bar-track">
-            <div className="bar-fill" style={{ width: `${(count / max) * 100}%`, background: "#8E80FF" }} />
+            <div className="bar-fill" style={{ width: `${(count / max) * 100}%`, background: CHART.accent }} />
           </div>
           <span className="num mono">{formatNumber(count)}</span>
         </div>
