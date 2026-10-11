@@ -16,7 +16,9 @@ from illwatch.app.api.v1 import (
     hunting,
     incidents,
     indicators,
+    settings,
     stream,
+    users,
 )
 
 api_router = APIRouter()
@@ -44,6 +46,10 @@ api_router.include_router(hunting.router)
 
 # M7 — Production Hardening : journal d'audit de sécurité (ADR-011)
 api_router.include_router(audit.router)
+
+# ADR-016 — écran Administration : comptes (mêmes effets que `illwatch users`)
+api_router.include_router(users.router)
+api_router.include_router(settings.router)
 
 # ADR-016 — interface web : flux temps réel (Server-Sent Events)
 api_router.include_router(stream.router)
