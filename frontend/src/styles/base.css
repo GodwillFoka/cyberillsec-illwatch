@@ -72,6 +72,8 @@ button {
 
 .sr-only {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
@@ -1452,8 +1454,11 @@ textarea {
   white-space: normal;
 }
 
-/* Toute carte qui contient un tableau le fait défiler chez elle, jamais la page entière. */
+/* Toute carte qui contient un tableau le fait défiler chez elle, jamais la page entière.
+ * `position: relative` : les éléments positionnés (textes pour lecteurs d'écran) restent
+ * dans la carte au lieu d'élargir la page. */
 .card {
+  position: relative;
   overflow-x: auto;
 }
 
@@ -1479,8 +1484,13 @@ textarea {
 }
 
 @media (max-width: 640px) {
+  .live-chip {
+    position: relative;
+  }
   .live-chip .live-text {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 1px;
     height: 1px;
     overflow: hidden;
@@ -1490,4 +1500,260 @@ textarea {
   .live-chip {
     padding: 0 10px;
   }
+}
+/* --- Sources CTI -------------------------------------------------------------------------- */
+
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: var(--s4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+}
+
+.stat {
+  display: grid;
+  gap: 2px;
+  padding: var(--s3) var(--s5);
+}
+
+.stat + .stat {
+  border-left: 1px solid var(--line);
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-context {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stat-context.alert {
+  color: var(--p0-fg);
+}
+
+.card.flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card.flush .table th:first-child,
+.card.flush .table th:last-child {
+  border-radius: 0;
+}
+
+.card.flush .empty,
+.card.flush .notice {
+  margin: var(--s4);
+}
+
+.cell-title {
+  font-weight: 500;
+}
+
+.cell-sub {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.run-strip {
+  display: flex;
+  gap: 2px;
+  height: 22px;
+  margin-bottom: var(--s3);
+}
+
+.run-cell {
+  flex: 1 1 0;
+  max-width: 10px;
+  border-radius: 2px;
+}
+
+.run-cell.ok {
+  background: #1f6b4b;
+}
+
+.run-cell.ko {
+  background: var(--critical);
+}
+
+.run-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  flex: none;
+  align-self: flex-start;
+}
+
+.run-dot.ok {
+  background: var(--success);
+}
+
+.run-dot.ko {
+  background: var(--critical);
+}
+
+.btn.danger {
+  background: var(--critical);
+  border-color: var(--critical);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn.danger:hover {
+  background: #f05a5f;
+  border-color: #f05a5f;
+}
+
+.gap-bottom {
+  margin-bottom: var(--s4);
+}
+
+@media (max-width: 640px) {
+  .stat-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .stat + .stat {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+
+/* --- Administration ----------------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: var(--s1);
+  margin-bottom: var(--s4);
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  position: relative;
+  min-height: 40px;
+  padding: 0 var(--s4);
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: var(--s3);
+  right: var(--s3);
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--orange);
+}
+
+.contents {
+  display: contents;
+}
+
+.facts.settings {
+  margin-top: var(--s3);
+}
+
+.spaced {
+  margin-top: var(--s5) !important;
+}
+
+.small {
+  margin: var(--s3) 0 0;
+  font-size: 12px;
+}
+
+/* --- Confiance des IOC (ADR-017) ---------------------------------------------------------- */
+
+.confidence {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.pips {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.pip {
+  width: 6px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--line);
+}
+
+.confidence.elevee .pip.on {
+  background: var(--indigo-light);
+}
+
+.confidence.moyenne .pip.on {
+  background: #6a5fc0;
+}
+
+.confidence.faible .pip.on {
+  background: var(--p3-mark);
+}
+
+.reliability {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-badge);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Le panneau de détail reste collé en haut pendant le défilement de la liste (après la règle
+ * `.card { position: relative }`, qui l'aurait sinon remplacé). */
+.card.detail {
+  position: sticky;
+}
+
+@media (max-width: 1100px) {
+  .card.detail {
+    position: relative;
+  }
+}
+
+/* Panneau de détail : une seule colonne qui ne s'élargit jamais au contenu. Sans cela, un
+ * titre ou une adresse sur une ligne fixait la largeur minimale et le panneau défilait. */
+.detail {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Horodatages et durées d'une liste : jamais coupés en deux lignes (les valeurs longues,
+ * marquées .ellipsis, gardent leur troncature). */
+.list li > .mono:not(.ellipsis) {
+  flex: none;
+  white-space: nowrap;
 }

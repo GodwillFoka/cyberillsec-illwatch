@@ -27,7 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import ThreatFeed
 from illwatch.modules.threat_feeds.secrets import KNOWN_PLACEHOLDERS, placeholders
-from illwatch.shared.enums import FeedStatus, FeedType
+from illwatch.shared.enums import FeedStatus, FeedType, SourceReliability
 
 MIN_POLLING_INTERVAL = 60
 MAX_POLLING_INTERVAL = 7 * 24 * 3600
@@ -254,6 +254,7 @@ async def create_feed(
     feed_type: FeedType,
     polling_interval: int = 3600,
     is_active: bool = True,
+    reliability: SourceReliability = SourceReliability.C,
 ) -> ThreatFeed:
     """Enregistre une source. L'état de santé est fixé par le serveur (`PENDING`)."""
     clean_name = normalize_feed_name(name)
@@ -267,6 +268,7 @@ async def create_feed(
         feed_type=FeedType(feed_type),
         polling_interval=polling_interval,
         is_active=is_active,
+        reliability=SourceReliability(reliability),
         status=FeedStatus.PENDING,
     )
     await _flush_or_conflict(session, clean_name, new=feed)
@@ -283,6 +285,7 @@ async def update_feed(
     feed_type: FeedType | None = None,
     polling_interval: int | None = None,
     is_active: bool | None = None,
+    reliability: SourceReliability | None = None,
 ) -> ThreatFeed:
     """Mise à jour partielle. `None` signifie « champ inchangé ».
 
@@ -312,6 +315,8 @@ async def update_feed(
         feed.polling_interval = polling_interval
     if is_active is not None:
         feed.is_active = is_active
+    if reliability is not None:
+        feed.reliability = SourceReliability(reliability)
 
     if source_changed:
         feed.status = FeedStatus.PENDING

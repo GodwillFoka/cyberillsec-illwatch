@@ -2,7 +2,8 @@
 
 Toutes les valeurs sont **fictives** : adresses des plages réservées à la documentation
 (RFC 5737 : 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 ; RFC 3849 : 2001:db8::/32),
-domaines `example`/`.test`, CVE numérotées CVE-2026-9xxxx (bloc jamais attribué à ce jour)
+domaines `example`/`.test`, CVE numérotées CVE-2099-9xxxx (année que MITRE n'attribuera pas
+avant longtemps)
 dont la description commence par « [démo] ». Rien ne peut être confondu avec du renseignement
 réel, et le chargement est refusé sur une base qui contient déjà des IOC : il ne mélange
 jamais la démonstration à une collecte réelle.
@@ -143,7 +144,7 @@ def _cves(rng: random.Random, now: datetime) -> list[tuple[CVE, list[CVEPriority
         published = now - timedelta(days=rng.randint(3, 120), hours=rng.randint(0, 23))
         modified = now - timedelta(hours=rng.randint(1, 24 * 6))
         cve = CVE(
-            id=f"CVE-2026-9{i:04d}",
+            id=f"CVE-2099-9{i:04d}",
             description=f"{DEMO_TAG} {product} : {flaw}.",
             cvss_score=cvss,
             cvss_vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" if cvss >= 9 else None,
@@ -180,7 +181,11 @@ def _cves(rng: random.Random, now: datetime) -> list[tuple[CVE, list[CVEPriority
 
 
 async def _empty(session: AsyncSession) -> bool:
-    return not await session.scalar(select(func.count()).select_from(Indicator))
+    """Aucune donnée de renseignement ni d'enquête : ni IOC, ni CVE, ni incident."""
+    for model in (Indicator, CVE, Incident):
+        if await session.scalar(select(func.count()).select_from(model)):
+            return False
+    return True
 
 
 async def load_demo_data(
@@ -193,7 +198,8 @@ async def load_demo_data(
     """Charge le jeu de démonstration. Refusé si la base contient déjà des IOC."""
     if not await _empty(session):
         raise DemoRefusedError(
-            "La base contient déjà des IOC : la démonstration ne se charge que sur une base vide "
+            "La base contient déjà des IOC, des CVE ou des incidents : la démonstration ne se "
+            "charge que sur une base vide "
             "(préproduction locale, captures). Rien n'a été écrit."
         )
     moment = now or datetime.now(UTC)
@@ -267,7 +273,9 @@ async def load_demo_data(
             priority=cve.priority,
             reason=("kev", "epss", "nvd")[i % 3],
             created_at=created,
-            delivered_at=created + timedelta(seconds=4) if i % 4 else None,
+            # Toutes « déjà envoyées » : un webhook réel configuré dans .env ne doit jamais
+            # recevoir d'alerte de démonstration.
+            delivered_at=created + timedelta(seconds=4),
             delivery_attempts=1,
             acknowledged_at=created + timedelta(hours=1) if i >= 8 else None,
         )

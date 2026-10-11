@@ -218,6 +218,22 @@ async def test_modification_partielle(client: AsyncClient, auth_as: HeadersFacto
     assert body["url"] == feed["url"]
 
 
+async def test_fiabilite_de_la_source(client: AsyncClient, auth_as: HeadersFactory) -> None:
+    """ADR-017 : cote A–F, « C » par défaut, modifiable par l'administrateur seulement."""
+    admin = await auth_as(UserRole.ADMIN)
+    analyst = await auth_as(UserRole.ANALYST)
+    feed = await _create(client, admin)
+    assert feed["reliability"] == "C"
+
+    url = f"{FEEDS}/{feed['id']}"
+    assert (await client.patch(url, json={"reliability": "B"}, headers=analyst)).status_code == 403
+    assert (await client.patch(url, json={"reliability": "Z"}, headers=admin)).status_code == 422
+    updated = await client.patch(url, json={"reliability": "A"}, headers=admin)
+    assert updated.status_code == 200 and updated.json()["reliability"] == "A"
+    health = (await client.get(f"{FEEDS}/health", headers=admin)).json()
+    assert next(h for h in health if h["feed_id"] == feed["id"])["reliability"] == "A"
+
+
 async def test_changer_la_source_reinitialise_l_etat(
     client: AsyncClient, auth_as: HeadersFactory, db_session: AsyncSession
 ) -> None:

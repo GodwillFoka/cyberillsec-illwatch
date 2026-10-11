@@ -12,7 +12,12 @@ import type {
   IncidentDetail,
   IndicatorDetail,
   IndicatorPage,
+  Account,
+  AuditPage,
+  CollectionRun,
+  Feed,
   FeedHealth,
+  SettingsInfo,
   Hunt,
   HuntDetail,
   HuntMatchPage,
@@ -283,6 +288,67 @@ export function useHuntMatches(huntId: string, filters: MatchFilters, offset: nu
           rule_id: filters.ruleId || undefined,
           severity: filters.severity || undefined,
           limit: MATCH_PAGE_SIZE,
+          offset,
+        },
+        signal,
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
+
+// --- Sources CTI ---------------------------------------------------------------------------
+
+export function useFeed(feedId: string) {
+  return useQuery({
+    queryKey: ["feeds", "detail", feedId],
+    queryFn: ({ signal }) => apiGet<Feed>(`/feeds/${encodeURIComponent(feedId)}`, undefined, signal),
+  });
+}
+
+export function useFeedRuns(feedId: string, limit = 60) {
+  return useQuery({
+    queryKey: ["feeds", "runs", feedId, limit],
+    queryFn: ({ signal }) =>
+      apiGet<CollectionRun[]>(`/feeds/${encodeURIComponent(feedId)}/runs`, { limit }, signal),
+  });
+}
+
+// --- Administration ------------------------------------------------------------------------
+
+export function useAccounts() {
+  return useQuery({
+    queryKey: ["admin", "users"],
+    queryFn: ({ signal }) => apiGet<Account[]>("/users", undefined, signal),
+  });
+}
+
+export function useSettingsInfo() {
+  return useQuery({
+    queryKey: ["admin", "settings"],
+    queryFn: ({ signal }) => apiGet<SettingsInfo>("/settings", undefined, signal),
+    staleTime: Infinity,
+  });
+}
+
+export interface AuditFilters {
+  action?: string;
+  outcome?: string;
+  actor?: string;
+}
+
+export const AUDIT_PAGE_SIZE = 50;
+
+export function useAudit(filters: AuditFilters, offset: number) {
+  return useQuery({
+    queryKey: ["admin", "audit", filters, offset],
+    queryFn: ({ signal }) =>
+      apiGet<AuditPage>(
+        "/audit",
+        {
+          action: filters.action || undefined,
+          outcome: filters.outcome || undefined,
+          actor: filters.actor || undefined,
+          limit: AUDIT_PAGE_SIZE,
           offset,
         },
         signal,

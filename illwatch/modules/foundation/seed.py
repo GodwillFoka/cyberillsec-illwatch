@@ -18,7 +18,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import ThreatFeed
-from illwatch.shared.enums import FeedStatus, FeedType
+from illwatch.shared.enums import FeedStatus, FeedType, SourceReliability
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,6 +28,10 @@ class FeedSeed:
     feed_type: FeedType
     polling_interval: int
     is_active: bool = True
+    # Fiabilité (Amirauté, ADR-017) : B pour les projets reconnus et curés (abuse.ch, IPsum
+    # qui exige 5 listes concordantes), C par défaut, D pour les contributions communautaires
+    # non vérifiées (pulses OTX).
+    reliability: SourceReliability = SourceReliability.C
 
 
 REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
@@ -37,12 +41,14 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         url="https://urlhaus-api.abuse.ch/v2/files/exports/{ABUSECH_AUTH_KEY}/recent.csv",
         feed_type=FeedType.CSV,
         polling_interval=3600,
+        reliability=SourceReliability.B,
     ),
     FeedSeed(
         name="abuse.ch Feodo Tracker — serveurs C2 botnet",
         url="https://feodotracker.abuse.ch/downloads/ipblocklist.csv",
         feed_type=FeedType.CSV,
         polling_interval=3600,
+        reliability=SourceReliability.B,
     ),
     # --- Sources publiques sans clé : de quoi constater M2 dès l'installation ------------
     FeedSeed(
@@ -68,6 +74,7 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         url="https://raw.githubusercontent.com/stamparm/ipsum/master/levels/5.txt",
         feed_type=FeedType.CSV,
         polling_interval=12 * 3600,
+        reliability=SourceReliability.B,
     ),
     FeedSeed(
         name="RedEye — indicateurs de menace STIX 2.1 (TAXII)",
@@ -107,6 +114,7 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         url="https://otx.alienvault.com/api/v1/pulses/subscribed?limit=50",
         feed_type=FeedType.OTX,
         polling_interval=3600,
+        reliability=SourceReliability.D,
     ),
 )
 
@@ -147,6 +155,7 @@ async def seed_reference_feeds(session: AsyncSession) -> list[str]:
                 feed_type=feed.feed_type,
                 polling_interval=feed.polling_interval,
                 is_active=feed.is_active,
+                reliability=feed.reliability,
             )
         )
         created.append(feed.name)

@@ -6,8 +6,9 @@ audit `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`)
 **État au 06/10/2026 :** `v0.1.1` taguée ; M7 (lots 1 à 3) **fusionné dans `main`**, qui porte
 la version de développement `0.2.0.dev0`. Validation sur données réelles automatisée sur GitHub
 Actions (hebdomadaire). Décision du 08/10 (ADR-016) : l'interface web passe avant l'hébergement.
-Lot 1 de l'interface fusionné (vue d'ensemble, triage, incidents, IOC, CVE, chasse). Reste pour
-clore M7 : la préproduction sur un VPS européen.
+Interface complète (lot 1 et écrans Sources CTI, Administration), design v7. Préproduction
+publique sur VPS **reportée le 11/10** : une préproduction locale identique tourne en CI à chaque
+modification ; M7 se clôt au passage sur le VPS. M8 démarré en parallèle (ADR-017).
 
 Règle de conduite : un jalon est clos quand ses **critères de sortie sont constatés**, pas quand
 le code est fusionné. Chaque jalon part d'une branche créée depuis `main` à jour et se termine par
@@ -41,6 +42,11 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 ## M8 — Detection & Correlation
 
 **But.** Passer de l'agrégation à la détection : un évènement corrélé produit une alerte priorisée.
+
+**Démarré le 11/10/2026** (ADR-017), en quatre incréments : 1. confiance des IOC ✅ (score
+0–100 décomposé : sources pondérées par leur fiabilité A–F, fraîcheur par type, récurrence) ;
+2. enrichissement local (ASN, pays) ; 3. corrélation IOC × CVE × actif × KEV ; 4. jeu de données
+figé et taux de faux positifs publié.
 
 - Enrichissement des IOC : ASN/pays (base locale), réputation multi-sources, âge.
 - Score de confiance d'un IOC (nombre et fiabilité des sources, fraîcheur).

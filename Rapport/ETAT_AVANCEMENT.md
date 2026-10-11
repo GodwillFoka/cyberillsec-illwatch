@@ -1,6 +1,6 @@
 # ILLWATCH — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **11/10/2026, 10 h 00**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **11/10/2026, 15 h 00**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -13,7 +13,10 @@ ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jal
 v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés. Décision du
 08/10 (ADR-016) : l'interface web passe avant l'hébergement. Le lot 1 de l'interface est **codé et
 fusionné** (vue d'ensemble, triage, incidents, IOC, CVE, chasse) : il reste à le constater sur
-Kali sur données réelles. **Reste pour clore M7** : la préproduction sur un VPS européen. M1 à M6 sont constatés sur données réelles, en local et en CI.
+Kali sur données réelles. **Décision du 11/10** : la préproduction publique (VPS européen) est
+**reportée** ; elle est remplacée en attendant par une **préproduction locale** vérifiée en CI à
+chaque modification. M7 reste ouvert jusqu'au VPS. **M8 est démarré** (ADR-017 : confiance des
+IOC livrée). M1 à M6 sont constatés sur données réelles, en local et en CI.
 
 ## 2. Jalons
 
@@ -25,8 +28,8 @@ Kali sur données réelles. **Reste pour clore M7** : la préproduction sur un V
 | M4 Incidents | ✅ | incident mené jusqu'à la clôture |
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
-| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface web lot 1 fusionné (6 écrans) ; **reste le VPS UE** |
-| M8 Detection & Correlation | ⏳ | — |
+| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, design v7, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
+| M8 Detection & Correlation | 🟡 démarré | ADR-017 ; incrément 1 (confiance des IOC, fiabilité des sources) livré ; enrichissement, corrélation, mesure à suivre |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
 ## 3. Chantier en cours
@@ -46,6 +49,10 @@ Kali sur données réelles. **Reste pour clore M7** : la préproduction sur un V
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 11/10 | PR #32 | **B** écrans Sources CTI et Administration (API comptes et paramètres) ; **D** M8 démarré : fiabilité des sources (A–F), confiance des IOC ; seconde revue indépendante : 11 points corrigés |
+| 11/10 | PR #31 | Design v7 « Veille de nuit » : logo œil-radar, IBM Plex, icônes, palette recalibrée, mobile ; vérifié sur captures |
+| 11/10 | PR #30 | **C** React 19.3 + Vite 7.3 : `npm audit` 0 vulnérabilité, outils compris (audit complet bloquant) |
+| 11/10 | PR #29 | **A** préproduction locale (Caddy HTTPS, contrôles, captures en CI) ; `illwatch demo load` ; VPS reporté |
 | 11/10 | PR #28 | Re-vérification complète des écrans IOC, CVE, chasse : CI relancée sur `main`, validation réelle, seconde revue indépendante (verdict OK) ; 4 points mineurs corrigés (chemins d'API encodés partout, garde-fou du formulaire de chasse, docs). Interface construite sur Kali avec `scripts/build-web.sh` |
 | 10/10 | PR #26 | Écran Chasse : sessions, périmètre, correspondances paginées et filtrées (liens IOC/CVE), nouvelle chasse ; API `GET /hunting/sessions/{id}/matches` — **lot 1 de l'interface complet** ; revue indépendante des 3 écrans : 5 constats moyens corrigés (dont un sécurité : identifiants d'adresse validés) |
 | 10/10 | PR #25 | Écran CVE et priorités : liste par risque, recherche, filtres priorité/KEV, fiche (signaux, score décomposé, historique, alertes, incidents), association ou ouverture d'incident ; jokers SQL échappés dans la recherche |
@@ -118,13 +125,10 @@ Kali sur données réelles. **Reste pour clore M7** : la préproduction sur un V
 
 ## 8. Prochaines étapes
 
-Décision du 08/10 : **l'interface web passe avant l'hébergement**. La préproduction se fera avec
-l'interface en place.
-
-1. **Interface web v1, lot 1** — maquette v6 **adoptée**, ADR-016 accepté, système de design
-   documenté (`docs/DESIGN_SYSTEM.md`). **Faits** : côté serveur (journal de collecte, séries
-   temporelles, flux SSE), socle `frontend/`, Vue d'ensemble, Triage, Incidents (et
-   Investigation), Indicateurs (IOC), CVE, Chasse : **lot 1 complet**, à constater sur Kali. Fichier de verrouillage npm versionné
-   (`237c477`) ; Kali migré (`c5d0a7e94b13`) ; droits du rôle applicatif réappliqués le 09/10 ; worker sain, DNS instable sur la VM à surveiller.
-2. Préproduction VPS UE (SSL Labs ≥ A, 7 jours de collecte) → **clôture de M7**.
-3. Ouvrir M8 Detection & Correlation.
+1. **Sur Kali** : `git pull`, `./scripts/build-web.sh`, redémarrer uvicorn ; essayer la
+   préproduction locale (`./scripts/preprod-local.sh up` puis `check`).
+2. **M8, incrément 2** : enrichissement local des IOC (ASN, pays) depuis une base hors ligne.
+3. **M8, incrément 3** : inventaire d'actifs et corrélation IOC × CVE × actif × KEV ; confiance
+   matérialisée et indexée (tri, filtre).
+4. **M8, incrément 4** : jeu de données figé, taux de faux positifs publié (sortie de M8).
+5. **VPS UE** (reporté) : reprendre la préproduction locale avec un domaine réel → clôture de M7.

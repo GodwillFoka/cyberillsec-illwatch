@@ -38,6 +38,21 @@ class FeedStatus(StrEnum):
     DEGRADED = "DEGRADED"
 
 
+class SourceReliability(StrEnum):
+    """Fiabilité d'une source (échelle de l'Amirauté, OTAN AJP-2.1) — M8, ADR-017.
+
+    A : totalement fiable · B : habituellement fiable · C : assez fiable ·
+    D : pas toujours fiable · E : peu fiable · F : fiabilité inconnue.
+    """
+
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    F = "F"
+
+
 class IndicatorType(StrEnum):
     """Types d'IOC supportés — RF-07 / §3.3.2."""
 

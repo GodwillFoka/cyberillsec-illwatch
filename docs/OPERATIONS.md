@@ -215,8 +215,14 @@ Caddy en HTTPS) tourne sur un poste, à côté de la pile de développement et s
 ```
 
 Adresse : **https://illwatch.localhost:8443** (certificat de l'autorité interne de Caddy, à
-accepter dans le navigateur). Projet Compose `illwatch-preprod` : conteneurs, volumes et réseau
-distincts ; Caddy n'écoute que sur 127.0.0.1 (8443, 8080). Secrets générés dans `.env.preprod`
+accepter dans le navigateur). Projet Compose `illwatch-preprod` : conteneurs et volumes
+distincts de la pile de développement ; le réseau reprend le sous-réseau fixe de la production
+(172.30.0.0/24) : ne pas la lancer en même temps qu'une pile de production locale. Caddy
+n'écoute que sur 127.0.0.1 (8443, 8080).
+
+Deux usages, jamais mélangés : **collecte réelle** (`up`, le worker collecte les sources) ou
+**démonstration** (`demo` sur une base vide : données fictives, worker arrêté ; pour repartir
+sur la collecte réelle, `purge` puis `up`). En CI : `PREPROD_MODE=demo` dès le démarrage. Secrets générés dans `.env.preprod`
 (600, ignoré par Git). Le même scénario tourne en CI (workflow « Préproduction ») à chaque
 modification, avec des captures d'écran de chaque écran publiées sur la branche `captures`.
 

@@ -2,8 +2,8 @@
 // réel préviendra aussi les autres analystes connectés).
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiPost, apiSend } from "./http";
-import type { Alert, Hunt, HuntDetail, IncidentDetail, IncidentEvent, IngestResult } from "./types";
+import { apiDelete, apiPost, apiSend } from "./http";
+import type { Account, Alert, Feed, Hunt, HuntDetail, IncidentDetail, IncidentEvent, IngestResult } from "./types";
 
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
@@ -161,4 +161,88 @@ export function useRunHunt() {
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
+}
+
+// --- Sources CTI (ADMIN) -------------------------------------------------------------------
+
+function useFeedsMutation<TVariables, TResult>(run: (variables: TVariables) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["feeds"] });
+      // La fiabilité d'une source change la confiance de ses IOC (ADR-017).
+      void queryClient.invalidateQueries({ queryKey: ["indicators"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+export interface FeedChanges {
+  is_active?: boolean;
+  polling_interval?: number;
+  reliability?: string;
+}
+
+export function useUpdateFeed(feedId: string) {
+  return useFeedsMutation((changes: FeedChanges) =>
+    apiSend<Feed>("PATCH", `/feeds/${encodeURIComponent(feedId)}`, changes),
+  );
+}
+
+export interface NewFeed {
+  name: string;
+  url: string;
+  feed_type: string;
+  polling_interval: number;
+  reliability: string;
+}
+
+export function useCreateFeed() {
+  return useFeedsMutation((body: NewFeed) => apiPost<Feed>("/feeds", body));
+}
+
+export function useDeleteFeed() {
+  return useFeedsMutation((feedId: string) => apiDelete(`/feeds/${encodeURIComponent(feedId)}`));
+}
+
+// --- Comptes (ADMIN) -----------------------------------------------------------------------
+
+function useAdminMutation<TVariables, TResult>(run: (variables: TVariables) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin"] });
+    },
+  });
+}
+
+export interface NewAccount {
+  username: string;
+  email: string;
+  role: string;
+  password: string;
+}
+
+export function useCreateAccount() {
+  return useAdminMutation((body: NewAccount) => apiPost<Account>("/users", body));
+}
+
+export function useUpdateAccount(userId: string) {
+  return useAdminMutation((changes: { role?: string; is_active?: boolean }) =>
+    apiSend<Account>("PATCH", `/users/${encodeURIComponent(userId)}`, changes),
+  );
+}
+
+export function useResetPassword(userId: string) {
+  return useAdminMutation((password: string) =>
+    apiPost<{ revoked: number }>(`/users/${encodeURIComponent(userId)}/password`, { password }),
+  );
+}
+
+export function useRevokeSessions(userId: string) {
+  return useAdminMutation(() =>
+    apiPost<{ revoked: number }>(`/users/${encodeURIComponent(userId)}/revoke-sessions`),
+  );
 }

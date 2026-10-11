@@ -32,3 +32,18 @@ def test_sources_de_reference_conformes_aux_regles_de_l_api() -> None:
         ensure_url_fits_type(url, feed.feed_type)
         assert len(feed.name) <= 100
     assert len({f.name.lower() for f in REFERENCE_FEEDS}) == len(REFERENCE_FEEDS)
+
+
+def test_cotes_de_reference_de_la_migration_conformes_au_seed() -> None:
+    """La migration d2f7a9c4e318 cote une fois les sources de référence existantes : mêmes
+    noms et mêmes cotes que le seed (qui, lui, ne cote qu'à la création)."""
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).parents[1] / "alembic" / "versions" / "d2f7a9c4e318_feed_reliability.py"
+    spec = importlib.util.spec_from_file_location("migration_reliability", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    expected = {f.name: str(f.reliability) for f in REFERENCE_FEEDS if f.reliability != "C"}
+    assert expected == module.REFERENCE_RATINGS

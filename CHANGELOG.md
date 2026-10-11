@@ -8,6 +8,39 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M8 Detection & Correlation démarré (ADR-017)
+- Fiabilité de chaque source sur l'échelle de l'Amirauté (A–F) : colonne
+  `threat_feeds.reliability` (migration `d2f7a9c4e318`, « C » par défaut ; cotes de référence
+  appliquées une fois : abuse.ch et IPsum B, OTX D), réglable par l'administrateur.
+- Score de confiance des IOC (0–100) calculé à la lecture : sources pondérées par leur
+  fiabilité (60), fraîcheur à demi-vie par type (30), récurrence (10) ; niveaux élevée /
+  moyenne / faible ; décomposition dans le détail d'un IOC (`confidence_breakdown`).
+
+### Ajouté — écrans Sources CTI et Administration
+- Sources CTI : synthèse, sources triées par besoin d'attention, fiche (adresse, fréquence,
+  essais, récolte, frise et journal des collectes), réglages ADMIN (fréquence, fiabilité,
+  suspension, suppression confirmée), ajout d'une source.
+- Administration : comptes (création avec mot de passe généré, rôle, activation,
+  réinitialisation, révocation des sessions), journal d'audit filtrable, paramètres en vigueur.
+- API ADMIN : `GET/POST /users`, `PATCH /users/{id}`, `POST /users/{id}/password`,
+  `POST /users/{id}/revoke-sessions` (jamais sans administrateur actif, lignes verrouillées) ;
+  `GET /settings` (présence des secrets seulement).
+
+### Modifié — système de design v7 « Veille de nuit »
+- Nouveau logo (œil-radar), IBM Plex, icônes dans le menu, palette recalibrée (contrastes AA à
+  AAA), graphiques en couleurs pleines, écran de connexion en deux parties, affichage téléphone
+  (menu en onglets horizontaux). `docs/DESIGN_SYSTEM.md` à jour.
+
+### Ajouté — préproduction locale
+- `scripts/preprod-local.sh` (up, check, demo, logs, down, purge) et
+  `docker-compose.preprod.yml` : pile de production isolée, Caddy HTTPS sur
+  `https://illwatch.localhost:8443`, contrôles automatiques (HTTPS et certificat, en-têtes,
+  API, SSE via Caddy, droits du rôle applicatif, worker, sauvegarde/restauration).
+- `illwatch demo load` : données de démonstration fictives, base vide uniquement.
+- Workflow « Préproduction » : la même pile en CI, captures d'écran de chaque écran (grand
+  écran et téléphone) publiées sur la branche `captures` ; échec sur erreur d'écran, de
+  console, violation CSP ou débordement de mise en page.
+
 ### Modifié — interface : React 19, Vite 7
 - React 19.3, Vite 7.3, `@vitejs/plugin-react` 5.2 : `npm audit` à **0 vulnérabilité, outils
   de développement compris** (les deux alertes Vite 5 / esbuild disparaissent). Node.js ≥ 20.19.

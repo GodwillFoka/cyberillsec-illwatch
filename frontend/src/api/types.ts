@@ -32,5 +32,12 @@ export type HuntDetail = Schemas["HuntDetail"];
 export type HuntMatch = Schemas["MatchRead"];
 export type HuntMatchPage = Schemas["MatchPage"];
 
+export type Feed = Schemas["FeedRead"];
+export type CollectionRun = Schemas["CollectionRunRead"];
+export type Account = Schemas["AccountRead"];
+export type AuditEvent = Schemas["AuditEventRead"];
+export type AuditPage = Schemas["AuditPage"];
+export type SettingsInfo = Schemas["SettingsRead"];
+
 export type Metric = Series["metric"];
 export type SeriesWindow = Series["window"];

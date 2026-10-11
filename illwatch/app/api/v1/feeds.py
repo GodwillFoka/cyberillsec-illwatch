@@ -35,7 +35,7 @@ from illwatch.modules.threat_feeds.service import (
     FeedNotFoundError,
     UnsafeFeedURLError,
 )
-from illwatch.shared.enums import AuditOutcome, FeedStatus, FeedType, UserRole
+from illwatch.shared.enums import AuditOutcome, FeedStatus, FeedType, SourceReliability, UserRole
 
 router = APIRouter(prefix="/feeds", tags=["flux de menaces"])
 
@@ -76,6 +76,7 @@ class FeedCreate(_FeedFieldsValidation):
     feed_type: FeedType
     polling_interval: PollingInterval = 3600
     is_active: bool = True
+    reliability: SourceReliability = SourceReliability.C
 
 
 class FeedUpdate(_FeedFieldsValidation):
@@ -90,6 +91,7 @@ class FeedUpdate(_FeedFieldsValidation):
     feed_type: FeedType | None = None
     polling_interval: PollingInterval | None = None
     is_active: bool | None = None
+    reliability: SourceReliability | None = None
 
     @model_validator(mode="after")
     def _reject_explicit_null(self) -> Self:
@@ -110,6 +112,7 @@ class FeedRead(BaseModel):
     feed_type: FeedType
     polling_interval: int
     is_active: bool
+    reliability: SourceReliability
     status: FeedStatus
     last_successful_run: datetime | None
     last_error: str | None
@@ -146,6 +149,7 @@ class FeedHealthRead(BaseModel):
     feed_type: FeedType
     status: FeedStatus
     is_active: bool
+    reliability: SourceReliability
     last_successful_run: datetime | None
     last_error: str | None
     last_attempt_at: datetime | None
