@@ -1,0 +1,7 @@
+prod react@^19.2.0
+prod react-dom@^19.2.0
+prod lucide-react@latest
+dev @types/react@^19.2.0
+dev @types/react-dom@^19.2.0
+dev @vitejs/plugin-react@^5
+dev vite@^7

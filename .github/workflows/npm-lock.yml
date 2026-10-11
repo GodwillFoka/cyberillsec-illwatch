@@ -1,0 +1,57 @@
+# ============================================================================
+# ILLWATCH — Mise à jour des dépendances npm et du fichier de verrouillage
+#
+# Sur une branche deps/**, déposer .github/npm-request.txt (une ligne par paquet) :
+#     prod react@^19.2.0
+#     dev  vite@^7
+# Le workflow installe les versions demandées (épinglées exactement dans package.json),
+# régénère frontend/package-lock.json, retire la demande et pousse le résultat sur la
+# branche. La CI se déclenche ensuite au push suivant (un push fait avec le jeton du
+# workflow ne relance pas les autres workflows).
+#
+# Le fichier de verrouillage est ainsi toujours produit par npm lui-même, jamais écrit à la
+# main, même depuis un poste qui n'a pas accès au registre npm.
+# ============================================================================
+name: Verrouillage npm
+
+on:
+  push:
+    branches: ["deps/**"]
+    paths: [".github/npm-request.txt"]
+
+permissions:
+  contents: write
+
+jobs:
+  lock:
+    name: Installation et verrouillage
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Installer les versions demandées
+        working-directory: frontend
+        run: |
+          prod=$(awk '$1=="prod"{print $2}' ../.github/npm-request.txt | xargs)
+          dev=$(awk '$1=="dev"{print $2}' ../.github/npm-request.txt | xargs)
+          npm ci --no-audit --no-fund
+          [ -z "$prod" ] || npm install --save-exact --no-audit --no-fund $prod
+          [ -z "$dev" ] || npm install --save-exact --save-dev --no-audit --no-fund $dev
+          echo "### Versions installées" >> "$GITHUB_STEP_SUMMARY"
+          for p in $prod $dev; do
+            name="${p%@*}"
+            echo "- $name $(node -p "require('./node_modules/$name/package.json').version")" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=npm::$name $(node -p "require('./node_modules/$name/package.json').version")"
+          done
+          npm audit --audit-level=low > ../audit.txt 2>&1 && echo "::notice title=npm audit::0 vulnérabilité (dév. comprises)" \
+            || { tail -n 20 ../audit.txt | sed 's/^/::warning title=npm audit::/'; }
+      - name: Pousser le verrouillage
+        run: |
+          git rm -q .github/npm-request.txt
+          git config user.name "illwatch-ci"
+          git config user.email "ci@illwatch.invalid"
+          git add frontend/package.json frontend/package-lock.json
+          git commit -qm "Verrouillage npm régénéré par la CI"
+          git push -q origin "HEAD:${GITHUB_REF_NAME}"
