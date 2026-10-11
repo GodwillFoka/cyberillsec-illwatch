@@ -1452,9 +1452,13 @@ textarea {
   white-space: normal;
 }
 
-.split > .card,
-.card.flush {
+/* Toute carte qui contient un tableau le fait défiler chez elle, jamais la page entière. */
+.card {
   overflow-x: auto;
+}
+
+.row.tight {
+  flex-wrap: nowrap;
 }
 
 /* Étiquettes de signaux (KEV, exploit…) : plus compactes que les badges de gravité. */
