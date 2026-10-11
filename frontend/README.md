@@ -39,8 +39,8 @@ après un changement de l'API, compile avec l'ancien schéma et échoue (`TS2339
 | `src/auth/` | session : connexion, renouvellement anticipé, déconnexion |
 | `src/realtime/` | flux SSE : analyse, reconnexion, pause, relecture des données concernées |
 | `src/layout/` | menu latéral, barre supérieure (direct, pause, UTC/local) |
-| `src/components/` | carte indicateur, badges P0–P3, graphique, états de chargement |
-| `src/pages/` | écrans (vue d'ensemble ; les autres arrivent au fil du lot 1) |
+| `src/components/` | carte indicateur, badges P0–P3, graphique, états de chargement, pagination, association à un incident, score de CVE |
+| `src/pages/` | écrans du lot 1 : vue d'ensemble, triage, incidents (et investigation), indicateurs, CVE, chasse |
 
 Règles : aucun type d'échange écrit à la main (`src/api/types.ts` ne fait que nommer les types
 générés) ; une donnée absente s'affiche « — », jamais une valeur inventée ; pas de script ni de

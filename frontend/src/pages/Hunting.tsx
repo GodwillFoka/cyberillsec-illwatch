@@ -69,11 +69,13 @@ function NewHunt({
   const [selected, setSelected] = useState<Set<string>>(() => new Set(rules.map((r) => r.id)));
   const batch = splitBatch(text, MAX_HUNT_OBSERVABLES);
   const assets = splitAssets(assetsText);
-  const assetOnly = [...selected].every((id) => ASSET_ONLY_RULES.has(id));
+  const assetOnly = selected.size > 0 && [...selected].every((id) => ASSET_ONLY_RULES.has(id));
   // Sans observable, la chasse lit toute la base d'IOC actifs : seulement sur confirmation.
   const wholeBase = batch.values.length === 0 && !assetOnly;
   const [confirmed, setConfirmed] = useState(false);
-  const ready = selected.size > 0 && (!wholeBase || confirmed) && !(assetOnly && assets.length === 0 && batch.values.length === 0);
+  // La règle d'inventaire seule ne trouve rien sans inventaire, observables ou non.
+  const missingAssets = assetOnly && assets.length === 0;
+  const ready = selected.size > 0 && (!wholeBase || confirmed) && !missingAssets;
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -152,7 +154,7 @@ function NewHunt({
           minutes, comme la chasse planifiée du worker)
         </label>
       )}
-      {assetOnly && assets.length === 0 && batch.values.length === 0 && (
+      {missingAssets && (
         <p className="reason" style={{ textAlign: "left" }}>
           La règle des CVE exploitables a besoin d'un inventaire d'actifs.
         </p>
