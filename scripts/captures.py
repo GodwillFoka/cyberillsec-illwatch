@@ -29,7 +29,7 @@ SCREENS = [
     ("08-sources", "/sources"),
     ("09-administration", "/administration"),
 ]
-MOBILE = {"01-vue-ensemble", "02-triage", "05-indicateurs"}
+MOBILE = {"01-vue-ensemble", "02-triage", "05-indicateurs", "08-sources", "09-administration"}
 
 problems: list[str] = []
 
@@ -47,11 +47,46 @@ def settle(page: Page) -> None:
     page.wait_for_timeout(900)
 
 
+OVERFLOW_PROBE = """() => {
+  const root = document.documentElement;
+  const main = document.querySelector("main");
+  const limit = Math.min(root.clientWidth, main ? main.getBoundingClientRect().right : 1e9) + 1;
+  const out = [];
+  if (root.scrollWidth > root.clientWidth + 1) {
+    out.push(`page : ${root.scrollWidth} px de large pour ${root.clientWidth} px visibles`);
+  }
+  for (const el of document.querySelectorAll("body *")) {
+    const box = el.getBoundingClientRect();
+    if (box.width === 0 || box.right <= limit) continue;
+    // Contenu d'une zone qui défile volontairement (tableau dans sa carte) : ignoré.
+    // La zone principale (<main>) ne compte pas : elle ne défile que verticalement.
+    let node = el.parentElement;
+    let clipped = false;
+    while (node && node !== main && node !== document.body) {
+      const ox = getComputedStyle(node).overflowX;
+      if (ox === "auto" || ox === "scroll" || ox === "hidden") { clipped = true; break; }
+      node = node.parentElement;
+    }
+    if (clipped) continue;
+    const cls = typeof el.className === "string" ? el.className.split(" ").join(".") : "";
+    const right = Math.round(box.right);
+    const tag = el.tagName.toLowerCase();
+    out.push(`${tag}.${cls} jusqu'à ${right} px (limite ${Math.round(limit)})`);
+    if (out.length >= 5) break;
+  }
+  return out;
+}"""
+
+
 def check(page: Page, name: str) -> None:
     text = page.inner_text("body")
     for marker in ("Données indisponibles", "Page introuvable", "Something went wrong"):
         if marker in text:
             problems.append(f"{name} : « {marker} » affiché")
+    # Mise en page : aucun élément ne doit dépasser la largeur de l'écran (hors zones qui
+    # défilent volontairement, comme un tableau dans sa carte).
+    for overflow in page.evaluate(OVERFLOW_PROBE):
+        problems.append(f"{name} ({page.viewport_size['width']} px) : déborde : {overflow}")
 
 
 def main() -> int:
@@ -108,6 +143,7 @@ def main() -> int:
             if name in MOBILE:
                 page.goto(f"{BASE}{path}")
                 settle(page)
+                check(page, f"{name}-mobile")
                 page.screenshot(path=OUT / f"{name}-mobile.png", full_page=True)
         browser.close()
 
