@@ -473,22 +473,27 @@ button {
 
 .seg {
   display: inline-flex;
-  padding: 2px;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--r-btn);
   background: var(--panel-head);
 }
 
 .seg button {
-  min-height: 34px;
+  min-height: 40px;
   padding: 0 var(--s3);
   border: 0;
-  border-radius: var(--r-badge);
+  border-radius: 0;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
   font-size: 13px;
   white-space: nowrap;
+}
+
+.seg button:focus-visible {
+  outline-offset: -2px;
 }
 
 .seg button:hover {
