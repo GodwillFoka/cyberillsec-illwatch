@@ -19,6 +19,10 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   l'état du direct (« Connecté · en direct »…), « Mettre en pause » / « Reprendre le direct »,
   heure « UTC · 08:02:17 », balayage radar unique de 1,2 s.
 - Site de documentation aux couleurs v2 ; `docs/DESIGN_SYSTEM.md` v8.
+- Typographie française : « à l'instant » (jamais « il y a à l'instant »), nombre et unité
+  insécables (« 4 min », « 97,3 % »), virgule décimale et libellés français dans la chronologie
+  des incidents et les correspondances de chasse ; « Indicateurs (IOC) » à la première occurrence.
+- Sélecteurs segmentés à 40 px ; survol des graphiques en Signal.
 
 ### Ajouté — M8 Detection & Correlation démarré (ADR-017)
 - Fiabilité de chaque source sur l'échelle de l'Amirauté (A–F) : colonne

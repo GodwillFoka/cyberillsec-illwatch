@@ -61,6 +61,16 @@ STATUS_LABELS: dict[IncidentStatus, str] = {
     IncidentStatus.CLOTURE: "Clôturé",
 }
 PRIORITY_LABELS = {"P0_CRITIQUE": "P0", "P1_ELEVE": "P1", "P2_MOYEN": "P2", "P3_FAIBLE": "P3"}
+INDICATOR_LABELS = {
+    "IPV4": "IPv4",
+    "IPV6": "IPv6",
+    "DOMAIN": "domaine",
+    "URL": "URL",
+    "HASH_SHA256": "SHA-256",
+    "HASH_SHA1": "SHA-1",
+    "HASH_MD5": "MD5",
+    "EMAIL": "e-mail",
+}
 
 
 class IncidentNotFoundError(LookupError):
@@ -355,11 +365,12 @@ async def attach_indicator(
     incident.indicators.append(
         IncidentIndicator(indicator_id=indicator.id, added_by=author_id, added_at=_now())
     )
+    kind = INDICATOR_LABELS.get(str(indicator.type), str(indicator.type))
     session.add(
         _event(
             incident,
             IncidentEventType.IOC_ATTACHED,
-            f"Indicateur associé : {indicator.type} {indicator.value}",
+            f"Indicateur associé : {kind} {indicator.value}",
             author_id,
         )
     )
