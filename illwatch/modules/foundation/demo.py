@@ -415,12 +415,12 @@ async def load_demo_data(
     report.hunts = 1
 
     if await session.scalar(select(func.count()).select_from(EnrichmentDatasetInfo)) == 0:
-        source = f"démonstration (RFC 5737, RFC 5398) {DEMO_TAG}"
+        origin = f"démonstration (RFC 5737, RFC 5398) {DEMO_TAG}"
         for dataset, lines in (
             (EnrichmentDataset.COUNTRY, _DEMO_COUNTRY),
             (EnrichmentDataset.ASN, _DEMO_ASN),
         ):
-            await import_dataset(session, dataset, lines, source=source, now=moment)
+            await import_dataset(session, dataset, lines, source=origin, now=moment)
         report.notes.append("enrichissement fictif des plages de documentation")
     await session.flush()
     return report
