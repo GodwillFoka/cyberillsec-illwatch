@@ -29,7 +29,7 @@ const EVENT_LABEL: Record<string, string> = {
   STATUS_CHANGE: "Changement de statut",
   ASSIGNED: "Assignation",
   COMMENT: "Commentaire",
-  IOC_ATTACHED: "IOC associé",
+  IOC_ATTACHED: "Indicateur associé",
   CVE_ATTACHED: "CVE associée",
   ACTION_TAKEN: "Action déclarée par l'analyste",
 };

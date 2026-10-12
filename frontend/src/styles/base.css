@@ -985,7 +985,7 @@ button {
 
 .split {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
+  grid-template-columns: minmax(0, 7fr) minmax(360px, 4fr);
   gap: var(--s4);
   align-items: start;
 }

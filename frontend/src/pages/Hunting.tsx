@@ -150,7 +150,7 @@ function NewHunt({
       {wholeBase && (
         <label className="check">
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
-          Je confirme la chasse sur toute la base (des centaines de milliers d'IOC : plusieurs
+          Chasse confirmée sur toute la base (des centaines de milliers d'IOC : plusieurs
           minutes, comme la chasse planifiée du worker)
         </label>
       )}

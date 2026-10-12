@@ -34,7 +34,7 @@ export function LoginPage() {
         <div className="radar" />
         <div className="login-identity">
           <BrandLogo />
-          <p className="brand-signature">Voir la menace avant qu'elle ne vous voie.</p>
+          <p className="brand-signature">Voir la menace avant qu’elle ne vous voie.</p>
           <p className="tagline">
             Renseignement sur les menaces, priorisation des vulnérabilités et réponse aux
             incidents, sur un seul poste de veille.

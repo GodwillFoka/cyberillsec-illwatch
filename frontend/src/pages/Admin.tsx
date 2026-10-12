@@ -361,7 +361,7 @@ const AUDIT_FAMILIES: [string, string][] = [
   ["user.", "Comptes"],
   ["feed.", "Sources"],
   ["data.export", "Exports"],
-  ["indicator.", "IOC soumis"],
+  ["indicator.", "Indicateurs soumis"],
   ["alert.", "Alertes"],
   ["hunt.", "Chasses"],
 ];

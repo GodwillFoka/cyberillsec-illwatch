@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/illwatch-logo-dark.svg">
-  <img alt="CyberillSec ILL Watch" src="docs/assets/illwatch-logo-light.svg" width="420">
+  <img alt="ILL Watch par CYBERILL" src="docs/assets/illwatch-logo-light.svg" width="420">
 </picture>
 
 **Security Monitoring & Cyber Threat Intelligence Platform**

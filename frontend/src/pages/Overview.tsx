@@ -167,7 +167,7 @@ function Situation({ summary }: { summary: Summary | undefined }) {
   return (
     <div className="grid kpis">
       <Kpi
-        label="IOC actifs"
+        label="Indicateurs (IOC) actifs"
         value={formatNumber(summary?.iocs.active)}
         context={
           summary
@@ -405,8 +405,8 @@ function IocTypes({ summary }: { summary: Summary | undefined }) {
   const max = Math.max(1, ...rows.map(([, n]) => n));
   return (
     <section className="card">
-      <h2>IOC actifs par type</h2>
-      {rows.length === 0 && <p className="empty">{summary ? "Aucun IOC actif." : "Chargement…"}</p>}
+      <h2>Indicateurs actifs par type</h2>
+      {rows.length === 0 && <p className="empty">{summary ? "Aucun indicateur actif." : "Chargement…"}</p>}
       {rows.map(([type, count]) => (
         <div className="bar-row" key={type}>
           <span className="mono muted">{type}</span>
