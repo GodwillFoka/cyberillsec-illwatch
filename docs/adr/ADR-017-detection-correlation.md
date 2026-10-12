@@ -29,8 +29,8 @@ M8 est livré en quatre incréments, dans cet ordre :
    - Niveaux : élevée ≥ 70, moyenne ≥ 40, faible en dessous.
    - Cote de fiabilité par source (`threat_feeds.reliability`, « C » par défaut), réglée par
      l'administrateur ; sources de référence : abuse.ch et IPsum en B, OTX en D, les autres C.
-2. **Enrichissement local** : ASN et pays depuis une base hors ligne (aucune requête sortante
-   par IOC), âge du domaine si disponible.
+2. **Enrichissement local** (livré le 12/10, ADR-019) : ASN et pays depuis la base DB-IP Lite
+   importée localement (aucune requête sortante par IOC) ; âge des domaines reporté.
 3. **Corrélation** : inventaire d'actifs (produits, CPE), règles IOC × CVE × actif × KEV →
    évènement corrélé → alerte priorisée ; la confiance filtre les IOC éligibles (seuil
    paramétrable, « moyenne » par défaut).
@@ -64,6 +64,6 @@ M8 est livré en quatre incréments, dans cet ordre :
 
 ## Suivi
 
-- Incrément 2 : choisir la base ASN/pays hors ligne (licence compatible MIT), ADR dédiée.
+- Incrément 2 : ✅ DB-IP Lite (CC BY 4.0), ADR-019.
 - Incrément 3 : modèle d'inventaire d'actifs, colonne de confiance matérialisée et indexée.
 - Incrément 4 : jeu de données figé, mesure publiée dans `Rapport/`.

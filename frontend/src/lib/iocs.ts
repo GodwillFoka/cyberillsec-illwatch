@@ -81,3 +81,16 @@ export function splitAssets(text: string): string[] {
   }
   return assets;
 }
+
+const REGIONS = new Intl.DisplayNames(["fr"], { type: "region" });
+
+/** Nom français d'un pays à partir de son code ISO 3166-1 alpha-2 (« US » → « États-Unis »). */
+export function countryName(code: string | null | undefined): string {
+  if (!code) return "inconnu";
+  try {
+    const name = REGIONS.of(code.toUpperCase());
+    return name && name !== code.toUpperCase() ? `${name} (${code.toUpperCase()})` : code.toUpperCase();
+  } catch {
+    return code;
+  }
+}

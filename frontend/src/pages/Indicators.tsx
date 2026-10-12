@@ -21,7 +21,7 @@ import { CONFIDENCE_LABEL, ConfidenceMeter } from "../components/Confidence";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
 import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
-import { IOC_TYPES, MAX_BATCH, iocTypeLabel, splitBatch } from "../lib/iocs";
+import { IOC_TYPES, MAX_BATCH, countryName, iocTypeLabel, splitBatch } from "../lib/iocs";
 import { INCIDENT_STATUS, SEVERITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, asUuid, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
@@ -324,6 +324,49 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                   <dd className="mono">+{ioc.confidence_breakdown.recurrence.toFixed(1).replace(".", ",")} / 10</dd>
                 </dl>
               </section>
+
+              {/* Enrichissement hors ligne (ADR-017, incrément 2) : IP seulement. */}
+              {(ioc.type === "IPV4" || ioc.type === "IPV6") && (
+                <section>
+                  <h3>Enrichissement</h3>
+                  {ioc.enrichment ? (
+                    <>
+                      <dl className="facts">
+                        <dt>Pays</dt>
+                        <dd>{countryName(ioc.enrichment.country)}</dd>
+                        <dt>Système autonome</dt>
+                        <dd>
+                          {ioc.enrichment.asn ? (
+                            <>
+                              <span className="mono">AS{ioc.enrichment.asn}</span>
+                              {ioc.enrichment.as_org ? ` · ${ioc.enrichment.as_org}` : ""}
+                            </>
+                          ) : (
+                            "inconnu"
+                          )}
+                        </dd>
+                      </dl>
+                      {!ioc.enrichment.public && (
+                        <p className="muted small">
+                          Adresse non routable sur Internet (privée, réservée ou de documentation) :
+                          pays et opérateur sans valeur de renseignement.
+                        </p>
+                      )}
+                      <p className="muted small">
+                        Base locale, aucune requête sortante.{" "}
+                        <a href="https://db-ip.com" target="_blank" rel="noopener noreferrer">
+                          IP Geolocation by DB-IP
+                        </a>
+                      </p>
+                    </>
+                  ) : (
+                    <p className="muted small">
+                      Pays et opérateur inconnus : adresse absente de la base, ou base DB-IP pas
+                      encore importée (<span className="mono">illwatch enrich update</span>).
+                    </p>
+                  )}
+                </section>
+              )}
 
               {/* 3. Provenance (ADR-006) */}
               <section>

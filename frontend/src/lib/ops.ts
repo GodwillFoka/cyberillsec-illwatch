@@ -86,6 +86,7 @@ const AUDIT_LABELS: Record<string, string> = {
   "alert.ack": "Alerte acquittée",
   "data.export": "Export de données",
   "hunt.run": "Chasse lancée",
+  "enrichment.import": "Base d'enrichissement importée",
 };
 
 export function auditLabel(action: string): string {

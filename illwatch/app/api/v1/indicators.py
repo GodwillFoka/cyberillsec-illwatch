@@ -25,6 +25,7 @@ from illwatch.modules.correlation.confidence import (
     compute_confidence,
     source_reliabilities,
 )
+from illwatch.modules.enrichment.lookup import enrich_ip
 from illwatch.modules.threat_feeds import indicators as service
 from illwatch.modules.threat_feeds.indicators import (
     MAX_BATCH_SIZE,
@@ -115,11 +116,25 @@ class ConfidenceRead(BaseModel):
     total: int
 
 
+class IpEnrichmentRead(BaseModel):
+    """Pays et système autonome d'une IP, d'après la base DB-IP Lite importée (ADR-017)."""
+
+    country: str | None = Field(description="Code pays ISO 3166-1 alpha-2.")
+    asn: int | None = Field(description="Numéro de système autonome.")
+    as_org: str | None = Field(description="Opérateur du système autonome.")
+    public: bool = Field(description="Adresse routable sur Internet.")
+    attribution: str = "IP Geolocation by DB-IP"
+
+
 class IndicatorDetail(IndicatorRead):
     sources: list[IndicatorSourceRead] = Field(
         description="Provenance : chaque flux ayant rapporté l'IOC (ADR-006)."
     )
     confidence_breakdown: ConfidenceRead
+    enrichment: IpEnrichmentRead | None = Field(
+        default=None,
+        description="IPv4/IPv6 seulement ; vide tant qu'aucune base n'est importée.",
+    )
 
 
 class IndicatorPage(BaseModel):
@@ -242,7 +257,14 @@ async def read_indicator(indicator_id: UUID, session: DbSession, _: CurrentUser)
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"IOC {indicator_id} introuvable."
         ) from None
-    return _to_detail(indicator, datetime.now(UTC))
+    detail = _to_detail(indicator, datetime.now(UTC))
+    if indicator.type in (IndicatorType.IPV4, IndicatorType.IPV6):
+        found = await enrich_ip(session, indicator.value)
+        if found.country or found.asn or not found.public:
+            detail.enrichment = IpEnrichmentRead(
+                country=found.country, asn=found.asn, as_org=found.as_org, public=found.public
+            )
+    return detail
 
 
 @router.post(

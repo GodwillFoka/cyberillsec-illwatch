@@ -6,6 +6,7 @@ métamodèle via `Base.metadata`.
 
 from illwatch.app.models.audit import AuditEvent
 from illwatch.app.models.cve import CVE, CollectorState, CVEAlert, CVEPriorityChange
+from illwatch.app.models.enrichment import EnrichmentDatasetInfo, IpRange
 from illwatch.app.models.hunting import HuntingMatch, HuntingSession
 from illwatch.app.models.incident import Incident, IncidentCVE, IncidentEvent, IncidentIndicator
 from illwatch.app.models.refresh_token import RefreshToken
@@ -19,6 +20,7 @@ __all__ = [
     "CVEPriorityChange",
     "CollectionRun",
     "CollectorState",
+    "EnrichmentDatasetInfo",
     "HuntingMatch",
     "HuntingSession",
     "Incident",
@@ -27,6 +29,7 @@ __all__ = [
     "IncidentIndicator",
     "Indicator",
     "IndicatorSource",
+    "IpRange",
     "RefreshToken",
     "ThreatFeed",
     "User",

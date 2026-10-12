@@ -66,6 +66,13 @@ class IndicatorType(StrEnum):
     EMAIL = "EMAIL"
 
 
+class EnrichmentDataset(StrEnum):
+    """Bases d'enrichissement hors ligne des adresses IP — M8, ADR-017 (incrément 2)."""
+
+    COUNTRY = "country"  # plage → pays (ISO 3166-1 alpha-2)
+    ASN = "asn"  # plage → système autonome et son opérateur
+
+
 class IncidentStatus(StrEnum):
     """Machine d'état à 6 étapes — RF-18 (NIST SP 800-61 Rev. 2)."""
 
