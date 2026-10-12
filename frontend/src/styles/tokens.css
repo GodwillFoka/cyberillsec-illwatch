@@ -1,49 +1,60 @@
 /*
- * Jetons du système de design v7 « Veille de nuit » (docs/DESIGN_SYSTEM.md).
- * Une couleur porte une information : le violet dit « vous êtes ici / sélectionné »,
- * l'orange dit « agir », l'échelle P0–P3 dit « gravité ». Rien d'autre n'est coloré.
+ * Jetons de l'identité ILL Watch v2, thème Nuit (brand book, docs/DESIGN_SYSTEM.md, ADR-018).
+ * Une couleur porte une information : l'indigo dit « vous êtes ici / sélectionné », le Signal
+ * dit « la veille » (liens, focus, courbes), l'orange dit « agir » (une action principale par
+ * vue), l'échelle P0–P3 dit « gravité ». Rien d'autre n'est coloré.
+ * Les valeurs marquées « brand book » viennent telles quelles de tokens.json ; les autres sont
+ * des dérivés techniques (survol, graphiques) et ne portent jamais de texte courant.
  */
 :root {
   color-scheme: dark;
 
-  /* Surfaces : du plus profond au plus proche. */
-  --bg: #0a0f1c; /* encre */
-  --nav: #0c1222; /* rail de navigation, barre supérieure */
-  --panel: #111a2c; /* ardoise : cartes, panneaux */
-  --panel-head: #0e1627; /* en-têtes de tableau, champs */
-  --panel-raise: #172238; /* survol */
-  --line: #1f2a42; /* traits */
-  --grid: #18223a; /* grille des graphiques */
+  /* Surfaces (brand book). */
+  --bg: #0a0e1a; /* Nuit : fond de page */
+  --nav: #0d1220; /* menu latéral, barre supérieure */
+  --panel: #121a2b; /* cartes, panneaux, tableaux */
+  --panel-head: #0f1626; /* en-têtes de tableau, champs */
+  --line: #222c42; /* bordures 1 px */
 
-  /* Texte. */
-  --text: #e6ebf5; /* givre — 14,5:1 sur ardoise */
-  --muted: #97a3ba; /* secondaire — 6,8:1 */
-  --faint: #6e7a93; /* désactivé, texte d'exemple uniquement */
+  /* Dérivés : survol des lignes et boutons, grille des graphiques, bordure au survol. */
+  --panel-raise: #18223a;
+  --grid: #1a2336;
+  --line-strong: #34405a;
 
-  /* Identité CYBERILLSEC. */
-  --indigo: #2a1f78; /* veille profonde : élément actif, sélection */
-  --indigo-light: #8e80ff; /* veille : liens, focus, courbes — 5,5:1 */
-  --orange: #f27a2e; /* signal : action principale, repère de sélection */
-  --on-orange: #1a0b02;
+  /* Texte (brand book). */
+  --text: #eceff5; /* ≥ 15:1 */
+  --muted: #a3acbf; /* ≥ 7,6:1 */
+  /* Dérivé : texte désactivé et exemples de saisie uniquement (≥ 4,5:1 sur panel-head). */
+  --faint: #8089a0;
 
-  /* États. */
+  /* Marque (brand book). */
+  --indigo: #20155c; /* maison CYBERILL : actif, sélection — toujours avec on-indigo */
+  --on-indigo: #ffffff;
+  --signal: #22d3ee; /* la veille : liens, focus, courbes, radar */
+  --orange: #e6681b; /* action principale, point de menace, repère de sélection */
+  --on-orange: #1b0d04;
+  --new-fg: #d9d2ff; /* « Nouvelle » sur indigo */
+
+  /* États (brand book). */
   --critical: #e5484d;
   --success: #3fb27f;
   --warning: #f2b33d;
+  --ok-bg: #12301f;
+  --ok-fg: #8fe0b8;
 
-  /* Échelle de gravité P0–P3 : badge (fond, texte) et marque pleine (graphiques, pastilles). */
-  --p0-bg: #3a1418;
-  --p0-fg: #ff8a8d;
+  /* Gravité P0–P3 : badge (fond, texte — brand book) et marque pleine des graphiques (dérivé). */
+  --p0-bg: #3b1518;
+  --p0-fg: #ff9b9e;
   --p0-mark: #e5484d;
-  --p1-bg: #382909;
-  --p1-fg: #f5c35a;
-  --p1-mark: #e9a23b;
-  --p2-bg: #10264a;
-  --p2-fg: #8db8ff;
-  --p2-mark: #4c8df0;
-  --p3-bg: #1c2436;
-  --p3-fg: #b8c2d4;
-  --p3-mark: #66728a;
+  --p1-bg: #3a2c0c;
+  --p1-fg: #f7cb70;
+  --p1-mark: #f2b33d;
+  --p2-bg: #122848;
+  --p2-fg: #9bc2ff;
+  --p2-mark: #5b9bf5;
+  --p3-bg: #1e2535;
+  --p3-fg: #c6cdd9;
+  --p3-mark: #6e7a93;
 
   /* Espacements (base 4). */
   --s1: 4px;
@@ -53,13 +64,14 @@
   --s5: 24px;
   --s6: 32px;
 
-  /* Rayons : la hiérarchie se lit aussi à l'arrondi. */
-  --r-card: 10px;
-  --r-btn: 6px;
-  --r-badge: 4px;
+  /* Rayons (brand book) : badge 6, bouton et champ 8, carte 12. Bordures 1 px, sans ombre. */
+  --r-card: 12px;
+  --r-btn: 8px;
+  --r-badge: 6px;
 
-  --font: "IBM Plex Sans", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --panel-motion: 180ms; /* ouverture d'un panneau */
 }

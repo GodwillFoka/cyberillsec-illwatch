@@ -1,4 +1,4 @@
-# ILLWATCH — Feuille de route après la v1.0 fonctionnelle (M7 → M11)
+# ILL Watch — Feuille de route après la v1.0 fonctionnelle (M7 → M11)
 
 **Version :** 10/10/2026 · **Point de départ :** baseline `v0.1.1` (M1–M6 intégrés dans `main`,
 audit `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`)
@@ -6,7 +6,7 @@ audit `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`)
 **État au 06/10/2026 :** `v0.1.1` taguée ; M7 (lots 1 à 3) **fusionné dans `main`**, qui porte
 la version de développement `0.2.0.dev0`. Validation sur données réelles automatisée sur GitHub
 Actions (hebdomadaire). Décision du 08/10 (ADR-016) : l'interface web passe avant l'hébergement.
-Interface complète (lot 1 et écrans Sources CTI, Administration), design v7. Préproduction
+Interface complète (lot 1 et écrans Sources CTI, Administration), identité ILL Watch v2 (brand book, ADR-018). Préproduction
 publique sur VPS **reportée le 11/10** : une préproduction locale identique tourne en CI à chaque
 modification ; M7 se clôt au passage sur le VPS. M8 démarré en parallèle (ADR-017).
 
@@ -30,7 +30,7 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 
 ## M7 — Production Hardening
 
-**But.** Rendre ILLWATCH déployable sans réserve de sécurité connue.
+**But.** Rendre ILL Watch déployable sans réserve de sécurité connue.
 
 | Lot | Contenu | Critère de sortie |
 |---|---|---|
@@ -66,7 +66,7 @@ une alerte, taux de faux positifs mesuré et publié.
 - L3 : ingénierie de détection (règles versionnées), recommandations de réponse.
 - Dashboard : séries 7 et 30 jours, charge par analyste, SLA par priorité.
 
-**Critère de sortie :** un incident traverse L1 → L2 → L3 sans quitter ILLWATCH, MTTR mesuré.
+**Critère de sortie :** un incident traverse L1 → L2 → L3 sans quitter ILL Watch, MTTR mesuré.
 
 ## M10 — CTI Intelligence Layer
 
@@ -81,7 +81,7 @@ une alerte, taux de faux positifs mesuré et publié.
 
 ## M11 — Observability & Deployment
 
-**But.** Exploiter ILLWATCH comme un service.
+**But.** Exploiter ILL Watch comme un service.
 
 - Métriques Prometheus (API, worker, collecte, base, Redis), tableaux Grafana, alertes.
 - Journaux JSON corrélés par identifiant de requête (amorcé en M7).

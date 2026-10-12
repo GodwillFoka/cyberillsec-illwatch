@@ -16,8 +16,8 @@ import { LevelBadge } from "../components/Badge";
 import { Kpi } from "../components/Kpi";
 import { QueryState } from "../components/QueryState";
 import { SeriesChart } from "../components/SeriesChart";
-import { formatAge, formatDateTime, formatNumber, formatTime, parseDate } from "../lib/format";
-import { ALERT_REASON, INCIDENT_STATUS, PRIORITY_ORDER, rankOf, TONE_COLORS, toneOf } from "../lib/levels";
+import { formatAge, formatAgo, formatDateTime, formatNumber, formatTime, parseDate } from "../lib/format";
+import { ALERT_REASON, CHART, INCIDENT_STATUS, PRIORITY_ORDER, rankOf, TONE_COLORS, toneOf } from "../lib/levels";
 import { useTimeZone } from "../lib/time";
 import { Link } from "../lib/router";
 import { useFresh } from "../lib/useFresh";
@@ -127,7 +127,7 @@ function TopIncident({ incident }: { incident: Incident | undefined }) {
       </p>
       <p className="muted">
         Phase : {INCIDENT_STATUS[incident.status] ?? incident.status}
-        {opened ? ` · ouvert il y a ${formatAge(opened)}` : ""}
+        {opened ? ` · ouvert ${formatAgo(opened)}` : ""}
       </p>
       <Link to={`/incidents/${incident.id}`}>Ouvrir l'investigation</Link>
     </section>
@@ -167,7 +167,7 @@ function Situation({ summary }: { summary: Summary | undefined }) {
   return (
     <div className="grid kpis">
       <Kpi
-        label="IOC actifs"
+        label="Indicateurs (IOC) actifs"
         value={formatNumber(summary?.iocs.active)}
         context={
           summary
@@ -381,7 +381,7 @@ function SourcesHealth() {
                       <FeedState feed={feed} />
                     </td>
                     <td className="muted" title={attempt ? formatDateTime(attempt, utc) : undefined}>
-                      {attempt ? `il y a ${formatAge(attempt)}` : "jamais"}
+                      {attempt ? `${formatAgo(attempt)}` : "jamais"}
                     </td>
                     <td className="num">
                       {feed.errors_7d > 0 ? `${feed.errors_7d} / ${feed.runs_7d}` : "0"}
@@ -405,13 +405,13 @@ function IocTypes({ summary }: { summary: Summary | undefined }) {
   const max = Math.max(1, ...rows.map(([, n]) => n));
   return (
     <section className="card">
-      <h2>IOC actifs par type</h2>
-      {rows.length === 0 && <p className="empty">{summary ? "Aucun IOC actif." : "Chargement…"}</p>}
+      <h2>Indicateurs actifs par type</h2>
+      {rows.length === 0 && <p className="empty">{summary ? "Aucun indicateur actif." : "Chargement…"}</p>}
       {rows.map(([type, count]) => (
         <div className="bar-row" key={type}>
           <span className="mono muted">{type}</span>
           <div className="bar-track">
-            <div className="bar-fill" style={{ width: `${(count / max) * 100}%`, background: "#8E80FF" }} />
+            <div className="bar-fill" style={{ width: `${(count / max) * 100}%`, background: CHART.accent }} />
           </div>
           <span className="num mono">{formatNumber(count)}</span>
         </div>

@@ -6,7 +6,7 @@ export const formatScore = (value: number | null | undefined) =>
 
 /** EPSS (probabilité 0–1) en pourcentage français : 0,973 → « 97,3 % ». */
 export const formatEpss = (value: number | null | undefined) =>
-  value === null || value === undefined ? "—" : `${(value * 100).toFixed(1).replace(".", ",")} %`;
+  value === null || value === undefined ? "—" : `${(value * 100).toFixed(1).replace(".", ",")}\u202f%`;
 
 export function Breakdown({ cve }: { cve: CveDetail }) {
   const parts: [string, number][] = [

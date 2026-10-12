@@ -55,7 +55,7 @@ def alert_payload(alert: CVEAlert) -> dict[str, Any]:
     score = float(alert.score)
     return {
         "text": (
-            f"[ILLWATCH] {alert.cve_id} — score {score:.1f}/100 ({priority}), "
+            f"[ILL Watch] {alert.cve_id} — score {score:.1f}/100 ({priority}), "
             f"remédiation sous {sla} h. Déclencheur : {alert.reason}."
         ),
         "cve": alert.cve_id,

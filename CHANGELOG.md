@@ -8,6 +8,22 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Modifié — identité ILL Watch v2 (brand book, ADR-018)
+- Nom affiché « ILL Watch », endossement « PAR CYBERILL » (interface, API, CLI, documentation) ;
+  identifiants techniques inchangés (`illwatch`, `ILLWATCH_*`).
+- Logos, symbole écu-radar, favicon, icône d'application et avatar du kit dans `docs/assets/` ;
+  composant `Logo` à la géométrie de `illwatch-mark.svg` ; logotype vectorisé à la connexion.
+- Jetons Nuit du brand book (Signal remplace le violet, rayons 6/8/12, cibles ≥ 40 px),
+  Inter et JetBrains Mono (remplacent IBM Plex), graphiques en Signal.
+- Menu (sections en capitales, icônes 20 px trait 1,5, actif indigo + repère orange), voix de
+  l'état du direct (« Connecté · en direct »…), « Mettre en pause » / « Reprendre le direct »,
+  heure « UTC · 08:02:17 », balayage radar unique de 1,2 s.
+- Site de documentation aux couleurs v2 ; `docs/DESIGN_SYSTEM.md` v8.
+- Typographie française : « à l'instant » (jamais « il y a à l'instant »), nombre et unité
+  insécables (« 4 min », « 97,3 % »), virgule décimale et libellés français dans la chronologie
+  des incidents et les correspondances de chasse ; « Indicateurs (IOC) » à la première occurrence.
+- Sélecteurs segmentés à 40 px ; survol des graphiques en Signal.
+
 ### Ajouté — M8 Detection & Correlation démarré (ADR-017)
 - Fiabilité de chaque source sur l'échelle de l'Amirauté (A–F) : colonne
   `threat_feeds.reliability` (migration `d2f7a9c4e318`, « C » par défaut ; cotes de référence
@@ -26,7 +42,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   `POST /users/{id}/revoke-sessions` (jamais sans administrateur actif, lignes verrouillées) ;
   `GET /settings` (présence des secrets seulement).
 
-### Modifié — système de design v7 « Veille de nuit »
+### Modifié — système de design v7 « Veille de nuit » (remplacé le jour même par la v8)
 - Nouveau logo (œil-radar), IBM Plex, icônes dans le menu, palette recalibrée (contrastes AA à
   AAA), graphiques en couleurs pleines, écran de connexion en deux parties, affichage téléphone
   (menu en onglets horizontaux). `docs/DESIGN_SYSTEM.md` à jour.

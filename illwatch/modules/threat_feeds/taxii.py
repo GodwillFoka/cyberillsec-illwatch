@@ -1,6 +1,6 @@
 """Connecteur TAXII 2.1 — tâche 1.8, client de référence `taxii2-client` (OASIS).
 
-    ILLWATCH ─▶ fetch_taxii ─┬─▶ taxii2-client (production) ─▶ Collection.get_objects()
+    ILL Watch ─▶ fetch_taxii ─┬─▶ taxii2-client (production) ─▶ Collection.get_objects()
                            └─▶ fetcher injecté (tests, TAXII_CLIENT=builtin)
                  ─▶ enveloppe {more, next, objects} ─▶ parse_stix_objects ─▶ Observation
 
@@ -212,7 +212,7 @@ def parse_envelope(content: bytes) -> tuple[list[Any], str | None]:
 
 
 class _GuardedConnection(_HTTPConnection):  # type: ignore[misc]
-    """Connexion `taxii2-client` aux garde-fous ILLWATCH (redirections, délai, taille)."""
+    """Connexion `taxii2-client` aux garde-fous ILL Watch (redirections, délai, taille)."""
 
     def __init__(
         self,
@@ -254,12 +254,12 @@ class _TransientError(Exception):
 
 
 def _get_page(collection: Collection, filters: dict[str, Any]) -> Any:
-    """Une page `Get Objects` ; traduit toutes les erreurs en exceptions ILLWATCH."""
+    """Une page `Get Objects` ; traduit toutes les erreurs en exceptions ILL Watch."""
     return _call(lambda: collection.get_objects(**filters))
 
 
 def _call(operation: Callable[[], Any]) -> Any:
-    """Exécute un appel `taxii2-client` et traduit ses erreurs en exceptions ILLWATCH."""
+    """Exécute un appel `taxii2-client` et traduit ses erreurs en exceptions ILL Watch."""
     try:
         return operation()
     except requests.TooManyRedirects as exc:

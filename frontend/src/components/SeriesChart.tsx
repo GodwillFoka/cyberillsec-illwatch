@@ -79,7 +79,7 @@ export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
         },
         tooltip: {
           trigger: "axis",
-          axisPointer: { type: "shadow", shadowStyle: { color: "rgba(142, 128, 255, 0.08)" } },
+          axisPointer: { type: "shadow", shadowStyle: { color: "rgba(34, 211, 238, 0.08)" } },
           backgroundColor: CHART.panel,
           borderColor: CHART.line,
           borderWidth: 1,

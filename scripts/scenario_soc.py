@@ -1,4 +1,4 @@
-"""Scénario d'acceptation SOC de bout en bout contre une instance ILLWATCH réelle.
+"""Scénario d'acceptation SOC de bout en bout contre une instance ILL Watch réelle.
 
 Usage : python scripts/scenario_soc.py [URL_BASE]   (défaut : http://localhost:8000)
 
@@ -412,7 +412,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except httpx.ConnectError:
-        print(f"✘ ILLWATCH injoignable sur {BASE} : démarrez l'API (uvicorn) avant le scénario.")
+        print(f"✘ ILL Watch injoignable sur {BASE} : démarrez l'API (uvicorn) avant le scénario.")
         sys.exit(2)
     except PrerequisiteError as exc:
         print(f"✘ Prérequis manquant : {exc}")

@@ -20,7 +20,7 @@ import { LevelBadge } from "../components/Badge";
 import { CONFIDENCE_LABEL, ConfidenceMeter } from "../components/Confidence";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { IOC_TYPES, MAX_BATCH, iocTypeLabel, splitBatch } from "../lib/iocs";
 import { INCIDENT_STATUS, SEVERITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, asUuid, useLocation } from "../lib/router";
@@ -216,7 +216,7 @@ function IndicatorTable({
                 <LevelBadge level={indicator.severity} />
               </td>
               <td className="muted">{iocTypeLabel(indicator.type)}</td>
-              <td className="mono ellipsis" style={{ maxWidth: 280 }} title={indicator.value}>
+              <td className="mono ellipsis" style={{ maxWidth: 220 }} title={indicator.value}>
                 {indicator.value}
               </td>
               <td>
@@ -224,7 +224,7 @@ function IndicatorTable({
               </td>
               <td className="num mono">{formatNumber(indicator.source_count)}</td>
               <td className="muted">
-                {seen ? `il y a ${formatAge(seen)}` : "—"}
+                {seen ? `${formatAgo(seen)}` : "—"}
                 {indicator.is_active ? "" : " · expiré"}
               </td>
             </tr>
@@ -295,7 +295,7 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                   <dt>Première observation</dt>
                   <dd>{first ? formatDateTime(first, utc) : "—"}</dd>
                   <dt>Dernière observation</dt>
-                  <dd>{last ? `${formatDateTime(last, utc)} · il y a ${formatAge(last)}` : "—"}</dd>
+                  <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "—"}</dd>
                   <dt>Observations</dt>
                   <dd className="mono">{formatNumber(ioc.hit_count)}</dd>
                   <dt>Validité</dt>
@@ -342,7 +342,7 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                           <span className="grow ellipsis">{source.feed_name}</span>
                           <span className="muted">
                             {plural(source.hit_count, "observation")}
-                            {seen ? ` · il y a ${formatAge(seen)}` : ""}
+                            {seen ? ` · ${formatAgo(seen)}` : ""}
                           </span>
                         </li>
                       );

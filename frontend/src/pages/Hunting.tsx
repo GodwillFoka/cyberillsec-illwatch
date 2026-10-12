@@ -17,7 +17,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { MAX_HUNT_OBSERVABLES, splitAssets, splitBatch } from "../lib/iocs";
 import { SEVERITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, asUuid, useLocation } from "../lib/router";
@@ -150,7 +150,7 @@ function NewHunt({
       {wholeBase && (
         <label className="check">
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
-          Je confirme la chasse sur toute la base (des centaines de milliers d'IOC : plusieurs
+          Chasse confirmée sur toute la base (des centaines de milliers d'IOC : plusieurs
           minutes, comme la chasse planifiée du worker)
         </label>
       )}
@@ -227,7 +227,7 @@ function HuntTable({
               onClick={() => onSelect(hunt.id)}
               onKeyDown={(event) => onKey(event, index)}
             >
-              <td className="muted">{started ? `il y a ${formatAge(started)}` : "—"}</td>
+              <td className="muted">{started ? `${formatAgo(started)}` : "—"}</td>
               <td>{TRIGGER[hunt.trigger] ?? hunt.trigger}</td>
               <td>
                 <StatusBadge status={hunt.status} />

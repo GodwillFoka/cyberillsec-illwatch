@@ -1,98 +1,141 @@
-# ILLWATCH — Système de design (v7 « Veille de nuit »)
+# ILL Watch — Système de design (v8 « Identité ILL Watch »)
 
-v6 adoptée le 08/10/2026 (ADR-016) ; **v7 le 11/10/2026** : nouveau logo, IBM Plex, icônes de
-navigation, palette recalibrée, graphiques en couleurs pleines. Référence vivante :
-`frontend/src/styles/tokens.css` (jetons) et `base.css` (composants).
+v6 adoptée le 08/10/2026 (ADR-016) ; v7 « Veille de nuit » le 11/10/2026 ; **v8 le 11/10/2026** :
+application du **brand book ILL Watch v2** (ADR-018), qui fait autorité pour la marque, la
+palette, la typographie et la voix. Ce document en est la déclinaison pour l'interface.
+Référence vivante : `frontend/src/styles/tokens.css` (jetons) et `base.css` (composants).
 
-**Idée directrice.** ILLWATCH est un poste de veille : des analystes y passent des heures, souvent
-de nuit. Les surfaces sont un bleu nuit calme plutôt qu'un noir pur ; la couleur ne sert qu'à
-informer. Trois couleurs ont un sens fixe, partout :
+> La v7 avait choisi IBM Plex, un accent violet et un logo en forme d'œil. Le brand book les
+> remplace : Inter et JetBrains Mono, accent **Signal**, symbole **écu-radar**.
 
-- **violet « veille »** : où vous êtes, ce qui est sélectionné, ce qui a le focus ;
-- **orange « signal »** : l'action principale (une par vue) et le repère de sélection ;
+**Idée directrice.** ILL Watch est un poste de veille : des analystes y passent des heures, souvent
+de nuit. Le thème **Nuit** est celui de l'application ; la couleur ne sert qu'à informer. Quatre
+couleurs ont un sens fixe, partout :
+
+- **indigo** (maison CYBERILL) : où vous êtes, ce qui est sélectionné — toujours avec du blanc dessus ;
+- **Signal** : la veille — liens, anneau de focus, courbes des graphiques, rayon du radar ;
+- **orange** : l'action principale (une par vue), le point de menace du symbole, le repère de
+  sélection de 3 px ;
 - **échelle P0–P3** : la gravité, et rien d'autre.
 
-La confiance d'un IOC (ADR-017) n'utilise pas l'échelle de gravité : jauge violette à 5 crans.
+La confiance d'un IOC (ADR-017) n'utilise pas l'échelle de gravité : jauge Signal à 5 crans.
 
 ## Marque
 
-Logo : un œil dont l'iris est un balayage radar orange (`components/Logo.tsx`, favicon identique).
-Mot-symbole « ILLWATCH » en IBM Plex Sans 700, approche 0,08 em, avec « par CYBERILLSEC » dessous.
-L'écran de connexion est le seul endroit où la marque prend de la place : cercles de portée et un
-seul tour de balayage au chargement (supprimé si l'utilisateur réduit les animations).
+- **Nom** : « ILL Watch » (jamais ILLWATCH, IllWatch ou Ill Watch dans un texte). Endossement :
+  « PAR CYBERILL ». Les identifiants techniques (`illwatch`, `ILLWATCH_*`, en-tête
+  `User-Agent: ILLWATCH/…`) ne changent pas.
+- **Symbole** : écu indigo `#20155C`, contour et radar Signal `#22D3EE`, point de menace orange
+  `#E6681B`. Composant `components/Logo.tsx` = géométrie exacte de `docs/assets/illwatch-mark.svg`.
+- **Logotype** : « ILL » 800 + « Watch » 500 en Inter Display, **vectorisé** : on utilise les
+  fichiers du kit, on ne le recompose jamais avec une police.
+- **Fichiers** (`docs/assets/`) : `illwatch-logo-dark|light.svg`, `illwatch-logo-endorsed-dark|light.svg`,
+  `illwatch-logo-mono-white|ink.svg`, `illwatch-mark.svg`, `illwatch-mark-light.svg`,
+  `illwatch-mark-mono-white|ink.svg`, `favicon.svg` (aussi `frontend/public/favicon.svg`),
+  `illwatch-app-icon.svg`, `illwatch-avatar.svg`.
+- **Signature** : « Voir la menace avant qu'elle ne vous voie. » (écran de connexion).
+- **Motif radar** : arcs Signal à faible opacité, jamais sous du texte ; à la connexion seulement,
+  un seul balayage de 1,2 s au chargement, jamais en boucle.
 
-## Couleurs
+## Couleurs — thème Nuit (application)
 
 | Jeton | Valeur | Usage | Contraste |
 |---|---|---|---|
-| `bg` (encre) | `#0A0F1C` | fond de page | |
-| `nav` | `#0C1222` | rail, barre supérieure | |
-| `panel` (ardoise) | `#111A2C` | cartes, panneaux | |
-| `panel-head` | `#0E1627` | en-têtes de tableau, champs | |
-| `panel-raise` | `#172238` | survol | |
-| `line` | `#1F2A42` | traits | |
-| `grid` | `#18223A` | grille des graphiques | |
-| `text` (givre) | `#E6EBF5` | texte principal | 14,5:1 |
-| `muted` | `#97A3BA` | texte secondaire | 6,8:1 |
-| `faint` | `#6E7A93` | désactivé, exemples de saisie uniquement | 4,0:1 |
-| `indigo` | `#2A1F78` | élément actif, ligne sélectionnée, filtre actif | blanc 13,4:1 |
-| `indigo-light` (veille) | `#8E80FF` | liens, focus, jauge de confiance | 5,5:1 |
-| `orange` (signal) | `#F27A2E` | action principale, repère ; texte `#1A0B02` | 7,0:1 |
-| `critical` / `success` / `warning` | `#E5484D` / `#3FB27F` / `#F2B33D` | états | |
+| `bg` | `#0A0E1A` | fond de page | |
+| `nav` | `#0D1220` | menu latéral, barre supérieure | |
+| `panel` | `#121A2B` | cartes, panneaux, tableaux | |
+| `panel-head` | `#0F1626` | en-têtes de tableau, champs | |
+| `line` | `#222C42` | bordures 1 px (décoratif) | |
+| `text` | `#ECEFF5` | texte principal | 15,1:1 sur `panel` |
+| `muted` | `#A3ACBF` | secondaire, libellés, métadonnées | 7,6:1 |
+| `indigo` / `on-indigo` | `#20155C` / `#FFFFFF` | actif, sélection | 15,9:1 |
+| `signal` | `#22D3EE` | liens, focus, courbes | 9,6:1 |
+| `orange` / `on-orange` | `#E6681B` / `#1B0D04` | action principale | 5,8:1 |
+| `new-fg` | `#D9D2FF` | badge « Nouvelle » sur indigo | 11,0:1 |
+| `critical` / `success` / `warning` | `#E5484D` / `#3FB27F` / `#F2B33D` | états (avec un mot) | |
+| `ok-bg` / `ok-fg` | `#12301F` / `#8FE0B8` | « Clôturé / sain » | 9,2:1 |
+
+Dérivés techniques (ne portent jamais de texte courant) : `panel-raise #18223A` (survol),
+`grid #1A2336` (graphiques), `line-strong #34405A` (bordure de champ au survol), `faint #8089A0`
+(texte désactivé, exemples de saisie : 5,2:1), marques pleines des graphiques `p0-mark` à `p3-mark`.
+
+Le thème **Jour** du brand book (`bg #F5F6FA`, `signal #0E7490`, etc.) sert aux documents et au
+site de documentation ; l'application reste en Nuit.
 
 ## Échelle de gravité (identique dans tous les modules)
 
-| Niveau | Badge (fond / texte) | Marque pleine (graphiques) | CVE | Alertes, incidents, IOC |
-|---|---|---|---|---|
-| P0 | `#3A1418` / `#FF8A8D` | `#E5484D` | patch sous 24 h | Critique |
-| P1 | `#382909` / `#F5C35A` | `#E9A23B` | patch sous 7 j | Élevée |
-| P2 | `#10264A` / `#8DB8FF` | `#4C8DF0` | patch sous 30 j | Moyenne |
-| P3 | `#1C2436` / `#B8C2D4` | `#66728A` | maintenance | Faible |
+| Niveau | Badge (fond / texte) | Contraste | Marque pleine | CVE | Alertes, incidents, IOC |
+|---|---|---|---|---|---|
+| P0 | `#3B1518` / `#FF9B9E` | 8,0:1 | `#E5484D` | correctif sous 24 h | Critique |
+| P1 | `#3A2C0C` / `#F7CB70` | 8,9:1 | `#F2B33D` | correctif sous 7 j | Élevée |
+| P2 | `#122848` / `#9BC2FF` | 8,1:1 | `#5B9BF5` | correctif sous 30 j | Moyenne |
+| P3 | `#1E2535` / `#C6CDD9` | 9,6:1 | `#6E7A93` | maintenance | Faible |
 
-Les quatre teintes se distinguent aussi par la luminosité (lisibles en vision des couleurs
-réduite) ; chaque badge porte en plus son libellé et une pastille.
+Chaque badge porte son libellé et une pastille : la gravité ne repose jamais sur la couleur seule.
 
 ## Typographie
 
-IBM Plex Sans (interface) : page 24/32 600 · titre de carte 16/24 600 · section 15/22 600 ·
-texte 14/20 · tableau 13/20 · métadonnées 12/16. Chiffres tabulaires dans les tableaux et
-indicateurs. **IBM Plex Mono uniquement pour les observables** : IP, domaines, URL, empreintes,
-identifiants CVE, horodatages. Jamais de majuscules espacées pour les libellés : les titres de
-section sont en casse normale.
+**Inter** pour tout le texte, **JetBrains Mono** pour les données (IP, domaines, URL, empreintes,
+identifiants CVE, horodatages). Échelle : titre de page 24/32 600 · titre de carte 16/24 600 ·
+valeur d'indicateur 28/36 600 · texte 14/20 · tableau 13/20 · métadonnées 12/16 ·
+**libellé 11/16 600 en capitales espacées de 0,08 em, couleur `muted`** (sections du menu,
+intertitres) · donnée 13/20 mono. Chiffres tabulaires dans les tableaux et indicateurs.
+
+Typographie française : espace insécable avant « : ; ? ! » et « % » (« 93 % »), espace fine
+pour les milliers (`Intl.NumberFormat("fr-FR")`), virgule décimale.
 
 ## Espacements, formes, mouvement
 
-Échelle 4, 8, 12, 16, 24, 32 px ; marges de page 32 (16 sur téléphone). Rayons : cartes 10,
-boutons et champs 6, badges 4 — l'arrondi suit la hiérarchie. Aucune ombre décorative.
-Mouvement autorisé : surbrillance brève d'un élément nouveau (2,5 s), survols 120 ms, balayage
-du logo à la connexion. Tout est désactivé si `prefers-reduced-motion`.
+Échelle 4, 8, 12, 16, 24, 32 px. Rayons : badge 6, bouton et champ 8, carte 12. Bordures 1 px,
+**aucune ombre**. Cibles cliquables ≥ 40 px. Mouvement : surbrillance d'un élément nouveau
+2,5 s (`rgba(34, 211, 238, 0.16)`), panneau 180 ms, balayage radar unique ≤ 1,2 s sur la page de
+connexion. Tout est désactivé si `prefers-reduced-motion`. Focus clavier : contour Signal de
+2 px, décalé de 2 px.
+
+## Icônes
+
+Lucide, 20 px, trait 1,5, `currentColor` en `muted` (texte au survol, blanc sur l'élément actif).
+Pas d'emoji dans l'interface.
+
+## Voix
+
+Directe, factuelle, en français. Vocabulaire : « veille », « indicateur (IOC) », « CVE ».
+États du direct : « Connecté · en direct » · « Direct en pause · 3 mises à jour en attente » ·
+« Direct interrompu · nouvel essai, données relues chaque minute ». Boutons : « Mettre en
+pause » / « Reprendre le direct ». Heure : « UTC · 08:02:17 ».
 
 ## Composants
 
-- **Rail de navigation** : icône (lucide, trait 1,75) + libellé ; sections en casse normale ;
-  écran actif = fond indigo, icône veille, repère orange à gauche ; compteurs seulement s'il y a
-  quelque chose à traiter (P1 pour les alertes et incidents, P0 pour les sources dégradées).
-  Sous 900 px, le rail devient une barre d'onglets horizontale.
-- **Barre supérieure** : pastille d'état du direct (toujours visible), pause, heure UTC/locale,
-  compte (initiales, rôle), déconnexion.
+- **Menu latéral** (240 px) : symbole 32 px, « ILL Watch » 700 et « PAR CYBERILL » (10 px,
+  capitales, 0,12 em, `muted`) ; sections en capitales ; liens de 40 px ; élément actif = fond
+  indigo, texte et icône blancs, repère orange de 3 px à gauche ; compteurs en badge P1 (P0 pour
+  les sources dégradées), seulement s'il y a quelque chose à traiter. Sous 900 px, le menu devient
+  une barre d'onglets horizontale (repère orange en bas).
+- **Barre supérieure** : état du direct (point vert, ambre ou rouge + texte de la voix, réduit au
+  point sur téléphone avec texte pour lecteur d'écran), pause, heure, compte, déconnexion.
 - **Tableau** : en-tête `panel-head`, lignes de 44 px ; sélection = fond indigo + repère orange ;
-  nouvelle ligne = surbrillance qui s'efface sans déplacer la lecture.
+  nouvelle ligne = surbrillance Signal qui s'efface sans déplacer la lecture.
 - **Panneau de détail** : identité et priorité · statut · éléments associés · historique ·
-  actions (principale à droite).
-- **Boutons** : principal (orange), secondaire (contour), discret (texte), danger (rouge, après
-  confirmation), désactivé (pointillés + raison affichée).
-- **Avis** : bordure gauche colorée (succès, erreur), texte qui dit quoi faire.
-- **Graphiques** (ECharts) : barres empilées aux marques pleines, seul le haut de pile arrondi,
-  légende à gauche, grille discrète, infobulle en classes CSS (politique `style-src 'self'`).
+  actions (principale à droite) ; intertitres en libellés capitales.
+- **Boutons** (40 px) : principal (orange, un par vue), secondaire (contour), discret (texte),
+  danger (contour rouge, après confirmation), désactivé (pointillés + raison affichée).
+- **Onglets** : actif souligné d'un repère orange de 3 px.
+- **Graphiques** (ECharts) : barres empilées aux marques pleines de gravité, séries sans gravité
+  en Signal, police Inter, infobulle en classes CSS (politique `style-src 'self'`).
 
 ## Navigation
 
 Vue d'ensemble · Opérations SOC (Triage, Incidents) · Renseignement (Indicateurs, Sources CTI) ·
 Vulnérabilités (CVE et priorités) · Détection (Chasse) · Administration (administrateurs, en bas).
-Heures en UTC par défaut, bascule vers l'heure locale dans la barre supérieure.
+
+## Décisions ouvertes du brand book
+
+Accent Signal, endossement « PAR CYBERILL », lecture de « ill », recherche d'antériorité de
+marque (INPI, EUIPO) avant tout dépôt, choix de Lucide : à valider par CYBERILL (voir ADR-018).
 
 ## Vérification
 
 Chaque modification de l'interface passe par le workflow « Préproduction » : la pile de
 production tourne derrière Caddy, chaque écran est capturé (grand écran et téléphone) et publié
-sur la branche `captures`. Une erreur d'écran, de console ou une violation CSP fait échouer la CI.
+sur la branche `captures`. Une erreur d'écran, de console, une violation CSP ou un débordement
+de mise en page fait échouer la CI.

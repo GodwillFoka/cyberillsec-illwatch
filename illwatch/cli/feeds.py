@@ -534,7 +534,7 @@ def feeds_worker(tick: int | None, max_cycles: int | None, cves: bool, hunt: boo
     soit collecté deux fois en même temps. Arrêt propre par Ctrl+C ou SIGTERM.
     """
     tick_seconds = tick or get_settings().worker_tick_seconds
-    console.print(f"[cyan]Worker ILLWATCH démarré[/] : cycle toutes les {tick_seconds} s.")
+    console.print(f"[cyan]Worker ILL Watch démarré[/] : cycle toutes les {tick_seconds} s.")
 
     async def _main() -> int:
         stop = asyncio.Event()

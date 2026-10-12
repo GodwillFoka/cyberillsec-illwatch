@@ -82,7 +82,7 @@ const AUDIT_LABELS: Record<string, string> = {
   "feed.create": "Source ajoutée",
   "feed.update": "Source modifiée",
   "feed.delete": "Source supprimée",
-  "indicator.submit": "IOC soumis",
+  "indicator.submit": "Indicateurs soumis",
   "alert.ack": "Alerte acquittée",
   "data.export": "Export de données",
   "hunt.run": "Chasse lancée",

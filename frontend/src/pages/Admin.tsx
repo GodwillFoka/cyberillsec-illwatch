@@ -10,7 +10,7 @@ import type { Account, AuditEvent } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { levelLabel } from "../lib/levels";
 import { auditLabel, formatBytes, formatDuration, generatePassword } from "../lib/ops";
 import { useLocation } from "../lib/router";
@@ -361,7 +361,7 @@ const AUDIT_FAMILIES: [string, string][] = [
   ["user.", "Comptes"],
   ["feed.", "Sources"],
   ["data.export", "Exports"],
-  ["indicator.", "IOC soumis"],
+  ["indicator.", "Indicateurs soumis"],
   ["alert.", "Alertes"],
   ["hunt.", "Chasses"],
 ];
@@ -444,7 +444,7 @@ function AuditLog() {
                   const detail = detailText(event);
                   return (
                     <tr key={event.id}>
-                      <td className="mono muted" title={at ? `il y a ${formatAge(at)}` : undefined}>
+                      <td className="mono muted" title={at ? `${formatAgo(at)}` : undefined}>
                         {at ? formatDateTime(at, utc) : "—"}
                       </td>
                       <td>{auditLabel(event.action)}</td>

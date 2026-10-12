@@ -1,4 +1,4 @@
-// Confiance d'un IOC (ADR-017) : jauge en violet « veille », jamais aux couleurs de gravité —
+// Confiance d'un IOC (ADR-017) : jauge en Signal, la couleur de la veille, jamais aux couleurs de gravité —
 // la confiance dit « peut-on agir ? », la gravité dit « à quel point ce serait grave ».
 
 export const CONFIDENCE_LABEL: Record<string, string> = {

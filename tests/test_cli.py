@@ -8,13 +8,13 @@ from illwatch.cli.main import cli
 def test_aide_racine() -> None:
     result = CliRunner().invoke(cli, ["--help"])
     assert result.exit_code == 0
-    assert "ILLWATCH" in result.output
+    assert "ILL Watch" in result.output
 
 
 def test_commande_version() -> None:
     result = CliRunner().invoke(cli, ["version"])
     assert result.exit_code == 0
-    assert "ILLWATCH" in result.output
+    assert "ILL Watch" in result.output
 
 
 def test_commande_config_masque_les_secrets() -> None:

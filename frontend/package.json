@@ -2,7 +2,7 @@
   "name": "illwatch-web",
   "private": true,
   "version": "0.1.0",
-  "description": "Interface web d'ILLWATCH (ADR-016) : React, TypeScript, TanStack Query, temps réel SSE.",
+  "description": "Interface web d'ILL Watch (ADR-016) : React, TypeScript, TanStack Query, temps réel SSE.",
   "type": "module",
   "engines": {
     "node": ">=20.19"
@@ -16,8 +16,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/ibm-plex-mono": "5.3.0",
-    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
     "@tanstack/react-query": "5.104.1",
     "echarts": "6.1.0",
     "lucide-react": "1.55.0",

@@ -70,7 +70,7 @@ export class SseParser {
   }
 }
 
-/** Événement ILLWATCH tel que publié par `GET /api/v1/stream`. */
+/** Événement ILL Watch tel que publié par `GET /api/v1/stream`. */
 export interface LiveEvent {
   id: string;
   kind: string;

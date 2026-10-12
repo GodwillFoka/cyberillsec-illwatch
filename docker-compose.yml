@@ -30,7 +30,7 @@ services:
     container_name: illwatch-redis
     restart: unless-stopped
     # Mot de passe obligatoire (M7 lot 2). Valeur de développement par défaut ; en production,
-    # REDIS_PASSWORD est imposé et ILLWATCH refuse de démarrer avec la valeur de développement.
+    # REDIS_PASSWORD est imposé et ILL Watch refuse de démarrer avec la valeur de développement.
     command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-illwatch-dev-redis}"]
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-illwatch-dev-redis}

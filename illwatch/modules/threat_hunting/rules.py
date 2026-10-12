@@ -287,12 +287,13 @@ def _exploitable_assets(ctx: HuntContext) -> Iterable[Match]:
         pattern = re.compile(rf"\b{re.escape(asset.strip())}\b", re.IGNORECASE)
         for cve in ctx.exploitable_cves:
             if asset.strip() and pattern.search(cve.description):
+                score = f"{cve.score:.1f}".replace(".", ",")
                 yield Match(
                     "RULE-05",
                     Severity.CRITICAL,
                     asset.strip(),
-                    f"{cve.id} ({cve.priority}, score {cve.score:.1f}) : exploit public "
-                    f"vérifié pour un produit de l'inventaire.",
+                    f"{cve.id} ({cve.priority[:2]}, score {score}) : exploit public vérifié "
+                    f"pour un produit de l'inventaire.",
                     cve_id=cve.id,
                 )
 
@@ -307,7 +308,7 @@ def _known_ioc(ctx: HuntContext) -> Iterable[Match]:
                 "RULE-06",
                 Severity.HIGH,
                 o.value,
-                f"IOC actif connu d'ILLWATCH ({known.description or 'sans description'}).",
+                f"IOC actif connu d'ILL Watch ({known.description or 'sans description'}).",
                 known.indicator_id,
             )
 
@@ -356,7 +357,7 @@ CATALOG: tuple[Rule, ...] = (
     Rule(
         "RULE-06",
         "IOC connu",
-        "Observable soumis déjà présent comme IOC actif dans ILLWATCH.",
+        "Observable soumis déjà présent comme IOC actif dans ILL Watch.",
         Severity.HIGH,
         False,
         _known_ioc,

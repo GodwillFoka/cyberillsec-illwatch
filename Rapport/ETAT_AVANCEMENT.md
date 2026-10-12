@@ -1,9 +1,13 @@
-# ILLWATCH — État d'avancement des travaux
+# ILL Watch — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **11/10/2026, 15 h 00**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **12/10/2026, 19 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
+
+> **11-12/10 — Identité ILL Watch v2** (brand book, ADR-018) : nom affiché « ILL Watch » (identifiants
+> techniques inchangés), logo écu-radar, palette Nuit et Signal, Inter et JetBrains Mono, voix de la
+> marque ; appliquée à l'interface et à la documentation, vérifiée écran par écran (PR #33).
 
 > **08/10 — SENTRY devient ILLWATCH** (nom « Sentry » déjà pris). Bascule terminée : code
 > renommé (`4c1e220`), dépôts GitHub et GitLab renommés, poste Kali migré sans perte (13 tables, comptages
@@ -28,7 +32,7 @@ IOC livrée). M1 à M6 sont constatés sur données réelles, en local et en CI.
 | M4 Incidents | ✅ | incident mené jusqu'à la clôture |
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
-| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, design v7, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
+| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, identité ILL Watch v2, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
 | M8 Detection & Correlation | 🟡 démarré | ADR-017 ; incrément 1 (confiance des IOC, fiabilité des sources) livré ; enrichissement, corrélation, mesure à suivre |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
@@ -49,6 +53,7 @@ IOC livrée). M1 à M6 sont constatés sur données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 12/10 | PR #33 | **Identité ILL Watch v2** (ADR-018) : logos et favicon du kit, symbole écu-radar, jetons Nuit, Signal, Inter + JetBrains Mono, menu et voix de la marque, DESIGN_SYSTEM v8, site de documentation ; reprise complète A-B-C-D : CI, préproduction et captures vertes, revue indépendante (4 points corrigés), « à l'instant », typographie française (unités insécables, virgule décimale, libellés français de la chronologie et de la chasse) |
 | 11/10 | PR #32 | **B** écrans Sources CTI et Administration (API comptes et paramètres) ; **D** M8 démarré : fiabilité des sources (A–F), confiance des IOC ; seconde revue indépendante : 11 points corrigés |
 | 11/10 | PR #31 | Design v7 « Veille de nuit » : logo œil-radar, IBM Plex, icônes, palette recalibrée, mobile ; vérifié sur captures |
 | 11/10 | PR #30 | **C** React 19.3 + Vite 7.3 : `npm audit` 0 vulnérabilité, outils compris (audit complet bloquant) |

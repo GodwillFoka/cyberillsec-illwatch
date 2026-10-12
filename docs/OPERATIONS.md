@@ -1,4 +1,4 @@
-# ILLWATCH — Guide d'exploitation
+# ILL Watch — Guide d'exploitation
 
 **Public :** la personne qui installe, surveille, sauvegarde et met à jour une instance.
 **Référence :** M7 Production Hardening (ADR-011, ADR-012, ADR-013). Testé sur Kali Linux (rolling) et Debian 12.
@@ -238,7 +238,7 @@ scripts/backup.sh                              # avant toute migration
 illwatch db upgrade && curl -fsS localhost:8000/ready
 ```
 
-Toujours `illwatch db upgrade`, jamais `alembic upgrade head` seul : seule la commande ILLWATCH
+Toujours `illwatch db upgrade`, jamais `alembic upgrade head` seul : seule la commande ILL Watch
 donne au rôle applicatif ses droits sur les tables nouvelles. Sans eux, l'API et le worker
 échouent sur `permission denied for table …` (incident du 08/10). Rattrapage :
 `illwatch db app-role illwatch_app`.
@@ -252,7 +252,7 @@ uv pip compile pyproject.toml --extra dev --universal --python-version 3.12 \
 
 ## 7 bis. Fichier de configuration
 
-ILLWATCH lit `.env` dans le répertoire courant. `ILLWATCH_ENV_FILE=/etc/illwatch/env` désigne un
+ILL Watch lit `.env` dans le répertoire courant. `ILLWATCH_ENV_FILE=/etc/illwatch/env` désigne un
 autre fichier ; `ILLWATCH_ENV_FILE=` (vide) n'en lit aucun : seules les variables
 d'environnement comptent. Une variable vide (`DOCS_ENABLED=`) vaut « non définie » et prend
 sa valeur par défaut.
@@ -293,7 +293,7 @@ système Debian, **aucune avec correctif publié**, aucune dans une dépendance 
 | Famille (CVE distinctes) | Décision | Justification |
 |---|---|---|
 | curl, libcurl (4) | **retirées** : curl supprimé de l'image | ne servait qu'au contrôle de santé, désormais en Python |
-| util-linux : mount, login, libblkid… (4) | acceptées | socle Debian ; outils jamais invoqués par ILLWATCH |
+| util-linux : mount, login, libblkid… (4) | acceptées | socle Debian ; outils jamais invoqués par ILL Watch |
 | ncurses, libsystemd/libudev, libacl, perl-base (4) | acceptées | socle Debian, non exposés au réseau |
 
 Constat après retrait de curl (pipeline `56ab581`) : 0 Critical, 44 High, 58 Medium, 61 Low,
@@ -304,7 +304,7 @@ hors Caddy en production, image reconstruite à chaque push sur `main` (base `py
 à jour). Revue à chaque analyse : une vulnérabilité **Critical** ou un correctif Debian publié
 impose une reconstruction immédiate.
 
-## 7 sexies. Renommage SENTRY → ILLWATCH (08/10/2026)
+## 7 sexies. Renommage SENTRY → ILL Watch (08/10/2026)
 
 Coupure nette : seules les variables `ILLWATCH_*` sont lues, la commande `sentry` disparaît,
 la base s'appelle `illwatch`. Sur un poste qui faisait tourner SENTRY :
@@ -321,7 +321,7 @@ Le script sauvegarde l'ancienne base (`~/illwatch-migration/sentry.dump`), réé
 (copie de l'ancien à côté), démarre `illwatch-postgres` sur un volume neuf, restaure, réapplique
 les droits de `illwatch_app` et **compare les comptages table par table**. L'ancien volume
 n'est pas supprimé : `./scripts/migrer-vers-illwatch.sh --retour` remet SENTRY en service tant
-que l'activité n'a pas repris sous ILLWATCH.
+que l'activité n'a pas repris sous ILL Watch.
 
 Les fonctions de base `sentry_refuse_rewrite` et `sentry_refuse_timeline_rewrite` gardent leur
 nom : elles sont créées par des migrations déjà appliquées, qu'on ne réécrit pas.

@@ -25,15 +25,22 @@ export function formatDateTime(date: Date, utc: boolean): string {
   return `${formatDay(date, utc)} ${formatTime(date, utc)}${utc ? " UTC" : ""}`;
 }
 
-/** Ancienneté lisible : « à l'instant », « 4 min », « 2 h », « 3 j ». */
+/** Ancienneté lisible : « à l'instant », « 4 min », « 2 h », « 3 j » (espace insécable : le
+ * nombre et son unité ne sont jamais séparés par un retour à la ligne). */
 export function formatAge(date: Date, now: Date = new Date()): string {
   const seconds = Math.max(0, Math.round((now.getTime() - date.getTime()) / 1000));
   if (seconds < 60) return "à l'instant";
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 60) return `${minutes}\u00a0min`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 48) return `${hours} h`;
-  return `${Math.floor(hours / 24)} j`;
+  if (hours < 48) return `${hours}\u00a0h`;
+  return `${Math.floor(hours / 24)}\u00a0j`;
+}
+
+/** Ancienneté en phrase : « il y a 4 min », mais « à l'instant » (jamais « il y a à l'instant »). */
+export function formatAgo(date: Date, now: Date = new Date()): string {
+  const age = formatAge(date, now);
+  return age === "à l'instant" ? age : `il y a ${age}`;
 }
 
 export function parseDate(value: string | null | undefined): Date | null {

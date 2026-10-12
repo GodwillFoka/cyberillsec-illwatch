@@ -1,6 +1,6 @@
 // Page d'un incident (investigation) : cycle de vie, chronologie immuable, transitions,
 // notes, assignation, éléments associés. Une « action menée » est une déclaration de
-// l'analyste : ILLWATCH l'enregistre, il ne l'exécute pas (et le dit).
+// l'analyste : ILL Watch l'enregistre, il ne l'exécute pas (et le dit).
 import { ArrowLeft } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
@@ -16,7 +16,7 @@ import type { IncidentDetail, IncidentEvent } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatDateTime, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, parseDate } from "../lib/format";
 import { INCIDENT_STATUS } from "../lib/levels";
 import { Link } from "../lib/router";
 import { useTimeZone } from "../lib/time";
@@ -29,7 +29,7 @@ const EVENT_LABEL: Record<string, string> = {
   STATUS_CHANGE: "Changement de statut",
   ASSIGNED: "Assignation",
   COMMENT: "Commentaire",
-  IOC_ATTACHED: "IOC associé",
+  IOC_ATTACHED: "Indicateur associé",
   CVE_ATTACHED: "CVE associée",
   ACTION_TAKEN: "Action déclarée par l'analyste",
 };
@@ -194,7 +194,7 @@ function NoteForm({ incident }: { incident: IncidentDetail }) {
       </div>
       <label className="field">
         {kind === "ACTION_TAKEN"
-          ? "Action menée (déclarée par vous, enregistrée telle quelle : ILLWATCH ne l'exécute pas)"
+          ? "Action menée (déclarée par vous, enregistrée telle quelle : ILL Watch ne l'exécute pas)"
           : "Commentaire"}
         <textarea required value={message} maxLength={20000} onChange={(e) => setMessage(e.target.value)} />
       </label>
@@ -359,7 +359,7 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                     {incident.title}
                   </h1>
                   <p>
-                    {INCIDENT_STATUS[incident.status]} · ouvert {opened ? `il y a ${formatAge(opened)}` : "—"}
+                    {INCIDENT_STATUS[incident.status]} · ouvert {opened ? formatAgo(opened) : "—"}
                     {opened ? ` (${formatDateTime(opened, utc)})` : ""}
                     {closed ? ` · clôturé ${formatDateTime(closed, utc)}` : ""}
                     {incident.source_alert_id ? " · issu d'une alerte CVE" : ""}

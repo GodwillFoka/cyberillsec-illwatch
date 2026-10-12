@@ -39,7 +39,7 @@ def _env_file() -> str | None:
 
 
 class Settings(BaseSettings):
-    """Variables d'environnement typées d'ILLWATCH."""
+    """Variables d'environnement typées d'ILL Watch."""
 
     model_config = SettingsConfigDict(
         env_file=_env_file(),
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     )
 
     # --- Application ---------------------------------------------------------
-    app_name: str = "ILLWATCH"
+    app_name: str = "ILL Watch"
     app_version: str = __version__  # source unique : illwatch/__init__.py
     environment: Literal["development", "staging", "production"] = "development"
     debug: bool = False

@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Validation réelle (dette D3 de l'audit du 03/10)
+# ILL Watch — Validation réelle (dette D3 de l'audit du 03/10)
 #
 # Le runner GitHub a accès à Internet, contrairement au bac à sable d'audit :
 # on monte une instance complète (PostgreSQL 16, Redis 7, API), on l'alimente
@@ -134,7 +134,7 @@ jobs:
         if: always()
         run: |
           {
-            echo "## ILLWATCH — validation sur données réelles"
+            echo "## ILL Watch — validation sur données réelles"
             echo
             echo "Commit \`${GITHUB_SHA::7}\` · $(date -u '+%d/%m/%Y %H:%M UTC')"
             for f in status scenario cves feeds live taxii; do

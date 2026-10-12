@@ -51,6 +51,27 @@ PRIORITY_TO_SEVERITY = {
     RiskPriority.P3_FAIBLE: Severity.LOW,
 }
 
+# Libellés français de la chronologie (lisibles par l'analyste, jamais les valeurs d'enum).
+STATUS_LABELS: dict[IncidentStatus, str] = {
+    IncidentStatus.NOUVEAU: "Nouveau",
+    IncidentStatus.ANALYSE: "En analyse",
+    IncidentStatus.CONFINEMENT: "Confinement",
+    IncidentStatus.ERADICATION: "Éradication",
+    IncidentStatus.RECUPERATION: "Récupération",
+    IncidentStatus.CLOTURE: "Clôturé",
+}
+PRIORITY_LABELS = {"P0_CRITIQUE": "P0", "P1_ELEVE": "P1", "P2_MOYEN": "P2", "P3_FAIBLE": "P3"}
+INDICATOR_LABELS = {
+    "IPV4": "IPv4",
+    "IPV6": "IPv6",
+    "DOMAIN": "domaine",
+    "URL": "URL",
+    "HASH_SHA256": "SHA-256",
+    "HASH_SHA1": "SHA-1",
+    "HASH_MD5": "MD5",
+    "EMAIL": "e-mail",
+}
+
 
 class IncidentNotFoundError(LookupError):
     """Aucun incident ne porte cet identifiant."""
@@ -252,7 +273,7 @@ async def transition(
     validate_transition(current, target, closure_summary=closure_summary)
 
     incident.status = target
-    message = f"{current} → {target}"
+    message = f"{STATUS_LABELS[current]} → {STATUS_LABELS[target]}"
     if target is IncidentStatus.CLOTURE:
         incident.closure_summary = (closure_summary or "").strip()
         incident.closed_at = _now()
@@ -344,11 +365,12 @@ async def attach_indicator(
     incident.indicators.append(
         IncidentIndicator(indicator_id=indicator.id, added_by=author_id, added_at=_now())
     )
+    kind = INDICATOR_LABELS.get(str(indicator.type), str(indicator.type))
     session.add(
         _event(
             incident,
             IncidentEventType.IOC_ATTACHED,
-            f"IOC associé : {indicator.type} {indicator.value}",
+            f"Indicateur associé : {kind} {indicator.value}",
             author_id,
         )
     )
@@ -368,12 +390,13 @@ async def attach_cve(
     if any(link.cve_id == cve.id for link in incident.cves):
         return False
     incident.cves.append(IncidentCVE(cve_id=cve.id, added_by=author_id, added_at=_now()))
+    score = f"{float(cve.composite_risk_score):.1f}".replace(".", ",")
+    priority = PRIORITY_LABELS.get(str(cve.priority), str(cve.priority))
     session.add(
         _event(
             incident,
             IncidentEventType.CVE_ATTACHED,
-            f"CVE associée : {cve.id} (score {float(cve.composite_risk_score):.1f}, "
-            f"{cve.priority})",
+            f"CVE associée : {cve.id} (score {score}, {priority})",
             author_id,
         )
     )
@@ -399,7 +422,7 @@ async def open_from_alert(
     priority = RiskPriority(alert.priority)
     sla = remediation_sla_hours(priority)
     description = (
-        f"Alerte ILLWATCH : {alert.cve_id} a franchi le seuil de risque "
+        f"Alerte ILL Watch : {alert.cve_id} a franchi le seuil de risque "
         f"(score {float(alert.score):.1f}/100, {priority}, remédiation sous {sla} h, "
         f"déclencheur : {alert.reason}).\n\n{cve.description if cve else ''}"
     )

@@ -1,4 +1,5 @@
-// Barre supérieure (v7) : état du direct (toujours visible), pause, heure UTC/locale, compte.
+// Barre supérieure (brand book v2) : état du direct dans la voix de la marque (toujours
+// visible), pause, heure « UTC · 08:02:17 » ou locale, compte.
 import { LogOut, Pause, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -30,13 +31,13 @@ export function TopBar() {
   const state = paused ? "paused" : status;
   const label = paused
     ? pending > 0
-      ? `En pause, ${pending} mise${pending > 1 ? "s" : ""} à jour en attente`
-      : "En pause"
+      ? `Direct en pause · ${pending} mise${pending > 1 ? "s" : ""} à jour en attente`
+      : "Direct en pause"
     : status === "live"
-      ? "En direct"
+      ? "Connecté · en direct"
       : status === "connecting"
         ? "Connexion au direct…"
-        : "Direct interrompu, relecture chaque minute";
+        : "Direct interrompu · nouvel essai, données relues chaque minute";
 
   return (
     <header className="topbar">
@@ -47,12 +48,16 @@ export function TopBar() {
       <button
         className="btn quiet icon-btn"
         type="button"
-        aria-pressed={paused}
         onClick={togglePause}
-        title={paused ? "Reprendre le direct" : "Mettre le direct en pause"}
+        aria-label={paused ? "Reprendre le direct" : "Mettre en pause"}
+        title={paused ? "Reprendre le direct" : "Mettre en pause"}
       >
-        {paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}
-        <span className="hide-narrow">{paused ? "Reprendre" : "Pause"}</span>
+        {paused ? (
+          <Play size={20} strokeWidth={1.5} aria-hidden="true" />
+        ) : (
+          <Pause size={20} strokeWidth={1.5} aria-hidden="true" />
+        )}
+        <span className="hide-narrow">{paused ? "Reprendre le direct" : "Mettre en pause"}</span>
       </button>
       <span className="grow" />
       <button
@@ -62,6 +67,9 @@ export function TopBar() {
         title="Basculer entre UTC et l'heure locale"
       >
         <span className="clock-zone">{utc ? "UTC" : "Local"}</span>
+        <span className="clock-sep" aria-hidden="true">
+          ·
+        </span>
         <Clock utc={utc} />
       </button>
       {user && (
@@ -82,7 +90,7 @@ export function TopBar() {
         aria-label="Se déconnecter"
         title="Se déconnecter"
       >
-        <LogOut size={16} aria-hidden="true" />
+        <LogOut size={20} strokeWidth={1.5} aria-hidden="true" />
       </button>
     </header>
   );
