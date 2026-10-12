@@ -1,6 +1,6 @@
 # ILL Watch — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **12/10/2026, 19 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **12/10/2026, 20 h 00**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -20,7 +20,7 @@ fusionné** (vue d'ensemble, triage, incidents, IOC, CVE, chasse) : il reste à 
 Kali sur données réelles. **Décision du 11/10** : la préproduction publique (VPS européen) est
 **reportée** ; elle est remplacée en attendant par une **préproduction locale** vérifiée en CI à
 chaque modification. M7 reste ouvert jusqu'au VPS. **M8 est démarré** (ADR-017 : confiance des
-IOC livrée). M1 à M6 sont constatés sur données réelles, en local et en CI.
+IOC livrée ; enrichissement hors ligne des IP livré, ADR-019). M1 à M6 sont constatés sur données réelles, en local et en CI.
 
 ## 2. Jalons
 
@@ -33,7 +33,7 @@ IOC livrée). M1 à M6 sont constatés sur données réelles, en local et en CI.
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
 | **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, identité ILL Watch v2, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
-| M8 Detection & Correlation | 🟡 démarré | ADR-017 ; incrément 1 (confiance des IOC, fiabilité des sources) livré ; enrichissement, corrélation, mesure à suivre |
+| M8 Detection & Correlation | 🟡 démarré | ADR-017 ; incrément 1 (confiance des IOC, fiabilité des sources) et incrément 2 (pays et AS des IP, DB-IP Lite, ADR-019) livrés ; corrélation et mesure à suivre |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
 ## 3. Chantier en cours
@@ -53,6 +53,7 @@ IOC livrée). M1 à M6 sont constatés sur données réelles, en local et en CI.
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 12/10 | PR #34 | **M8 incrément 2** : enrichissement hors ligne des IP (pays, système autonome) depuis DB-IP Lite importée localement, `illwatch enrich`, ADR-019 ; écrans chargés à la demande (fin de l'avertissement de taille au build) ; captures de la fiche IP et des paramètres |
 | 12/10 | PR #33 | **Identité ILL Watch v2** (ADR-018) : logos et favicon du kit, symbole écu-radar, jetons Nuit, Signal, Inter + JetBrains Mono, menu et voix de la marque, DESIGN_SYSTEM v8, site de documentation ; reprise complète A-B-C-D : CI, préproduction et captures vertes, revue indépendante (4 points corrigés), « à l'instant », typographie française (unités insécables, virgule décimale, libellés français de la chronologie et de la chasse) |
 | 11/10 | PR #32 | **B** écrans Sources CTI et Administration (API comptes et paramètres) ; **D** M8 démarré : fiabilité des sources (A–F), confiance des IOC ; seconde revue indépendante : 11 points corrigés |
 | 11/10 | PR #31 | Design v7 « Veille de nuit » : logo œil-radar, IBM Plex, icônes, palette recalibrée, mobile ; vérifié sur captures |
