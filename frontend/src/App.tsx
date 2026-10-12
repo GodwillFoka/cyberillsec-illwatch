@@ -1,17 +1,22 @@
+// Les écrans sont chargés à la demande : l'écran de connexion n'attend ni les graphiques
+// (ECharts) ni les écrans qu'il n'affiche pas ; chaque écran est un fichier mis en cache à part.
+import { lazy, Suspense } from "react";
+
 import { useAuth } from "./auth/AuthProvider";
 import { LoginPage } from "./auth/LoginPage";
 import { Shell } from "./layout/Shell";
 import { isActive, Router, useLocation } from "./lib/router";
-import { Overview } from "./pages/Overview";
-import { IncidentPage } from "./pages/IncidentPage";
-import { Cves } from "./pages/Cves";
-import { Hunting } from "./pages/Hunting";
-import { Incidents } from "./pages/Incidents";
-import { Indicators } from "./pages/Indicators";
-import { Triage } from "./pages/Triage";
-import { Admin } from "./pages/Admin";
-import { NotFound } from "./pages/NotFound";
-import { Sources } from "./pages/Sources";
+
+const Overview = lazy(() => import("./pages/Overview").then((m) => ({ default: m.Overview })));
+const Triage = lazy(() => import("./pages/Triage").then((m) => ({ default: m.Triage })));
+const Indicators = lazy(() => import("./pages/Indicators").then((m) => ({ default: m.Indicators })));
+const Cves = lazy(() => import("./pages/Cves").then((m) => ({ default: m.Cves })));
+const Hunting = lazy(() => import("./pages/Hunting").then((m) => ({ default: m.Hunting })));
+const Incidents = lazy(() => import("./pages/Incidents").then((m) => ({ default: m.Incidents })));
+const Sources = lazy(() => import("./pages/Sources").then((m) => ({ default: m.Sources })));
+const Admin = lazy(() => import("./pages/Admin").then((m) => ({ default: m.Admin })));
+const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
+const IncidentPage = lazy(() => import("./pages/IncidentPage").then((m) => ({ default: m.IncidentPage })));
 
 export function App() {
   const { status } = useAuth();
@@ -24,7 +29,9 @@ export function App() {
   return (
     <Router>
       <Shell>
-        <Screen />
+        <Suspense fallback={<p className="empty">Chargement…</p>}>
+          <Screen />
+        </Suspense>
       </Shell>
     </Router>
   );

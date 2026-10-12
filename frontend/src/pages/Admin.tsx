@@ -364,6 +364,7 @@ const AUDIT_FAMILIES: [string, string][] = [
   ["indicator.", "Indicateurs soumis"],
   ["alert.", "Alertes"],
   ["hunt.", "Chasses"],
+  ["enrichment.", "Enrichissement"],
 ];
 
 const OUTCOME: Record<string, [string, string]> = {
@@ -554,6 +555,36 @@ function SettingsView() {
               ))}
             </ul>
             <p className="muted small">Valeurs jamais affichées : seule leur présence est vérifiée. Modification dans .env, puis redémarrage.</p>
+          </section>
+          <section className="card">
+            <h2>Enrichissement des IP</h2>
+            {s.enrichment.length === 0 ? (
+              <p className="muted">
+                Aucune base importée : pays et opérateur des IP restent inconnus. Sur le serveur :{" "}
+                <span className="mono">illwatch enrich update</span> (une fois par mois).
+              </p>
+            ) : (
+              <dl className="facts settings">
+                {s.enrichment.map((d) => {
+                  const at = parseDate(d.imported_at);
+                  return (
+                    <div key={d.dataset} className="contents">
+                      <dt>{d.dataset === "country" ? "Pays" : "Systèmes autonomes"}</dt>
+                      <dd>
+                        {formatNumber(d.ranges)} plages · {at ? formatAgo(at) : "—"}
+                        <span className="cell-sub mono">{d.source}</span>
+                      </dd>
+                    </div>
+                  );
+                })}
+              </dl>
+            )}
+            <p className="muted small">
+              Base locale DB-IP Lite (licence CC BY 4.0), consultée sans requête sortante.{" "}
+              <a href="https://db-ip.com" target="_blank" rel="noopener noreferrer">
+                IP Geolocation by DB-IP
+              </a>
+            </p>
           </section>
         </div>
       )}

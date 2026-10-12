@@ -45,13 +45,13 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 
 **Démarré le 11/10/2026** (ADR-017), en quatre incréments : 1. confiance des IOC ✅ (score
 0–100 décomposé : sources pondérées par leur fiabilité A–F, fraîcheur par type, récurrence) ;
-2. enrichissement local (ASN, pays) ; 3. corrélation IOC × CVE × actif × KEV ; 4. jeu de données
+2. enrichissement local (ASN, pays) ✅ (DB-IP Lite importée, ADR-019) ; 3. corrélation IOC × CVE × actif × KEV ; 4. jeu de données
 figé et taux de faux positifs publié.
 
 - Enrichissement des IOC : ASN/pays (base locale), réputation multi-sources, âge.
 - Score de confiance d'un IOC (nombre et fiabilité des sources, fraîcheur).
 - Règles de corrélation : IOC × CVE × actif × KEV → évènement corrélé.
-- Plancher « KEV ⇒ au moins P1 » et EPSS manquant : **ADR-014, à trancher** (recommandation A + B + C).
+- Plancher « KEV ⇒ au moins P1 » et EPSS manquant : ✅ ADR-014 accepté (A + B + C) et appliqué.
 - Calibration DGA sur corpus (Tranco + DGArchive), RULE-05 par CPE.
 
 **Critère de sortie :** sur un jeu de données figé, 100 % des cas de corrélation attendus produisent

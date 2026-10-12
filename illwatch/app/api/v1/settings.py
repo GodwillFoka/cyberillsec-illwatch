@@ -4,20 +4,31 @@ Lecture seule : la configuration se change dans `.env` (12-factor) puis au redé
 secret n'est renvoyé, seulement sa **présence** (clé NVD configurée : oui/non).
 """
 
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from illwatch.app.api.deps import require_roles
+from illwatch.app.api.deps import DbSession, require_roles
 from illwatch.app.config import get_settings
 from illwatch.app.models import User
 from illwatch.modules.cve_tracker.scoring import remediation_sla_hours
+from illwatch.modules.enrichment.lookup import datasets
 from illwatch.shared.enums import RiskPriority, UserRole
 
 router = APIRouter(prefix="/settings", tags=["administration"])
 
 AdminUser = Annotated[User, Depends(require_roles(UserRole.ADMIN))]
+
+
+class EnrichmentDatasetRead(BaseModel):
+    """Base d'enrichissement importée (`illwatch enrich update`)."""
+
+    dataset: str
+    source: str
+    ranges: int
+    imported_at: datetime
 
 
 class SettingsRead(BaseModel):
@@ -38,11 +49,23 @@ class SettingsRead(BaseModel):
     docs_enabled: bool
     hsts_enabled: bool
     secrets_configured: dict[str, bool]
+    enrichment: list[EnrichmentDatasetRead]
 
 
 @router.get("", response_model=SettingsRead, summary="Paramètres en vigueur (ADMIN, sans secret)")
-async def read_settings(_: AdminUser) -> SettingsRead:
+async def read_settings(session: DbSession, _: AdminUser) -> SettingsRead:
     s = get_settings()
+    imported = [
+        EnrichmentDatasetRead(
+            dataset=d.dataset,
+            source=d.source,
+            ranges=d.ranges,
+            imported_at=d.imported_at
+            if d.imported_at.tzinfo
+            else d.imported_at.replace(tzinfo=UTC),  # SQLite : naïf
+        )
+        for d in await datasets(session)
+    ]
     return SettingsRead(
         version=s.app_version,
         environment=s.environment,
@@ -67,4 +90,5 @@ async def read_settings(_: AdminUser) -> SettingsRead:
             "alert_webhook_url": s.alert_webhook_url is not None,
             "secret_key_previous": s.secret_key_previous is not None,
         },
+        enrichment=imported,
     )

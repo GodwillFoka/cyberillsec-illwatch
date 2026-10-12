@@ -191,6 +191,26 @@ champs `purged` et `runs_purged`), contrôle de fraîcheur d'EPSS (`cve.epss_sta
 au-delà de 48 h). `illwatch status` affiche le même avertissement : sans EPSS récent, aucune CVE
 ne peut atteindre P0.
 
+## 6 bis bis. Enrichissement des IP (pays, opérateur — ADR-019)
+
+La fiche d'une IP affiche son pays et son système autonome, lus dans la base **DB-IP Lite**
+importée localement : aucune requête sortante à la consultation.
+
+```bash
+illwatch enrich update      # télécharge et importe la base du mois (pays + AS, ≈ 40 Mo)
+illwatch enrich status      # bases importées, nombre de plages, date d'import
+illwatch enrich ip 8.8.8.8  # vérification : pays et opérateur d'une adresse
+```
+
+Une fois par mois suffit (DB-IP publie en début de mois). Exemple de tâche planifiée :
+`0 6 3 * * cd ~/Documents/cyberillsec-illwatch && .venv/bin/illwatch enrich update`.
+Poste sans Internet : télécharger `dbip-country-lite-AAAA-MM.csv.gz` et
+`dbip-asn-lite-AAAA-MM.csv.gz` sur https://db-ip.com/db/lite.php, puis
+`illwatch enrich import FICHIER --dataset country|asn`. Un fichier refusé (vide, mauvais format,
+plus de 1 % de lignes invalides) laisse l'ancienne base en place. Chaque import est journalisé
+(`enrichment.import`). Licence CC BY 4.0 : l'attribution « IP Geolocation by DB-IP » est
+affichée avec le résultat.
+
 ## 6 ter. Interface web
 
 L'image Docker contient l'interface compilée (`/app/web`) : elle est servie à la racine du site

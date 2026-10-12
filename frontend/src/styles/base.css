@@ -1767,3 +1767,9 @@ textarea {
   flex: none;
   white-space: nowrap;
 }
+
+/* Sous-ligne d'une valeur dans une liste de faits (source d'une base importée…). */
+.facts dd .cell-sub {
+  display: block;
+  overflow-wrap: anywhere;
+}

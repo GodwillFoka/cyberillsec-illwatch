@@ -97,6 +97,7 @@ nav:
           - ADR-016 Interface web: adr/ADR-016-interface-web.md
           - ADR-017 Détection et corrélation: adr/ADR-017-detection-correlation.md
           - ADR-018 Identité ILL Watch: adr/ADR-018-identite-ill-watch.md
+          - ADR-019 Enrichissement hors ligne: adr/ADR-019-enrichissement-hors-ligne.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:

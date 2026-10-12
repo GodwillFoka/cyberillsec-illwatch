@@ -24,10 +24,12 @@ SCREENS = [
     ("02-triage", "/triage"),
     ("03-incidents", "/incidents"),
     ("05-indicateurs", "/indicateurs"),
+    ("05b-indicateur-ip", "/indicateurs?valeur=203.0.113.50"),
     ("06-cve", "/cve"),
     ("07-chasse", "/chasse"),
     ("08-sources", "/sources"),
     ("09-administration", "/administration"),
+    ("09b-parametres", "/administration?onglet=parametres"),
 ]
 MOBILE = {"01-vue-ensemble", "02-triage", "05-indicateurs", "08-sources", "09-administration"}
 

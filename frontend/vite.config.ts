@@ -20,5 +20,16 @@ export default defineConfig({
     // Pas de script ni de style en ligne : compatible avec la politique `script-src 'self'`.
     assetsInlineLimit: 0,
     chunkSizeWarningLimit: 900,
+    rollupOptions: {
+      output: {
+        // Bibliothèques lourdes et stables dans leurs propres fichiers : mises en cache une fois,
+        // indépendamment des mises à jour de l'interface.
+        manualChunks(id) {
+          if (/node_modules\/(echarts|zrender)\//.test(id)) return "echarts";
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return "react";
+          return undefined;
+        },
+      },
+    },
   },
 });

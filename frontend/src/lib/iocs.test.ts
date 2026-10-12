@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { MAX_BATCH, filenameFrom, iocTypeLabel, splitAssets, splitBatch } from "./iocs.js";
+import { MAX_BATCH, countryName, filenameFrom, iocTypeLabel, splitAssets, splitBatch } from "./iocs.js";
 
 describe("lot d'IOC collé", () => {
   it("découpe par ligne et par séparateur, ignore commentaires et doublons", () => {
@@ -61,5 +61,11 @@ describe("inventaire d'actifs", () => {
       "Confluence Server",
     ]);
     assert.deepEqual(splitAssets(" , ;"), []);
+  });
+
+  it("nomme un pays en français", () => {
+    assert.equal(countryName("US"), "États-Unis (US)");
+    assert.equal(countryName("de"), "Allemagne (DE)");
+    assert.equal(countryName(null), "inconnu");
   });
 });

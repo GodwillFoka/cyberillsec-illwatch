@@ -8,6 +8,20 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M8, incrément 2 : enrichissement hors ligne des IP (ADR-019)
+- Pays et système autonome de chaque IPv4/IPv6 dans la fiche d'un indicateur, lus dans la base
+  DB-IP Lite importée localement (aucune requête sortante à la consultation) ; adresses non
+  routables signalées ; attribution « IP Geolocation by DB-IP ».
+- `illwatch enrich update | import | status | ip` ; tables `ip_ranges` et
+  `enrichment_datasets` (migration `a8e3f1c6b250`) ; import transactionnel et journalisé
+  (`enrichment.import`) ; bases importées visibles dans Administration → Paramètres.
+- Démonstration : enrichissement fictif des plages de documentation (RFC 5737, AS RFC 5398).
+
+### Modifié — interface chargée à la demande
+- Chaque écran est un fichier séparé, chargé à l'ouverture ; ECharts et React dans leurs
+  propres fichiers : l'écran de connexion n'attend plus les graphiques, plus d'avertissement
+  « chunk > 900 kB » au build.
+
 ### Modifié — identité ILL Watch v2 (brand book, ADR-018)
 - Nom affiché « ILL Watch », endossement « PAR CYBERILL » (interface, API, CLI, documentation) ;
   identifiants techniques inchangés (`illwatch`, `ILLWATCH_*`).

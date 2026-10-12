@@ -25,17 +25,20 @@ from illwatch.app.models import (
     CollectionRun,
     CVEAlert,
     CVEPriorityChange,
+    EnrichmentDatasetInfo,
     Incident,
     Indicator,
     ThreatFeed,
     User,
 )
 from illwatch.modules.cve_tracker.scoring import compute_risk_breakdown
+from illwatch.modules.enrichment.dbip import import_dataset
 from illwatch.modules.foundation.seed import seed_reference_feeds
 from illwatch.modules.incidents import service as incidents
 from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
 from illwatch.modules.threat_hunting.engine import run_hunt
 from illwatch.shared.enums import (
+    EnrichmentDataset,
     FeedStatus,
     IncidentEventType,
     IncidentStatus,
@@ -49,6 +52,22 @@ TOR_EXIT = "198.51.100.66"  # relais Tor fictif, servi par la liste Tor de démo
 
 class DemoRefusedError(RuntimeError):
     """La base contient déjà des données réelles."""
+
+
+# Enrichissement fictif des plages de documentation, avec les numéros d'AS réservés à la
+# documentation (RFC 5398) : jamais chargé si une vraie base DB-IP est déjà importée.
+_DEMO_COUNTRY = [
+    "192.0.2.0,192.0.2.255,FR",
+    "198.51.100.0,198.51.100.255,NL",
+    "203.0.113.0,203.0.113.255,DE",
+    "2001:db8::,2001:db8:ffff:ffff:ffff:ffff:ffff:ffff,FR",
+]
+_DEMO_ASN = [
+    f'192.0.2.0,192.0.2.255,64496,"Hébergeur A {DEMO_TAG}"',
+    f'198.51.100.0,198.51.100.255,64497,"Opérateur B {DEMO_TAG}"',
+    f'203.0.113.0,203.0.113.255,64498,"Nuage C {DEMO_TAG}"',
+    f'2001:db8::,2001:db8:ffff:ffff:ffff:ffff:ffff:ffff,64499,"Hébergeur A {DEMO_TAG}"',
+]
 
 
 @dataclass(slots=True)
@@ -394,6 +413,15 @@ async def load_demo_data(
         clock=lambda: moment - timedelta(minutes=20),
     )
     report.hunts = 1
+
+    if await session.scalar(select(func.count()).select_from(EnrichmentDatasetInfo)) == 0:
+        origin = f"démonstration (RFC 5737, RFC 5398) {DEMO_TAG}"
+        for dataset, lines in (
+            (EnrichmentDataset.COUNTRY, _DEMO_COUNTRY),
+            (EnrichmentDataset.ASN, _DEMO_ASN),
+        ):
+            await import_dataset(session, dataset, lines, source=origin, now=moment)
+        report.notes.append("enrichissement fictif des plages de documentation")
     await session.flush()
     return report
 
