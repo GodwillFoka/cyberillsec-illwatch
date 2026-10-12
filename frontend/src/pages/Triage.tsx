@@ -10,7 +10,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { Breakdown, formatEpss, formatScore } from "../components/CveScore";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { formatAge, formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { ALERT_REASON, levelLabel, rankOf } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
@@ -160,7 +160,7 @@ function AlertDetail({
             {alert.previous_score !== null ? ` (avant : ${score(alert.previous_score)})` : ""}
           </dd>
           <dt>Émise</dt>
-          <dd>{created ? `${formatDateTime(created, utc)} · il y a ${formatAge(created)}` : "—"}</dd>
+          <dd>{created ? `${formatDateTime(created, utc)} · ${formatAgo(created)}` : "—"}</dd>
           <dt>Acquittement</dt>
           <dd>{acknowledged ? formatDateTime(acknowledged, utc) : "non acquittée"}</dd>
           <dt>Notification</dt>

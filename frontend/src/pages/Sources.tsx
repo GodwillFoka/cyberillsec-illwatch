@@ -10,7 +10,7 @@ import type { CollectionRun, FeedHealth } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { RELIABILITY } from "../components/Confidence";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { POLLING_CHOICES, formatDuration, formatMs, successRate } from "../lib/ops";
 import { asUuid, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
@@ -115,7 +115,7 @@ function SourceTable({
               <td>
                 <StatusBadge health={feed} />
               </td>
-              <td className="muted">{success ? `il y a ${formatAge(success)}` : "jamais"}</td>
+              <td className="muted">{success ? `${formatAgo(success)}` : "jamais"}</td>
               <td className="num mono">{feed.last_inserted === null ? "—" : formatNumber(feed.last_inserted)}</td>
               <td className={`num mono${rate !== null && rate < 80 ? " error-text" : ""}`}>
                 {rate === null ? "—" : `${rate}\u202f%`}
@@ -269,9 +269,9 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
           <dt>Fréquence</dt>
           <dd>{feed.data ? `toutes les ${formatDuration(feed.data.polling_interval)}` : "…"}</dd>
           <dt>Dernier essai</dt>
-          <dd>{attempt ? `${formatDateTime(attempt, utc)}, il y a ${formatAge(attempt)}` : "jamais"}</dd>
+          <dd>{attempt ? `${formatDateTime(attempt, utc)}, ${formatAgo(attempt)}` : "jamais"}</dd>
           <dt>Dernier succès</dt>
-          <dd>{success ? `${formatDateTime(success, utc)}, il y a ${formatAge(success)}` : "jamais"}</dd>
+          <dd>{success ? `${formatDateTime(success, utc)}, ${formatAgo(success)}` : "jamais"}</dd>
           <dt>Durée</dt>
           <dd className="mono">{health.last_duration_ms === null ? "—" : formatMs(health.last_duration_ms)}</dd>
           <dt>Dernière récolte</dt>

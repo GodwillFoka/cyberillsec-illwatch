@@ -6,7 +6,7 @@ import { useIncidents, type IncidentFilters } from "../api/queries";
 import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, formatNumber, parseDate } from "../lib/format";
 import { INCIDENT_STATUS, SEVERITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useFresh } from "../lib/useFresh";
@@ -196,8 +196,8 @@ export function Incidents() {
                             : "un analyste"
                           : "personne"}
                       </td>
-                      <td className="muted">{opened ? `il y a ${formatAge(opened)}` : "—"}</td>
-                      <td className="muted">{updated ? `il y a ${formatAge(updated)}` : "—"}</td>
+                      <td className="muted">{opened ? `${formatAgo(opened)}` : "—"}</td>
+                      <td className="muted">{updated ? `${formatAgo(updated)}` : "—"}</td>
                     </tr>
                   );
                 })}

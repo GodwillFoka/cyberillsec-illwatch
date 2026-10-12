@@ -16,7 +16,7 @@ import { LevelBadge } from "../components/Badge";
 import { Kpi } from "../components/Kpi";
 import { QueryState } from "../components/QueryState";
 import { SeriesChart } from "../components/SeriesChart";
-import { formatAge, formatDateTime, formatNumber, formatTime, parseDate } from "../lib/format";
+import { formatAge, formatAgo, formatDateTime, formatNumber, formatTime, parseDate } from "../lib/format";
 import { ALERT_REASON, CHART, INCIDENT_STATUS, PRIORITY_ORDER, rankOf, TONE_COLORS, toneOf } from "../lib/levels";
 import { useTimeZone } from "../lib/time";
 import { Link } from "../lib/router";
@@ -127,7 +127,7 @@ function TopIncident({ incident }: { incident: Incident | undefined }) {
       </p>
       <p className="muted">
         Phase : {INCIDENT_STATUS[incident.status] ?? incident.status}
-        {opened ? ` · ouvert il y a ${formatAge(opened)}` : ""}
+        {opened ? ` · ouvert ${formatAgo(opened)}` : ""}
       </p>
       <Link to={`/incidents/${incident.id}`}>Ouvrir l'investigation</Link>
     </section>
@@ -381,7 +381,7 @@ function SourcesHealth() {
                       <FeedState feed={feed} />
                     </td>
                     <td className="muted" title={attempt ? formatDateTime(attempt, utc) : undefined}>
-                      {attempt ? `il y a ${formatAge(attempt)}` : "jamais"}
+                      {attempt ? `${formatAgo(attempt)}` : "jamais"}
                     </td>
                     <td className="num">
                       {feed.errors_7d > 0 ? `${feed.errors_7d} / ${feed.runs_7d}` : "0"}

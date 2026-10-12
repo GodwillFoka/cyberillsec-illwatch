@@ -287,12 +287,13 @@ def _exploitable_assets(ctx: HuntContext) -> Iterable[Match]:
         pattern = re.compile(rf"\b{re.escape(asset.strip())}\b", re.IGNORECASE)
         for cve in ctx.exploitable_cves:
             if asset.strip() and pattern.search(cve.description):
+                score = f"{cve.score:.1f}".replace(".", ",")
                 yield Match(
                     "RULE-05",
                     Severity.CRITICAL,
                     asset.strip(),
-                    f"{cve.id} ({cve.priority}, score {cve.score:.1f}) : exploit public "
-                    f"vérifié pour un produit de l'inventaire.",
+                    f"{cve.id} ({cve.priority[:2]}, score {score}) : exploit public vérifié "
+                    f"pour un produit de l'inventaire.",
                     cve_id=cve.id,
                 )
 

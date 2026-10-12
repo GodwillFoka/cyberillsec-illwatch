@@ -21,7 +21,7 @@ import { LevelBadge } from "../components/Badge";
 import { Breakdown, formatEpss, formatScore } from "../components/CveScore";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { ALERT_REASON, INCIDENT_STATUS, PRIORITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
@@ -221,7 +221,7 @@ function CveTable({
               <td>
                 <Signals cve={cve} />
               </td>
-              <td className="muted">{modified ? `il y a ${formatAge(modified)}` : "—"}</td>
+              <td className="muted">{modified ? `${formatAgo(modified)}` : "—"}</td>
             </tr>
           );
         })}
@@ -336,7 +336,7 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                   <dt>Publiée</dt>
                   <dd>{published ? formatDateTime(published, utc) : "—"}</dd>
                   <dt>Modifiée</dt>
-                  <dd>{modified ? `${formatDateTime(modified, utc)} · il y a ${formatAge(modified)}` : "—"}</dd>
+                  <dd>{modified ? `${formatDateTime(modified, utc)} · ${formatAgo(modified)}` : "—"}</dd>
                 </dl>
                 {cve.kev_required_action && (
                   <p className="muted">Action requise (CISA) : {cve.kev_required_action}</p>

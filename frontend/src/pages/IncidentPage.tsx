@@ -16,7 +16,7 @@ import type { IncidentDetail, IncidentEvent } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
-import { formatAge, formatDateTime, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, parseDate } from "../lib/format";
 import { INCIDENT_STATUS } from "../lib/levels";
 import { Link } from "../lib/router";
 import { useTimeZone } from "../lib/time";
@@ -359,7 +359,7 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                     {incident.title}
                   </h1>
                   <p>
-                    {INCIDENT_STATUS[incident.status]} · ouvert {opened ? `il y a ${formatAge(opened)}` : "—"}
+                    {INCIDENT_STATUS[incident.status]} · ouvert {opened ? formatAgo(opened) : "—"}
                     {opened ? ` (${formatDateTime(opened, utc)})` : ""}
                     {closed ? ` · clôturé ${formatDateTime(closed, utc)}` : ""}
                     {incident.source_alert_id ? " · issu d'une alerte CVE" : ""}
