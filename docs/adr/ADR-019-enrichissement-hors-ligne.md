@@ -48,7 +48,7 @@ divulguerait les IOC enquêtés à un tiers et dépendrait de sa disponibilité.
 
 - Positives : pays et AS de chaque IP sans requête sortante ; base sauvegardée et restaurée
   avec PostgreSQL ; licence CC BY 4.0 compatible avec un usage commercial (attribution).
-- Négatives : environ 1,2 million de lignes (≈ 150 Mo en base avec l'index) ; précision
+- Négatives : environ 1,2 million de plages (mesuré sur Kali le 12/10 : 710 834 pays et 477 362 AS, fichiers de 4,3 et 6,7 Mo) ; précision
   « Lite » (pays et AS, pas de ville) ; données vieilles d'un mois au plus si la mise à jour
   mensuelle est oubliée — la date d'import est affichée dans Administration → Paramètres.
 

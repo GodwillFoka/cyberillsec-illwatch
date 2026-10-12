@@ -197,7 +197,7 @@ La fiche d'une IP affiche son pays et son système autonome, lus dans la base **
 importée localement : aucune requête sortante à la consultation.
 
 ```bash
-illwatch enrich update      # télécharge et importe la base du mois (pays + AS, ≈ 40 Mo)
+illwatch enrich update      # télécharge et importe la base du mois (pays + AS, ≈ 11 Mo)
 illwatch enrich status      # bases importées, nombre de plages, date d'import
 illwatch enrich ip 8.8.8.8  # vérification : pays et opérateur d'une adresse
 ```

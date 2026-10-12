@@ -22,7 +22,7 @@ from illwatch.modules.threat_feeds.fetcher import FetchError, assert_public_dest
 from illwatch.shared.enums import EnrichmentDataset
 
 BASE_URL = "https://download.db-ip.com/free"
-MAX_DOWNLOAD_BYTES = 200 * 1024 * 1024  # base ASN ≈ 30 Mo compressée, pays ≈ 10 Mo
+MAX_DOWNLOAD_BYTES = 200 * 1024 * 1024  # mesuré le 12/10/2026 : pays 4,3 Mo, AS 6,7 Mo
 TIMEOUT_SECONDS = 120.0
 USER_AGENT = f"ILLWATCH/{__version__} (CyberillSec Threat Intelligence Platform)"
 
