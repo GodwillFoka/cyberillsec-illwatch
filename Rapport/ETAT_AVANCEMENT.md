@@ -132,16 +132,15 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | Anciens volumes SENTRY sur Kali | espace disque | supprimés le 08/10 ; dernière sauvegarde `~/illwatch-migration/sentry.dump` conservée | ✅ |
 | Dépôt GitLab à renommer | liens de la documentation | renommé, `main` synchronisé (`955e2a1`) | ✅ |
 | Vérification depuis la session de travail : npm et PyPI bloqués (politique réseau), journaux CI illisibles, suppression de branches refusée | contrôle local impossible côté session | CI GitHub fait foi (erreurs remontées en annotations) ; `ci-local.sh` sur Kali ; workflow « Branches » | ✅ contourné proprement |
-| Pipeline GitLab non consultable depuis la session | jobs `openapi`/`interface` non constatés | autoriser le connecteur GitLab (réglages claude.ai) ou constater après `git push gitlab main` | ⏳ |
+| Pipeline GitLab non consultable depuis la session (connecteur en erreur, gitlab.com filtré) | jobs GitLab non constatés | contournement : workflow GitHub « Statut GitLab » qui lit l'API GitLab et publie le résultat en annotations ; secret `GITLAB_TOKEN` (read_api) à poser par Godwill si le projet est privé | 🟡 |
 | Source RedEye (osint.digitalside.it) en délai dépassé côté serveur ; IPsum à 50 % de réussite | collectes en échec, bruit dans la santé des sources | suspendre RedEye depuis l'écran Sources tant que le serveur ne répond pas | ⏳ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
 | Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | — |
 
 ## 8. Prochaines étapes
 
-1. **Sur Kali** : mettre à jour (PR #38), `illwatch db upgrade`, `illwatch cves refresh-affected`,
-   `illwatch correlate run` puis `list` ; consigner le résultat dans
-   `Rapport/M8_MESURE_REELLE_13-10-2026.md` (sortie réelle de M8).
+1. **Sur Kali** : ✅ fait le 13/10 (1 740 CVE complétées, plus aucun évènement ouvert) ;
+   reste `illwatch correlate list --all` pour qualifier l'évènement restant (acquitté).
 2. Signaler tout débordement restant (capture d'écran) ; les captures CI le détectent désormais.
 3. Suspendre RedEye tant que son serveur ne répond pas.
 4. **M9** : opérer (suite du plan directeur).

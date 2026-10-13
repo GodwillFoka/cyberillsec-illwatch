@@ -256,7 +256,8 @@ def correlate_run() -> None:
     rules = ", ".join(f"{k} : {v}" for k, v in sorted(report["by_rule"].items())) or "aucune"
     console.print(
         f"[green]✔[/] {report['assets']} actif(s) · {report['created']} nouveau(x) · "
-        f"{report['updated']} mis à jour · {report['reopened']} rouvert(s) · règles : {rules}"
+        f"{report['updated']} mis à jour · {report['reopened']} rouvert(s) · "
+        f"{report['resolved']} clos · règles : {rules}"
     )
 
 
@@ -276,7 +277,12 @@ def correlate_list(show_all: bool, limit: int) -> None:
 
     rows, total = asyncio.run(_with_session(_work))
     if not rows:
-        console.print("Aucun évènement corrélé ouvert.")
+        console.print(
+            "Aucun évènement corrélé."
+            if show_all
+            else "Aucun évènement corrélé ouvert "
+            "(les acquittés et les clos : illwatch correlate list --all)."
+        )
         return
     table = Table(title=f"Évènements corrélés ({total})")
     for column in ("Priorité", "Règle", "Score", "Actif", "Évènement"):

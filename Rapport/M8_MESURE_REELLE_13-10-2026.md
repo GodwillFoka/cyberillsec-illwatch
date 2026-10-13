@@ -37,5 +37,18 @@ illwatch correlate run
 illwatch correlate list
 ```
 
-Les évènements devenus faux sont **résolus automatiquement** à la passe suivante. Résultat
-réel à consigner ici quand Godwill aura relancé la passe.
+Les évènements devenus faux sont **résolus automatiquement** à la passe suivante.
+
+## Résultat après correction (Kali, 13/10/2026, 23 h)
+
+| Mesure | Avant | Après |
+|---|---|---|
+| CVE dont les plages NVD sont connues | 0 | 1 740 |
+| Correspondances CORR-01 | 38 | 1 |
+| Évènements ouverts | 38 | **0** |
+
+Les 37 correspondances écartées étaient hors des versions vulnérables ou visaient un autre
+produit. La correspondance restante concerne un évènement déjà acquitté auparavant ; son verdict
+de version est à lire avec `illwatch correlate list --all` (ou l'écran Corrélations, filtre
+« Tous »). Sur un inventaire à jour (noyau 7.1, OpenSSH 10.5, PostgreSQL 18, Redis 8), aucune
+CVE exploitée connue ne s'applique : c'est le résultat attendu.
