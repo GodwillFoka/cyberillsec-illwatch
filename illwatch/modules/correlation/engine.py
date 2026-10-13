@@ -28,7 +28,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import or_, select
+from sqlalchemy import ColumnElement, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import CVE, Asset, CollectorState, CorrelatedEvent, Indicator
@@ -200,7 +200,7 @@ async def _ioc_findings(
     domains = {str(d).strip().lower().rstrip(".") for d in asset.domains or [] if str(d).strip()}
     if not addresses and not domains:
         return []
-    conditions = []
+    conditions: list[ColumnElement[bool]] = []
     if addresses:
         conditions.append(
             Indicator.type.in_([IndicatorType.IPV4, IndicatorType.IPV6])

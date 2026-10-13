@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import Asset, CorrelatedEvent, Incident
@@ -39,7 +39,7 @@ async def list_events(
     rule: str | None = None,
     asset_id: UUID | None = None,
 ) -> EventPage:
-    conditions = []
+    conditions: list[ColumnElement[bool]] = []
     if open_only:
         conditions.append(CorrelatedEvent.acknowledged_at.is_(None))
     if priority is not None:
