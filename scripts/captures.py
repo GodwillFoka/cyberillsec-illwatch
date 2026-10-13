@@ -73,6 +73,25 @@ OVERFLOW_PROBE = """() => {
       out.push(`panneau de détail : contenu de ${wide} px pour ${panel.clientWidth} px`);
     }
   }
+  // Texte qui sort de son cadre (mot très long : adresse, empreinte, message d'erreur). Ignoré :
+  // un élément qui tronque volontairement (overflow ≠ visible) ou qui vit dans une zone qui défile.
+  for (const el of document.querySelectorAll("p, dd, li, h1, h2, h3, .notice, .title")) {
+    if (el.scrollWidth <= el.clientWidth + 1 || el.clientWidth === 0) continue;
+    if (getComputedStyle(el).overflowX !== "visible") continue;
+    let scroller = el.parentElement;
+    let inside = false;
+    while (scroller && scroller !== document.body) {
+      const ox = getComputedStyle(scroller).overflowX;
+      const scrolls = ox === "auto" || ox === "scroll";
+      if (scrolls && !scroller.matches(".card, main")) { inside = true; break; }
+      scroller = scroller.parentElement;
+    }
+    if (inside) continue;
+    const text = (el.textContent || "").trim().slice(0, 40);
+    const size = `${el.scrollWidth} px pour ${el.clientWidth}`;
+    out.push(`texte qui déborde de son cadre : « ${text}… » (${size})`);
+    if (out.length >= 5) return out;
+  }
   for (const el of document.querySelectorAll("body *")) {
     const box = el.getBoundingClientRect();
     if (box.width === 0 || box.right <= limit) continue;
