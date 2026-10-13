@@ -56,6 +56,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 14/10 | PR #39 à #43 | Statut du pipeline GitLab remonté dans GitHub (pipeline #2944320344 vert, 12/12) ; `correlate list --all` avec Version et État ; verdict « conditionnel » (plateformes NVD) : mesure réelle Kali **38 évènements → 0 vrai positif** (37 clos automatiquement, CVE-2022-0543 sur Redis requalifiée) |
 | 13/10 | PR #38 | **Corrélation par version** (ADR-021) : plages vulnérables NVD conservées (`cves.affected`, migration `e5b8c1d4a907`), verdict par version (hors plage / autre produit écartés), `illwatch cves refresh-affected`, jeu figé 18 cas / 8 attendus ; **débordements** : données de démonstration extrêmes (URL de 440 caractères, titres et noms longs), captures pleine hauteur et tous écrans en mobile, recherche et titres de détail corrigés sur mobile |
 | 13/10 | PR #37 | **Débordements** : libellés des barres (types d'IOC), erreurs TAXII longues, retour à la ligne général des textes ; détecteur de texte qui déborde dans les captures CI |
 | 13/10 | PR #36 | **M8 incréments 3 et 4** : inventaire d'actifs, corrélation CORR-01 à 03 (score justifié, worker horaire, écrans Corrélations et Inventaire), mesure sur jeu figé 100 % / 0 % FP vérifiée par la CI, mise à jour mensuelle automatique de DB-IP ; ADR-020 |
