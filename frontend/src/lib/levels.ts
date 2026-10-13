@@ -73,3 +73,21 @@ export const ALERT_REASON: Record<string, string> = {
   epss: "Hausse EPSS",
   nvd: "Mise à jour NVD",
 };
+
+/** Niveaux SOC (M9, ADR-022) : l'escalade ne fait que monter. */
+export const SOC_TIERS = ["L1", "L2", "L3"];
+export const TIER_LABEL: Record<string, string> = {
+  L1: "L1 · qualification",
+  L2: "L2 · investigation",
+  L3: "L3 · expertise",
+};
+
+/** Phases NIST où s'inscrit une recommandation de réponse. */
+export const PHASE_LABEL: Record<string, string> = {
+  NOUVEAU: "Nouveau",
+  ANALYSE: "Analyse",
+  CONFINEMENT: "Confinement",
+  ERADICATION: "Éradication",
+  RECUPERATION: "Récupération",
+  CLOTURE: "Clôture",
+};

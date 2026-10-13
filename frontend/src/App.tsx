@@ -17,6 +17,7 @@ const Sources = lazy(() => import("./pages/Sources").then((m) => ({ default: m.S
 const Admin = lazy(() => import("./pages/Admin").then((m) => ({ default: m.Admin })));
 const Correlations = lazy(() => import("./pages/Correlations").then((m) => ({ default: m.Correlations })));
 const Inventory = lazy(() => import("./pages/Inventory").then((m) => ({ default: m.Inventory })));
+const Pilotage = lazy(() => import("./pages/Pilotage").then((m) => ({ default: m.Pilotage })));
 const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
 const IncidentPage = lazy(() => import("./pages/IncidentPage").then((m) => ({ default: m.IncidentPage })));
 
@@ -49,6 +50,7 @@ function Screen() {
   if (pathname === "/correlations") return <Correlations />;
   if (pathname === "/inventaire") return <Inventory />;
   if (pathname === "/incidents") return <Incidents />;
+  if (pathname === "/pilotage") return <Pilotage />;
   const incident = /^\/incidents\/([0-9a-f-]{36})$/i.exec(pathname);
   if (incident) return <IncidentPage key={incident[1]} incidentId={incident[1]} />;
   if (pathname === "/sources") return <Sources />;

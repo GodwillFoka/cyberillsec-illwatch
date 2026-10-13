@@ -5,6 +5,7 @@ import {
   Bug,
   Crosshair,
   Fingerprint,
+  Gauge,
   GitMerge,
   LayoutDashboard,
   RadioTower,
@@ -65,6 +66,7 @@ export function Nav() {
         </div>
         <Link to="/triage" label="Triage" icon={Siren} count={summary?.alerts.unacknowledged} />
         <Link to="/incidents" label="Incidents" icon={ShieldAlert} count={summary?.incidents.open} />
+        <Link to="/pilotage" label="Pilotage" icon={Gauge} />
       </div>
       <div className="nav-group" role="group" aria-labelledby="nav-cti">
         <div className="nav-section" id="nav-cti">

@@ -9,7 +9,7 @@ from datetime import UTC, date, datetime
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -257,7 +257,10 @@ class SocMetricsRead(BaseModel):
 async def soc(
     session: DbSession,
     user: CurrentUser,
-    days: Annotated[Literal[7, 30], Query(description="Fenêtre : 7 ou 30 jours.")] = 7,
+    days: Annotated[int, Query(description="Fenêtre : 7 ou 30 jours.")] = 7,
 ) -> SocMetricsRead:
-    metrics = await soc_metrics(session, viewer=user, days=days)
+    try:
+        metrics = await soc_metrics(session, viewer=user, days=days)
+    except ValueError as exc:
+        raise HTTPException(422, detail=str(exc)) from None
     return SocMetricsRead.model_validate(asdict(metrics))

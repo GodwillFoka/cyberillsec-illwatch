@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { formatAge, formatAgo, formatDay, formatNumber, formatTime } from "./format.js";
+import { formatAge, formatAgo, formatDay, formatHours, formatNumber, formatShare, formatTime } from "./format.js";
 import { rankOf, toneOf } from "./levels.js";
 
 describe("formats", () => {
@@ -34,5 +34,14 @@ describe("échelle de priorité", () => {
     assert.equal(toneOf("P1_ELEVE"), "p1");
     assert.equal(rankOf("MEDIUM"), 2);
     assert.equal(toneOf("INCONNU"), "p3");
+  });
+
+  it("exprime une durée et une part", () => {
+    assert.equal(formatHours(null), "—");
+    assert.equal(formatHours(0.25), "15\u00a0min");
+    assert.equal(formatHours(3.46), "3,5\u00a0h");
+    assert.equal(formatHours(50), "2,1\u00a0j");
+    assert.equal(formatShare(0.834), "83\u00a0%");
+    assert.equal(formatShare(undefined), "—");
   });
 });

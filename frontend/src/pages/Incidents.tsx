@@ -7,7 +7,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
 import { formatAgo, formatNumber, parseDate } from "../lib/format";
-import { INCIDENT_STATUS, SEVERITY_ORDER, levelLabel } from "../lib/levels";
+import { INCIDENT_STATUS, SEVERITY_ORDER, SOC_TIERS, TIER_LABEL, levelLabel } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useFresh } from "../lib/useFresh";
 
@@ -156,6 +156,19 @@ export function Incidents() {
                 </option>
               ))}
             </select>
+            <select
+              className="compact"
+              aria-label="Niveau SOC"
+              value={filters.tier ?? ""}
+              onChange={(e) => setFilters((f) => ({ ...f, tier: e.target.value || undefined }))}
+            >
+              <option value="">Tous niveaux</option>
+              {SOC_TIERS.map((tier) => (
+                <option key={tier} value={tier}>
+                  {TIER_LABEL[tier]}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <QueryState query={query} empty={(page) => page.items.length === 0}>
@@ -166,6 +179,7 @@ export function Incidents() {
                   <th>Sévérité</th>
                   <th>Incident</th>
                   <th>Statut</th>
+                  <th>Niveau</th>
                   <th>Assigné</th>
                   <th>Ouvert</th>
                   <th>Dernière activité</th>
@@ -189,6 +203,9 @@ export function Incidents() {
                         </Link>
                       </td>
                       <td>{INCIDENT_STATUS[incident.status] ?? incident.status}</td>
+                      <td>
+                        <span className="badge tier">{incident.tier}</span>
+                      </td>
                       <td className="muted">
                         {incident.assigned_to
                           ? incident.assigned_to === user?.id

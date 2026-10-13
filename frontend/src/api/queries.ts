@@ -29,6 +29,8 @@ import type {
   Series,
   Summary,
   SeriesWindow,
+  Exclusion,
+  SocMetrics,
 } from "./types";
 
 /** Sans flux temps réel, les données sont relues toutes les minutes. */
@@ -122,6 +124,7 @@ export interface IncidentFilters {
   openOnly: boolean;
   status?: string;
   severity?: string;
+  tier?: string;
 }
 
 export function useIncidents(filters: IncidentFilters) {
@@ -135,6 +138,7 @@ export function useIncidents(filters: IncidentFilters) {
           open_only: filters.openOnly,
           status: filters.status || undefined,
           severity: filters.severity || undefined,
+          tier: filters.tier || undefined,
           limit: 200,
         },
         signal,
@@ -380,5 +384,23 @@ export function useCorrelations(scope: "open" | "all", assetId: string | null = 
         signal,
       ),
     refetchInterval,
+  });
+}
+
+// --- M9 SOC Operations (ADR-022) ----------------------------------------------------------------
+
+export function useSocMetrics(days: 7 | 30) {
+  const refetchInterval = useFallbackInterval();
+  return useQuery({
+    queryKey: ["dashboard", "soc", days],
+    queryFn: ({ signal }) => apiGet<SocMetrics>("/dashboard/soc", { days }, signal),
+    refetchInterval,
+  });
+}
+
+export function useExclusions() {
+  return useQuery({
+    queryKey: ["exclusions"],
+    queryFn: ({ signal }) => apiGet<Exclusion[]>("/exclusions", undefined, signal),
   });
 }

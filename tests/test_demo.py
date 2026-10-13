@@ -22,7 +22,7 @@ async def _count(session: AsyncSession, model: type) -> int:
 async def test_chargement_complet_et_fictif(db_session: AsyncSession) -> None:
     report = await load_demo_data(db_session, settings=SETTINGS, now=NOW)
     assert report.indicators >= 500 and report.cves == 48 and report.alerts > 0
-    assert report.incidents == 5 and report.hunts == 1 and report.runs > 0
+    assert report.incidents == 5 and report.hunts == 2 and report.runs > 0
     assert await _count(db_session, Indicator) == report.indicators
     assert await _count(db_session, CVE) == 48
     assert await _count(db_session, CVEAlert) == report.alerts

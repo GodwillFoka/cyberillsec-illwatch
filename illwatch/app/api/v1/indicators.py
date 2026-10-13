@@ -273,6 +273,7 @@ async def read_indicator(indicator_id: UUID, session: DbSession, _: CurrentUser)
     detail = _to_detail(indicator, datetime.now(UTC))
     excluded = await find_exclusion(session, indicator.type, indicator.value)
     if excluded is not None:
+        detail.is_active = False  # exclu : plus actif, même non expiré
         detail.exclusion = ExclusionInfo(
             id=excluded.id,
             reason=excluded.reason,
