@@ -40,6 +40,12 @@ from illwatch.shared.enums import (
 )
 
 MAX_EXTRA = 1000
+HUNT_STATUS_LABELS = {
+    "EN_COURS": "en cours",
+    "TERMINEE": "terminée",
+    "PARTIELLE": "partielle (une règle n'a pas pu s'exécuter)",
+    "ECHEC": "en échec",
+}
 
 
 # --- Chasse depuis l'incident ---------------------------------------------------------------
@@ -97,7 +103,8 @@ async def hunt_from_incident(
     loaded = await engine.get_hunt(session, hunt.id)
     lines = [
         f"Chasse sur {hunt.observables_count} observable(s) et {len(products)} produit(s) de "
-        f"l'inventaire : {hunt.matches_count} correspondance(s), statut {hunt.status}."
+        f"l'inventaire : {hunt.matches_count} correspondance(s), chasse "
+        f"{HUNT_STATUS_LABELS.get(str(hunt.status), str(hunt.status))}."
     ]
     lines += [
         f"• {m.rule_id} · {m.observable[:120]} : {m.detail[:160]}" for m in loaded.matches[:8]
