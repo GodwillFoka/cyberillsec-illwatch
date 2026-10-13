@@ -35,7 +35,11 @@ const STATUS: Record<string, [string, string]> = {
 /** Règles qui n'examinent que l'inventaire (ASSET_ONLY_RULES côté serveur). */
 const ASSET_ONLY_RULES = new Set(["RULE-05"]);
 
-const TRIGGER: Record<string, string> = { MANUAL: "Manuelle", SCHEDULED: "Planifiée" };
+const TRIGGER: Record<string, string> = {
+  MANUAL: "Manuelle",
+  SCHEDULED: "Planifiée",
+  INCIDENT: "Depuis un incident",
+};
 
 const plural = (n: number, word: string) => `${formatNumber(n)} ${word}${n > 1 ? "s" : ""}`;
 
@@ -140,7 +144,10 @@ function NewHunt({
             <input type="checkbox" checked={selected.has(rule.id)} onChange={() => toggle(rule.id)} />
             <LevelBadge level={rule.severity} />
             <span>
-              <strong>{rule.name}</strong> <span className="mono muted">{rule.id}</span>
+              <strong>{rule.name}</strong>{" "}
+              <span className="mono muted" title={rule.changes.join("\n")}>
+                {rule.id} v{rule.version}
+              </span>
               <br />
               <span className="muted">{rule.description}</span>
             </span>

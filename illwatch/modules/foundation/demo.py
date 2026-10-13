@@ -37,6 +37,8 @@ from illwatch.modules.cve_tracker.scoring import compute_risk_breakdown
 from illwatch.modules.enrichment.dbip import import_dataset
 from illwatch.modules.foundation.seed import seed_reference_feeds
 from illwatch.modules.incidents import service as incidents
+from illwatch.modules.soc.exclusions import create_exclusion
+from illwatch.modules.soc.response import hunt_from_incident
 from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
 from illwatch.modules.threat_hunting.engine import run_hunt
 from illwatch.shared.enums import (
@@ -401,6 +403,11 @@ async def load_demo_data(
             6,
         ),
     ]
+
+    # Liste Tor de démonstration : aucune requête sortante pendant les chasses.
+    async def tor_list(_: str) -> bytes:
+        return f"# démo\n{TOR_EXIT}\n".encode()
+
     for title, severity, path, days_ago in plans:
         incident = await incidents.create_incident(
             session,
@@ -439,6 +446,35 @@ async def load_demo_data(
                     else None
                 ),
             )
+        # Niveaux SOC (M9) : escalade motivée des incidents graves encore ouverts.
+        still_open = not path or path[-1] != IncidentStatus.CLOTURE
+        if still_open and severity in (Severity.CRITICAL, Severity.HIGH) and path:
+            await incidents.escalate(
+                session,
+                incident.id,
+                reason=f"Investigation approfondie nécessaire {DEMO_TAG}",
+                author_id=author,
+            )
+            if len(path) >= 3:
+                await incidents.escalate(
+                    session,
+                    incident.id,
+                    reason=f"Règle de détection à écrire, réponse avancée {DEMO_TAG}",
+                    author_id=author,
+                )
+        if report.incidents == 0:
+            # Investigation L2 : chasse lancée depuis l'incident, faux positif écarté.
+            await hunt_from_incident(
+                session, incident.id, author_id=author, settings=settings, fetch=tor_list
+            )
+            report.hunts += 1
+            await create_exclusion(
+                session,
+                value="www.example.org",
+                reason=f"Site institutionnel de l'organisation, faux positif récurrent {DEMO_TAG}",
+                author_id=author,
+                incident_id=incident.id,
+            )
         if path and path[-1] != IncidentStatus.CLOTURE:
             await incidents.add_note(
                 session,
@@ -454,9 +490,6 @@ async def load_demo_data(
     await session.flush()
 
     # Une session de chasse manuelle (liste Tor de démonstration, aucune requête sortante).
-    async def tor_list(_: str) -> bytes:
-        return f"# démo\n{TOR_EXIT}\n".encode()
-
     await run_hunt(
         session,
         settings=settings,
@@ -473,7 +506,7 @@ async def load_demo_data(
         author_id=author,
         clock=lambda: moment - timedelta(minutes=20),
     )
-    report.hunts = 1
+    report.hunts += 1
 
     if await session.scalar(select(func.count()).select_from(EnrichmentDatasetInfo)) == 0:
         origin = f"démonstration (RFC 5737, RFC 5398) {DEMO_TAG}"

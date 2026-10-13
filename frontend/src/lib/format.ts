@@ -48,3 +48,17 @@ export function parseDate(value: string | null | undefined): Date | null {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 }
+
+/** Durée en heures, lisible : « 45 min », « 3,5 h », « 2,1 j » ; « — » si inconnue. */
+export function formatHours(hours: number | null | undefined): string {
+  if (hours === null || hours === undefined || Number.isNaN(hours)) return "—";
+  if (hours < 1) return `${Math.max(1, Math.round(hours * 60))} min`;
+  if (hours < 48) return `${(Math.round(hours * 10) / 10).toString().replace(".", ",")} h`;
+  return `${(Math.round((hours / 24) * 10) / 10).toString().replace(".", ",")} j`;
+}
+
+/** Part (0–1) en pourcentage entier : « 83 % » ; « — » si inconnue. */
+export function formatShare(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "—";
+  return `${Math.round(value * 100)} %`;
+}

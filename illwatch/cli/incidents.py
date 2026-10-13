@@ -32,7 +32,7 @@ from illwatch.modules.incidents.state_machine import (
     InvalidTransitionError,
     next_states,
 )
-from illwatch.shared.enums import IncidentEventType, IncidentStatus, Severity
+from illwatch.shared.enums import IncidentEventType, IncidentStatus, Severity, SocTier
 
 console = Console()
 
@@ -48,6 +48,7 @@ _ERRORS = (
     LinkTargetNotFoundError,
     InvalidTransitionError,
     ClosureRequirementError,
+    service.InvalidEscalationError,
     ValueError,
 )
 
@@ -192,6 +193,26 @@ def incidents_move(incident_id: str, target: str, note: str | None, summary: str
 
     incident = _run(_move)
     console.print(f"[green]{incident.id} :[/] {incident.status}")
+
+
+@incidents.command("escalate")
+@click.argument("incident_id")
+@click.option("--reason", required=True, help="Motif de l'escalade (5 caractères au moins).")
+@click.option("--to", "target", type=click.Choice([t.value for t in SocTier]), default=None)
+def incidents_escalate(incident_id: str, reason: str, target: str | None) -> None:
+    """Escalade au niveau SOC supérieur (L1 → L2 → L3), consignée dans la chronologie."""
+
+    async def _escalate(session: AsyncSession) -> Incident:
+        return await service.escalate(
+            session,
+            _uuid(incident_id),
+            reason=reason,
+            author_id=None,
+            target=SocTier(target) if target else None,
+        )
+
+    incident = _run(_escalate)
+    console.print(f"[green]{incident.id} :[/] niveau {incident.tier}")
 
 
 @incidents.command("note")

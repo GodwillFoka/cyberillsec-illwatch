@@ -46,6 +46,8 @@ SCREENS = [
     ("09c-journal", "/administration?onglet=audit"),
     ("10-correlations", "/correlations"),
     ("11-inventaire", "/inventaire"),
+    ("12-pilotage", "/pilotage"),
+    ("12b-pilotage-30j", "/pilotage?jours=30"),
 ]
 # Téléphone : tous les écrans (les débordements y sont les plus fréquents).
 MOBILE = {name for name, _ in SCREENS}

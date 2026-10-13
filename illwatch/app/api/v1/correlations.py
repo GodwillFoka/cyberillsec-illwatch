@@ -9,7 +9,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from illwatch.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from illwatch.app.config import get_settings
@@ -161,6 +161,51 @@ async def ack_correlation(
         target_type="correlation",
         target_id=event_id,
         detail={"rule": event.rule_id, "asset": name},
+    )
+    return _read(event, name)
+
+
+class FalsePositiveRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = Field(min_length=5, max_length=2000)
+    exclude_ioc: bool = Field(
+        default=True,
+        description="CORR-03 : mettre aussi l'IOC en cause en liste d'exclusion.",
+    )
+
+
+@router.post(
+    "/{event_id}/false-positive",
+    response_model=CorrelationRead,
+    summary="Qualifier de faux positif (ADMIN, ANALYST) : clos, jamais rouvert (M9)",
+)
+async def false_positive(
+    event_id: UUID,
+    payload: FalsePositiveRequest,
+    session: DbSession,
+    user: Responder,
+    audit: Audit,
+) -> CorrelationRead:
+    try:
+        await service.mark_false_positive(
+            session,
+            event_id,
+            user_id=user.id,
+            reason=payload.reason,
+            exclude_ioc=payload.exclude_ioc,
+        )
+        event, name = await service.get_event(session, event_id)
+    except service.CorrelationNotFoundError as exc:
+        raise _not_found(exc) from None
+    except ValueError as exc:
+        raise HTTPException(422, detail=str(exc)) from None
+    await audit.record(
+        "correlation.false_positive",
+        actor=user,
+        target_type="correlation",
+        target_id=event_id,
+        detail={"rule": event.rule_id, "asset": name, "reason": payload.reason[:200]},
     )
     return _read(event, name)
 

@@ -15,7 +15,9 @@ import type {
   HuntDetail,
   IncidentDetail,
   IncidentEvent,
+  IncidentHunt,
   IngestResult,
+  Exclusion,
 } from "./types";
 
 export function useAcknowledgeAlert() {
@@ -300,5 +302,62 @@ export function useAcknowledgeCorrelation() {
 export function useIncidentFromCorrelation() {
   return useCorrelationMutation((eventId: string) =>
     apiPost<{ incident_id: string; created: boolean }>(`/correlations/${encodeURIComponent(eventId)}/incident`),
+  );
+}
+
+// --- M9 SOC Operations (ADR-022) ----------------------------------------------------------------
+
+export function useEscalate(incidentId: string) {
+  return useIncidentMutation((body: { reason: string }) =>
+    apiPost<IncidentDetail>(`/incidents/${encodeURIComponent(incidentId)}/escalate`, body),
+  );
+}
+
+export function useHuntFromIncident(incidentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (observables: string[]) =>
+      apiPost<IncidentHunt>(`/incidents/${encodeURIComponent(incidentId)}/hunt`, { observables }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["incidents"] });
+      void queryClient.invalidateQueries({ queryKey: ["hunts"] });
+    },
+  });
+}
+
+export interface NewExclusion {
+  value: string;
+  reason: string;
+  incident_id?: string;
+  days?: number;
+}
+
+function useExclusionMutation<TVariables, TResult>(run: (variables: TVariables) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: () => {
+      for (const key of ["exclusions", "indicators", "incidents", "correlations", "dashboard"]) {
+        void queryClient.invalidateQueries({ queryKey: [key] });
+      }
+    },
+  });
+}
+
+export function useCreateExclusion() {
+  return useExclusionMutation((body: NewExclusion) => apiPost<Exclusion>("/exclusions", body));
+}
+
+export function useDeleteExclusion() {
+  return useExclusionMutation((exclusionId: string) =>
+    apiDelete(`/exclusions/${encodeURIComponent(exclusionId)}`),
+  );
+}
+
+export function useFalsePositiveCorrelation() {
+  return useExclusionMutation((body: { eventId: string; reason: string }) =>
+    apiPost<Correlation>(`/correlations/${encodeURIComponent(body.eventId)}/false-positive`, {
+      reason: body.reason,
+    }),
   );
 }

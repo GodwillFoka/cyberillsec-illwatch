@@ -1838,3 +1838,80 @@ textarea {
     min-width: 160px;
   }
 }
+
+/* M9 SOC Operations (ADR-022) ----------------------------------------------------------------- */
+
+.btn.small {
+  min-height: 32px;
+  padding: 0 var(--s3);
+  font-size: 13px;
+}
+
+/* Niveau SOC : badge neutre, contour Signal (pas une gravité). */
+.badge.tier {
+  color: var(--signal);
+  border: 1px solid currentColor;
+  background: transparent;
+}
+
+.badge.tier::before {
+  display: none;
+}
+
+.list li.ioc-item {
+  display: grid;
+  gap: var(--s2);
+}
+
+.list li.ioc-item .row.tight {
+  min-width: 0;
+}
+
+.recommendations {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--s3);
+}
+
+.recommendations li {
+  display: grid;
+  grid-template-columns: minmax(0, 104px) minmax(0, 1fr);
+  gap: var(--s3);
+  align-items: start;
+  padding: var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-badge);
+}
+
+.recommendations li.current {
+  border-color: var(--orange);
+}
+
+.recommendations li .badge.tag {
+  justify-self: start;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommendations p {
+  margin: var(--s1) 0 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .recommendations li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Pilotage SOC */
+.sla-table td.ok {
+  color: var(--ok-fg);
+}
+
+.sla-table td.late {
+  color: var(--p0-mark);
+}

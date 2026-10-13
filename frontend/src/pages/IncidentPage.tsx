@@ -7,6 +7,9 @@ import { useState, type FormEvent } from "react";
 import {
   useAddNote,
   useAssign,
+  useCreateExclusion,
+  useEscalate,
+  useHuntFromIncident,
   useLinkCve,
   useLinkIndicator,
   useTransition,
@@ -16,8 +19,9 @@ import type { IncidentDetail, IncidentEvent } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
-import { formatAgo, formatDateTime, parseDate } from "../lib/format";
-import { INCIDENT_STATUS } from "../lib/levels";
+import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { splitBatch } from "../lib/iocs";
+import { INCIDENT_STATUS, PHASE_LABEL, TIER_LABEL } from "../lib/levels";
 import { Link } from "../lib/router";
 import { useTimeZone } from "../lib/time";
 import { RESPONDER_ROLES } from "./Incidents";
@@ -32,6 +36,16 @@ const EVENT_LABEL: Record<string, string> = {
   IOC_ATTACHED: "Indicateur associé",
   CVE_ATTACHED: "CVE associée",
   ACTION_TAKEN: "Action déclarée par l'analyste",
+  ESCALATED: "Escalade",
+  HUNT_RUN: "Chasse lancée depuis l'incident",
+  IOC_EXCLUDED: "Faux positif écarté",
+};
+
+const HUNT_STATUS: Record<string, string> = {
+  EN_COURS: "en cours",
+  TERMINEE: "terminée",
+  PARTIELLE: "partielle",
+  ECHEC: "en échec",
 };
 
 function Lifecycle({ status }: { status: string }) {
@@ -212,16 +226,198 @@ function NoteForm({ incident }: { incident: IncidentDetail }) {
   );
 }
 
-function IndicatorItem({ id }: { id: string }) {
+function IndicatorItem({ id, incidentId, canAct }: { id: string; incidentId: string; canAct: boolean }) {
   const query = useIndicator(id);
+  const exclude = useCreateExclusion();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
   if (!query.data) return <li className="mono muted">{query.isError ? "IOC illisible" : "…"}</li>;
+  const ioc = query.data;
   return (
-    <li>
-      <LevelBadge level={query.data.severity} />
-      <Link to={`/indicateurs?ioc=${id}`} className="mono ellipsis" title={query.data.value}>
-        {query.data.type} {query.data.value}
-      </Link>
+    <li className="ioc-item">
+      <div className="row tight">
+        <LevelBadge level={ioc.severity} />
+        <Link to={`/indicateurs?ioc=${id}`} className="mono ellipsis grow" title={ioc.value}>
+          {ioc.type} {ioc.value}
+        </Link>
+        {ioc.exclusion ? (
+          <span className="badge tag" title={ioc.exclusion.reason}>
+            faux positif
+          </span>
+        ) : (
+          canAct &&
+          !open && (
+            <button className="btn quiet small" type="button" onClick={() => setOpen(true)}>
+              Faux positif
+            </button>
+          )
+        )}
+      </div>
+      {open && !ioc.exclusion && (
+        <form
+          className="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            exclude.mutate(
+              { value: ioc.value, reason: reason.trim(), incident_id: incidentId },
+              { onSuccess: () => setOpen(false) },
+            );
+          }}
+        >
+          <label className="field">
+            Pourquoi est-ce sûr ? (l'IOC passe en liste d'exclusion : il n'est plus actif)
+            <input required minLength={5} maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} />
+          </label>
+          {exclude.error && (
+            <p className="notice error" role="alert">
+              {exclude.error.message}
+            </p>
+          )}
+          <div className="actions">
+            <button className="btn quiet" type="button" onClick={() => setOpen(false)}>
+              Annuler
+            </button>
+            <button className="btn primary" type="submit" disabled={exclude.isPending || reason.trim().length < 5}>
+              {exclude.isPending ? "Exclusion…" : "Exclure (faux positif)"}
+            </button>
+          </div>
+        </form>
+      )}
     </li>
+  );
+}
+
+function Escalation({ incident, canAct }: { incident: IncidentDetail; canAct: boolean }) {
+  const escalate = useEscalate(incident.id);
+  const [reason, setReason] = useState("");
+  const next = incident.tier === "L1" ? "L2" : incident.tier === "L2" ? "L3" : null;
+  const closed = incident.status === "CLOTURE";
+  return (
+    <>
+      <p style={{ margin: 0 }}>
+        <span className="badge tier">{incident.tier}</span> {TIER_LABEL[incident.tier]?.split(" · ")[1] ?? ""}
+      </p>
+      {canAct && next && !closed && (
+        <form
+          className="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            escalate.mutate({ reason: reason.trim() }, { onSuccess: () => setReason("") });
+          }}
+        >
+          <label className="field">
+            Motif de l'escalade vers {TIER_LABEL[next]}
+            <input
+              required
+              minLength={5}
+              maxLength={2000}
+              placeholder={next === "L2" ? "Hôte métier touché, IOC confirmé…" : "Règle à écrire, réponse avancée…"}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </label>
+          {escalate.error && (
+            <p className="notice error" role="alert">
+              {escalate.error.message}
+            </p>
+          )}
+          <div className="actions">
+            <button className="btn" type="submit" disabled={escalate.isPending || reason.trim().length < 5}>
+              {escalate.isPending ? "Escalade…" : `Escalader en ${next}`}
+            </button>
+          </div>
+        </form>
+      )}
+      {!next && <p className="muted small">Niveau le plus élevé : l'incident y reste jusqu'à sa clôture.</p>}
+    </>
+  );
+}
+
+function IncidentHunting({ incident, canAct }: { incident: IncidentDetail; canAct: boolean }) {
+  const hunt = useHuntFromIncident(incident.id);
+  const { utc } = useTimeZone();
+  const [extra, setExtra] = useState("");
+  const closed = incident.status === "CLOTURE";
+  const observables = splitBatch(extra, 1000).values;
+  return (
+    <>
+      {canAct && !closed && (
+        <form
+          className="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            hunt.mutate(observables, { onSuccess: () => setExtra("") });
+          }}
+        >
+          <p className="muted small" style={{ margin: 0 }}>
+            Les {formatNumber(incident.indicator_ids.length)} IOC associés, l'inventaire d'actifs et, si besoin,
+            les observables relevés pendant l'investigation.
+          </p>
+          <label className="field">
+            Observables supplémentaires (facultatif : IP, domaines, URL, empreintes)
+            <textarea className="mono" rows={3} value={extra} onChange={(e) => setExtra(e.target.value)} />
+          </label>
+          {hunt.error && (
+            <p className="notice error" role="alert">
+              {hunt.error.message}
+            </p>
+          )}
+          {hunt.data && (
+            <p className="notice ok" role="status">
+              {formatNumber(hunt.data.matches_count)} correspondance(s) sur {formatNumber(hunt.data.observables_count)}{" "}
+              observable(s) : détail dans la chronologie et l'écran Chasse.
+            </p>
+          )}
+          <div className="actions">
+            <button className="btn" type="submit" disabled={hunt.isPending}>
+              {hunt.isPending ? "Chasse en cours…" : "Chasser depuis l'incident"}
+            </button>
+          </div>
+        </form>
+      )}
+      {incident.hunts.length > 0 && (
+        <ul className="list">
+          {incident.hunts.map((h) => {
+            const at = parseDate(h.started_at);
+            return (
+              <li key={h.id}>
+                <Link to={`/chasse?session=${encodeURIComponent(h.id)}`}>
+                  {at ? formatDateTime(at, utc) : "—"}
+                </Link>{" "}
+                <span className="muted">
+                  · {formatNumber(h.matches_count)} correspondance(s) · {HUNT_STATUS[h.status] ?? h.status}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </>
+  );
+}
+
+function Recommendations({ incident }: { incident: IncidentDetail }) {
+  if (incident.recommendations.length === 0) return null;
+  return (
+    <section className="card">
+      <h2>Recommandations de réponse</h2>
+      <p className="muted" style={{ marginTop: 0 }}>
+        Déduites des IOC, des CVE et de la phase en cours. ILL Watch recommande, il n'exécute rien : déclarez
+        ensuite l'action menée dans la chronologie.
+      </p>
+      <ol className="recommendations">
+        {incident.recommendations.map((r, index) => (
+          <li key={`${r.phase}-${index}`} className={r.current ? "current" : undefined}>
+            <span className="badge tag">{PHASE_LABEL[r.phase] ?? r.phase}</span>
+            <div>
+              <strong>{r.title}</strong>
+              {r.current && <span className="muted small"> · phase en cours</span>}
+              <p>{r.detail}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -252,7 +448,7 @@ function Links({ incident, canAct }: { incident: IncidentDetail; canAct: boolean
       ) : (
         <ul className="list">
           {incident.indicator_ids.slice(0, 20).map((id) => (
-            <IndicatorItem key={id} id={id} />
+            <IndicatorItem key={id} id={id} incidentId={incident.id} canAct={canAct} />
           ))}
         </ul>
       )}
@@ -359,7 +555,8 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                     {incident.title}
                   </h1>
                   <p>
-                    {INCIDENT_STATUS[incident.status]} · ouvert {opened ? formatAgo(opened) : "—"}
+                    {INCIDENT_STATUS[incident.status]} · {TIER_LABEL[incident.tier] ?? incident.tier} · ouvert{" "}
+                    {opened ? formatAgo(opened) : "—"}
                     {opened ? ` (${formatDateTime(opened, utc)})` : ""}
                     {closed ? ` · clôturé ${formatDateTime(closed, utc)}` : ""}
                     {incident.source_alert_id ? " · issu d'une alerte CVE" : ""}
@@ -383,6 +580,7 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                       </>
                     )}
                   </section>
+                  <Recommendations incident={incident} />
                   <section className="card">
                     <h2>Chronologie</h2>
                     <p className="muted" style={{ marginTop: 0 }}>
@@ -405,6 +603,10 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                       )}
                     </section>
                     <section>
+                      <h3>Niveau SOC</h3>
+                      <Escalation incident={incident} canAct={canAct} />
+                    </section>
+                    <section>
                       <h3>Assignation</h3>
                       <Assignment incident={incident} canAct={canAct} />
                     </section>
@@ -414,6 +616,12 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                         <NoteForm incident={incident} />
                       </section>
                     )}
+                  </section>
+                  <section className="card detail">
+                    <section>
+                      <h3>Chasse depuis l'incident</h3>
+                      <IncidentHunting incident={incident} canAct={canAct} />
+                    </section>
                   </section>
                   <section className="card detail">
                     <section>

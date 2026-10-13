@@ -5,6 +5,7 @@ import { useEffect, useState, type KeyboardEvent } from "react";
 
 import {
   useAcknowledgeCorrelation,
+  useFalsePositiveCorrelation,
   useIncidentFromCorrelation,
   useRunCorrelation,
 } from "../api/mutations";
@@ -147,12 +148,18 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
   const { navigate } = useLocation();
   const ack = useAcknowledgeCorrelation();
   const toIncident = useIncidentFromCorrelation();
+  const falsePositive = useFalsePositiveCorrelation();
   const [openedId, setOpenedId] = useState<string | null>(null);
+  const [qualifying, setQualifying] = useState(false);
+  const [reason, setReason] = useState("");
 
   useEffect(() => {
     setOpenedId(null);
+    setQualifying(false);
+    setReason("");
     ack.reset();
     toIncident.reset();
+    falsePositive.reset();
   }, [event.id]);
 
   const canAct = user ? RESPONDER_ROLES.has(user.role) : false;
@@ -162,7 +169,8 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
   const breakdown = (detail.breakdown ?? {}) as Record<string, number>;
   const signals = Array.isArray(detail.signals) ? (detail.signals as string[]) : [];
   const incidentId = openedId ?? event.incident_id;
-  const error = ack.error ?? toIncident.error;
+  const error = ack.error ?? toIncident.error ?? falsePositive.error;
+  const qualified = detail.false_positive as { reason?: string } | undefined;
   const value = text(detail, "value");
   const criticality = text(detail, "asset_criticality");
 
@@ -280,7 +288,11 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
           <dt>Dernière confirmation</dt>
           <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "—"}</dd>
           <dt>État</dt>
-          <dd>{stateLabel(event.acknowledged_at, text(detail, "resolved_at"), utc)}</dd>
+          <dd>
+            {qualified
+              ? `faux positif (jamais rouvert) : ${qualified.reason ?? ""}`
+              : stateLabel(event.acknowledged_at, text(detail, "resolved_at"), utc)}
+          </dd>
         </dl>
       </section>
 
@@ -327,6 +339,48 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
             </button>
           )}
         </div>
+        {canAct && !qualified && !qualifying && (
+          <div className="actions">
+            <button className="btn quiet" type="button" onClick={() => setQualifying(true)}>
+              Faux positif
+            </button>
+          </div>
+        )}
+        {qualifying && (
+          <form
+            className="form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              falsePositive.mutate(
+                { eventId: event.id, reason: reason.trim() },
+                {
+                  onSuccess: () => {
+                    setQualifying(false);
+                    onPinned(event.id);
+                  },
+                },
+              );
+            }}
+          >
+            <label className="field">
+              Pourquoi est-ce un faux positif ?{" "}
+              {event.indicator_id ? "(l'IOC en cause passe aussi en liste d'exclusion)" : "(l'évènement ne sera plus rouvert)"}
+              <input required minLength={5} maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} />
+            </label>
+            <div className="actions">
+              <button className="btn quiet" type="button" onClick={() => setQualifying(false)}>
+                Annuler
+              </button>
+              <button
+                className="btn primary"
+                type="submit"
+                disabled={falsePositive.isPending || reason.trim().length < 5}
+              >
+                {falsePositive.isPending ? "Enregistrement…" : "Qualifier de faux positif"}
+              </button>
+            </div>
+          </form>
+        )}
         {!canAct && <p className="reason">Actions réservées aux rôles analyste et administrateur.</p>}
       </section>
     </aside>

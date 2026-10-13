@@ -8,6 +8,26 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M9 SOC Operations (ADR-022)
+- Niveaux SOC L1/L2/L3 : escalade motivée, consignée dans la chronologie, sans retour en
+  arrière ; filtre et colonne « Niveau » ; `illwatch incidents escalate`.
+- Faux positifs : liste d'exclusion des IOC (`/api/v1/exclusions`, `illwatch soc exclude`),
+  un IOC exclu n'est plus actif ; évènement corrélé qualifié de faux positif jamais rouvert
+  (CORR-03 : l'IOC est exclu).
+- Chasse lancée depuis l'incident (ses IOC, observables relevés, inventaire), rattachée et
+  résumée dans la chronologie ; recommandations de réponse par phase NIST.
+- Règles de chasse versionnées (version et historique ; versions enregistrées par session).
+- Écran **Pilotage** et `GET /dashboard/soc` : MTTA, MTTR, délais cibles par sévérité,
+  dépassements, niveaux, escalades, charge par analyste, ouverts et clos par jour ;
+  `illwatch soc metrics`.
+- Scénario d'acceptation : parcours L1 → L2 → L3 et MTTR mesuré. Migration `c9f1a3e5b742`.
+
+### Ajouté — préparation de la clôture de M7 (VPS UE)
+- `scripts/deploy-vps.sh install | check | update` : installation complète sur un VPS neuf
+  (Docker, pare-feu, secrets, Let's Encrypt, compte admin, sauvegardes) et contrôles.
+- Workflow « Clôture M7 » : note TLS (testssl.sh, grille SSL Labs) et en-têtes du domaine
+  inscrit dans `deploy/vps-domaine.txt`.
+
 ### Ajouté — clôture de M8 et points en attente
 - Plages CIDR : type d'IOC `NETWORK` (/16 à /31 en IPv4, /32 à /127 en IPv6 ; plages internes
   et trop larges refusées ; /32 rangée comme adresse) ; OTX `CIDR` et motifs STIX acceptés ;

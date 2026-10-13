@@ -1,5 +1,6 @@
 """Évènements corrélés : lecture, acquittement, ouverture d'incident — M8, ADR-020."""
 
+import contextlib
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import UUID
@@ -8,7 +9,7 @@ from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import Asset, CorrelatedEvent, Incident
-from illwatch.modules.correlation.engine import ACK_PRIORITY
+from illwatch.modules.correlation.engine import ACK_PRIORITY, FALSE_POSITIVE
 from illwatch.modules.incidents import service as incidents
 from illwatch.shared.enums import RiskPriority, Severity
 
@@ -105,6 +106,48 @@ async def _locked(session: AsyncSession, event_id: UUID) -> CorrelatedEvent:
 async def acknowledge(session: AsyncSession, event_id: UUID, user_id: UUID) -> CorrelatedEvent:
     event = await _locked(session, event_id)
     _mark_acknowledged(event, user_id)
+    await session.flush()
+    return event
+
+
+async def mark_false_positive(
+    session: AsyncSession,
+    event_id: UUID,
+    *,
+    user_id: UUID,
+    reason: str,
+    exclude_ioc: bool = True,
+) -> CorrelatedEvent:
+    """Qualifie l'évènement de faux positif (M9, triage L1) : clos, jamais rouvert par le
+    moteur. Pour CORR-03, l'IOC en cause passe en liste d'exclusion (sauf refus explicite)."""
+    from illwatch.app.models import Indicator
+    from illwatch.modules.soc.exclusions import ExclusionExistsError, create_exclusion
+
+    text = " ".join((reason or "").split())[:2000]
+    if len(text) < 5:
+        raise ValueError(
+            "Motif obligatoire (5 caractères au moins) : pourquoi est-ce un faux positif ?"
+        )
+    event = await _locked(session, event_id)
+    _mark_acknowledged(event, user_id)
+    event.detail = {
+        **(event.detail or {}),
+        FALSE_POSITIVE: {
+            "reason": text,
+            "by": str(user_id),
+            "at": datetime.now(UTC).isoformat(),
+        },
+    }
+    if exclude_ioc and event.indicator_id is not None:
+        indicator = await session.get(Indicator, event.indicator_id)
+        if indicator is not None:
+            with contextlib.suppress(ExclusionExistsError):  # déjà exclu : rien à ajouter
+                await create_exclusion(
+                    session,
+                    value=indicator.value,
+                    reason=f"Faux positif (évènement corrélé « {event.title[:120]} ») : {text}",
+                    author_id=user_id,
+                )
     await session.flush()
     return event
 

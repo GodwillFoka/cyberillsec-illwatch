@@ -35,6 +35,7 @@ from illwatch.modules.threat_hunting.rules import (
     KnownCVE,
     Match,
     Observable,
+    rule_versions,
 )
 from illwatch.shared.enums import HuntStatus, HuntTrigger, IndicatorType, RiskPriority, Severity
 from illwatch.shared.logging import peak_rss_mb
@@ -152,6 +153,7 @@ async def run_hunt(
     rule_ids: Sequence[str] | None = None,
     trigger: HuntTrigger = HuntTrigger.MANUAL,
     author_id: UUID | None = None,
+    incident_id: UUID | None = None,
     clock: Callable[[], datetime] = lambda: datetime.now(UTC),
 ) -> HuntingSession:
     """Exécute une session de chasse et l'enregistre (RF-27, RF-28).
@@ -176,8 +178,10 @@ async def run_hunt(
         status=HuntStatus.EN_COURS,
         author_id=author_id,
         rules=",".join(r.id for r in selected),
+        rule_versions=rule_versions(selected),
         assets=", ".join(clean_assets) or None,
         started_at=now,
+        incident_id=incident_id,
     )
     session.add(hunt)
     await session.flush()

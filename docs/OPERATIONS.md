@@ -276,6 +276,32 @@ modification, avec des captures d'écran de chaque écran publiées sur la branc
 Le VPS (préproduction publique) reprend exactement cette pile avec `ILLWATCH_DOMAIN` réel :
 seuls changent le nom de domaine, le certificat (Let's Encrypt) et l'ouverture des ports 80/443.
 
+### 6 bis. VPS UE pas à pas (clôture de M7)
+
+1. **Serveur** : un VPS hébergé dans l'Union européenne (Hetzner, OVHcloud, Scaleway…),
+   Debian 12/13 ou Ubuntu 24.04, **2 vCPU, 4 Go de RAM, 40 Go** au moins (la base réelle
+   dépasse 500 000 IOC). Accès SSH par clé uniquement.
+2. **Nom de domaine** : chez le registraire, un enregistrement **A** (et **AAAA** si le VPS a
+   une IPv6) `illwatch.votre-domaine.eu` → adresse du VPS. Attendre la propagation
+   (`dig +short illwatch.votre-domaine.eu`).
+3. **Installation** (sur le VPS) :
+
+   ```bash
+   curl -fsSLO https://raw.githubusercontent.com/GodwillFoka/cyberillsec-illwatch/main/scripts/deploy-vps.sh
+   sudo bash deploy-vps.sh install illwatch.votre-domaine.eu godwill@exemple.eu
+   ```
+
+   Docker, pare-feu (22/80/443), code dans `/opt/illwatch`, secrets générés (`.env`, 600),
+   certificat Let's Encrypt automatique, compte `admin` (mot de passe affiché **une seule
+   fois** : le ranger dans KeePassXC), sauvegarde quotidienne, puis contrôles.
+4. **Contrôle** : `sudo bash /opt/illwatch/scripts/deploy-vps.sh check` (DNS, certificat,
+   redirection, TLS 1.0/1.1 refusés, en-têtes, `/ready`, API fermée).
+5. **Preuve de clôture** : inscrire le domaine dans `deploy/vps-domaine.txt` (une ligne) et
+   pousser sur `main` : le workflow « Clôture M7 » mesure la note TLS (testssl.sh, grille SSL
+   Labs : **A attendu**) et les en-têtes, puis chaque lundi.
+6. **Mise à jour** : `sudo bash /opt/illwatch/scripts/deploy-vps.sh update` (sauvegarde,
+   code, image, migrations, contrôles).
+
 ## 7. Mise à jour
 
 ```bash
@@ -397,3 +423,20 @@ Projet GitLab privé : créer un jeton personnel GitLab (User settings → Acces
 `read_api` seule**, avec une date d'expiration, puis l'enregistrer dans GitHub → Settings →
 Secrets and variables → Actions → *New repository secret*, nom `GITLAB_TOKEN`. Le jeton ne
 transite jamais ailleurs (ni conversation, ni commit, ni `.env`).
+
+## Opérations SOC (M9, ADR-022)
+
+```bash
+illwatch incidents escalate <ID> --reason "IOC confirmé, investigation L2"   # L1 → L2 → L3
+illwatch soc metrics --days 30          # MTTA, MTTR, délais cibles, dépassements, niveaux
+illwatch soc exclude 203.0.113.7 --reason "Résolveur public de l'entreprise" [--days 90]
+illwatch soc exclusions                 # liste d'exclusion en vigueur
+```
+
+- **Faux positif** : depuis la fiche d'un IOC, la page d'un incident (IOC associé) ou un
+  évènement corrélé. L'IOC exclu reste en base mais n'est plus actif (ni compté, ni chassé,
+  ni corrélé) ; seul un administrateur retire une exclusion (fiche de l'IOC).
+- **Chasse depuis l'incident** : bouton « Chasser depuis l'incident » ; la session est
+  rattachée à l'incident et résumée dans sa chronologie.
+- **Délais cibles** (prise en charge / résolution) : critique 1 h / 24 h, élevée 4 h / 72 h,
+  moyenne 24 h / 7 j, faible 72 h / 30 j. Écran **Pilotage** (7 ou 30 jours).

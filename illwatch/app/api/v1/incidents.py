@@ -5,9 +5,11 @@
 | Lister / consulter (avec chronologie)              |   ✅  |   ✅    |   ✅   |
 | Créer, faire évoluer, assigner, commenter, lier    |   ✅  |   ✅    |   ❌   |
 | Ouvrir un incident depuis une alerte CVE           |   ✅  |   ✅    |   ❌   |
+| Escalader (L1 → L2 → L3), chasser depuis l'incident |   ✅  |   ✅    |   ❌   |
 
 Pas de suppression ni de modification d'événement : la chronologie est une preuve (RF-19).
-Codes d'erreur : 409 transition interdite ou incident clos, 422 clôture sans résumé.
+Codes d'erreur : 409 transition ou escalade interdite, incident clos ; 422 clôture sans
+résumé ou motif manquant.
 """
 
 from datetime import datetime
@@ -16,8 +18,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from illwatch.app.api.deps import CurrentUser, DbSession, require_roles
+from illwatch.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from illwatch.app.config import get_settings
 from illwatch.app.models import Incident, User
 from illwatch.modules.cve_tracker.queries import CVENotFoundError, get_cve
@@ -26,6 +29,7 @@ from illwatch.modules.incidents.service import (
     IncidentClosedError,
     IncidentNotFoundError,
     InvalidAssigneeError,
+    InvalidEscalationError,
     LinkTargetNotFoundError,
 )
 from illwatch.modules.incidents.state_machine import (
@@ -33,7 +37,17 @@ from illwatch.modules.incidents.state_machine import (
     InvalidTransitionError,
     next_states,
 )
-from illwatch.shared.enums import IncidentEventType, IncidentStatus, Severity, UserRole
+from illwatch.modules.soc import response as soc_response
+from illwatch.modules.threat_feeds.fetcher import fetch_feed_content
+from illwatch.shared.enums import (
+    HuntStatus,
+    HuntTrigger,
+    IncidentEventType,
+    IncidentStatus,
+    Severity,
+    SocTier,
+    UserRole,
+)
 
 router = APIRouter(prefix="/incidents", tags=["incidents"])
 alert_router = APIRouter(prefix="/alerts", tags=["alertes"])
@@ -120,12 +134,32 @@ class IncidentRead(BaseModel):
     title: str
     severity: Severity
     status: IncidentStatus
+    tier: SocTier
     assigned_to: UUID | None
     created_by: UUID | None
     source_alert_id: UUID | None
     created_at: datetime
     updated_at: datetime
     closed_at: datetime | None
+
+
+class RecommendationRead(BaseModel):
+    phase: IncidentStatus
+    title: str
+    detail: str
+    current: bool
+
+
+class IncidentHuntRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    trigger: HuntTrigger
+    status: HuntStatus
+    observables_count: int
+    matches_count: int
+    started_at: datetime
+    finished_at: datetime | None
 
 
 class IncidentDetail(IncidentRead):
@@ -135,6 +169,29 @@ class IncidentDetail(IncidentRead):
     indicator_ids: list[UUID]
     cve_ids: list[str]
     timeline: list[EventRead]
+    recommendations: list[RecommendationRead] = Field(
+        description="Recommandations de réponse (M9) : la phase en cours d'abord."
+    )
+    hunts: list[IncidentHuntRead] = Field(description="Chasses lancées depuis l'incident.")
+
+
+class EscalationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reason: str = Field(min_length=5, max_length=2000)
+    target: SocTier | None = Field(
+        default=None, description="Niveau visé ; défaut : le niveau suivant."
+    )
+
+
+class IncidentHuntRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    observables: list[Annotated[str, Field(max_length=2048)]] = Field(
+        default_factory=list,
+        max_length=soc_response.MAX_EXTRA,
+        description="Observables relevés pendant l'investigation, en plus des IOC associés.",
+    )
 
 
 class IncidentPage(BaseModel):
@@ -148,7 +205,9 @@ class LinkResult(BaseModel):
     created: bool
 
 
-def _detail(incident: Incident) -> IncidentDetail:
+async def _detail(session: AsyncSession, incident: Incident) -> IncidentDetail:
+    recommendations = await soc_response.incident_recommendations(session, incident)
+    hunts = await soc_response.incident_hunts(session, incident.id)
     return IncidentDetail(
         **IncidentRead.model_validate(incident).model_dump(),
         description=incident.description,
@@ -157,6 +216,13 @@ def _detail(incident: Incident) -> IncidentDetail:
         indicator_ids=[link.indicator_id for link in incident.indicators],
         cve_ids=[link.cve_id for link in incident.cves],
         timeline=[EventRead.model_validate(e) for e in incident.events],
+        recommendations=[
+            RecommendationRead(
+                phase=IncidentStatus(r.phase), title=r.title, detail=r.detail, current=r.current
+            )
+            for r in recommendations
+        ],
+        hunts=[IncidentHuntRead.model_validate(h) for h in hunts],
     )
 
 
@@ -165,7 +231,7 @@ def _translate(exc: Exception) -> HTTPException:
         return HTTPException(status.HTTP_404_NOT_FOUND, detail=f"Incident {exc} introuvable.")
     if isinstance(exc, LinkTargetNotFoundError):
         return HTTPException(status.HTTP_404_NOT_FOUND, detail=str(exc))
-    if isinstance(exc, InvalidTransitionError | IncidentClosedError):
+    if isinstance(exc, InvalidTransitionError | IncidentClosedError | InvalidEscalationError):
         return HTTPException(status.HTTP_409_CONFLICT, detail=str(exc))
     return HTTPException(422, detail=str(exc))  # ClosureRequirement, assignation, valeur
 
@@ -177,6 +243,7 @@ _HANDLED = (
     IncidentClosedError,
     ClosureRequirementError,
     InvalidAssigneeError,
+    InvalidEscalationError,
     ValueError,
 )
 
@@ -203,6 +270,7 @@ async def list_incidents(
         str | None,
         Query(max_length=32, description="Incidents auxquels cette CVE est associée."),
     ] = None,
+    tier: Annotated[SocTier | None, Query(description="Niveau SOC (M9).")] = None,
 ) -> IncidentPage:
     page = await service.list_incidents(
         session,
@@ -214,6 +282,7 @@ async def list_incidents(
         open_only=open_only,
         indicator_id=indicator_id,
         cve_id=cve_id,
+        tier=tier,
     )
     return IncidentPage(
         items=[IncidentRead.model_validate(i) for i in page.items],
@@ -251,7 +320,7 @@ async def create_incident(
         )
         for cve_id in dict.fromkeys(payload.cve_ids):
             await service.attach_cve(session, incident.id, cve_id, author_id=user.id)
-        detail = _detail(await service.get_incident(session, incident.id))
+        detail = await _detail(session, await service.get_incident(session, incident.id))
     except _HANDLED as exc:
         raise _translate(exc) from None
     response.headers["Location"] = f"{get_settings().api_v1_prefix}/incidents/{incident.id}"
@@ -261,7 +330,7 @@ async def create_incident(
 @router.get("/{incident_id}", response_model=IncidentDetail, summary="Incident et chronologie")
 async def read_incident(incident_id: UUID, session: DbSession, _: CurrentUser) -> IncidentDetail:
     try:
-        return _detail(await service.get_incident(session, incident_id))
+        return await _detail(session, await service.get_incident(session, incident_id))
     except IncidentNotFoundError as exc:
         raise _translate(exc) from None
 
@@ -283,7 +352,7 @@ async def transition(
             note=payload.note,
             closure_summary=payload.closure_summary,
         )
-        return _detail(await service.get_incident(session, incident_id))
+        return await _detail(session, await service.get_incident(session, incident_id))
     except _HANDLED as exc:
         raise _translate(exc) from None
 
@@ -312,7 +381,7 @@ async def assign(
 ) -> IncidentDetail:
     try:
         await service.assign(session, incident_id, payload.user_id, author_id=user.id)
-        return _detail(await service.get_incident(session, incident_id))
+        return await _detail(session, await service.get_incident(session, incident_id))
     except _HANDLED as exc:
         raise _translate(exc) from None
 
@@ -355,8 +424,76 @@ async def incident_from_alert(
 ) -> IncidentDetail:
     try:
         incident, created = await service.open_from_alert(session, alert_id, author_id=user.id)
-        detail = _detail(await service.get_incident(session, incident.id))
+        detail = await _detail(session, await service.get_incident(session, incident.id))
     except _HANDLED as exc:
         raise _translate(exc) from None
     response.status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
     return detail
+
+
+@router.post(
+    "/{incident_id}/escalate",
+    response_model=IncidentDetail,
+    summary="Escalader au niveau SOC supérieur, motif obligatoire (M9)",
+)
+async def escalate(
+    incident_id: UUID,
+    payload: EscalationRequest,
+    session: DbSession,
+    user: Responder,
+    audit: Audit,
+) -> IncidentDetail:
+    try:
+        incident = await service.escalate(
+            session, incident_id, reason=payload.reason, author_id=user.id, target=payload.target
+        )
+        detail = await _detail(session, await service.get_incident(session, incident.id))
+    except _HANDLED as exc:
+        raise _translate(exc) from None
+    await audit.record(
+        "incident.escalate",
+        actor=user,
+        target_type="incident",
+        target_id=incident_id,
+        detail={"tier": detail.tier, "reason": payload.reason[:200]},
+    )
+    return detail
+
+
+@router.post(
+    "/{incident_id}/hunt",
+    response_model=IncidentHuntRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Chasser depuis l'incident : ses IOC, les observables relevés, l'inventaire (M9)",
+)
+async def hunt(
+    incident_id: UUID,
+    payload: IncidentHuntRequest,
+    session: DbSession,
+    user: Responder,
+    audit: Audit,
+) -> IncidentHuntRead:
+    try:
+        session_hunt = await soc_response.hunt_from_incident(
+            session,
+            incident_id,
+            author_id=user.id,
+            settings=get_settings(),
+            fetch=fetch_feed_content,
+            extra=payload.observables,
+        )
+    except _HANDLED as exc:
+        raise _translate(exc) from None
+    await audit.record(
+        "hunt.run",
+        actor=user,
+        target_type="hunt",
+        target_id=session_hunt.id,
+        detail={
+            "incident": str(incident_id),
+            "observables": session_hunt.observables_count,
+            "matches": session_hunt.matches_count,
+            "status": session_hunt.status,
+        },
+    )
+    return IncidentHuntRead.model_validate(session_hunt)

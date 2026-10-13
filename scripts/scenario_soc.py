@@ -149,6 +149,63 @@ def main() -> int:
         json={"cve_id": cve["id"]},
     )
     check("Liaison CVE réelle", r.status_code in (200, 201), str(r.status_code))
+
+    # --- M9 : L1 → L2 → L3 sans quitter ILL Watch -------------------------------------------
+    r = call(
+        c,
+        "POST",
+        f"{API}/incidents/{inc}/escalate",
+        "incidents",
+        headers=vie,
+        json={"reason": "Lecteur seul"},
+    )
+    check("VIEWER ne peut pas escalader", r.status_code == 403, str(r.status_code))
+    r = call(
+        c,
+        "POST",
+        f"{API}/incidents/{inc}/escalate",
+        "incidents",
+        headers=ana,
+        json={"reason": "IOC confirmé sur le proxy, investigation L2"},
+    )
+    check(
+        "Escalade L1 → L2 (motivée)",
+        r.status_code == 200 and r.json().get("tier") == "L2",
+        f"{r.status_code} {r.json().get('tier') if r.status_code == 200 else r.text[:120]}",
+    )
+    r = call(
+        c, "POST", f"{API}/incidents/{inc}/hunt", "hunting", headers=ana2, json={"observables": []}
+    )
+    hunted = r.json() if r.status_code == 201 else {}
+    check(
+        "Chasse depuis l'incident (L2)",
+        hunted.get("trigger") == "INCIDENT",
+        f"{r.status_code} · {hunted.get('matches_count', r.text[:120])} correspondance(s)",
+    )
+    r = call(
+        c,
+        "POST",
+        f"{API}/incidents/{inc}/escalate",
+        "incidents",
+        headers=ana2,
+        json={"reason": "Règle de détection à écrire (L3)"},
+    )
+    check(
+        "Escalade L2 → L3",
+        r.status_code == 200 and r.json().get("tier") == "L3",
+        str(r.status_code),
+    )
+    recs = r.json().get("recommendations", []) if r.status_code == 200 else []
+    check("Recommandations de réponse", len(recs) > 0, f"{len(recs)} recommandation(s)")
+    r = call(
+        c,
+        "POST",
+        f"{API}/incidents/{inc}/escalate",
+        "incidents",
+        headers=ana2,
+        json={"reason": "Au-delà de L3"},
+    )
+    check("Escalade au-delà de L3 refusée", r.status_code == 409, str(r.status_code))
     r = call(
         c,
         "POST",
@@ -206,6 +263,15 @@ def main() -> int:
         "Chronologie complète",
         len(full["timeline"]) >= 8,
         f"{len(full['timeline'])} évènements, statut {full['status']}",
+    )
+
+    soc = call(c, "GET", f"{API}/dashboard/soc", "dashboard", headers=vie, params={"days": 7})
+    body = soc.json() if soc.status_code == 200 else {}
+    check(
+        "Pilotage SOC : MTTR mesuré (M9)",
+        soc.status_code == 200 and body.get("mttr_hours") is not None,
+        f"MTTR {body.get('mttr_hours')} h · MTTA {body.get('mtta_minutes')} min · "
+        f"escalades {body.get('escalations')}",
     )
 
     # --- 12. Dashboard (M5) ----------------------------------------------------------------

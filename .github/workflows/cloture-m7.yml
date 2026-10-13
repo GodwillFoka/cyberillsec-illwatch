@@ -1,0 +1,73 @@
+# ============================================================================
+# ILL Watch — Clôture de M7 : contrôle du VPS public
+# Critère : « … up sur un VPS UE, note SSL Labs ≥ A ». La note est mesurée par testssl.sh
+# (même grille que SSL Labs), avec les contrôles HTTP de scripts/deploy-vps.sh check.
+# Déclenché quand deploy/vps-domaine.txt change, ou à la demande ; résultat en annotations.
+# ============================================================================
+name: Clôture M7
+
+on:
+  push:
+    branches: [main]
+    paths: ["deploy/vps-domaine.txt", ".github/workflows/cloture-m7.yml"]
+  workflow_dispatch:
+  schedule:
+    - cron: "29 7 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  vps:
+    name: VPS public (TLS, en-têtes)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Domaine
+        id: domain
+        run: |
+          domain=$(grep -vE '^\s*(#|$)' deploy/vps-domaine.txt | head -1 | tr -d '[:space:]' || true)
+          echo "value=${domain}" >> "$GITHUB_OUTPUT"
+          if [ -z "${domain}" ]; then
+            echo "::notice title=Clôture M7::Aucun domaine dans deploy/vps-domaine.txt : VPS pas encore déployé."
+          fi
+      - name: Contrôles HTTP et TLS
+        if: steps.domain.outputs.value != ''
+        env:
+          DOMAIN: ${{ steps.domain.outputs.value }}
+        run: |
+          set +e
+          fails=0
+          report() {
+            if [ "$2" = ko ]; then echo "::error title=Clôture M7::$1"; fails=$((fails + 1)); else echo "$1"; fi
+          }
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://${DOMAIN}/ready")
+          [ "$code" = 200 ] && report "✔ /ready 200" ok || report "✘ /ready ${code}" ko
+          code=$(curl -s -o /dev/null -w '%{http_code}' "http://${DOMAIN}/")
+          case "$code" in 301|308) report "✔ HTTP → HTTPS (${code})" ok ;; *) report "✘ HTTP sans redirection (${code})" ko ;; esac
+          headers=$(curl -sS -D - -o /dev/null "https://${DOMAIN}/")
+          for h in strict-transport-security x-content-type-options content-security-policy referrer-policy; do
+            echo "$headers" | grep -qi "^${h}:" && report "✔ ${h}" ok || report "✘ ${h} absent" ko
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://${DOMAIN}/api/v1/indicators")
+          [ "$code" = 401 ] && report "✔ API fermée sans jeton" ok || report "✘ API sans jeton : ${code}" ko
+          echo "fails=${fails}" >> "$GITHUB_ENV"
+      - name: Note TLS (testssl.sh, grille SSL Labs)
+        if: steps.domain.outputs.value != ''
+        env:
+          DOMAIN: ${{ steps.domain.outputs.value }}
+        run: |
+          docker run --rm ghcr.io/testssl/testssl.sh:3.2 --quiet --color 0 --protocols \
+            --server-defaults --headers --vulnerable --rating "${DOMAIN}" > testssl.txt 2>&1 || true
+          grade=$(grep -E "Overall Grade" testssl.txt | awk '{print $NF}' | tail -1)
+          protocols=$(grep -E "^ (SSLv|TLS)" testssl.txt | sed 's/  */ /g' | tr '\n' ';')
+          summary="Note ${grade:-inconnue} · ${protocols}"
+          case "${grade}" in
+            A+|A) echo "::notice title=Clôture M7 : ${DOMAIN}::${summary}" ;;
+            *) echo "::error title=Clôture M7 : ${DOMAIN}::${summary}"; exit 1 ;;
+          esac
+          if [ "${fails:-0}" -gt 0 ]; then
+            echo "::error title=Clôture M7::${fails} contrôle(s) HTTP en échec (voir le journal)"
+            exit 1
+          fi

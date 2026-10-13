@@ -26,6 +26,7 @@ from illwatch.modules.correlation.confidence import (
     source_reliabilities,
 )
 from illwatch.modules.enrichment.lookup import enrich_ip
+from illwatch.modules.soc.exclusions import find_exclusion
 from illwatch.modules.threat_feeds import indicators as service
 from illwatch.modules.threat_feeds.indicators import (
     MAX_BATCH_SIZE,
@@ -126,6 +127,14 @@ class IpEnrichmentRead(BaseModel):
     attribution: str = "IP Geolocation by DB-IP"
 
 
+class ExclusionInfo(BaseModel):
+    id: UUID
+    reason: str
+    created_at: datetime
+    expires_at: datetime | None
+    incident_id: UUID | None
+
+
 class IndicatorDetail(IndicatorRead):
     sources: list[IndicatorSourceRead] = Field(
         description="Provenance : chaque flux ayant rapporté l'IOC (ADR-006)."
@@ -134,6 +143,10 @@ class IndicatorDetail(IndicatorRead):
     enrichment: IpEnrichmentRead | None = Field(
         default=None,
         description="IPv4/IPv6 seulement ; vide tant qu'aucune base n'est importée.",
+    )
+    exclusion: ExclusionInfo | None = Field(
+        default=None,
+        description="Faux positif qualifié (M9) : l'IOC n'est plus actif tant qu'il est exclu.",
     )
 
 
@@ -258,6 +271,16 @@ async def read_indicator(indicator_id: UUID, session: DbSession, _: CurrentUser)
             status.HTTP_404_NOT_FOUND, detail=f"IOC {indicator_id} introuvable."
         ) from None
     detail = _to_detail(indicator, datetime.now(UTC))
+    excluded = await find_exclusion(session, indicator.type, indicator.value)
+    if excluded is not None:
+        detail.is_active = False  # exclu : plus actif, même non expiré
+        detail.exclusion = ExclusionInfo(
+            id=excluded.id,
+            reason=excluded.reason,
+            created_at=_utc(excluded.created_at),
+            expires_at=_utc(excluded.expires_at) if excluded.expires_at else None,
+            incident_id=excluded.incident_id,
+        )
     if indicator.type in (IndicatorType.IPV4, IndicatorType.IPV6, IndicatorType.NETWORK):
         # Plage CIDR : pays et opérateur de sa première adresse.
         found = await enrich_ip(session, indicator.value.split("/")[0])

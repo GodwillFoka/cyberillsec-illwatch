@@ -4,7 +4,7 @@
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 
 import { apiDownload } from "../api/http";
-import { useSubmitIndicators } from "../api/mutations";
+import { useCreateExclusion, useDeleteExclusion, useSubmitIndicators } from "../api/mutations";
 import {
   INDICATOR_PAGE_SIZE,
   useFeedsHealth,
@@ -13,7 +13,7 @@ import {
   useLinkedIncidents,
   type IndicatorFilters,
 } from "../api/queries";
-import type { Indicator, IngestResult } from "../api/types";
+import type { Indicator, IndicatorDetail, IngestResult } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { AttachToIncident } from "../components/AttachToIncident";
 import { LevelBadge } from "../components/Badge";
@@ -261,6 +261,96 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
+function FalsePositive({ ioc, canAct }: { ioc: IndicatorDetail; canAct: boolean }) {
+  const { user } = useAuth();
+  const { utc } = useTimeZone();
+  const create = useCreateExclusion();
+  const remove = useDeleteExclusion();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const exclusion = ioc.exclusion;
+  useEffect(() => {
+    setOpen(false);
+    setReason("");
+  }, [ioc.id]);
+
+  if (exclusion) {
+    const since = parseDate(exclusion.created_at);
+    const until = parseDate(exclusion.expires_at);
+    return (
+      <section>
+        <h3>Faux positif</h3>
+        <p className="notice" role="status">
+          En liste d'exclusion{since ? ` depuis le ${formatDateTime(since, utc)}` : ""}
+          {until ? `, jusqu'au ${formatDateTime(until, utc)}` : ""} : cet IOC n'est plus actif (ni compté, ni
+          chassé, ni corrélé). Motif : {exclusion.reason}
+        </p>
+        {exclusion.incident_id && (
+          <p className="small">
+            <Link to={`/incidents/${exclusion.incident_id}`}>Incident qui l'a établi</Link>
+          </p>
+        )}
+        {user?.role === "ADMIN" && (
+          <div className="actions">
+            <button
+              className="btn quiet"
+              type="button"
+              disabled={remove.isPending}
+              onClick={() => remove.mutate(exclusion.id)}
+            >
+              {remove.isPending ? "Retrait…" : "Retirer l'exclusion"}
+            </button>
+          </div>
+        )}
+        {remove.error && (
+          <p className="notice error" role="alert">
+            {remove.error.message}
+          </p>
+        )}
+      </section>
+    );
+  }
+  if (!canAct) return null;
+  return (
+    <section>
+      {!open ? (
+        <div className="actions">
+          <button className="btn quiet" type="button" onClick={() => setOpen(true)}>
+            Marquer comme faux positif
+          </button>
+        </div>
+      ) : (
+        <form
+          className="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            create.mutate({ value: ioc.value, reason: reason.trim() }, { onSuccess: () => setOpen(false) });
+          }}
+        >
+          <h3>Faux positif</h3>
+          <label className="field">
+            Pourquoi cette valeur est-elle sûre ? (CDN de l'organisation, résolveur public…)
+            <input required minLength={5} maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} />
+          </label>
+          {create.error && (
+            <p className="notice error" role="alert">
+              {create.error.message}
+            </p>
+          )}
+          <div className="actions">
+            <button className="btn quiet" type="button" onClick={() => setOpen(false)}>
+              Annuler
+            </button>
+            <button className="btn primary" type="submit" disabled={create.isPending || reason.trim().length < 5}>
+              {create.isPending ? "Exclusion…" : "Mettre en liste d'exclusion"}
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
+  );
+}
+
 function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: boolean }) {
   const { utc } = useTimeZone();
   const query = useIndicator(indicatorId);
@@ -280,13 +370,19 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                 <div className="title">
                   <LevelBadge level={ioc.severity} />
                   <span>{iocTypeLabel(ioc.type)}</span>
-                  {!ioc.is_active && <span className="badge p3">Expiré</span>}
+                  {ioc.exclusion ? (
+                    <span className="badge tag">Faux positif</span>
+                  ) : (
+                    !ioc.is_active && <span className="badge p3">Expiré</span>
+                  )}
                 </div>
                 <p className="value-box mono">{ioc.value}</p>
                 <div className="actions">
                   <CopyButton value={ioc.value} />
                 </div>
               </section>
+
+              <FalsePositive ioc={ioc} canAct={canAct} />
 
               {/* 2. Statut */}
               <section>

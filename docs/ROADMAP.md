@@ -36,8 +36,8 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 |---|---|---|
 | 1 ✅ codé, fusionné | Immuabilité étendue (`TRUNCATE`), journal d'audit append-only, `/ready` distinct de `/health`, en-têtes HTTP, identifiant de requête et erreurs JSON uniformes, verrouillage par couple compte/IP, ports Compose sur 127.0.0.1, contraintes de dépendances, sauvegarde/restauration | tests verts ; scénario 44/44 ; audit § 7 sans ✘ — **constaté en local le 03/10** (`Rapport/BILAN_M7_LOT1.md`) |
 | 2 ✅ codé, fusionné | Rôle PostgreSQL applicatif non propriétaire, rôle de migration séparé ; Redis avec mot de passe ; rotation de `SECRET_KEY` (clé courante + clé précédente) ; jetons de rafraîchissement révocables | test : le compte applicatif ne peut ni `ALTER` ni `DROP` — **constaté le 04/10** (`Rapport/BILAN_M7_LOT2.md`) |
-| 3 ✅ codé, fusionné | Reverse proxy TLS (Caddy), analyse d'image (Container Scanning GitLab), migrations en conteneur éphémère, entretien quotidien (sessions, EPSS) | `docker compose -f … -f docker-compose.prod.yml --profile full up` sur un VPS UE, note SSL Labs ≥ A — **TLS constaté en local le 04/10, VPS à faire** |
-| Interface 🟡 en cours (ADR-016) | Socle React + TypeScript, temps réel SSE, journal de collecte, séries temporelles ; écrans vue d'ensemble, triage, incidents, IOC, CVE, chasse (lot 1 fusionné) | écrans du lot 1 utilisés sur Kali sur données réelles ; CI « Interface web » verte (GitHub et GitLab) |
+| 3 ✅ codé, fusionné | Reverse proxy TLS (Caddy), analyse d'image (Container Scanning GitLab), migrations en conteneur éphémère, entretien quotidien (sessions, EPSS) | `docker compose -f … -f docker-compose.prod.yml --profile full up` sur un VPS UE, note SSL Labs ≥ A — **TLS constaté en local le 04/10 ; outillage de clôture prêt le 14/10** (`scripts/deploy-vps.sh`, workflow « Clôture M7 ») : **reste à louer le VPS et le domaine** |
+| Interface ✅ (ADR-016) | Socle React + TypeScript, temps réel SSE, journal de collecte, séries temporelles ; écrans vue d'ensemble, triage, incidents, IOC, CVE, chasse, sources, administration, corrélations, inventaire, pilotage | ✅ écrans utilisés sur Kali sur données réelles (13-14/10) ; CI « Interface web » verte (GitHub et GitLab, pipeline #2944488068) |
 
 ## M8 — Detection & Correlation
 
@@ -65,14 +65,16 @@ Bilan : `Rapport/BILAN_M8.md`.
 
 ## M9 — SOC Operations
 
-**But.** Outiller le travail des analystes L1/L2/L3.
+**But.** Outiller le travail des analystes L1/L2/L3. **Livré le 14/10/2026** (ADR-022).
 
-- File de triage L1 : alerte → faux positif (liste d'exclusion, tâche 3.6) ou escalade.
-- Investigation L2 : enrichissement à la demande, chasse lancée depuis l'incident.
-- L3 : ingénierie de détection (règles versionnées), recommandations de réponse.
-- Dashboard : séries 7 et 30 jours, charge par analyste, SLA par priorité.
+- File de triage L1 : alerte → faux positif (liste d'exclusion, tâche 3.6) ✅ ou escalade ✅.
+- Investigation L2 : enrichissement à la demande ✅, chasse lancée depuis l'incident ✅.
+- L3 : ingénierie de détection (règles versionnées) ✅, recommandations de réponse ✅.
+- Dashboard : séries 7 et 30 jours, charge par analyste, SLA par priorité ✅ (écran Pilotage).
 
 **Critère de sortie :** un incident traverse L1 → L2 → L3 sans quitter ILL Watch, MTTR mesuré.
+✅ **Constaté en CI** (test de bout en bout et scénario d'acceptation) ; à constater sur Kali
+(`Rapport/BILAN_M9.md`).
 
 ## M10 — CTI Intelligence Layer
 

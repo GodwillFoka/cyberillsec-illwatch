@@ -82,6 +82,15 @@ class CorrelationRule(StrEnum):
     ASSET_IN_IOC = "CORR-03"  # adresse ou domaine de l'organisation présent dans un IOC
 
 
+class SocTier(StrEnum):
+    """Niveau SOC qui porte l'incident — M9 (ADR-022). L1 qualifie, L2 investigue, L3 traite
+    (ingénierie de détection, réponse avancée). L'escalade ne fait que monter."""
+
+    L1 = "L1"
+    L2 = "L2"
+    L3 = "L3"
+
+
 class IncidentStatus(StrEnum):
     """Machine d'état à 6 étapes — RF-18 (NIST SP 800-61 Rev. 2)."""
 
@@ -103,6 +112,9 @@ class IncidentEventType(StrEnum):
     IOC_ATTACHED = "IOC_ATTACHED"
     CVE_ATTACHED = "CVE_ATTACHED"
     ACTION_TAKEN = "ACTION_TAKEN"
+    ESCALATED = "ESCALATED"  # M9 (ADR-022) : passage au niveau SOC supérieur
+    HUNT_RUN = "HUNT_RUN"  # M9 : chasse lancée depuis l'incident
+    IOC_EXCLUDED = "IOC_EXCLUDED"  # M9 : IOC qualifié de faux positif, mis en liste d'exclusion
 
 
 class RiskPriority(StrEnum):
@@ -126,6 +138,7 @@ class HuntStatus(StrEnum):
 class HuntTrigger(StrEnum):
     MANUAL = "MANUAL"
     SCHEDULED = "SCHEDULED"
+    INCIDENT = "INCIDENT"  # M9 : lancée depuis un incident, sur ses IOC
 
 
 class AuditOutcome(StrEnum):

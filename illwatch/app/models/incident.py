@@ -17,7 +17,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from illwatch.app.database import Base, TimestampMixin, UUIDPrimaryKeyMixin
 from illwatch.app.models.threat_feed import _in_enum
-from illwatch.shared.enums import IncidentEventType, IncidentStatus, Severity
+from illwatch.shared.enums import IncidentEventType, IncidentStatus, Severity, SocTier
 
 
 def _utcnow() -> datetime:
@@ -31,6 +31,7 @@ class Incident(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __table_args__ = (
         CheckConstraint(_in_enum("severity", Severity), name="ck_incidents_severity"),
         CheckConstraint(_in_enum("status", IncidentStatus), name="ck_incidents_status"),
+        CheckConstraint(_in_enum("tier", SocTier), name="ck_incidents_tier"),
         Index("idx_incidents_status_severity", "status", "severity"),
     )
 
@@ -38,6 +39,10 @@ class Incident(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     severity: Mapped[str] = mapped_column(String(20), nullable=False)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default=IncidentStatus.NOUVEAU)
+    # Niveau SOC (M9, ADR-022) : L1 à l'ouverture ; l'escalade est consignée dans la chronologie.
+    tier: Mapped[str] = mapped_column(
+        String(2), nullable=False, default=SocTier.L1, server_default=SocTier.L1.value
+    )
     assigned_to: Mapped[UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )

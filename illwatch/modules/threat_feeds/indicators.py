@@ -32,7 +32,7 @@ from sqlalchemy.dialects import postgresql, sqlite
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from illwatch.app.models import Indicator, IndicatorSource
+from illwatch.app.models import Exclusion, Indicator, IndicatorSource
 from illwatch.modules.threat_feeds.validators import InvalidIndicatorError, normalize_indicator
 from illwatch.shared.enums import IndicatorType, Severity
 
@@ -300,7 +300,17 @@ async def ingest_indicators(
 
 
 def is_active_clause(now: datetime) -> ColumnElement[bool]:
-    return or_(Indicator.expires_at.is_(None), Indicator.expires_at > now)
+    """IOC actif : pas expiré et pas en liste d'exclusion (faux positif qualifié, M9)."""
+    excluded = (
+        select(Exclusion.id)
+        .where(
+            Exclusion.indicator_type == Indicator.type,
+            Exclusion.value == Indicator.value,
+            or_(Exclusion.expires_at.is_(None), Exclusion.expires_at > now),
+        )
+        .exists()
+    )
+    return and_(or_(Indicator.expires_at.is_(None), Indicator.expires_at > now), ~excluded)
 
 
 @dataclass(frozen=True, slots=True)

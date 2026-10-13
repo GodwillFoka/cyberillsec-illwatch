@@ -7,9 +7,10 @@
 """
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import JSON, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from illwatch.app.database import Base, UUIDPrimaryKeyMixin
@@ -38,6 +39,11 @@ class HuntingSession(UUIDPrimaryKeyMixin, Base):
     errors: Mapped[str | None] = mapped_column(Text, nullable=True)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # M9 (ADR-022) : version de chaque règle appliquée (règles versionnées) et incident d'origine.
+    rule_versions: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    incident_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("incidents.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
     matches: Mapped[list["HuntingMatch"]] = relationship(
         cascade="all, delete-orphan", order_by="HuntingMatch.rule_id"

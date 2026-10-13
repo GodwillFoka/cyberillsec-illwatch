@@ -5,12 +5,13 @@ Lecture pour tout utilisateur authentifié. Les exports sont diffusés en flux :
 """
 
 from dataclasses import asdict
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Annotated, Any, Literal
+from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from illwatch.app.api.deps import Audit, CurrentUser, DbSession
 from illwatch.modules.dashboard.service import (
@@ -23,6 +24,7 @@ from illwatch.modules.dashboard.service import (
     recent_activity,
 )
 from illwatch.modules.dashboard.timeseries import Metric, Window, time_series
+from illwatch.modules.soc.metrics import soc_metrics
 
 router = APIRouter(prefix="/dashboard", tags=["tableau de bord SOC"])
 
@@ -189,3 +191,76 @@ async def export(
             "Content-Disposition": f'attachment; filename="illwatch-{dataset.value}-{stamp}.{fmt}"'
         },
     )
+
+
+# --- Pilotage SOC (M9, ADR-022) --------------------------------------------------------------
+
+
+class SeverityStatsRead(BaseModel):
+    severity: str
+    ack_sla_hours: int
+    resolution_sla_hours: int
+    opened: int
+    closed: int
+    mtta_minutes: float | None
+    mttr_hours: float | None
+    ack_within_sla: float | None
+    resolved_within_sla: float | None
+
+
+class BreachRead(BaseModel):
+    incident_id: UUID
+    title: str
+    severity: str
+    tier: str
+    kind: str
+    age_hours: float
+    target_hours: int
+
+
+class WorkloadRead(BaseModel):
+    label: str
+    open_assigned: int
+    closed_in_window: int
+
+
+class DayCountRead(BaseModel):
+    day: date
+    opened: int
+    closed: int
+
+
+class SocMetricsRead(BaseModel):
+    window_days: int
+    generated_at: datetime
+    opened: int
+    closed: int
+    open_now: int
+    mtta_minutes: float | None = Field(description="Ouverture → prise en charge (moyenne).")
+    mttr_hours: float | None = Field(description="Ouverture → clôture (moyenne).")
+    median_ttr_hours: float | None
+    by_severity: list[SeverityStatsRead]
+    open_by_tier: dict[str, int]
+    escalations: dict[str, int]
+    workload: list[WorkloadRead]
+    breaches: list[BreachRead]
+    daily: list[DayCountRead]
+    exclusions: int
+    false_positive_events: int
+
+
+@router.get(
+    "/soc",
+    response_model=SocMetricsRead,
+    summary="Pilotage SOC : MTTA, MTTR, délais cibles, niveaux, charge (M9)",
+)
+async def soc(
+    session: DbSession,
+    user: CurrentUser,
+    days: Annotated[int, Query(description="Fenêtre : 7 ou 30 jours.")] = 7,
+) -> SocMetricsRead:
+    try:
+        metrics = await soc_metrics(session, viewer=user, days=days)
+    except ValueError as exc:
+        raise HTTPException(422, detail=str(exc)) from None
+    return SocMetricsRead.model_validate(asdict(metrics))

@@ -168,6 +168,11 @@ class Rule:
     severity: Severity
     needs_tor_list: bool
     evaluate: Callable[[HuntContext], Iterable[Match]]
+    # Règles versionnées (M9, ADR-022) : toute modification de comportement incrémente la
+    # version et ajoute une ligne à l'historique ; chaque session enregistre les versions
+    # appliquées, pour qu'un résultat ancien reste interprétable.
+    version: int = 1
+    changes: tuple[str, ...] = ("v1 (03/10/2026) : version initiale.",)
 
 
 # --- Outils --------------------------------------------------------------------------------
@@ -356,6 +361,12 @@ CATALOG: tuple[Rule, ...] = (
         Severity.MEDIUM,
         False,
         _dga,
+        version=2,
+        changes=(
+            "v1 (03/10/2026) : entropie de Shannon et part de voyelles.",
+            "v2 (14/10/2026) : coût des bigrammes anglais, 14 caractères au moins ; calibrée "
+            "sur 100 000 domaines Tranco (faux positifs 0,71 % → 0,094 %).",
+        ),
     ),
     Rule(
         "RULE-04",
@@ -380,6 +391,17 @@ CATALOG: tuple[Rule, ...] = (
         Severity.HIGH,
         False,
         _known_ioc,
+        version=3,
+        changes=(
+            "v1 (03/10/2026) : correspondance exacte avec un IOC actif.",
+            "v2 (14/10/2026) : adresse comprise dans une plage CIDR active.",
+            "v3 (14/10/2026) : les IOC en liste d'exclusion (faux positifs) ne comptent plus.",
+        ),
     ),
 )
 RULES = {rule.id: rule for rule in CATALOG}
+
+
+def rule_versions(rules: Iterable[Rule]) -> dict[str, int]:
+    """Versions des règles appliquées, enregistrées avec la session de chasse."""
+    return {rule.id: rule.version for rule in rules}
