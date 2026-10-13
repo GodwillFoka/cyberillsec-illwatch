@@ -8,6 +8,20 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Corrigé — corrélation par version (ADR-021)
+- Les plages vulnérables NVD (`configurations`) sont conservées par CVE (`cves.affected`,
+  migration `e5b8c1d4a907`) ; la version déclarée de l'actif y est comparée : hors plage ou
+  autre produit, aucun évènement. Supprime les faux positifs constatés sur données réelles
+  (≈ 80 % sur Kali : anciennes CVE du noyau, Shellshock sur OpenSSH, Redis CVE-2022-0543).
+- `illwatch cves refresh-affected` relit les plages des CVE déjà en base.
+- Jeu figé : 18 cas, 8 attendus (pièges de version ajoutés) ; `Rapport/M8_MESURE_REELLE_13-10-2026.md`.
+
+### Corrigé — débordements de l'interface
+- Libellés et messages longs (types d'IOC, erreurs TAXII, URL, titres) passent à la ligne au
+  lieu de sortir de leur cadre ; recherche et titres de détail lisibles sur mobile ; les
+  captures CI couvrent toute la hauteur, tous les écrans en mobile, et un détecteur signale
+  tout texte qui déborde.
+
 ### Ajouté — M8, incréments 3 et 4 : corrélation et mesure (ADR-020)
 - Inventaire d'actifs (produit, éditeur, version, criticité, adresses, domaines) : écran
   Inventaire, API `/api/v1/assets`, `illwatch assets add | import | list | remove`.

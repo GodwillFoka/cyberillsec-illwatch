@@ -99,6 +99,7 @@ nav:
           - ADR-018 Identité ILL Watch: adr/ADR-018-identite-ill-watch.md
           - ADR-019 Enrichissement hors ligne: adr/ADR-019-enrichissement-hors-ligne.md
           - ADR-020 Corrélation: adr/ADR-020-correlation.md
+          - ADR-021 Corrélation par version: adr/ADR-021-correlation-par-version.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:

@@ -60,3 +60,8 @@ pas ce qui est dangereux **pour l'organisation**. Le critère de sortie de M8 l'
 - Mesure sur données réelles avec l'inventaire du premier pilote (rapport daté dans `Rapport/`).
 - CPE et comparaison de versions (M10, contextualisation).
 - Notification des évènements P0 par le webhook des alertes.
+
+## Suivi
+
+- 13/10/2026 : sur données réelles, la correspondance par nom seul produit ≈ 80 % de faux
+  positifs. La version déclarée est désormais comparée aux plages NVD : voir ADR-021.

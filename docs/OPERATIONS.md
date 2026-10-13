@@ -225,6 +225,7 @@ illwatch assets list
 illwatch correlate run                  # une passe maintenant (le worker : toutes les heures)
 illwatch correlate list                 # évènements ouverts, les plus graves d'abord
 illwatch correlate evaluate             # mesure sur le jeu figé (aucune écriture en base)
+illwatch cves refresh-affected          # relit les plages vulnérables NVD (ADR-021) ; 6 s/CVE sans clé NVD
 ```
 
 - **Produit** : le nom tel qu'il apparaît dans les avis de sécurité (« FortiOS », « Exchange
