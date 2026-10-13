@@ -41,9 +41,7 @@ INDICATOR_TYPES = (
 
 
 def upgrade() -> None:
-    op.add_column(
-        "incidents", sa.Column("tier", sa.String(2), nullable=False, server_default="L1")
-    )
+    op.add_column("incidents", sa.Column("tier", sa.String(2), nullable=False, server_default="L1"))
     op.create_check_constraint("ck_incidents_tier", "incidents", "tier IN ('L1', 'L2', 'L3')")
 
     op.drop_constraint("ck_incident_events_event_type", "incident_events", type_="check")
