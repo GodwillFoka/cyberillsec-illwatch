@@ -276,6 +276,32 @@ modification, avec des captures d'écran de chaque écran publiées sur la branc
 Le VPS (préproduction publique) reprend exactement cette pile avec `ILLWATCH_DOMAIN` réel :
 seuls changent le nom de domaine, le certificat (Let's Encrypt) et l'ouverture des ports 80/443.
 
+### 6 bis. VPS UE pas à pas (clôture de M7)
+
+1. **Serveur** : un VPS hébergé dans l'Union européenne (Hetzner, OVHcloud, Scaleway…),
+   Debian 12/13 ou Ubuntu 24.04, **2 vCPU, 4 Go de RAM, 40 Go** au moins (la base réelle
+   dépasse 500 000 IOC). Accès SSH par clé uniquement.
+2. **Nom de domaine** : chez le registraire, un enregistrement **A** (et **AAAA** si le VPS a
+   une IPv6) `illwatch.votre-domaine.eu` → adresse du VPS. Attendre la propagation
+   (`dig +short illwatch.votre-domaine.eu`).
+3. **Installation** (sur le VPS) :
+
+   ```bash
+   curl -fsSLO https://raw.githubusercontent.com/GodwillFoka/cyberillsec-illwatch/main/scripts/deploy-vps.sh
+   sudo bash deploy-vps.sh install illwatch.votre-domaine.eu godwill@exemple.eu
+   ```
+
+   Docker, pare-feu (22/80/443), code dans `/opt/illwatch`, secrets générés (`.env`, 600),
+   certificat Let's Encrypt automatique, compte `admin` (mot de passe affiché **une seule
+   fois** : le ranger dans KeePassXC), sauvegarde quotidienne, puis contrôles.
+4. **Contrôle** : `sudo bash /opt/illwatch/scripts/deploy-vps.sh check` (DNS, certificat,
+   redirection, TLS 1.0/1.1 refusés, en-têtes, `/ready`, API fermée).
+5. **Preuve de clôture** : inscrire le domaine dans `deploy/vps-domaine.txt` (une ligne) et
+   pousser sur `main` : le workflow « Clôture M7 » mesure la note TLS (testssl.sh, grille SSL
+   Labs : **A attendu**) et les en-têtes, puis chaque lundi.
+6. **Mise à jour** : `sudo bash /opt/illwatch/scripts/deploy-vps.sh update` (sauvegarde,
+   code, image, migrations, contrôles).
+
 ## 7. Mise à jour
 
 ```bash

@@ -22,6 +22,12 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   `illwatch soc metrics`.
 - Scénario d'acceptation : parcours L1 → L2 → L3 et MTTR mesuré. Migration `c9f1a3e5b742`.
 
+### Ajouté — préparation de la clôture de M7 (VPS UE)
+- `scripts/deploy-vps.sh install | check | update` : installation complète sur un VPS neuf
+  (Docker, pare-feu, secrets, Let's Encrypt, compte admin, sauvegardes) et contrôles.
+- Workflow « Clôture M7 » : note TLS (testssl.sh, grille SSL Labs) et en-têtes du domaine
+  inscrit dans `deploy/vps-domaine.txt`.
+
 ### Ajouté — clôture de M8 et points en attente
 - Plages CIDR : type d'IOC `NETWORK` (/16 à /31 en IPv4, /32 à /127 en IPv6 ; plages internes
   et trop larges refusées ; /32 rangée comme adresse) ; OTX `CIDR` et motifs STIX acceptés ;

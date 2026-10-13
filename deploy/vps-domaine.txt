@@ -1,0 +1,3 @@
+# Nom de domaine public du VPS de préproduction (clôture de M7). Une ligne, sans « https:// ».
+# Le modifier déclenche le workflow « Clôture M7 » : TLS (note testssl.sh, équivalent SSL
+# Labs), en-têtes, /ready, redirection HTTP. Laisser vide tant que le VPS n'existe pas.
