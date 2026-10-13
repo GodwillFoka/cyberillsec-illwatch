@@ -202,14 +202,40 @@ illwatch enrich status      # bases importées, nombre de plages, date d'import
 illwatch enrich ip 8.8.8.8  # vérification : pays et opérateur d'une adresse
 ```
 
-Une fois par mois suffit (DB-IP publie en début de mois). Exemple de tâche planifiée :
-`0 6 3 * * cd ~/Documents/cyberillsec-illwatch && .venv/bin/illwatch enrich update`.
+Une fois par mois suffit (DB-IP publie en début de mois). Après le premier import manuel, le
+worker s'en charge : il retélécharge toute base de plus de 32 jours (`ENRICHMENT_AUTO_UPDATE`,
+activé par défaut ; `false` pour le désactiver et planifier `illwatch enrich update` vous-même).
 Poste sans Internet : télécharger `dbip-country-lite-AAAA-MM.csv.gz` et
 `dbip-asn-lite-AAAA-MM.csv.gz` sur https://db-ip.com/db/lite.php, puis
 `illwatch enrich import FICHIER --dataset country|asn`. Un fichier refusé (vide, mauvais format,
 plus de 1 % de lignes invalides) laisse l'ancienne base en place. Chaque import est journalisé
 (`enrichment.import`). Licence CC BY 4.0 : l'attribution « IP Geolocation by DB-IP » est
 affichée avec le résultat.
+
+## 6 bis ter. Inventaire et corrélation (M8, ADR-020)
+
+La corrélation relie le renseignement à **vos** actifs. Elle ne produit rien tant que
+l'inventaire est vide.
+
+```bash
+illwatch assets add "Pare-feu siège" --product FortiOS --vendor Fortinet \
+    --criticality CRITICAL --address 198.51.100.10 --domain vpn.example.com
+illwatch assets import inventaire.csv   # en-tête : nom;produit;editeur;version;criticite;adresses;domaines
+illwatch assets list
+illwatch correlate run                  # une passe maintenant (le worker : toutes les heures)
+illwatch correlate list                 # évènements ouverts, les plus graves d'abord
+illwatch correlate evaluate             # mesure sur le jeu figé (aucune écriture en base)
+```
+
+- **Produit** : le nom tel qu'il apparaît dans les avis de sécurité (« FortiOS », « Exchange
+  Server », « Confluence »), cherché en mot entier dans les CVE. Trop court ou trop générique
+  (« Windows »), il produit du bruit ; le préciser (« Windows Server 2019 »).
+- **Adresses et domaines** : uniquement ce qui est exposé sur Internet ; un domaine couvre ses
+  sous-domaines.
+- Réglages (`.env`) : `CORRELATION_INTERVAL_SECONDS` (3600 ; 0 désactive),
+  `CORRELATION_MIN_CONFIDENCE` (40 = « moyenne »), `ENRICHMENT_AUTO_UPDATE` (true).
+- Écrans : **Inventaire** (déclarer, modifier ; suppression réservée à l'administrateur) et
+  **Corrélations** (acquitter, ouvrir l'incident qui reprend la CVE ou l'IOC).
 
 ## 6 ter. Interface web
 

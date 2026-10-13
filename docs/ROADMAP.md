@@ -43,19 +43,22 @@ sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les
 
 **But.** Passer de l'agrégation à la détection : un évènement corrélé produit une alerte priorisée.
 
-**Démarré le 11/10/2026** (ADR-017), en quatre incréments : 1. confiance des IOC ✅ (score
-0–100 décomposé : sources pondérées par leur fiabilité A–F, fraîcheur par type, récurrence) ;
-2. enrichissement local (ASN, pays) ✅ (DB-IP Lite importée, ADR-019) ; 3. corrélation IOC × CVE × actif × KEV ; 4. jeu de données
-figé et taux de faux positifs publié.
+**Démarré le 11/10/2026** (ADR-017), en quatre incréments, **tous livrés le 13/10** :
+1. confiance des IOC ✅ (score 0–100 décomposé : sources pondérées par leur fiabilité A–F,
+fraîcheur par type, récurrence) ; 2. enrichissement local (ASN, pays) ✅ (DB-IP Lite importée,
+mise à jour mensuelle automatique, ADR-019) ; 3. corrélation ✅ (inventaire d'actifs, CORR-01
+KEV × actif, CORR-02 exploit × actif, CORR-03 actif dans un IOC, ADR-020) ; 4. mesure ✅ (jeu
+figé versionné : 100 % détectés, 0 % de faux positifs, vérifié par la CI).
 
-- Enrichissement des IOC : ASN/pays (base locale), réputation multi-sources, âge.
-- Score de confiance d'un IOC (nombre et fiabilité des sources, fraîcheur).
-- Règles de corrélation : IOC × CVE × actif × KEV → évènement corrélé.
+- Enrichissement des IOC : ASN/pays ✅ ; réputation multi-sources ✅ (confiance) ; âge des domaines (reporté).
+- Score de confiance d'un IOC ✅.
+- Règles de corrélation : IOC × CVE × actif × KEV → évènement corrélé ✅.
 - Plancher « KEV ⇒ au moins P1 » et EPSS manquant : ✅ ADR-014 accepté (A + B + C) et appliqué.
 - Calibration DGA sur corpus (Tranco + DGArchive), RULE-05 par CPE.
 
 **Critère de sortie :** sur un jeu de données figé, 100 % des cas de corrélation attendus produisent
-une alerte, taux de faux positifs mesuré et publié.
+une alerte, taux de faux positifs mesuré et publié. ✅ **Atteint le 13/10/2026** sur le jeu figé
+(`Rapport/M8_MESURE_13-10-2026.md`). Reste à confirmer sur l'inventaire réel d'un pilote.
 
 ## M9 — SOC Operations
 

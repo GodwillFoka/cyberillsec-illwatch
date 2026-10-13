@@ -25,6 +25,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [017](ADR-017-detection-correlation.md) | M8 : confiance des IOC d'abord (Amirauté, fraîcheur, récurrence), corrélation ensuite | Accepté |
 | [018](ADR-018-identite-ill-watch.md) | Identité ILL Watch : le brand book v2 fait autorité sur l'interface (logo, jetons, Inter, voix) | Accepté |
 | [019](ADR-019-enrichissement-hors-ligne.md) | Enrichissement hors ligne des IP : DB-IP Lite (pays, AS) importée localement, aucune requête par IOC | Accepté |
+| [020](ADR-020-correlation.md) | Corrélation : inventaire d'actifs, trois règles (KEV, exploit, actif dans un IOC), score justifié, mesure sur jeu figé | Accepté |
 
 ## Gabarit
 
