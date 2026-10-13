@@ -236,7 +236,7 @@ async def test_mesure_sur_le_jeu_fige() -> None:
     assert result.missed == [], result.missed
     assert result.false_positives == [], result.false_positives
     assert result.recall == 1.0 and result.false_positive_rate == 0.0
-    assert result.expected == 7 and result.cases == 15
+    assert result.expected == 8 and result.cases == 18
 
 
 def test_cli_evaluate(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -246,3 +246,66 @@ def test_cli_evaluate(tmp_path) -> None:  # type: ignore[no-untyped-def]
     result = CliRunner().invoke(cli, ["correlate", "evaluate", "--report", str(report)])
     assert result.exit_code == 0, result.output
     assert "100" in result.output and report.read_text(encoding="utf-8").startswith("# Mesure")
+
+
+def test_versions_vulnerables() -> None:
+    from illwatch.modules.correlation.versions import assess, version_key
+
+    assert version_key("10.5p1") > version_key("10.5")
+    assert version_key("5.10.102") > version_key("5.10.9")
+    assert version_key("7.1.5+kali-amd64") == version_key("7.1.5")
+    assert version_key("18.6-3") == version_key("18.6")
+    dirty_pipe = [
+        {
+            "vendor": "linux",
+            "product": "linux_kernel",
+            "version": "*",
+            "versionStartIncluding": "5.8",
+            "versionEndExcluding": "5.16.11",
+        }
+    ]
+    assert assess("Linux kernel", "7.1.5", dirty_pipe) == "hors_plage"
+    assert assess("Linux kernel", "5.15.3", dirty_pipe) == "vulnerable"
+    assert assess("Linux kernel", None, dirty_pipe) == "version_non_declaree"
+    shellshock = [{"vendor": "gnu", "product": "bash", "version": "4.3"}]
+    assert assess("OpenSSH", "10.5p1", shellshock) == "autre_produit"
+    assert assess(
+        "Confluence", "8.5", [{"product": "confluence_data_center", "version": "8.5"}]
+    ) == ("vulnerable")
+    assert assess("PostgreSQL", "18.6", None) == "inconnu"
+
+
+def test_configurations_nvd() -> None:
+    from illwatch.modules.cve_tracker.sources import parse_affected
+
+    configurations = [
+        {
+            "nodes": [
+                {
+                    "operator": "OR",
+                    "cpeMatch": [
+                        {
+                            "vulnerable": True,
+                            "criteria": "cpe:2.3:o:linux:linux_kernel:*:*:*:*:*:*:*:*",
+                            "versionStartIncluding": "5.8",
+                            "versionEndExcluding": "5.16.11",
+                        },
+                        {
+                            "vulnerable": False,
+                            "criteria": "cpe:2.3:h:vendor:board:-:*:*:*:*:*:*:*",
+                        },
+                    ],
+                }
+            ]
+        }
+    ]
+    assert parse_affected(configurations) == [
+        {
+            "vendor": "linux",
+            "product": "linux_kernel",
+            "version": "*",
+            "versionStartIncluding": "5.8",
+            "versionEndExcluding": "5.16.11",
+        }
+    ]
+    assert parse_affected([]) is None and parse_affected(None) is None

@@ -1,39 +1,315 @@
 {
-  "version": "2026-10-13",
-  "description": "Jeu de données figé de la corrélation (M8, incrément 4). Valeurs fictives : CVE-2099-8xxxx, adresses RFC 5737, domaines .example. Toute modification change la version.",
+  "version": "2026-10-13b",
+  "description": "Jeu de données figé de la corrélation (M8, incrément 4). Valeurs fictives : CVE-2099-8xxxx, adresses RFC 5737, domaines .example. Toute modification change la version. Version b : cas réels de versions (noyau 7.1.5, Shellshock) ajoutés après la première mesure sur Kali.",
   "assets": [
-    {"name": "Pare-feu siège", "product": "FortiOS", "vendor": "Fortinet", "criticality": "CRITICAL", "addresses": ["198.51.100.10"], "domains": ["vpn.corp.example"]},
-    {"name": "Messagerie", "product": "Exchange Server", "vendor": "Microsoft", "criticality": "HIGH", "addresses": [], "domains": ["mail.corp.example"]},
-    {"name": "Wiki interne", "product": "Confluence", "vendor": "Atlassian", "criticality": "MEDIUM", "addresses": [], "domains": []},
-    {"name": "Poste RH", "product": "Windows 11", "vendor": "Microsoft", "criticality": "LOW", "addresses": ["192.0.2.44", "192.0.2.45"], "domains": []},
-    {"name": "Ancien VPN", "product": "Pulse Connect Secure", "vendor": "Ivanti", "criticality": "HIGH", "addresses": [], "domains": [], "is_active": false}
+    {
+      "name": "Pare-feu siège",
+      "product": "FortiOS",
+      "vendor": "Fortinet",
+      "criticality": "CRITICAL",
+      "addresses": [
+        "198.51.100.10"
+      ],
+      "domains": [
+        "vpn.corp.example"
+      ]
+    },
+    {
+      "name": "Messagerie",
+      "product": "Exchange Server",
+      "vendor": "Microsoft",
+      "criticality": "HIGH",
+      "addresses": [],
+      "domains": [
+        "mail.corp.example"
+      ]
+    },
+    {
+      "name": "Wiki interne",
+      "product": "Confluence",
+      "vendor": "Atlassian",
+      "criticality": "MEDIUM",
+      "addresses": [],
+      "domains": []
+    },
+    {
+      "name": "Poste RH",
+      "product": "Windows 11",
+      "vendor": "Microsoft",
+      "criticality": "LOW",
+      "addresses": [
+        "192.0.2.44",
+        "192.0.2.45"
+      ],
+      "domains": []
+    },
+    {
+      "name": "Ancien VPN",
+      "product": "Pulse Connect Secure",
+      "vendor": "Ivanti",
+      "criticality": "HIGH",
+      "addresses": [],
+      "domains": [],
+      "is_active": false
+    },
+    {
+      "name": "Serveur Linux",
+      "product": "Linux kernel",
+      "vendor": "Linux",
+      "version": "7.1.5",
+      "criticality": "HIGH",
+      "addresses": [],
+      "domains": []
+    },
+    {
+      "name": "Accès SSH",
+      "product": "OpenSSH",
+      "vendor": "OpenBSD",
+      "version": "10.5p1",
+      "criticality": "MEDIUM",
+      "addresses": [],
+      "domains": []
+    }
   ],
   "cves": [
-    {"id": "CVE-2099-80001", "description": "Fortinet FortiOS SSL-VPN heap-based buffer overflow allows remote code execution.", "kev": true, "exploit": true, "priority": "P0_CRITIQUE", "score": 92.0, "case": "KEV sur un produit inventorié"},
-    {"id": "CVE-2099-80002", "description": "Microsoft Exchange Server remote code execution via crafted request.", "kev": false, "exploit": true, "priority": "P1_ELEVE", "score": 68.0, "case": "exploit public, P1, produit en deux mots"},
-    {"id": "CVE-2099-80003", "description": "Atlassian Confluence Data Center OGNL injection.", "kev": true, "exploit": true, "priority": "P1_ELEVE", "score": 74.0, "case": "KEV, actif de criticité moyenne"},
-    {"id": "CVE-2099-80004", "description": "Out-of-bounds read in the Exchangeable image file format parser of libexif.", "kev": true, "exploit": false, "priority": "P1_ELEVE", "score": 61.0, "case": "piège : « Exchangeable » n'est pas « Exchange Server »"},
-    {"id": "CVE-2099-80005", "description": "Stored cross-site scripting in Confluence Server macros.", "kev": false, "exploit": true, "priority": "P2_MOYEN", "score": 44.0, "case": "piège : exploit public mais priorité P2"},
-    {"id": "CVE-2099-80006", "description": "Fortinet FortiOS information disclosure in the admin interface.", "kev": false, "exploit": false, "priority": "P2_MOYEN", "score": 41.0, "case": "piège : ni KEV ni exploit"},
-    {"id": "CVE-2099-80007", "description": "Ivanti Pulse Connect Secure authentication bypass.", "kev": true, "exploit": true, "priority": "P0_CRITIQUE", "score": 95.0, "case": "piège : actif désactivé"},
-    {"id": "CVE-2099-80008", "description": "Path traversal in FortiOSmonitor, a third-party dashboard.", "kev": true, "exploit": true, "priority": "P1_ELEVE", "score": 66.0, "case": "piège : nom de produit prolongé"},
-    {"id": "CVE-2099-80009", "description": "Microsoft Windows 11 kernel elevation of privilege.", "kev": true, "exploit": true, "priority": "P1_ELEVE", "score": 70.0, "case": "KEV sur un actif de faible criticité"}
+    {
+      "id": "CVE-2099-80001",
+      "description": "Fortinet FortiOS SSL-VPN heap-based buffer overflow allows remote code execution.",
+      "kev": true,
+      "exploit": true,
+      "priority": "P0_CRITIQUE",
+      "score": 92.0,
+      "case": "KEV sur un produit inventorié"
+    },
+    {
+      "id": "CVE-2099-80002",
+      "description": "Microsoft Exchange Server remote code execution via crafted request.",
+      "kev": false,
+      "exploit": true,
+      "priority": "P1_ELEVE",
+      "score": 68.0,
+      "case": "exploit public, P1, produit en deux mots"
+    },
+    {
+      "id": "CVE-2099-80003",
+      "description": "Atlassian Confluence Data Center OGNL injection.",
+      "kev": true,
+      "exploit": true,
+      "priority": "P1_ELEVE",
+      "score": 74.0,
+      "case": "KEV, actif de criticité moyenne"
+    },
+    {
+      "id": "CVE-2099-80004",
+      "description": "Out-of-bounds read in the Exchangeable image file format parser of libexif.",
+      "kev": true,
+      "exploit": false,
+      "priority": "P1_ELEVE",
+      "score": 61.0,
+      "case": "piège : « Exchangeable » n'est pas « Exchange Server »"
+    },
+    {
+      "id": "CVE-2099-80005",
+      "description": "Stored cross-site scripting in Confluence Server macros.",
+      "kev": false,
+      "exploit": true,
+      "priority": "P2_MOYEN",
+      "score": 44.0,
+      "case": "piège : exploit public mais priorité P2"
+    },
+    {
+      "id": "CVE-2099-80006",
+      "description": "Fortinet FortiOS information disclosure in the admin interface.",
+      "kev": false,
+      "exploit": false,
+      "priority": "P2_MOYEN",
+      "score": 41.0,
+      "case": "piège : ni KEV ni exploit"
+    },
+    {
+      "id": "CVE-2099-80007",
+      "description": "Ivanti Pulse Connect Secure authentication bypass.",
+      "kev": true,
+      "exploit": true,
+      "priority": "P0_CRITIQUE",
+      "score": 95.0,
+      "case": "piège : actif désactivé"
+    },
+    {
+      "id": "CVE-2099-80008",
+      "description": "Path traversal in FortiOSmonitor, a third-party dashboard.",
+      "kev": true,
+      "exploit": true,
+      "priority": "P1_ELEVE",
+      "score": 66.0,
+      "case": "piège : nom de produit prolongé"
+    },
+    {
+      "id": "CVE-2099-80009",
+      "description": "Microsoft Windows 11 kernel elevation of privilege.",
+      "kev": true,
+      "exploit": true,
+      "priority": "P1_ELEVE",
+      "score": 70.0,
+      "case": "KEV sur un actif de faible criticité"
+    },
+    {
+      "id": "CVE-2099-80010",
+      "description": "Linux kernel pipe buffer flags flaw allows overwriting read-only files.",
+      "kev": true,
+      "exploit": true,
+      "priority": "P0_CRITIQUE",
+      "score": 88.0,
+      "affected": [
+        {
+          "vendor": "linux",
+          "product": "linux_kernel",
+          "version": "*",
+          "versionStartIncluding": "5.8",
+          "versionEndExcluding": "5.16.11"
+        }
+      ],
+      "case": "piège : faille du noyau corrigée bien avant la version 7.1.5 (cas réel Dirty Pipe)"
+    },
+    {
+      "id": "CVE-2099-80011",
+      "description": "Linux kernel use-after-free in netfilter allows local privilege escalation.",
+      "kev": true,
+      "exploit": true,
+      "priority": "P1_ELEVE",
+      "score": 76.0,
+      "affected": [
+        {
+          "vendor": "linux",
+          "product": "linux_kernel",
+          "version": "*",
+          "versionStartIncluding": "7.0",
+          "versionEndExcluding": "7.1.6"
+        }
+      ],
+      "case": "noyau 7.1.5 dans la plage vulnérable"
+    },
+    {
+      "id": "CVE-2099-80012",
+      "description": "GNU Bash processes trailing strings after function definitions, exploitable through OpenSSH sshd ForceCommand.",
+      "kev": true,
+      "exploit": true,
+      "priority": "P0_CRITIQUE",
+      "score": 90.0,
+      "affected": [
+        {
+          "vendor": "gnu",
+          "product": "bash",
+          "version": "4.3"
+        }
+      ],
+      "case": "piège : OpenSSH cité comme vecteur, le produit vulnérable est Bash (cas réel Shellshock)"
+    }
   ],
   "iocs": [
-    {"value": "198.51.100.10", "type": "IPV4", "sources": ["B"], "days_ago": 0, "hits": 1, "case": "adresse de l'organisation, source fiable"},
-    {"value": "vpn.corp.example", "type": "DOMAIN", "sources": ["C", "C"], "days_ago": 1, "hits": 2, "case": "domaine de l'organisation, deux sources"},
-    {"value": "mail.corp.example", "type": "DOMAIN", "sources": ["A"], "days_ago": 0, "hits": 1, "case": "domaine de messagerie, source A"},
-    {"value": "192.0.2.44", "type": "IPV4", "sources": ["D"], "days_ago": 200, "hits": 1, "case": "piège : confiance faible"},
-    {"value": "192.0.2.45", "type": "IPV4", "sources": ["A"], "days_ago": 0, "hits": 3, "expired": true, "case": "piège : IOC expiré"},
-    {"value": "vpn.corp.example.evil.example", "type": "DOMAIN", "sources": ["A"], "days_ago": 0, "hits": 1, "case": "piège : contient le domaine sans en être un sous-domaine"}
+    {
+      "value": "198.51.100.10",
+      "type": "IPV4",
+      "sources": [
+        "B"
+      ],
+      "days_ago": 0,
+      "hits": 1,
+      "case": "adresse de l'organisation, source fiable"
+    },
+    {
+      "value": "vpn.corp.example",
+      "type": "DOMAIN",
+      "sources": [
+        "C",
+        "C"
+      ],
+      "days_ago": 1,
+      "hits": 2,
+      "case": "domaine de l'organisation, deux sources"
+    },
+    {
+      "value": "mail.corp.example",
+      "type": "DOMAIN",
+      "sources": [
+        "A"
+      ],
+      "days_ago": 0,
+      "hits": 1,
+      "case": "domaine de messagerie, source A"
+    },
+    {
+      "value": "192.0.2.44",
+      "type": "IPV4",
+      "sources": [
+        "D"
+      ],
+      "days_ago": 200,
+      "hits": 1,
+      "case": "piège : confiance faible"
+    },
+    {
+      "value": "192.0.2.45",
+      "type": "IPV4",
+      "sources": [
+        "A"
+      ],
+      "days_ago": 0,
+      "hits": 3,
+      "expired": true,
+      "case": "piège : IOC expiré"
+    },
+    {
+      "value": "vpn.corp.example.evil.example",
+      "type": "DOMAIN",
+      "sources": [
+        "A"
+      ],
+      "days_ago": 0,
+      "hits": 1,
+      "case": "piège : contient le domaine sans en être un sous-domaine"
+    }
   ],
   "expected": [
-    {"rule": "CORR-01", "asset": "Pare-feu siège", "target": "CVE-2099-80001"},
-    {"rule": "CORR-02", "asset": "Messagerie", "target": "CVE-2099-80002"},
-    {"rule": "CORR-01", "asset": "Wiki interne", "target": "CVE-2099-80003"},
-    {"rule": "CORR-01", "asset": "Poste RH", "target": "CVE-2099-80009"},
-    {"rule": "CORR-03", "asset": "Pare-feu siège", "target": "198.51.100.10"},
-    {"rule": "CORR-03", "asset": "Pare-feu siège", "target": "vpn.corp.example"},
-    {"rule": "CORR-03", "asset": "Messagerie", "target": "mail.corp.example"}
+    {
+      "rule": "CORR-01",
+      "asset": "Pare-feu siège",
+      "target": "CVE-2099-80001"
+    },
+    {
+      "rule": "CORR-02",
+      "asset": "Messagerie",
+      "target": "CVE-2099-80002"
+    },
+    {
+      "rule": "CORR-01",
+      "asset": "Wiki interne",
+      "target": "CVE-2099-80003"
+    },
+    {
+      "rule": "CORR-01",
+      "asset": "Poste RH",
+      "target": "CVE-2099-80009"
+    },
+    {
+      "rule": "CORR-03",
+      "asset": "Pare-feu siège",
+      "target": "198.51.100.10"
+    },
+    {
+      "rule": "CORR-03",
+      "asset": "Pare-feu siège",
+      "target": "vpn.corp.example"
+    },
+    {
+      "rule": "CORR-03",
+      "asset": "Messagerie",
+      "target": "mail.corp.example"
+    },
+    {
+      "rule": "CORR-01",
+      "asset": "Serveur Linux",
+      "target": "CVE-2099-80011"
+    }
   ]
 }

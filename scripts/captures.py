@@ -12,6 +12,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from urllib.parse import quote
 
 from playwright.sync_api import Page, sync_playwright
 
@@ -19,28 +20,35 @@ BASE = sys.argv[1].rstrip("/")
 OUT = Path(sys.argv[2])
 PASSWORD = os.environ["CAPTURE_PASSWORD"]
 
+# Valeur longue de la démonstration (illwatch/modules/foundation/demo.py, LONG_URL) : la fiche
+# d'un IOC à rallonge doit tenir dans son panneau.
+LONG_URL = (
+    "https://secure-login.microsoftonline-verification.phish.example/common/oauth2/v2.0/"
+    "authorize?client_id=4765445b-32c6-49b0-83e6-1d93765276ca&response_type=code&redirect_uri="
+    "https%3A%2F%2Fsecure-login.microsoftonline-verification.phish.example%2Fcallback&scope="
+    "openid%20profile%20offline_access&state=a8f5f167f44f4964e6c998dee827110c&nonce="
+    "6f1ed002ab5595859014ebf0951522d9"
+)
+
 SCREENS = [
     ("01-vue-ensemble", "/"),
     ("02-triage", "/triage"),
     ("03-incidents", "/incidents"),
     ("05-indicateurs", "/indicateurs"),
     ("05b-indicateur-ip", "/indicateurs?valeur=203.0.113.50"),
+    ("05c-indicateur-url-longue", f"/indicateurs?valeur={quote(LONG_URL, safe='')}"),
     ("06-cve", "/cve"),
+    ("06b-cve-avis-long", "/cve?cve=CVE-2099-90011"),
     ("07-chasse", "/chasse"),
     ("08-sources", "/sources"),
     ("09-administration", "/administration"),
     ("09b-parametres", "/administration?onglet=parametres"),
+    ("09c-journal", "/administration?onglet=audit"),
     ("10-correlations", "/correlations"),
     ("11-inventaire", "/inventaire"),
 ]
-MOBILE = {
-    "01-vue-ensemble",
-    "02-triage",
-    "05-indicateurs",
-    "08-sources",
-    "09-administration",
-    "10-correlations",
-}
+# Téléphone : tous les écrans (les débordements y sont les plus fréquents).
+MOBILE = {name for name, _ in SCREENS}
 
 problems: list[str] = []
 
@@ -117,6 +125,23 @@ OVERFLOW_PROBE = """() => {
 }"""
 
 
+def shoot(page: Page, path: Path) -> None:
+    """Capture de toute la page : la zone principale défile seule, la fenêtre est donc agrandie
+    à la hauteur de son contenu le temps de la capture (6 000 px au plus)."""
+    size = page.viewport_size or {"width": 1440, "height": 900}
+    height = page.evaluate(
+        "() => { const m = document.querySelector('main');"
+        " return m ? m.scrollHeight + m.getBoundingClientRect().top + 8"
+        " : document.documentElement.scrollHeight; }"
+    )
+    page.set_viewport_size(
+        {"width": size["width"], "height": max(size["height"], min(int(height), 6000))}
+    )
+    page.wait_for_timeout(400)
+    page.screenshot(path=path, full_page=True)
+    page.set_viewport_size(size)
+
+
 def check(page: Page, name: str) -> None:
     text = page.inner_text("body")
     for marker in ("Données indisponibles", "Page introuvable", "Something went wrong"):
@@ -163,7 +188,7 @@ def main() -> int:
             page.goto(f"{BASE}{path}")
             settle(page)
             check(page, name)
-            page.screenshot(path=OUT / f"{name}.png", full_page=True)
+            shoot(page, OUT / f"{name}.png")
 
         # Page d'investigation : premier incident de la liste.
         page.goto(f"{BASE}/incidents")
@@ -173,7 +198,7 @@ def main() -> int:
             link.click()
             settle(page)
             check(page, "04-incident")
-            page.screenshot(path=OUT / "04-incident.png", full_page=True)
+            shoot(page, OUT / "04-incident.png")
         else:
             problems.append("aucun incident à ouvrir")
 
@@ -183,7 +208,16 @@ def main() -> int:
                 page.goto(f"{BASE}{path}")
                 settle(page)
                 check(page, f"{name}-mobile")
-                page.screenshot(path=OUT / f"{name}-mobile.png", full_page=True)
+                shoot(page, OUT / f"{name}-mobile.png")
+        # Investigation sur téléphone : titre long, chronologie, panneau d'actions.
+        page.goto(f"{BASE}/incidents")
+        settle(page)
+        link = page.locator("table a[href^='/incidents/']").first
+        if link.count():
+            link.click()
+            settle(page)
+            check(page, "04-incident-mobile")
+            shoot(page, OUT / "04-incident-mobile.png")
         browser.close()
 
     for problem in problems:

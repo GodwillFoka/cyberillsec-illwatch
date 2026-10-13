@@ -65,6 +65,7 @@ async def _load(session: AsyncSession, data: dict[str, Any], now: datetime) -> d
                 name=spec["name"],
                 product=spec["product"],
                 vendor=spec.get("vendor"),
+                version=spec.get("version"),
                 criticality=spec.get("criticality", Severity.MEDIUM),
                 addresses=spec.get("addresses", []),
                 domains=spec.get("domains", []),
@@ -80,6 +81,7 @@ async def _load(session: AsyncSession, data: dict[str, Any], now: datetime) -> d
                 has_public_exploit=spec["exploit"],
                 priority=spec["priority"],
                 composite_risk_score=spec["score"],
+                affected=spec.get("affected"),
                 published_date=now - timedelta(days=30),
                 last_modified_date=now - timedelta(days=1),
             )

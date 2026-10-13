@@ -124,6 +124,38 @@ def cves_sync(only: tuple[str, ...]) -> None:
         raise SystemExit(1)
 
 
+@cves.command("refresh-affected")
+@click.option(
+    "--limit", default=3000, show_default=True, help="CVE avec exploit à compléter au plus."
+)
+def cves_refresh_affected(limit: int) -> None:
+    """Récupère les produits et versions vulnérables (NVD) des CVE utiles à la corrélation.
+
+    À lancer une fois après la mise à jour (ADR-021) : toutes les CVE KEV, puis les CVE P0/P1
+    avec exploit public. Ensuite, la synchronisation habituelle les tient à jour.
+    """
+    from illwatch.modules.cve_tracker.engine import refresh_affected
+
+    console.print(
+        f"Produits et versions vulnérables : CVE KEV, puis exploits P0/P1{_nvd_pace(('nvd',))}…"
+    )
+
+    async def _work(session: AsyncSession) -> SyncReport:
+        return await refresh_affected(
+            session,
+            settings=get_settings(),
+            fetch=fetch_feed_content,
+            sleep=asyncio.sleep,
+            limit=limit,
+        )
+
+    report = _run(_work)
+    console.print(
+        f"[green]✓[/] {report.nvd} CVE complétées. Relancez [bold]illwatch correlate run[/] : "
+        f"les évènements hors des versions vulnérables seront clos."
+    )
+
+
 @cves.command("rescore")
 def cves_rescore() -> None:
     """Recalcule les priorités de toutes les CVE (après un changement de règle, ex. ADR-014).

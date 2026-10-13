@@ -9,9 +9,11 @@
 """
 
 from datetime import UTC, date, datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     CheckConstraint,
     Date,
@@ -64,6 +66,11 @@ class CVE(TimestampMixin, Base):
     )
     published_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     last_modified_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    # Produits et versions vulnérables (configurations CPE de la NVD), pour la corrélation
+    # avec l'inventaire (ADR-021). `None` : pas encore connus.
+    affected: Mapped[list[dict[str, Any]] | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True
+    )
 
     def __repr__(self) -> str:
         return f"<CVE {self.id} R={self.composite_risk_score}>"

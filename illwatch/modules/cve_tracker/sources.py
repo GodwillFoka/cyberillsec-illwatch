@@ -49,6 +49,9 @@ class NvdRecord:
     kev_date_added: date | None = None
     kev_due_date: date | None = None
     kev_required_action: str | None = None
+    # Produits et plages de versions vulnérables (configurations CPE de la NVD) ; `None` si
+    # la NVD n'en publie pas encore (CVE non analysée).
+    affected: list[dict[str, str]] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -119,6 +122,47 @@ def _cvss(metrics: Mapping[str, Any]) -> tuple[float | None, str | None]:
     return None, None
 
 
+_RANGE_KEYS = (
+    "versionStartIncluding",
+    "versionStartExcluding",
+    "versionEndIncluding",
+    "versionEndExcluding",
+)
+MAX_AFFECTED = 500
+
+
+def parse_affected(configurations: object) -> list[dict[str, str]] | None:
+    """Correspondances CPE « vulnérables » d'une CVE : éditeur, produit, version exacte ou
+    plage (`versionStartIncluding`… de la NVD). Toutes les branches sont retenues, sans la
+    logique ET/OU des plateformes : on préfère signaler une CVE de trop qu'en taire une."""
+    if not isinstance(configurations, list):
+        return None
+    found: list[dict[str, str]] = []
+    seen: set[tuple[str, ...]] = set()
+    for config in configurations:
+        nodes = config.get("nodes") if isinstance(config, dict) else None
+        for node in nodes if isinstance(nodes, list) else []:
+            matches = node.get("cpeMatch") if isinstance(node, dict) else None
+            for match in matches if isinstance(matches, list) else []:
+                if not isinstance(match, dict) or not match.get("vulnerable"):
+                    continue
+                parts = str(match.get("criteria") or "").split(":")
+                if len(parts) < 6 or parts[0] != "cpe":
+                    continue
+                entry = {"vendor": parts[3], "product": parts[4], "version": parts[5]}
+                for key in _RANGE_KEYS:
+                    if match.get(key):
+                        entry[key] = str(match[key])[:60]
+                signature = tuple(sorted(entry.items()))
+                if signature in seen:
+                    continue
+                seen.add(signature)
+                found.append(entry)
+                if len(found) >= MAX_AFFECTED:
+                    return found
+    return found or None
+
+
 def parse_nvd_page(content: bytes) -> NvdPage:
     document = _json(content, "NVD")
     if not isinstance(document, dict) or not isinstance(document.get("vulnerabilities"), list):
@@ -160,6 +204,7 @@ def parse_nvd_page(content: bytes) -> NvdPage:
                 kev_date_added=_date(cve.get("cisaExploitAdd")),
                 kev_due_date=_date(cve.get("cisaActionDue")),
                 kev_required_action=cve.get("cisaRequiredAction") or None,
+                affected=parse_affected(cve.get("configurations")),
             )
         )
     return page
@@ -230,6 +275,12 @@ def _nvd_date(value: datetime) -> str:
     return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%S.000+00:00")
 
 
+def nvd_pause(settings: Settings) -> float:
+    """Pause entre deux requêtes NVD : 0,6 s avec clé, 6 s sans (limites de l'API)."""
+    key = settings.nvd_api_key
+    return 0.6 if key is not None and key.get_secret_value() else 6.0
+
+
 async def fetch_nvd(
     settings: Settings,
     fetch: HeaderFetcher,
@@ -237,6 +288,7 @@ async def fetch_nvd(
     *,
     window: tuple[datetime, datetime] | None = None,
     has_kev: bool = False,
+    cve_id: str | None = None,
     on_page: Callable[[NvdPage], Awaitable[None]],
 ) -> int:
     """Parcourt toutes les pages d'une requête NVD ; `on_page` traite chaque page.
@@ -247,7 +299,7 @@ async def fetch_nvd(
     headers = {"Accept": "application/json"}
     if settings.nvd_api_key is not None and settings.nvd_api_key.get_secret_value():
         headers["apiKey"] = settings.nvd_api_key.get_secret_value()
-    pause = 0.6 if "apiKey" in headers else 6.0
+    pause = nvd_pause(settings)
 
     received = 0
     start_index = 0
@@ -257,6 +309,8 @@ async def fetch_nvd(
             "resultsPerPage": settings.nvd_results_per_page,
             "startIndex": start_index,
         }
+        if cve_id is not None:
+            params["cveId"] = cve_id
         if window is not None:
             params["lastModStartDate"] = _nvd_date(window[0])
             params["lastModEndDate"] = _nvd_date(window[1])
