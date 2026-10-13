@@ -17,7 +17,7 @@ Deux modes, selon que l'analyste soumet ou non des observables :
 |---------|-----------------------------------------------------------------|----------|
 | RULE-01 | Relais de sortie Tor (liste officielle torproject.org)          | MEDIUM   |
 | RULE-02 | Domaine chez un fournisseur de DNS dynamique gratuit            | HIGH     |
-| RULE-03 | Domaine à forte entropie (généré par algorithme, DGA)           | MEDIUM   |
+| RULE-03 | Domaine généré par algorithme (DGA : suite de lettres improbable) | MEDIUM   |
 | RULE-04 | IP d'infrastructure ransomware connue (IOC étiqueté)            | CRITICAL |
 | RULE-05 | CVE critique à exploit public touchant un actif de l'inventaire  | CRITICAL |
 | RULE-06 | Observable déjà connu comme IOC actif                           | IOC      |
@@ -31,6 +31,7 @@ from dataclasses import dataclass, field
 from urllib.parse import urlsplit
 from uuid import UUID
 
+from illwatch.modules.threat_hunting.dga_bigrams import bigram_cost
 from illwatch.shared.enums import IndicatorType, Severity
 
 # --- Données de référence ----------------------------------------------------------------
@@ -104,9 +105,16 @@ _TWO_LEVEL_SUFFIXES = frozenset(
         "com.ar",
     }
 )
+# RULE-03 v2 (14/10/2026), calibrée sur les 100 000 premiers domaines Tranco (workflow
+# « Calibration DGA ») : la v1 (entropie et voyelles) signalait 0,71 % de domaines légitimes
+# (« stackoverflow », « samsungelectronics ») ; le coût des bigrammes anglais distingue une suite
+# de mots d'une chaîne aléatoire.
 DGA_MIN_LENGTH = 12
-DGA_MIN_ENTROPY = 3.5
-DGA_MAX_VOWEL_RATIO = 0.35
+DGA_MIN_BIGRAM_COST = 5.5  # bits par transition (anglais ≈ 3,5 à 4,5 ; aléatoire ≈ 5,5 à 7)
+DGA_MIN_LETTERS = 8
+DGA_MIN_DIGIT_RATIO = 0.3  # chaînes alphanumériques ou hexadécimales aléatoires
+DGA_MIN_ALTERNATIONS = 4  # passages lettre ↔ chiffre (« web2023archive » : 2)
+DGA_MIN_ENTROPY = 3.3
 
 
 # --- Contexte et résultats ----------------------------------------------------------------
@@ -190,24 +198,34 @@ def shannon_entropy(text: str) -> float:
     return -sum(n / len(text) * math.log2(n / len(text)) for n in counts.values())
 
 
-def looks_generated(label: str) -> tuple[bool, float]:
-    """Heuristique DGA : libellé long, entropie élevée, peu de voyelles ou beaucoup de chiffres.
+def looks_generated(
+    label: str,
+    *,
+    min_length: int = DGA_MIN_LENGTH,
+    min_cost: float = DGA_MIN_BIGRAM_COST,
+) -> tuple[bool, float]:
+    """Heuristique DGA (v2) : libellé long dont les lettres forment une suite improbable en
+    anglais (coût moyen des bigrammes), ou mélange aléatoire de lettres et de chiffres.
 
-    Volontairement conservatrice (faux positifs coûteux) : un domaine IDN (`xn--`) ou un
-    libellé à tirets (mots composés) n'est jamais considéré comme généré.
+    Retourne (verdict, coût des bigrammes). Volontairement conservatrice (faux positifs
+    coûteux) : un domaine IDN (`xn--`) ou un libellé à tirets n'est jamais considéré comme
+    généré ; les DGA à dictionnaire (mots concaténés) lui échappent par construction.
     """
     clean = label.lower()
-    if len(clean) < DGA_MIN_LENGTH or clean.startswith("xn--") or "-" in clean:
-        return False, shannon_entropy(clean)
-    entropy = shannon_entropy(clean)
-    letters = [c for c in clean if c.isalpha()]
-    vowels = sum(1 for c in letters if c in "aeiouy")
+    cost = bigram_cost(clean)
+    if len(clean) < min_length or clean.startswith("xn--") or "-" in clean:
+        return False, cost
+    letters = sum(1 for c in clean if c.isalpha())
     digits = sum(1 for c in clean if c.isdigit())
-    vowel_ratio = vowels / len(letters) if letters else 0.0
-    generated = entropy >= DGA_MIN_ENTROPY and (
-        vowel_ratio <= DGA_MAX_VOWEL_RATIO or digits / len(clean) >= 0.25
-    )
-    return generated, entropy
+    pairs = zip(clean, clean[1:], strict=False)
+    alternations = sum(1 for a, b in pairs if a.isdigit() != b.isdigit())
+    if (
+        digits / len(clean) >= DGA_MIN_DIGIT_RATIO
+        and alternations >= DGA_MIN_ALTERNATIONS
+        and shannon_entropy(clean) >= DGA_MIN_ENTROPY
+    ):
+        return True, cost
+    return letters >= DGA_MIN_LETTERS and cost >= min_cost, cost
 
 
 # --- Règles --------------------------------------------------------------------------------
@@ -251,13 +269,13 @@ def _dga(ctx: HuntContext) -> Iterable[Match]:
         host = _host(o)
         if host is None:
             continue
-        generated, entropy = looks_generated(registered_label(host))
+        generated, cost = looks_generated(registered_label(host))
         if generated:
             yield Match(
                 "RULE-03",
                 Severity.MEDIUM,
                 o.value,
-                f"Nom probablement généré par algorithme (entropie {entropy:.2f} bits, "
+                f"Nom probablement généré par algorithme (coût des bigrammes {cost:.2f} bits, "
                 f"libellé « {registered_label(host)} »).",
                 o.indicator_id,
             )
@@ -332,8 +350,9 @@ CATALOG: tuple[Rule, ...] = (
     ),
     Rule(
         "RULE-03",
-        "Domaine à forte entropie (DGA)",
-        "Nom de domaine probablement généré par algorithme (entropie de Shannon élevée).",
+        "Domaine généré par algorithme (DGA)",
+        "Nom de domaine probablement généré par algorithme (suite de lettres improbable en "
+        "anglais, ou mélange aléatoire de lettres et de chiffres).",
         Severity.MEDIUM,
         False,
         _dga,

@@ -20,8 +20,8 @@
 | 2 | Enrichissement hors ligne des IP (pays, système autonome, DB-IP Lite, mise à jour mensuelle) | 019 | #34-35 |
 | 3 | Inventaire d'actifs, corrélation CORR-01 (KEV × actif), CORR-02 (exploit × actif), CORR-03 (actif dans un IOC), score justifié | 020 | #36 |
 | 4 | Mesure sur jeu figé, `illwatch correlate evaluate` | 020 | #36 |
-| Après mesure réelle | Corrélation par version (plages NVD), verdict « conditionnel » (plateformes), plateforme de l'actif, état et version dans la CLI et l'écran | 021 | #38-43, #44 |
-| Points en attente | Plages CIDR (type `NETWORK`, CORR-03 et RULE-06 par inclusion), calibration de RULE-03 (Tranco), plateforme de l'actif | 021 | #44 |
+| Après mesure réelle | Corrélation par version (plages NVD), verdict « conditionnel » (plateformes), plateforme de l'actif, état et version dans la CLI et l'écran | 021 | #38-43 |
+| Points en attente | Plages CIDR (type `NETWORK`, CORR-03 et RULE-06 par inclusion), calibration de RULE-03 (Tranco), plateforme de l'actif | 021 | #45 |
 
 ## Ce que la mesure réelle a appris
 

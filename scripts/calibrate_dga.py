@@ -6,16 +6,15 @@ Mesure, pour les seuils en vigueur et pour une grille de seuils voisins :
   légitimes par construction) ;
 - le **taux de détection** sur un corpus DGA **synthétique** et reproductible (graine fixe) :
   libellés aléatoires en lettres, alphanumériques et hexadécimaux, 12 à 24 caractères, soit
-  la famille de DGA visée par une heuristique d'entropie. Les DGA à dictionnaire (mots
-  concaténés : suppobox, matsnu) sont hors de portée de cette règle, par construction.
+  la famille de DGA visée par la règle. Les DGA à dictionnaire (mots concaténés : suppobox,
+  matsnu) sont hors de portée de cette règle, par construction.
 
 Usage (le workflow « Calibration DGA » télécharge la liste Tranco) :
 
     python3 scripts/calibrate_dga.py --tranco top-1m.csv --top 100000 --report dga.md
 
 Sortie : rapport Markdown et annotations GitHub (::notice::) lisibles depuis l'onglet Checks.
-Bibliothèque standard uniquement ; la règle réelle est importée pour vérifier que la
-réimplémentation paramétrée donne les mêmes verdicts aux seuils en vigueur.
+Bibliothèque standard uniquement ; la règle réelle est importée et évaluée à chaque seuil.
 """
 
 from __future__ import annotations
@@ -31,12 +30,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from illwatch.modules.threat_hunting.rules import (  # noqa: E402
-    DGA_MAX_VOWEL_RATIO,
-    DGA_MIN_ENTROPY,
+    DGA_MIN_BIGRAM_COST,
     DGA_MIN_LENGTH,
     looks_generated,
     registered_label,
-    shannon_entropy,
 )
 
 MAX_FALSE_POSITIVE_RATE = 0.001  # 1 domaine légitime sur 1 000 au plus
@@ -45,32 +42,17 @@ MAX_FALSE_POSITIVE_RATE = 0.001  # 1 domaine légitime sur 1 000 au plus
 @dataclass(frozen=True)
 class Thresholds:
     min_length: int
-    min_entropy: float
-    max_vowel_ratio: float
+    min_cost: float
 
     def label(self) -> str:
-        return (
-            f"longueur ≥ {self.min_length}, entropie ≥ {self.min_entropy:.2f}, "
-            f"voyelles ≤ {self.max_vowel_ratio:.2f}"
-        )
+        return f"longueur ≥ {self.min_length}, coût des bigrammes ≥ {self.min_cost:.2f} bits"
 
 
-CURRENT = Thresholds(DGA_MIN_LENGTH, DGA_MIN_ENTROPY, DGA_MAX_VOWEL_RATIO)
+CURRENT = Thresholds(DGA_MIN_LENGTH, DGA_MIN_BIGRAM_COST)
 
 
 def generated(label: str, t: Thresholds) -> bool:
-    """Même heuristique que `looks_generated`, aux seuils `t`."""
-    clean = label.lower()
-    if len(clean) < t.min_length or clean.startswith("xn--") or "-" in clean:
-        return False
-    entropy = shannon_entropy(clean)
-    letters = [c for c in clean if c.isalpha()]
-    vowels = sum(1 for c in letters if c in "aeiouy")
-    digits = sum(1 for c in clean if c.isdigit())
-    vowel_ratio = vowels / len(letters) if letters else 0.0
-    return entropy >= t.min_entropy and (
-        vowel_ratio <= t.max_vowel_ratio or digits / len(clean) >= 0.25
-    )
+    return looks_generated(label, min_length=t.min_length, min_cost=t.min_cost)[0]
 
 
 def benign_labels(path: Path, top: int) -> list[str]:
@@ -115,18 +97,10 @@ def main() -> int:
 
     benign = benign_labels(args.tranco, args.top)
     dga = synthetic_dga(args.synthetic)
-    # Garde-fou : la réimplémentation colle à la règle en production.
-    sample = benign[:5000] + dga[:3000]
-    drift = [x for x in sample if generated(x, CURRENT) != looks_generated(x)[0]]
-    if drift:
-        print(f"::error title=Calibration DGA::Réimplémentation divergente : {drift[:5]}")
-        return 1
-
     grid = [
-        Thresholds(length, entropy, vowels)
+        Thresholds(length, cost)
         for length in (10, 12, 14)
-        for entropy in (3.0, 3.25, 3.5, 3.75, 4.0)
-        for vowels in (0.25, 0.30, 0.35, 0.40)
+        for cost in (5.0, 5.25, 5.5, 5.75, 6.0, 6.25)
     ]
     results = []
     for t in grid:

@@ -17,6 +17,9 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   `plateforme`. Migration `b7e4d2a9c613`.
 - Calibration de RULE-03 : `scripts/calibrate_dga.py` et workflow « Calibration DGA » (faux
   positifs sur les 100 000 premiers domaines Tranco, détection sur un corpus synthétique).
+  Mesure de la v1 (entropie, voyelles) : **0,71 % de faux positifs**, 49,9 % de détection.
+- RULE-03 v2 : coût des bigrammes anglais (table tirée du dictionnaire SCOWL) et mélange
+  aléatoire lettres/chiffres ; « stackoverflow », « samsungelectronics » ne sont plus signalés.
 - `Rapport/BILAN_M8.md` : M8 clos.
 
 ### Corrigé — corrélation par version (ADR-021)

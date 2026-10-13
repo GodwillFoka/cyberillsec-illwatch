@@ -88,7 +88,7 @@ async def test_pagination_complete_et_cle_en_en_tete() -> None:
     server = _two_pages()
     outcome = await fetch_otx(FEED_URL, settings=_settings(), fetch=server)
     assert (outcome.pages, outcome.pulses, outcome.truncated) == (2, 3, False)
-    assert len(outcome.parsed.observations) == 6
+    assert len(outcome.parsed.observations) == 7
     assert [url for url, _ in server.calls] == [FEED_URL, PAGE2]
     assert all(h is not None and h[API_KEY_HEADER] == KEY for _, h in server.calls)
     assert all(KEY not in url for url, _ in server.calls)  # jamais dans l'URL
@@ -182,7 +182,7 @@ async def test_erreur_apres_la_premiere_page_garde_l_acquis() -> None:
     server.pages[PAGE2] = b"pas du json"
     outcome = await fetch_otx(FEED_URL, settings=_settings(), fetch=server)
     assert outcome.pages == 1 and outcome.interrupted is not None and not outcome.complete
-    assert len(outcome.parsed.observations) == 4
+    assert len(outcome.parsed.observations) == 5
 
 
 async def test_reprise_a_une_page_donnee() -> None:

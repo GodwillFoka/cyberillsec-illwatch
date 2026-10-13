@@ -55,6 +55,12 @@ def test_catalogue_conforme_au_cahier_des_charges() -> None:
         ("my-company-portal", False),  # tirets : noms composés
         ("xn--bcher-kva", False),  # IDN
         ("short1", False),
+        # v2 (14/10) : suites de mots que la v1 signalait sur les domaines Tranco.
+        ("stackoverflow", False),
+        ("samsungelectronics", False),
+        ("snowflakecomputing", False),
+        ("web2023archive2024", False),  # chiffres groupés, pas mélangés
+        ("a3f9c2e81b4d7f60", True),  # hexadécimal aléatoire
     ],
 )
 def test_heuristique_dga(label: str, generated: bool) -> None:
