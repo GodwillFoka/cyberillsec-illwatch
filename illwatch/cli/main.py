@@ -425,6 +425,7 @@ def _register_subcommands() -> None:
     from illwatch.cli.feeds import feeds
     from illwatch.cli.hunt import hunt
     from illwatch.cli.incidents import incidents
+    from illwatch.cli.soc import soc
     from illwatch.cli.status import status
     from illwatch.cli.taxii import taxii
 
@@ -438,6 +439,7 @@ def _register_subcommands() -> None:
     cli.add_command(feeds)
     cli.add_command(hunt)
     cli.add_command(incidents)
+    cli.add_command(soc)
     cli.add_command(taxii)
     cli.add_command(status)
 

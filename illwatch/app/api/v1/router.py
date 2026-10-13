@@ -14,6 +14,7 @@ from illwatch.app.api.v1 import (
     correlations,
     cves,
     dashboard,
+    exclusions,
     feeds,
     hunting,
     incidents,
@@ -49,6 +50,9 @@ api_router.include_router(hunting.router)
 # M8 — Detection & Correlation : inventaire d'actifs et évènements corrélés (ADR-020)
 api_router.include_router(assets.router)
 api_router.include_router(correlations.router)
+
+# M9 — SOC Operations : liste d'exclusion des IOC faux positifs (ADR-022)
+api_router.include_router(exclusions.router)
 
 # M7 — Production Hardening : journal d'audit de sécurité (ADR-011)
 api_router.include_router(audit.router)

@@ -38,6 +38,7 @@ from illwatch.modules.correlation.confidence import compute_confidence, source_r
 from illwatch.modules.correlation.versions import VERDICT_LABEL, assess, platforms
 from illwatch.modules.cve_tracker.scoring import classify_priority
 from illwatch.modules.enrichment.lookup import enrich_ip
+from illwatch.modules.threat_feeds.indicators import is_active_clause
 from illwatch.modules.threat_feeds.validators import network_contains
 from illwatch.shared.enums import (
     CorrelationRule,
@@ -238,7 +239,7 @@ async def _ioc_findings(
         await session.scalars(
             select(Indicator).where(
                 or_(*conditions),
-                or_(Indicator.expires_at.is_(None), Indicator.expires_at > now),
+                is_active_clause(now),
             )
         )
     ).all()
@@ -294,6 +295,7 @@ async def _ioc_findings(
 
 ACK_PRIORITY = "acknowledged_priority"  # priorité au moment de l'acquittement (dans `detail`)
 RESOLVED_AT = "resolved_at"  # l'évènement ne correspondait plus : clos par le moteur
+FALSE_POSITIVE = "false_positive"  # qualifié faux positif par un analyste (M9) : jamais rouvert
 
 
 def _upsert(
@@ -333,7 +335,11 @@ def _upsert(
         report.created += 1
         return
     previous = event.detail or {}
-    if event.acknowledged_at is not None:
+    if previous.get(FALSE_POSITIVE):
+        # Faux positif qualifié : l'évènement reste clos, la qualification est conservée.
+        detail[FALSE_POSITIVE] = previous[FALSE_POSITIVE]
+        detail[ACK_PRIORITY] = previous.get(ACK_PRIORITY, event.priority)
+    elif event.acknowledged_at is not None:
         ack_priority = str(previous.get(ACK_PRIORITY, event.priority))
         worse = _RANK[priority] < _RANK[RiskPriority(ack_priority)]
         if previous.get(RESOLVED_AT) or worse:

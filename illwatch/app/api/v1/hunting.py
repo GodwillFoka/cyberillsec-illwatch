@@ -39,6 +39,8 @@ class RuleRead(BaseModel):
     name: str
     description: str
     severity: Severity
+    version: int = Field(description="Version de la règle (règles versionnées, M9).")
+    changes: list[str] = Field(description="Historique des versions, de la plus ancienne.")
 
 
 class HuntRequest(BaseModel):
@@ -82,6 +84,8 @@ class HuntRead(BaseModel):
     errors: str | None
     started_at: datetime
     finished_at: datetime | None
+    rule_versions: dict[str, int] | None = None
+    incident_id: UUID | None = None
 
 
 class HuntDetail(HuntRead):
@@ -108,7 +112,14 @@ def _detail(hunt: HuntingSession) -> HuntDetail:
 @router.get("/rules", response_model=list[RuleRead], summary="Catalogue de règles (RF-26)")
 async def rules(_: CurrentUser) -> list[RuleRead]:
     return [
-        RuleRead(id=r.id, name=r.name, description=r.description, severity=r.severity)
+        RuleRead(
+            id=r.id,
+            name=r.name,
+            description=r.description,
+            severity=r.severity,
+            version=r.version,
+            changes=list(r.changes),
+        )
         for r in CATALOG
     ]
 

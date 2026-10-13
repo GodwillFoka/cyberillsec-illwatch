@@ -39,6 +39,7 @@ from illwatch.shared.enums import (
     IncidentStatus,
     RiskPriority,
     Severity,
+    SocTier,
     UserRole,
 )
 
@@ -70,6 +71,13 @@ INDICATOR_LABELS = {
     "HASH_SHA1": "SHA-1",
     "HASH_MD5": "MD5",
     "EMAIL": "e-mail",
+    "NETWORK": "plage",
+}
+TIER_ORDER = {SocTier.L1: 1, SocTier.L2: 2, SocTier.L3: 3}
+TIER_ROLE = {
+    SocTier.L1: "qualification",
+    SocTier.L2: "investigation",
+    SocTier.L3: "expertise et ingénierie de détection",
 }
 
 
@@ -87,6 +95,10 @@ class LinkTargetNotFoundError(LookupError):
 
 class InvalidAssigneeError(ValueError):
     """L'utilisateur ne peut pas être assigné (inactif ou lecteur seul)."""
+
+
+class InvalidEscalationError(ValueError):
+    """Escalade vers un niveau égal ou inférieur : refusée (409)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -157,6 +169,7 @@ async def list_incidents(
     open_only: bool = False,
     indicator_id: UUID | None = None,
     cve_id: str | None = None,
+    tier: SocTier | None = None,
 ) -> IncidentPage:
     """Les plus graves d'abord, puis les plus récents.
 
@@ -171,6 +184,8 @@ async def list_incidents(
         conditions.append(Incident.assigned_to == assigned_to)
     if open_only:
         conditions.append(Incident.status != IncidentStatus.CLOTURE)
+    if tier is not None:
+        conditions.append(Incident.tier == tier)
     if indicator_id is not None:
         conditions.append(
             select(IncidentIndicator.incident_id)
@@ -233,6 +248,7 @@ async def create_incident(
         description=description.strip() or clean_title,
         severity=Severity(severity),
         status=IncidentStatus.NOUVEAU,
+        tier=SocTier.L1,
         assigned_to=assigned_to,
         created_by=author_id,
         source_alert_id=source_alert_id,
@@ -329,6 +345,43 @@ async def assign(
         message = f"Incident assigné à {user.username}."
     incident.assigned_to = assignee
     session.add(_event(incident, IncidentEventType.ASSIGNED, message, author_id))
+    await session.flush()
+    return incident
+
+
+async def escalate(
+    session: AsyncSession,
+    incident_id: UUID,
+    *,
+    reason: str,
+    author_id: UUID | None,
+    target: SocTier | None = None,
+) -> Incident:
+    """Monte l'incident au niveau SOC supérieur (L1 → L2 → L3), motif obligatoire — M9.
+
+    L'escalade ne redescend jamais : un incident traité en L3 y reste jusqu'à sa clôture.
+    """
+    text = " ".join((reason or "").split())
+    if len(text) < 5:
+        raise ValueError("Motif d'escalade obligatoire (5 caractères au moins).")
+    incident = await get_incident(session, incident_id)
+    _ensure_open(incident)
+    current = SocTier(incident.tier)
+    wanted = target or next((t for t in SocTier if TIER_ORDER[t] == TIER_ORDER[current] + 1), None)
+    if wanted is None or TIER_ORDER[SocTier(wanted)] <= TIER_ORDER[current]:
+        raise InvalidEscalationError(
+            f"Incident déjà en {current} : l'escalade ne fait que monter (L1 → L2 → L3)."
+        )
+    wanted = SocTier(wanted)
+    incident.tier = wanted
+    session.add(
+        _event(
+            incident,
+            IncidentEventType.ESCALATED,
+            f"Escalade {current} → {wanted} ({TIER_ROLE[wanted]}). Motif : {text[:2000]}",
+            author_id,
+        )
+    )
     await session.flush()
     return incident
 
