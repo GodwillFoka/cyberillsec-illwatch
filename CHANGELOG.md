@@ -8,6 +8,21 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — clôture de M8 et points en attente
+- Plages CIDR : type d'IOC `NETWORK` (/16 à /31 en IPv4, /32 à /127 en IPv6 ; plages internes
+  et trop larges refusées ; /32 rangée comme adresse) ; OTX `CIDR` et motifs STIX acceptés ;
+  RULE-06 et CORR-03 par inclusion d'une adresse dans une plage.
+- Plateforme de l'actif (« Debian 12 ») : tranche le verdict « conditionnel » (vulnérable /
+  hors plateforme) ; écran Inventaire, API, `illwatch assets add --platform`, colonne CSV
+  `plateforme`. Migration `b7e4d2a9c613`.
+- Calibration de RULE-03 : `scripts/calibrate_dga.py` et workflow « Calibration DGA » (faux
+  positifs sur les 100 000 premiers domaines Tranco, détection sur un corpus synthétique).
+  Mesure de la v1 (entropie, voyelles) : **0,71 % de faux positifs**, 49,9 % de détection.
+- RULE-03 v2 : coût des bigrammes anglais (table tirée du dictionnaire SCOWL) et mélange
+  aléatoire lettres/chiffres, libellés de 14 caractères au moins : **0,094 % de faux positifs**
+  (÷ 7,5) et **64,1 % de détection** (+ 14 points) ; « stackoverflow » n'est plus signalé.
+- `Rapport/BILAN_M8.md` : M8 clos.
+
 ### Corrigé — corrélation par version (ADR-021)
 - Les plages vulnérables NVD (`configurations`) sont conservées par CVE (`cves.affected`,
   migration `e5b8c1d4a907`) ; la version déclarée de l'actif y est comparée : hors plage ou

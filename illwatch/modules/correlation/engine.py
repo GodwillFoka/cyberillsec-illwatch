@@ -38,6 +38,7 @@ from illwatch.modules.correlation.confidence import compute_confidence, source_r
 from illwatch.modules.correlation.versions import VERDICT_LABEL, assess, platforms
 from illwatch.modules.cve_tracker.scoring import classify_priority
 from illwatch.modules.enrichment.lookup import enrich_ip
+from illwatch.modules.threat_feeds.validators import network_contains
 from illwatch.shared.enums import (
     CorrelationRule,
     IndicatorType,
@@ -160,8 +161,8 @@ async def _cve_findings(session: AsyncSession, asset: Asset) -> list[Finding]:
     for cve in rows:
         if not pattern.search(cve.description):
             continue
-        verdict = assess(product, asset.version, cve.affected)
-        if verdict in ("autre_produit", "hors_plage"):
+        verdict = assess(product, asset.version, cve.affected, asset.platform)
+        if verdict in ("autre_produit", "hors_plage", "hors_plateforme"):
             # La NVD dit que ce produit n'est pas touché, ou pas dans cette version (ADR-021).
             continue
         rule = CorrelationRule.KEV_ASSET if cve.is_kev else CorrelationRule.EXPLOIT_ASSET
@@ -188,6 +189,7 @@ async def _cve_findings(session: AsyncSession, asset: Asset) -> list[Finding]:
                     "signals": signals,
                     "kev_due_date": cve.kev_due_date.isoformat() if cve.kev_due_date else None,
                     "version": asset.version,
+                    "platform": asset.platform,
                     "version_check": verdict,
                     "version_label": VERDICT_LABEL.get(verdict, verdict),
                     "version_platforms": (
@@ -222,6 +224,8 @@ async def _ioc_findings(
             Indicator.type.in_([IndicatorType.IPV4, IndicatorType.IPV6])
             & Indicator.value.in_(sorted(addresses))
         )
+        # Plages CIDR : peu nombreuses, l'inclusion est vérifiée ci-dessous.
+        conditions.append(Indicator.type == IndicatorType.NETWORK)
     for domain in sorted(domains):
         conditions.append(
             (Indicator.type == IndicatorType.DOMAIN)
@@ -241,6 +245,11 @@ async def _ioc_findings(
     cotes = await source_reliabilities(session, [i.id for i in candidates])
     found: list[Finding] = []
     for ioc in candidates:
+        inside: str | None = None
+        if ioc.type == IndicatorType.NETWORK:
+            inside = next((a for a in sorted(addresses) if network_contains(ioc.value, a)), None)
+            if inside is None:
+                continue
         last_seen = _utc(ioc.last_seen) or now
         confidence = compute_confidence(
             reliabilities=cotes.get(ioc.id, []),
@@ -260,14 +269,21 @@ async def _ioc_findings(
             "sources": len(cotes.get(ioc.id, [])),
             "description": ioc.description,
         }
-        if ioc.type in (IndicatorType.IPV4, IndicatorType.IPV6):
-            where = await enrich_ip(session, ioc.value)
+        if ioc.type in (IndicatorType.IPV4, IndicatorType.IPV6) or inside:
+            where = await enrich_ip(session, inside or ioc.value)
             detail.update(country=where.country, asn=where.asn, as_org=where.as_org)
+        if inside:
+            detail["address"] = inside
+        title = (
+            f"{inside} ({asset.name}) est dans la plage {ioc.value}, indicateur de compromission"
+            if inside
+            else f"{ioc.value} ({asset.name}) figure dans un indicateur de compromission"
+        )
         found.append(
             Finding(
                 rule=CorrelationRule.ASSET_IN_IOC,
                 asset=asset,
-                title=f"{ioc.value} ({asset.name}) figure dans un indicateur de compromission",
+                title=title,
                 signal=float(confidence.total),
                 indicator_id=ioc.id,
                 detail=detail,

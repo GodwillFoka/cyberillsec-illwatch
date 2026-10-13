@@ -35,6 +35,7 @@ class AssetRead(BaseModel):
     product: str
     vendor: str | None
     version: str | None
+    platform: str | None
     criticality: Severity
     addresses: list[str]
     domains: list[str]
@@ -55,6 +56,11 @@ class AssetWrite(BaseModel):
     )
     vendor: str | None = Field(default=None, max_length=120)
     version: str | None = Field(default=None, max_length=60)
+    platform: str | None = Field(
+        default=None,
+        max_length=80,
+        description="Système hôte (« Debian 12 ») : tranche les CVE propres à une plateforme.",
+    )
     criticality: Severity = Severity.MEDIUM
     addresses: list[str] = Field(default_factory=list, max_length=service.MAX_ENTRIES)
     domains: list[str] = Field(default_factory=list, max_length=service.MAX_ENTRIES)

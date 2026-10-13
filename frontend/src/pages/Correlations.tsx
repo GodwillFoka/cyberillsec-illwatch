@@ -200,6 +200,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
               <dt>Version</dt>
               <dd>
                 {text(detail, "version") ?? "non déclarée"}
+                {text(detail, "platform") ? ` sur ${text(detail, "platform")}` : ""}
                 {text(detail, "version_label") ? (
                   <span className="cell-sub"> · {text(detail, "version_label")}</span>
                 ) : null}

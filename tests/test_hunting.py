@@ -55,6 +55,12 @@ def test_catalogue_conforme_au_cahier_des_charges() -> None:
         ("my-company-portal", False),  # tirets : noms composés
         ("xn--bcher-kva", False),  # IDN
         ("short1", False),
+        # v2 (14/10) : suites de mots que la v1 signalait sur les domaines Tranco.
+        ("stackoverflow", False),
+        ("samsungelectronics", False),
+        ("snowflakecomputing", False),
+        ("web2023archive2024", False),  # chiffres groupés, pas mélangés
+        ("a3f9c2e81b4d7f60", True),  # hexadécimal aléatoire
     ],
 )
 def test_heuristique_dga(label: str, generated: bool) -> None:
@@ -271,3 +277,23 @@ async def test_api_hunting(
         "/api/v1/hunting/sessions", json={"rules": ["RULE-99"]}, headers=analyst
     )
     assert bad.status_code == 422
+
+
+async def test_adresse_dans_une_plage_cidr_connue(db_session: AsyncSession) -> None:
+    """RULE-06 : une adresse comprise dans une plage CIDR active est un IOC connu."""
+    await ingest_indicators(
+        db_session,
+        [Observation("45.67.89.0/24", description="Infrastructure C2 [test]")],
+        now=NOW - timedelta(hours=1),
+    )
+    hunt = await engine.run_hunt(
+        db_session,
+        settings=SETTINGS,
+        fetch=tor,
+        observables=["45.67.89.77", "45.67.90.1"],
+        rule_ids=["RULE-06"],
+        clock=lambda: NOW,
+    )
+    loaded = await engine.get_hunt(db_session, hunt.id)
+    assert [(m.rule_id, m.observable) for m in loaded.matches] == [("RULE-06", "45.67.89.77")]
+    assert "45.67.89.0/24" in loaded.matches[0].detail

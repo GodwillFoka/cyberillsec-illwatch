@@ -21,9 +21,13 @@ from sqlalchemy.orm import selectinload
 
 from illwatch.app.config import Settings
 from illwatch.app.models import CVE, CollectorState, HuntingMatch, HuntingSession, Indicator
-from illwatch.modules.threat_feeds.indicators import is_active_clause
+from illwatch.modules.threat_feeds.indicators import active_networks, is_active_clause
 from illwatch.modules.threat_feeds.secrets import mask_secrets
-from illwatch.modules.threat_feeds.validators import InvalidIndicatorError, normalize_indicator
+from illwatch.modules.threat_feeds.validators import (
+    InvalidIndicatorError,
+    network_contains,
+    normalize_indicator,
+)
 from illwatch.modules.threat_hunting.rules import (
     CATALOG,
     RULES,
@@ -85,6 +89,22 @@ async def _known_for(
         for ioc_id, ioc_type, value, description in rows.all():
             kind = IndicatorType(ioc_type)
             known[(kind, value)] = Observable(kind, value, ioc_id, description)
+    addresses = [
+        o
+        for o in observables
+        if o.type in (IndicatorType.IPV4, IndicatorType.IPV6) and (o.type, o.value) not in known
+    ]
+    if addresses:
+        # Une adresse comprise dans une plage CIDR active est connue par cette plage.
+        networks = await active_networks(session, now)
+        for o in addresses:
+            for net in networks:
+                if network_contains(net.value, o.value):
+                    note = f"dans la plage {net.value}" + (
+                        f" : {net.description}" if net.description else ""
+                    )
+                    known[(o.type, o.value)] = Observable(o.type, o.value, net.id, note)
+                    break
     return known
 
 

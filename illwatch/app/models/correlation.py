@@ -40,6 +40,9 @@ class Asset(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     product: Mapped[str] = mapped_column(String(120), nullable=False)
     vendor: Mapped[str | None] = mapped_column(String(120), nullable=True)
     version: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    # Système qui l'héberge (« Debian 12 », « Windows Server 2022 ») : tranche les CVE que la
+    # NVD ne déclare vulnérables que sur certaines plateformes (ADR-021, verdict conditionnel).
+    platform: Mapped[str | None] = mapped_column(String(80), nullable=True)
     criticality: Mapped[str] = mapped_column(String(10), nullable=False, default=Severity.MEDIUM)
     addresses: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     domains: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)

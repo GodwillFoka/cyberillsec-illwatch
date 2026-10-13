@@ -43,6 +43,7 @@ RELIABILITY_WEIGHT: dict[SourceReliability, float] = {
 HALF_LIFE_DAYS: dict[IndicatorType, float] = {
     IndicatorType.IPV4: 7,
     IndicatorType.IPV6: 7,
+    IndicatorType.NETWORK: 7,
     IndicatorType.URL: 14,
     IndicatorType.DOMAIN: 30,
     IndicatorType.EMAIL: 60,

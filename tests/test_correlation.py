@@ -350,3 +350,71 @@ def test_configurations_nvd() -> None:
             "platforms": "debian_linux 10.0 ; debian_linux 11.0 ; debian_linux 9.0",
         }
     ]
+
+
+async def test_actif_dans_une_plage_cidr(db_session: AsyncSession) -> None:
+    """CORR-03 : l'adresse d'un actif comprise dans une plage CIDR d'un IOC."""
+    await ingest_indicators(
+        db_session, [Observation("45.67.89.0/24", description="Plage C2 [test]")], now=NOW
+    )
+    await create_asset(
+        db_session,
+        AssetInput(name="Passerelle", product="Proxy maison", addresses=("45.67.89.12",)),
+    )
+    await create_asset(
+        db_session,
+        AssetInput(name="Ailleurs", product="Autre produit", addresses=("45.67.90.12",)),
+    )
+    report = await run_correlation(db_session, now=NOW, min_confidence=0)
+    assert dict(report.by_rule) == {"CORR-03": 1}
+    event = (await db_session.scalars(select(CorrelatedEvent))).one()
+    assert event.detail["value"] == "45.67.89.0/24" and event.detail["address"] == "45.67.89.12"
+    assert "45.67.89.12" in event.title and "45.67.89.0/24" in event.title
+
+
+async def test_plateforme_tranche_le_verdict_conditionnel(db_session: AsyncSession) -> None:
+    from illwatch.modules.correlation.versions import assess, platform_matches
+
+    assert platform_matches("Debian 12.5", "debian_linux 12.0")
+    assert not platform_matches("Debian 11", "debian_linux 12.0")
+    assert platform_matches("Windows Server 2022", "windows_server_2022")
+    assert not platform_matches("Kali Linux 2026.3", "debian_linux 11.0")
+    redis = [
+        {
+            "product": "redis",
+            "version": "-",
+            "platforms": "debian_linux 10.0 ; debian_linux 11.0 ; debian_linux 9.0",
+        }
+    ]
+    assert assess("Redis", "8.0.6", redis) == "conditionnel"
+    assert assess("Redis", "8.0.6", redis, "Kali Linux 2026.3") == "hors_plateforme"
+    assert assess("Redis", "6.0.16", redis, "Debian 11") == "vulnerable"
+
+    db_session.add(
+        CVE(
+            id="CVE-2099-80020",
+            description="Redis Lua sandbox escape in distribution packages",
+            is_kev=True,
+            has_public_exploit=True,
+            priority="P0_CRITIQUE",
+            composite_risk_score=80.0,
+            published_date=NOW - timedelta(days=10),
+            last_modified_date=NOW - timedelta(days=1),
+            affected=redis,
+        )
+    )
+    kali = await create_asset(
+        db_session,
+        AssetInput(name="Cache", product="Redis", version="8.0.6", platform="Kali Linux 2026.3"),
+    )
+    assert kali.platform == "Kali Linux 2026.3"
+    assert (await run_correlation(db_session, now=NOW, min_confidence=0)).created == 0
+    await update_asset(
+        db_session,
+        kali.id,
+        AssetInput(name="Cache", product="Redis", version="6.0.16", platform="Debian 11"),
+    )
+    report = await run_correlation(db_session, now=NOW, min_confidence=0)
+    assert report.created == 1
+    event = (await db_session.scalars(select(CorrelatedEvent))).one()
+    assert event.detail["version_check"] == "vulnerable" and event.detail["platform"] == "Debian 11"

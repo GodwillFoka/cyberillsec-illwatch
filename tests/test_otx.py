@@ -62,13 +62,14 @@ def test_analyse_d_une_page() -> None:
     assert [(o.value, o.type) for o in parsed.observations] == [
         ("203.0.113.10", IndicatorType.IPV4),
         ("c2-qakbot[.]example[.]net", IndicatorType.DOMAIN),
+        ("198.51.100.0/24", IndicatorType.NETWORK),
         ("https://login-banque.example.org/verify", IndicatorType.URL),
         ("44d88612fea8a8f36de82e1278abb02f", IndicatorType.HASH_MD5),
     ]
-    assert parsed.skipped == 3  # CVE, CIDR, indicateur inactif
+    assert parsed.skipped == 2  # CVE, indicateur inactif (les plages CIDR sont retenues)
     assert parsed.observations[0].description == "Campagne QakBot — infrastructure C2"
     # Sans date propre, l'IOC prend la date de modification du pulse.
-    assert parsed.observations[2].observed_at == datetime(2026, 9, 27, 9, 0, tzinfo=UTC)
+    assert parsed.observations[3].observed_at == datetime(2026, 9, 27, 9, 0, tzinfo=UTC)
 
 
 @pytest.mark.parametrize("content", [b"{pas du json", b'{"detail": "Authentication required"}'])
@@ -87,7 +88,7 @@ async def test_pagination_complete_et_cle_en_en_tete() -> None:
     server = _two_pages()
     outcome = await fetch_otx(FEED_URL, settings=_settings(), fetch=server)
     assert (outcome.pages, outcome.pulses, outcome.truncated) == (2, 3, False)
-    assert len(outcome.parsed.observations) == 6
+    assert len(outcome.parsed.observations) == 7
     assert [url for url, _ in server.calls] == [FEED_URL, PAGE2]
     assert all(h is not None and h[API_KEY_HEADER] == KEY for _, h in server.calls)
     assert all(KEY not in url for url, _ in server.calls)  # jamais dans l'URL
@@ -139,7 +140,7 @@ async def test_collecte_otx_de_bout_en_bout(
 
         assert report.succeeded, report.error
         assert feed.status == FeedStatus.HEALTHY
-        assert report.parsed == 6 and report.inserted == 5  # 203.0.113.10 vu deux fois
+        assert report.parsed == 7 and report.inserted == 6  # 203.0.113.10 vu deux fois
         assert "modified_since=2026-09-26T23%3A45%3A00" in server.calls[0][0]
         iocs = (await db_session.execute(select(Indicator))).scalars().all()
         assert "c2-qakbot.example.net" in {i.value for i in iocs}
@@ -181,7 +182,7 @@ async def test_erreur_apres_la_premiere_page_garde_l_acquis() -> None:
     server.pages[PAGE2] = b"pas du json"
     outcome = await fetch_otx(FEED_URL, settings=_settings(), fetch=server)
     assert outcome.pages == 1 and outcome.interrupted is not None and not outcome.complete
-    assert len(outcome.parsed.observations) == 4
+    assert len(outcome.parsed.observations) == 5
 
 
 async def test_reprise_a_une_page_donnee() -> None:
@@ -208,7 +209,7 @@ async def test_collecte_tronquee_reprend_a_la_page_suivante(
     try:
         feed = await _otx_feed(db_session)
         first = await collect_feed(db_session, feed, fetch=_two_pages(), clock=lambda: NOW)
-        assert first.succeeded and first.inserted == 4
+        assert first.succeeded and first.inserted == 5  # dont la plage CIDR
         assert first.warning is not None and "page 2" in first.warning
         state = await db_session.get(CollectorState, f"{OTX_STATE_PREFIX}{feed.id}")
         assert state is not None and state.items == 1
@@ -244,7 +245,7 @@ async def test_collecte_interrompue_garde_les_pages_lues(
 
         report = await collect_feed(db_session, feed, fetch=flaky, clock=lambda: NOW)
         assert report.succeeded and feed.status == FeedStatus.HEALTHY
-        assert report.inserted == 4
+        assert report.inserted == 5
         assert report.warning is not None and "interrompue page 2" in report.warning
         assert KEY not in report.warning
         state = await db_session.get(CollectorState, f"{OTX_STATE_PREFIX}{feed.id}")
