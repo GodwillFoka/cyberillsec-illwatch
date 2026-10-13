@@ -132,7 +132,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | Anciens volumes SENTRY sur Kali | espace disque | supprimés le 08/10 ; dernière sauvegarde `~/illwatch-migration/sentry.dump` conservée | ✅ |
 | Dépôt GitLab à renommer | liens de la documentation | renommé, `main` synchronisé (`955e2a1`) | ✅ |
 | Vérification depuis la session de travail : npm et PyPI bloqués (politique réseau), journaux CI illisibles, suppression de branches refusée | contrôle local impossible côté session | CI GitHub fait foi (erreurs remontées en annotations) ; `ci-local.sh` sur Kali ; workflow « Branches » | ✅ contourné proprement |
-| Pipeline GitLab non consultable depuis la session (connecteur en erreur, gitlab.com filtré) | jobs GitLab non constatés | contournement : workflow GitHub « Statut GitLab » qui lit l'API GitLab et publie le résultat en annotations ; secret `GITLAB_TOKEN` (read_api) posé par Godwill le 13/10 | 🟡 vérification |
+| Pipeline GitLab non consultable depuis la session (connecteur en erreur, gitlab.com filtré) | jobs GitLab non constatés | contournement : workflow GitHub « Statut GitLab » qui lit l'API GitLab et publie le résultat en annotations ; secret `GITLAB_TOKEN` (read_api) posé le 13/10 ; **constaté : pipeline #2944320344 (`5ff53e4`) vert, 12/12 jobs** (dont `openapi`, `interface`, SAST, secrets, image) | ✅ |
 | Source RedEye (osint.digitalside.it) en délai dépassé côté serveur ; IPsum à 50 % de réussite | collectes en échec, bruit dans la santé des sources | suspendre RedEye depuis l'écran Sources tant que le serveur ne répond pas | ⏳ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
 | Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | — |
