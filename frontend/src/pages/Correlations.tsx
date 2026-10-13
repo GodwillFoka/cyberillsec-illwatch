@@ -24,6 +24,15 @@ type Scope = "open" | "all";
 
 const RESPONDER_ROLES = new Set(["ADMIN", "ANALYST"]);
 
+/** État lisible : un évènement clos par le moteur n'a pas été acquitté par un analyste. */
+function stateLabel(acknowledgedAt: string | null | undefined, resolvedAt: string | null, utc: boolean): string {
+  if (resolvedAt) {
+    const when = parseDate(resolvedAt);
+    return `clos automatiquement${when ? ` le ${formatDateTime(when, utc)}` : ""} : ne correspond plus (version hors plage, autre produit, IOC expiré…)`;
+  }
+  return acknowledgedAt ? "acquitté" : "à traiter";
+}
+
 export const RULE_LABEL: Record<string, string> = {
   "CORR-01": "CVE exploitée (KEV)",
   "CORR-02": "Exploit public",
@@ -188,6 +197,13 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
               </dd>
               <dt>Produit reconnu</dt>
               <dd>{text(detail, "product") ?? "—"}</dd>
+              <dt>Version</dt>
+              <dd>
+                {text(detail, "version") ?? "non déclarée"}
+                {text(detail, "version_label") ? (
+                  <span className="cell-sub"> · {text(detail, "version_label")}</span>
+                ) : null}
+              </dd>
               <dt>Signaux</dt>
               <dd>{signals.length ? signals.join(", ") : "—"}</dd>
               {text(detail, "kev_due_date") && (
@@ -260,7 +276,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
           <dt>Dernière confirmation</dt>
           <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "—"}</dd>
           <dt>État</dt>
-          <dd>{event.acknowledged_at ? "acquitté" : "à traiter"}</dd>
+          <dd>{stateLabel(event.acknowledged_at, text(detail, "resolved_at"), utc)}</dd>
         </dl>
       </section>
 
