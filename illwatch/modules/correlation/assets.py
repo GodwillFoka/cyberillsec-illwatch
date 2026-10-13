@@ -138,10 +138,12 @@ async def create_asset(session: AsyncSession, data: AssetInput) -> Asset:
 
 async def update_asset(session: AsyncSession, asset_id: UUID, data: AssetInput) -> Asset:
     asset = await get_asset(session, asset_id)
-    _apply(asset, data)
-    other = await find_asset(session, asset.name)
+    # Doublon vérifié AVANT de modifier l'objet : sinon la requête de contrôle déclencherait
+    # l'écriture du nouveau nom et l'erreur d'unicité de la base au lieu d'un refus lisible.
+    other = await find_asset(session, data.name)
     if other is not None and other.id != asset.id:
-        raise AssetExistsError(f"Un actif nommé « {asset.name} » existe déjà.")
+        raise AssetExistsError(f"Un actif nommé « {' '.join(data.name.split())} » existe déjà.")
+    _apply(asset, data)
     await session.flush()
     return asset
 

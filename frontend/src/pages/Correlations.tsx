@@ -132,7 +132,7 @@ function EventTable({
 
 // --- Détail -----------------------------------------------------------------------------------
 
-function EventDetail({ event }: { event: Correlation }) {
+function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: string) => void }) {
   const { utc } = useTimeZone();
   const { user } = useAuth();
   const { navigate } = useLocation();
@@ -281,7 +281,7 @@ function EventDetail({ event }: { event: Correlation }) {
             className="btn"
             type="button"
             disabled={!canAct || Boolean(event.acknowledged_at) || ack.isPending}
-            onClick={() => ack.mutate(event.id)}
+            onClick={() => ack.mutate(event.id, { onSuccess: () => onPinned(event.id) })}
           >
             {ack.isPending ? "Acquittement…" : "Acquitter"}
           </button>
@@ -294,7 +294,14 @@ function EventDetail({ event }: { event: Correlation }) {
               className="btn primary"
               type="button"
               disabled={!canAct || toIncident.isPending}
-              onClick={() => toIncident.mutate(event.id, { onSuccess: (r) => setOpenedId(r.incident_id) })}
+              onClick={() =>
+                toIncident.mutate(event.id, {
+                  onSuccess: (r) => {
+                    setOpenedId(r.incident_id);
+                    onPinned(event.id);
+                  },
+                })
+              }
             >
               {toIncident.isPending ? "Ouverture…" : "Ouvrir l'incident"}
             </button>
@@ -312,14 +319,27 @@ export function Correlations() {
   const { search, navigate } = useLocation();
   const { user } = useAuth();
   const [scope, setScope] = useState<Scope>("open");
-  const query = useCorrelations(scope);
+  const params = new URLSearchParams(search);
+  const assetId = asUuid(params.get("actif"));
+  const query = useCorrelations(scope, assetId);
   const run = useRunCorrelation();
-  const requested = asUuid(new URLSearchParams(search).get("evenement"));
+  const requested = asUuid(params.get("evenement"));
   const events = query.data?.items ?? [];
-  const selected = events.find((e) => e.id === requested) ?? (requested ? undefined : [...events].sort(byGravity)[0]);
+  const found = events.find((e) => e.id === requested) ?? (requested ? undefined : [...events].sort(byGravity)[0]);
+  // Acquitté ou passé en incident, l'évènement quitte la file « À traiter » : son panneau reste
+  // affiché (avec le lien vers l'incident) tant que l'analyste n'en choisit pas un autre.
+  const [kept, setKept] = useState<Correlation | null>(null);
+  useEffect(() => {
+    if (found) setKept(found);
+  }, [found]);
+  const selected = found ?? (kept && kept.id === requested ? kept : undefined);
   const canRun = user ? RESPONDER_ROLES.has(user.role) : false;
+  const assetName = assetId ? (events[0]?.asset_name ?? "cet actif") : null;
 
-  const select = (id: string) => navigate(`/correlations?evenement=${encodeURIComponent(id)}`, { replace: true });
+  const select = (id: string) => {
+    const filter = assetId ? `&actif=${encodeURIComponent(assetId)}` : "";
+    navigate(`/correlations?evenement=${encodeURIComponent(id)}${filter}`, { replace: true });
+  };
 
   return (
     <>
@@ -349,8 +369,14 @@ export function Correlations() {
           <div className="toolbar">
             <span className="muted">
               {query.data
-                ? `${formatNumber(query.data.total)} évènement${query.data.total > 1 ? "s" : ""}${scope === "open" ? " à traiter" : ""}`
+                ? `${formatNumber(query.data.total)} évènement${query.data.total > 1 ? "s" : ""}${scope === "open" ? " à traiter" : ""}${query.data.total > events.length ? ` · ${events.length} plus graves affichés` : ""}`
                 : " "}
+              {assetName && (
+                <>
+                  {" "}
+                  · {assetName} · <Link to="/correlations">tous les actifs</Link>
+                </>
+              )}
             </span>
             <div className="seg" role="group" aria-label="Évènements affichés">
               <button type="button" aria-pressed={scope === "open"} onClick={() => setScope("open")}>
@@ -376,7 +402,7 @@ export function Correlations() {
         </section>
 
         {selected ? (
-          <EventDetail event={selected} />
+          <EventDetail event={selected} onPinned={select} />
         ) : (
           <aside className="card detail">
             <p className="empty">

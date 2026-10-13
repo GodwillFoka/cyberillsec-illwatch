@@ -90,7 +90,7 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
         </div>
         {asset && (
           <p className="small">
-            <Link to={`/correlations`}>Voir les corrélations</Link>
+            <Link to={`/correlations?actif=${encodeURIComponent(asset.id)}`}>Voir ses corrélations</Link>
           </p>
         )}
       </section>
@@ -157,11 +157,6 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
         </label>
       </section>
       <section>
-        {save.isSuccess && (
-          <p className="notice ok" role="status">
-            Enregistré. La prochaine passe de corrélation en tiendra compte.
-          </p>
-        )}
         {error && (
           <p className="notice error" role="alert">
             Refusé : {error.message}
@@ -204,8 +199,12 @@ export function Inventory() {
   const assets = query.data ?? [];
   const selected = creating ? null : (assets.find((a) => a.id === requested) ?? (requested ? null : assets[0] ?? null));
   const canEdit = user ? EDITOR_ROLES.has(user.role) : false;
+  const [flash, setFlash] = useState<string | null>(null);
 
-  const select = (id: string) => navigate(`/inventaire?actif=${encodeURIComponent(id)}`, { replace: true });
+  const select = (id: string) => {
+    setFlash(null);
+    navigate(`/inventaire?actif=${encodeURIComponent(id)}`, { replace: true });
+  };
 
   return (
     <>
@@ -222,6 +221,11 @@ export function Inventory() {
         )}
       </div>
 
+      {flash && (
+        <p className="notice ok gap-bottom" role="status">
+          {flash}
+        </p>
+      )}
       <div className="split">
         <section className="card">
           <div className="toolbar">
@@ -282,8 +286,14 @@ export function Inventory() {
         {selected || creating || canEdit ? (
           <AssetForm
             asset={selected}
-            onSaved={(saved) => select(saved.id)}
-            onDeleted={() => navigate("/inventaire", { replace: true })}
+            onSaved={(saved) => {
+              select(saved.id);
+              setFlash(`« ${saved.name} » enregistré : la prochaine passe de corrélation en tiendra compte.`);
+            }}
+            onDeleted={() => {
+              navigate("/inventaire", { replace: true });
+              setFlash("Actif supprimé, avec ses évènements corrélés.");
+            }}
           />
         ) : (
           <aside className="card detail">

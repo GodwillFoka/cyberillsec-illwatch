@@ -407,6 +407,16 @@ async def _maybe_correlate(lock: FeedLock) -> None:
     if token is None:
         return
     try:
+        # Tentative consignée AVANT la passe, dans sa propre transaction : une passe en échec
+        # n'est retentée qu'à l'intervalle suivant, pas à chaque cycle du worker. Et un second
+        # worker qui a pris le verrou juste après le premier ne la refait pas.
+        async with get_session_factory()() as session:
+            if not await engine.correlation_due(
+                session, interval_seconds=settings.correlation_interval_seconds, now=now
+            ):
+                return
+            await engine.mark_correlation(session, now, 0)
+            await session.commit()
         async with get_session_factory()() as session:
             report = await engine.run_correlation(
                 session, now=now, min_confidence=settings.correlation_min_confidence
@@ -420,38 +430,55 @@ async def _maybe_correlate(lock: FeedLock) -> None:
 
 ENRICHMENT_STATE = "enrichment"
 ENRICHMENT_MAX_AGE_DAYS = 32
+ENRICHMENT_RETRY_HOURS = 24
+ENRICHMENT_LOCK_SECONDS = 3600
 
 
 async def _maybe_refresh_enrichment(lock: FeedLock) -> None:
-    """Bases DB-IP de plus de 32 jours : nouveau téléchargement (ADR-019). Jamais la première
-    fois : l'administrateur lance lui-même le premier `illwatch enrich update`."""
+    """Bases DB-IP de plus de 32 jours : nouveau téléchargement (ADR-019), une tentative par
+    jour au plus. Jamais la première fois : l'administrateur lance lui-même le premier
+    `illwatch enrich update`."""
     from datetime import UTC, datetime, timedelta
 
     from illwatch.app.database import get_session_factory
-    from illwatch.modules.enrichment.dbip import DatasetImportError, import_dataset, open_lines
+    from illwatch.app.models import CollectorState
+    from illwatch.modules.enrichment.dbip import import_dataset, open_lines
     from illwatch.modules.enrichment.download import download_latest
     from illwatch.modules.enrichment.lookup import datasets
-    from illwatch.modules.threat_feeds.fetcher import FetchError
     from illwatch.shared.enums import EnrichmentDataset
 
     settings = get_settings()
     if not settings.enrichment_auto_update:
         return
     now = datetime.now(UTC)
+
+    def _utc(value: datetime) -> datetime:
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
+
     async with get_session_factory()() as session:
         imported = await datasets(session)
+        state = await session.get(CollectorState, ENRICHMENT_STATE)
+        last_try = None if state is None or state.last_success_at is None else state.last_success_at
+    if last_try is not None and now - _utc(last_try) < timedelta(hours=ENRICHMENT_RETRY_HOURS):
+        return
     stale = [
         EnrichmentDataset(d.dataset)
         for d in imported
-        if now - (d.imported_at if d.imported_at.tzinfo else d.imported_at.replace(tzinfo=UTC))
-        > timedelta(days=ENRICHMENT_MAX_AGE_DAYS)
+        if now - _utc(d.imported_at) > timedelta(days=ENRICHMENT_MAX_AGE_DAYS)
     ]
     if not stale:
         return
-    token = await lock.acquire(ENRICHMENT_STATE, settings.collect_lock_ttl_seconds)
+    token = await lock.acquire(ENRICHMENT_STATE, ENRICHMENT_LOCK_SECONDS)
     if token is None:
         return
     try:
+        async with get_session_factory()() as session:
+            state = await session.get(CollectorState, ENRICHMENT_STATE)
+            if state is None:
+                state = CollectorState(name=ENRICHMENT_STATE, items=0)
+                session.add(state)
+            state.last_success_at = now  # tentative du jour, réussie ou non
+            await session.commit()
         for dataset in stale:
             try:
                 async with (
@@ -465,10 +492,10 @@ async def _maybe_refresh_enrichment(lock: FeedLock) -> None:
                     "worker.enrichment",
                     extra={"fields": {"dataset": dataset.value, "ranges": report.ranges}},
                 )
-            except (FetchError, DatasetImportError) as exc:
+            except Exception as exc:  # noqa: BLE001 - nouvel essai demain, le worker continue
                 collector.log.warning(
                     "worker.enrichment_failed",
-                    extra={"fields": {"dataset": dataset.value, "error": str(exc)}},
+                    extra={"fields": {"dataset": dataset.value, "error": str(exc)[:300]}},
                 )
     finally:
         await lock.release(ENRICHMENT_STATE, token)

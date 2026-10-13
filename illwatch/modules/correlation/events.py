@@ -8,6 +8,7 @@ from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import Asset, CorrelatedEvent, Incident
+from illwatch.modules.correlation.engine import ACK_PRIORITY
 from illwatch.modules.incidents import service as incidents
 from illwatch.shared.enums import RiskPriority, Severity
 
@@ -82,20 +83,39 @@ async def get_event(session: AsyncSession, event_id: UUID) -> tuple[CorrelatedEv
     return row[0], row[1]
 
 
+def _mark_acknowledged(event: CorrelatedEvent, user_id: UUID | None) -> None:
+    """Acquitte en retenant la priorité du moment : le moteur ne rouvrira l'évènement que
+    s'il devient plus grave que cela (ADR-020)."""
+    if event.acknowledged_at is not None:
+        return
+    event.acknowledged_at = datetime.now(UTC)
+    event.acknowledged_by = user_id
+    event.detail = {**(event.detail or {}), ACK_PRIORITY: event.priority}
+
+
+async def _locked(session: AsyncSession, event_id: UUID) -> CorrelatedEvent:
+    event = await session.scalar(
+        select(CorrelatedEvent).where(CorrelatedEvent.id == event_id).with_for_update()
+    )
+    if event is None:
+        raise CorrelationNotFoundError(f"Évènement corrélé {event_id} introuvable.")
+    return event
+
+
 async def acknowledge(session: AsyncSession, event_id: UUID, user_id: UUID) -> CorrelatedEvent:
-    event, _ = await get_event(session, event_id)
-    if event.acknowledged_at is None:
-        event.acknowledged_at = datetime.now(UTC)
-        event.acknowledged_by = user_id
-        await session.flush()
+    event = await _locked(session, event_id)
+    _mark_acknowledged(event, user_id)
+    await session.flush()
     return event
 
 
 async def open_incident(
     session: AsyncSession, event_id: UUID, *, author_id: UUID | None
 ) -> tuple[Incident, bool]:
-    """Incident de réponse à un évènement corrélé (idempotent : un seul incident par évènement)."""
-    event, asset_name = await get_event(session, event_id)
+    """Incident de réponse à un évènement corrélé (idempotent : un seul incident par évènement ;
+    la ligne est verrouillée, deux clics simultanés n'ouvrent pas deux incidents)."""
+    event = await _locked(session, event_id)
+    _, asset_name = await get_event(session, event_id)
     if event.incident_id is not None:
         existing = await session.get(Incident, event.incident_id)
         if existing is not None:
@@ -121,9 +141,7 @@ async def open_incident(
             session, incident.id, author_id=author_id, indicator_id=event.indicator_id
         )
     event.incident_id = incident.id
-    if event.acknowledged_at is None:
-        event.acknowledged_at = datetime.now(UTC)
-        event.acknowledged_by = author_id
+    _mark_acknowledged(event, author_id)
     await session.flush()
     return incident, True
 

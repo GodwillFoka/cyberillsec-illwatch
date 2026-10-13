@@ -21,6 +21,7 @@ Correspondance produit ↔ CVE : nom du produit en mot entier dans la descriptio
 actif mal nommé produit du bruit, d'où la mesure de l'incrément 4.
 """
 
+import contextlib
 import ipaddress
 import re
 from collections import Counter
@@ -29,6 +30,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import ColumnElement, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import CVE, Asset, CollectorState, CorrelatedEvent, Indicator
@@ -78,6 +80,7 @@ class CorrelationReport:
     created: int = 0
     updated: int = 0
     reopened: int = 0
+    resolved: int = 0
     by_rule: Counter[str] = field(default_factory=Counter)
 
     def as_dict(self) -> dict[str, Any]:
@@ -86,6 +89,7 @@ class CorrelationReport:
             "created": self.created,
             "updated": self.updated,
             "reopened": self.reopened,
+            "resolved": self.resolved,
             "by_rule": dict(self.by_rule),
         }
 
@@ -102,8 +106,9 @@ class Finding:
 
     @property
     def key(self) -> str:
-        target = self.cve_id or str(self.indicator_id)
-        return f"{self.rule.value}:{self.asset.id}:{target}"
+        # Sans la règle : un même couple (actif, CVE) passe de CORR-02 à CORR-01 sans doublon.
+        target = f"cve:{self.cve_id}" if self.cve_id else f"ioc:{self.indicator_id}"
+        return f"{self.asset.id}:{target}"
 
     def breakdown(self) -> dict[str, float]:
         weight = CVE_SIGNAL_WEIGHT if self.cve_id else IOC_SIGNAL_WEIGHT
@@ -260,46 +265,60 @@ async def _ioc_findings(
     return found
 
 
-async def _upsert(
-    session: AsyncSession, finding: Finding, now: datetime, report: CorrelationReport
+ACK_PRIORITY = "acknowledged_priority"  # priorité au moment de l'acquittement (dans `detail`)
+RESOLVED_AT = "resolved_at"  # l'évènement ne correspondait plus : clos par le moteur
+
+
+def _upsert(
+    session: AsyncSession,
+    existing: dict[str, CorrelatedEvent],
+    finding: Finding,
+    now: datetime,
+    report: CorrelationReport,
 ) -> None:
     score = finding.score()
     priority = classify_priority(score)
-    detail = {
+    detail: dict[str, Any] = {
         **finding.detail,
         "rule_label": RULE_LABEL[finding.rule],
         "asset": finding.asset.name,
         "asset_criticality": str(finding.asset.criticality),
         "breakdown": finding.breakdown(),
     }
-    event = await session.scalar(
-        select(CorrelatedEvent).where(CorrelatedEvent.dedup_key == finding.key)
-    )
     report.by_rule[finding.rule.value] += 1
+    event = existing.get(finding.key)
     if event is None:
-        session.add(
-            CorrelatedEvent(
-                rule_id=finding.rule.value,
-                dedup_key=finding.key,
-                priority=priority.value,
-                score=score,
-                title=finding.title[:300],
-                detail=detail,
-                asset_id=finding.asset.id,
-                cve_id=finding.cve_id,
-                indicator_id=finding.indicator_id,
-                first_seen=now,
-                last_seen=now,
-            )
+        event = CorrelatedEvent(
+            rule_id=finding.rule.value,
+            dedup_key=finding.key,
+            priority=priority.value,
+            score=score,
+            title=finding.title[:300],
+            detail=detail,
+            asset_id=finding.asset.id,
+            cve_id=finding.cve_id,
+            indicator_id=finding.indicator_id,
+            first_seen=now,
+            last_seen=now,
         )
+        session.add(event)
+        existing[finding.key] = event
         report.created += 1
         return
-    previous = RiskPriority(event.priority)
-    if event.acknowledged_at is not None and _RANK[priority] < _RANK[previous]:
-        # Plus grave qu'au moment de l'acquittement : l'évènement redemande l'attention.
-        event.acknowledged_at = None
-        event.acknowledged_by = None
-        report.reopened += 1
+    previous = event.detail or {}
+    if event.acknowledged_at is not None:
+        ack_priority = str(previous.get(ACK_PRIORITY, event.priority))
+        worse = _RANK[priority] < _RANK[RiskPriority(ack_priority)]
+        if previous.get(RESOLVED_AT) or worse:
+            # Correspond de nouveau après avoir été clos, ou plus grave qu'au moment de
+            # l'acquittement : l'évènement redemande l'attention.
+            event.acknowledged_at = None
+            event.acknowledged_by = None
+            report.reopened += 1
+        else:
+            detail[ACK_PRIORITY] = ack_priority
+    # La règle peut changer pour un même couple (CVE entrée au catalogue KEV : CORR-02 → 01).
+    event.rule_id = finding.rule.value
     event.priority = priority.value
     event.score = score
     event.title = finding.title[:300]
@@ -308,12 +327,35 @@ async def _upsert(
     report.updated += 1
 
 
+async def _lock_pass(session: AsyncSession) -> None:
+    """Sérialise les passes (worker, bouton, CLI) : la seconde attend la fin de la première,
+    puis retrouve ses évènements au lieu d'en créer des doublons. Verrou de ligne PostgreSQL
+    (SQLite, sans concurrence ici, l'ignore)."""
+    if await session.get(CollectorState, CORRELATION_STATE) is None:
+        # Création concurrente possible : le point de sauvegarde annule seulement ce doublon.
+        with contextlib.suppress(IntegrityError):
+            async with session.begin_nested():
+                session.add(CollectorState(name=CORRELATION_STATE, items=0))
+    await session.execute(
+        select(CollectorState.name)
+        .where(CollectorState.name == CORRELATION_STATE)
+        .with_for_update()
+    )
+
+
 async def run_correlation(
     session: AsyncSession, *, now: datetime | None = None, min_confidence: int = 40
 ) -> CorrelationReport:
-    """Passe complète sur les actifs actifs. L'appelant valide la transaction."""
+    """Passe complète sur les actifs en service. L'appelant valide la transaction.
+
+    Un évènement encore ouvert qui ne correspond plus (IOC expiré, actif retiré, CVE sortie
+    des critères) est clos par le moteur ; il se rouvre s'il correspond de nouveau.
+    """
     moment = now or datetime.now(UTC)
     report = CorrelationReport()
+    await _lock_pass(session)
+    existing = {e.dedup_key: e for e in (await session.scalars(select(CorrelatedEvent))).all()}
+    seen: set[str] = set()
     assets = (
         await session.scalars(select(Asset).where(Asset.is_active.is_(True)).order_by(Asset.name))
     ).all()
@@ -322,7 +364,16 @@ async def run_correlation(
         findings = await _cve_findings(session, asset)
         findings += await _ioc_findings(session, asset, now=moment, min_confidence=min_confidence)
         for finding in findings:
-            await _upsert(session, finding, moment, report)
+            if finding.key in seen:
+                continue
+            seen.add(finding.key)
+            _upsert(session, existing, finding, moment, report)
+    for key, event in existing.items():
+        if key in seen or event.acknowledged_at is not None:
+            continue
+        event.acknowledged_at = moment
+        event.detail = {**(event.detail or {}), RESOLVED_AT: moment.isoformat()}
+        report.resolved += 1
     await session.flush()
     return report
 

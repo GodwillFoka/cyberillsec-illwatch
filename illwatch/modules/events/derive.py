@@ -74,7 +74,9 @@ def _events_for(obj: Any, *, new: bool) -> list[Event]:
                     {"id": str(obj.id), "rule": obj.rule_id, "priority": str(obj.priority)},
                 )
             ]
-        if _added(obj, "acknowledged_at") or _added(obj, "incident_id"):
+        changed = inspect(obj).attrs["acknowledged_at"].history.has_changes()
+        if changed or _added(obj, "incident_id"):
+            # Acquitté, clos par le moteur ou rouvert : le compteur du menu change.
             return [Event("correlation.updated", {"id": str(obj.id)})]
         return []
     if isinstance(obj, HuntingSession) and _added(obj, "finished_at"):

@@ -11,9 +11,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import CVE, CorrelatedEvent, Incident
 from illwatch.app.security import create_access_token
-from illwatch.modules.correlation.assets import AssetError, AssetInput, create_asset
+from illwatch.modules.correlation.assets import (
+    AssetError,
+    AssetExistsError,
+    AssetInput,
+    create_asset,
+    update_asset,
+)
 from illwatch.modules.correlation.benchmark import evaluate
 from illwatch.modules.correlation.engine import product_pattern, run_correlation
+from illwatch.modules.correlation.events import acknowledge
 from illwatch.modules.foundation.users import create_user
 from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
 from illwatch.shared.enums import Severity, UserRole
@@ -118,6 +125,59 @@ async def test_regles_et_deduplication(db_session: AsyncSession) -> None:
     await db_session.flush()
     strict = await run_correlation(db_session, now=NOW, min_confidence=90)
     assert strict.by_rule.get("CORR-03", 0) == 0
+
+
+async def test_renommage_en_doublon_refuse(db_session: AsyncSession) -> None:
+    await create_asset(db_session, AssetInput(name="A", product="Jenkins"))
+    other = await create_asset(db_session, AssetInput(name="B", product="Jenkins"))
+    with pytest.raises(AssetExistsError):
+        await update_asset(db_session, other.id, AssetInput(name="A", product="Jenkins"))
+
+
+async def test_cycle_de_vie_d_un_evenement(db_session: AsyncSession) -> None:
+    """KEV après exploit : même évènement ; acquitté : pas rouvert tant qu'il ne s'aggrave
+    pas ; ne correspond plus : clos ; correspond de nouveau : rouvert."""
+    user = await create_user(
+        db_session,
+        username=f"a-{uuid4().hex[:8]}",
+        email=f"{uuid4().hex[:8]}@cyberill.test",
+        password="mot-de-passe-robuste-2026",
+        role=UserRole.ANALYST,
+    )
+    cve = _cve(
+        "CVE-2099-70020",
+        "Jenkins arbitrary file read",
+        kev=False,
+        exploit=True,
+        priority="P1_ELEVE",
+    )
+    db_session.add(cve)
+    asset = await create_asset(
+        db_session, AssetInput(name="CI", product="Jenkins", criticality=Severity.LOW)
+    )
+    await run_correlation(db_session, now=NOW)
+    event = await db_session.scalar(select(CorrelatedEvent))
+    assert event is not None and event.rule_id == "CORR-02" and event.priority == "P2_MOYEN"
+    await acknowledge(db_session, event.id, user.id)
+    # Même gravité à la passe suivante : reste acquitté.
+    again = await run_correlation(db_session, now=NOW + timedelta(hours=1))
+    assert again.reopened == 0 and event.acknowledged_at is not None
+    # Entrée au catalogue KEV : même évènement, règle CORR-01, plus grave → rouvert.
+    cve.is_kev = True
+    await db_session.flush()
+    worse = await run_correlation(db_session, now=NOW + timedelta(hours=2))
+    assert worse.created == 0 and worse.reopened == 1
+    assert event.rule_id == "CORR-01" and event.acknowledged_at is None
+    # Actif retiré : l'évènement ne correspond plus, il est clos par le moteur.
+    asset.is_active = False
+    await db_session.flush()
+    gone = await run_correlation(db_session, now=NOW + timedelta(hours=3))
+    assert gone.resolved == 1 and event.acknowledged_at is not None
+    # Remis en service : rouvert.
+    asset.is_active = True
+    await db_session.flush()
+    back = await run_correlation(db_session, now=NOW + timedelta(hours=4))
+    assert back.reopened == 1 and event.acknowledged_at is None
 
 
 async def test_api_inventaire_et_evenements(client: AsyncClient, db_session: AsyncSession) -> None:

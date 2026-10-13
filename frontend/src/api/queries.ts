@@ -369,12 +369,16 @@ export function useAssets() {
 }
 
 /** Évènements corrélés : ouverts (non acquittés) ou tous. */
-export function useCorrelations(scope: "open" | "all") {
+export function useCorrelations(scope: "open" | "all", assetId: string | null = null) {
   const refetchInterval = useFallbackInterval();
   return useQuery({
-    queryKey: ["correlations", scope],
+    queryKey: ["correlations", scope, assetId],
     queryFn: ({ signal }) =>
-      apiGet<CorrelationPage>("/correlations", { open: scope === "open", limit: 200 }, signal),
+      apiGet<CorrelationPage>(
+        "/correlations",
+        { open: scope === "open", limit: 200, asset_id: assetId ?? undefined },
+        signal,
+      ),
     refetchInterval,
   });
 }
