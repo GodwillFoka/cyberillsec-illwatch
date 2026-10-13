@@ -203,6 +203,9 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
                 {text(detail, "version_label") ? (
                   <span className="cell-sub"> · {text(detail, "version_label")}</span>
                 ) : null}
+                {text(detail, "version_platforms") ? (
+                  <span className="cell-sub"> · plateformes : {text(detail, "version_platforms")}</span>
+                ) : null}
               </dd>
               <dt>Signaux</dt>
               <dd>{signals.length ? signals.join(", ") : "—"}</dd>

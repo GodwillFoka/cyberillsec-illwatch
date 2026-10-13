@@ -24,6 +24,10 @@ Shellshock (bash) remonté sur OpenSSH, CVE-2022-0543 (paquet Debian de Redis 5/
    - `hors_plage` : produit reconnu, version hors de toutes ses plages → **pas d'évènement** ;
    - `autre_produit` : la CVE a des plages, aucune ne vise ce produit (la description le cite
      seulement) → **pas d'évènement** ;
+   - `conditionnel` (ajout du 14/10) : version dans la plage, mais la NVD ne la déclare
+     vulnérable que sur certaines plateformes (configuration ET, ex. CVE-2022-0543 : Redis
+     **dans les paquets Debian 9 à 11**) ou avec une version « - » (faille d'un paquet de
+     distribution) → évènement, plateformes requises affichées ;
    - `inconnu` (plages non lues) et `version_non_declaree` → évènement, le verdict étant
      affiché pour que l'analyste vérifie.
    Le doute reste donc du côté de l'alerte : on ne masque que ce qui est démontré hors d'atteinte.

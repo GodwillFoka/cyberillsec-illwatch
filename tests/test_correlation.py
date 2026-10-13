@@ -249,7 +249,7 @@ def test_cli_evaluate(tmp_path) -> None:  # type: ignore[no-untyped-def]
 
 
 def test_versions_vulnerables() -> None:
-    from illwatch.modules.correlation.versions import assess, version_key
+    from illwatch.modules.correlation.versions import assess, platforms, version_key
 
     assert version_key("10.5p1") > version_key("10.5")
     assert version_key("5.10.102") > version_key("5.10.9")
@@ -273,6 +273,15 @@ def test_versions_vulnerables() -> None:
         "Confluence", "8.5", [{"product": "confluence_data_center", "version": "8.5"}]
     ) == ("vulnerable")
     assert assess("PostgreSQL", "18.6", None) == "inconnu"
+    # Version « - » ou plateforme requise : pas « vulnérable » mais « conditionnel ».
+    redis_paquet = [{"product": "redis", "version": "-"}]
+    assert assess("Redis", "8.0.6", redis_paquet) == "conditionnel"
+    sur_debian = [{"product": "redis", "version": "*", "platforms": "debian_linux 11.0"}]
+    assert assess("Redis", "8.0.6", sur_debian) == "conditionnel"
+    assert platforms("Redis", sur_debian) == "debian_linux 11.0"
+    assert assess("Redis", "8.0.6", [*sur_debian, {"product": "redis", "version": "*"}]) == (
+        "vulnerable"
+    )
 
 
 def test_configurations_nvd() -> None:
@@ -309,3 +318,35 @@ def test_configurations_nvd() -> None:
         }
     ]
     assert parse_affected([]) is None and parse_affected(None) is None
+    # Configuration ET (CVE-2022-0543) : Redis seulement dans les paquets Debian 9 à 11.
+    redis_debian = [
+        {
+            "operator": "AND",
+            "nodes": [
+                {
+                    "operator": "OR",
+                    "cpeMatch": [
+                        {"vulnerable": True, "criteria": "cpe:2.3:a:redis:redis:-:*:*:*:*:*:*:*"}
+                    ],
+                },
+                {
+                    "operator": "OR",
+                    "cpeMatch": [
+                        {
+                            "vulnerable": False,
+                            "criteria": f"cpe:2.3:o:debian:debian_linux:{v}:*:*:*:*:*:*:*",
+                        }
+                        for v in ("9.0", "10.0", "11.0")
+                    ],
+                },
+            ],
+        }
+    ]
+    assert parse_affected(redis_debian) == [
+        {
+            "vendor": "redis",
+            "product": "redis",
+            "version": "-",
+            "platforms": "debian_linux 10.0 ; debian_linux 11.0 ; debian_linux 9.0",
+        }
+    ]

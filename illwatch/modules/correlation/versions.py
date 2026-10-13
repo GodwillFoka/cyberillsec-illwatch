@@ -9,6 +9,9 @@ chaque CVE : produits touchés et plages de versions (« de 5.8 incluse à 5.10.
   4.8.3, sur un noyau 7.1.5).
 - Plages inconnues (CVE pas encore analysée) ou version non déclarée → évènement conservé :
   dans le doute, ILL Watch signale.
+- Version dans la plage mais seulement sur certaines plateformes (configuration ET de la NVD :
+  « Redis sur Debian 9 à 11 », CVE-2022-0543) ou version « - » (sans objet : faille d'un paquet
+  de distribution) → « conditionnel » : évènement conservé, condition affichée à l'analyste.
 
 Comparaison « naturelle » : 10.5p1 > 10.5 ; 5.10.102 > 5.10.9 ; les suffixes de distribution
 (+kali, -1, ~deb12) sont ignorés.
@@ -18,7 +21,9 @@ import re
 from collections.abc import Sequence
 from typing import Any, Literal
 
-Verdict = Literal["vulnerable", "hors_plage", "autre_produit", "inconnu", "version_non_declaree"]
+Verdict = Literal[
+    "vulnerable", "conditionnel", "hors_plage", "autre_produit", "inconnu", "version_non_declaree"
+]
 
 _WILDCARDS = {"", "*", "-"}
 _DISTRO_SUFFIX = re.compile(r"[+~].*$|-\d+(\.\d+)*$")
@@ -41,6 +46,31 @@ def same_product(asset_product: str, cpe_product: str) -> bool:
 def version_key(raw: str) -> tuple[tuple[int, int | str], ...]:
     cleaned = _DISTRO_SUFFIX.sub("", raw.strip().lower())
     return tuple((0, int(t)) if t.isdigit() else (1, t) for t in _TOKEN.findall(cleaned))
+
+
+_RANGES = (
+    "versionStartIncluding",
+    "versionStartExcluding",
+    "versionEndIncluding",
+    "versionEndExcluding",
+)
+
+
+def _conditional(entry: dict[str, Any]) -> bool:
+    """Vulnérable seulement sous condition : plateforme requise, ou version « - » sans plage."""
+    if entry.get("platforms"):
+        return True
+    return str(entry.get("version") or "") == "-" and not any(entry.get(k) for k in _RANGES)
+
+
+def platforms(product: str, affected: Sequence[dict[str, Any]] | None) -> str | None:
+    """Conditions à vérifier pour ce produit (plateformes requises par la NVD), ou None."""
+    found = {
+        str(e["platforms"])
+        for e in affected or []
+        if e.get("platforms") and same_product(product, str(e.get("product") or ""))
+    }
+    return " ; ".join(sorted(found))[:300] or None
 
 
 def _within(version: str, entry: dict[str, Any]) -> bool:
@@ -77,11 +107,16 @@ def assess(product: str, version: str | None, affected: Sequence[dict[str, Any]]
         return "autre_produit"
     if not version or not version_key(version):
         return "version_non_declaree"
-    return "vulnerable" if any(_within(version, e) for e in relevant) else "hors_plage"
+    matching = [e for e in relevant if _within(version, e)]
+    if any(not _conditional(e) for e in matching):
+        return "vulnerable"
+    return "conditionnel" if matching else "hors_plage"
 
 
 VERDICT_LABEL: dict[str, str] = {
     "vulnerable": "version déclarée dans une plage vulnérable (NVD)",
+    "conditionnel": "vulnérable seulement sur certaines plateformes ou paquets de distribution "
+    "(NVD) : à vérifier",
     "inconnu": "versions vulnérables pas encore publiées par la NVD : à vérifier",
     "version_non_declaree": "version de l'actif non déclarée : à vérifier",
 }

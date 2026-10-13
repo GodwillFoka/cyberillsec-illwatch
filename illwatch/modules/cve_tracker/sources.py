@@ -131,17 +131,38 @@ _RANGE_KEYS = (
 MAX_AFFECTED = 500
 
 
+def _platforms(nodes: list[Any]) -> str:
+    """Plateformes non vulnérables d'une configuration ET : « debian_linux 9.0 ; ubuntu… »."""
+    labels: set[str] = set()
+    for node in nodes:
+        matches = node.get("cpeMatch") if isinstance(node, dict) else None
+        for match in matches if isinstance(matches, list) else []:
+            if not isinstance(match, dict) or match.get("vulnerable"):
+                continue
+            parts = str(match.get("criteria") or "").split(":")
+            if len(parts) < 6 or parts[0] != "cpe":
+                continue
+            version = parts[5] if parts[5] not in ("*", "-", "") else ""
+            labels.add(f"{parts[4]} {version}".strip())
+    return " ; ".join(sorted(labels))[:300]
+
+
 def parse_affected(configurations: object) -> list[dict[str, str]] | None:
     """Correspondances CPE « vulnérables » d'une CVE : éditeur, produit, version exacte ou
-    plage (`versionStartIncluding`… de la NVD). Toutes les branches sont retenues, sans la
-    logique ET/OU des plateformes : on préfère signaler une CVE de trop qu'en taire une."""
+    plage (`versionStartIncluding`… de la NVD). Toutes les branches sont retenues ; une
+    configuration ET (« Redis sur Debian 9 à 11 ») ajoute à ses entrées la liste des
+    plateformes requises (`platforms`), que la corrélation affiche comme condition à vérifier."""
     if not isinstance(configurations, list):
         return None
     found: list[dict[str, str]] = []
     seen: set[tuple[tuple[str, str], ...]] = set()
     for config in configurations:
-        nodes = config.get("nodes") if isinstance(config, dict) else None
-        for node in nodes if isinstance(nodes, list) else []:
+        if not isinstance(config, dict):
+            continue
+        nodes = config.get("nodes")
+        nodes = nodes if isinstance(nodes, list) else []
+        platforms = _platforms(nodes) if config.get("operator") == "AND" else ""
+        for node in nodes:
             matches = node.get("cpeMatch") if isinstance(node, dict) else None
             for match in matches if isinstance(matches, list) else []:
                 if not isinstance(match, dict) or not match.get("vulnerable"):
@@ -153,6 +174,8 @@ def parse_affected(configurations: object) -> list[dict[str, str]] | None:
                 for key in _RANGE_KEYS:
                     if match.get(key):
                         entry[key] = str(match[key])[:60]
+                if platforms:
+                    entry["platforms"] = platforms
                 signature = tuple(sorted(entry.items()))
                 if signature in seen:
                     continue
