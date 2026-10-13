@@ -27,6 +27,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [019](ADR-019-enrichissement-hors-ligne.md) | Enrichissement hors ligne des IP : DB-IP Lite (pays, AS) importée localement, aucune requête par IOC | Accepté |
 | [020](ADR-020-correlation.md) | Corrélation : inventaire d'actifs, trois règles (KEV, exploit, actif dans un IOC), score justifié, mesure sur jeu figé | Accepté |
 | [021](ADR-021-correlation-par-version.md) | Corrélation par version : plages vulnérables NVD, verdict par actif | Accepté |
+| [022](ADR-022-soc-operations.md) | M9 SOC Operations : niveaux L1/L2/L3, faux positifs et liste d'exclusion, chasse depuis l'incident, recommandations, règles versionnées, pilotage (MTTA, MTTR, délais cibles) | Accepté |
 
 ## Gabarit
 

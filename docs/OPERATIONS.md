@@ -397,3 +397,20 @@ Projet GitLab privé : créer un jeton personnel GitLab (User settings → Acces
 `read_api` seule**, avec une date d'expiration, puis l'enregistrer dans GitHub → Settings →
 Secrets and variables → Actions → *New repository secret*, nom `GITLAB_TOKEN`. Le jeton ne
 transite jamais ailleurs (ni conversation, ni commit, ni `.env`).
+
+## Opérations SOC (M9, ADR-022)
+
+```bash
+illwatch incidents escalate <ID> --reason "IOC confirmé, investigation L2"   # L1 → L2 → L3
+illwatch soc metrics --days 30          # MTTA, MTTR, délais cibles, dépassements, niveaux
+illwatch soc exclude 203.0.113.7 --reason "Résolveur public de l'entreprise" [--days 90]
+illwatch soc exclusions                 # liste d'exclusion en vigueur
+```
+
+- **Faux positif** : depuis la fiche d'un IOC, la page d'un incident (IOC associé) ou un
+  évènement corrélé. L'IOC exclu reste en base mais n'est plus actif (ni compté, ni chassé,
+  ni corrélé) ; seul un administrateur retire une exclusion (fiche de l'IOC).
+- **Chasse depuis l'incident** : bouton « Chasser depuis l'incident » ; la session est
+  rattachée à l'incident et résumée dans sa chronologie.
+- **Délais cibles** (prise en charge / résolution) : critique 1 h / 24 h, élevée 4 h / 72 h,
+  moyenne 24 h / 7 j, faible 72 h / 30 j. Écran **Pilotage** (7 ou 30 jours).

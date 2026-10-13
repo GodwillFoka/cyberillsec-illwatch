@@ -65,14 +65,16 @@ Bilan : `Rapport/BILAN_M8.md`.
 
 ## M9 — SOC Operations
 
-**But.** Outiller le travail des analystes L1/L2/L3.
+**But.** Outiller le travail des analystes L1/L2/L3. **Livré le 14/10/2026** (ADR-022).
 
-- File de triage L1 : alerte → faux positif (liste d'exclusion, tâche 3.6) ou escalade.
-- Investigation L2 : enrichissement à la demande, chasse lancée depuis l'incident.
-- L3 : ingénierie de détection (règles versionnées), recommandations de réponse.
-- Dashboard : séries 7 et 30 jours, charge par analyste, SLA par priorité.
+- File de triage L1 : alerte → faux positif (liste d'exclusion, tâche 3.6) ✅ ou escalade ✅.
+- Investigation L2 : enrichissement à la demande ✅, chasse lancée depuis l'incident ✅.
+- L3 : ingénierie de détection (règles versionnées) ✅, recommandations de réponse ✅.
+- Dashboard : séries 7 et 30 jours, charge par analyste, SLA par priorité ✅ (écran Pilotage).
 
 **Critère de sortie :** un incident traverse L1 → L2 → L3 sans quitter ILL Watch, MTTR mesuré.
+✅ **Constaté en CI** (test de bout en bout et scénario d'acceptation) ; à constater sur Kali
+(`Rapport/BILAN_M9.md`).
 
 ## M10 — CTI Intelligence Layer
 
