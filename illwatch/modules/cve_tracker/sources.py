@@ -138,7 +138,7 @@ def parse_affected(configurations: object) -> list[dict[str, str]] | None:
     if not isinstance(configurations, list):
         return None
     found: list[dict[str, str]] = []
-    seen: set[tuple[str, ...]] = set()
+    seen: set[tuple[tuple[str, str], ...]] = set()
     for config in configurations:
         nodes = config.get("nodes") if isinstance(config, dict) else None
         for node in nodes if isinstance(nodes, list) else []:
