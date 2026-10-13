@@ -387,6 +387,93 @@ async def _maybe_hunt(lock: FeedLock) -> None:
         await lock.release("hunt", token)
 
 
+async def _maybe_correlate(lock: FeedLock) -> None:
+    """Corrélation actifs × CVE × IOC (M8, ADR-020), une fois par CORRELATION_INTERVAL_SECONDS."""
+    from datetime import UTC, datetime
+
+    from illwatch.app.database import get_session_factory
+    from illwatch.modules.correlation import engine
+
+    settings = get_settings()
+    if settings.correlation_interval_seconds == 0:
+        return
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        if not await engine.correlation_due(
+            session, interval_seconds=settings.correlation_interval_seconds, now=now
+        ):
+            return
+    token = await lock.acquire(engine.CORRELATION_STATE, settings.collect_lock_ttl_seconds)
+    if token is None:
+        return
+    try:
+        async with get_session_factory()() as session:
+            report = await engine.run_correlation(
+                session, now=now, min_confidence=settings.correlation_min_confidence
+            )
+            await engine.mark_correlation(session, now, report.created + report.updated)
+            await session.commit()
+        collector.log.info("worker.correlation", extra={"fields": report.as_dict()})
+    finally:
+        await lock.release(engine.CORRELATION_STATE, token)
+
+
+ENRICHMENT_STATE = "enrichment"
+ENRICHMENT_MAX_AGE_DAYS = 32
+
+
+async def _maybe_refresh_enrichment(lock: FeedLock) -> None:
+    """Bases DB-IP de plus de 32 jours : nouveau téléchargement (ADR-019). Jamais la première
+    fois : l'administrateur lance lui-même le premier `illwatch enrich update`."""
+    from datetime import UTC, datetime, timedelta
+
+    from illwatch.app.database import get_session_factory
+    from illwatch.modules.enrichment.dbip import DatasetImportError, import_dataset, open_lines
+    from illwatch.modules.enrichment.download import download_latest
+    from illwatch.modules.enrichment.lookup import datasets
+    from illwatch.modules.threat_feeds.fetcher import FetchError
+    from illwatch.shared.enums import EnrichmentDataset
+
+    settings = get_settings()
+    if not settings.enrichment_auto_update:
+        return
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        imported = await datasets(session)
+    stale = [
+        EnrichmentDataset(d.dataset)
+        for d in imported
+        if now - (d.imported_at if d.imported_at.tzinfo else d.imported_at.replace(tzinfo=UTC))
+        > timedelta(days=ENRICHMENT_MAX_AGE_DAYS)
+    ]
+    if not stale:
+        return
+    token = await lock.acquire(ENRICHMENT_STATE, settings.collect_lock_ttl_seconds)
+    if token is None:
+        return
+    try:
+        for dataset in stale:
+            try:
+                async with (
+                    download_latest(dataset) as (name, path),
+                    get_session_factory()() as session,
+                ):
+                    with open_lines(path) as lines:
+                        report = await import_dataset(session, dataset, lines, source=name)
+                    await session.commit()
+                collector.log.info(
+                    "worker.enrichment",
+                    extra={"fields": {"dataset": dataset.value, "ranges": report.ranges}},
+                )
+            except (FetchError, DatasetImportError) as exc:
+                collector.log.warning(
+                    "worker.enrichment_failed",
+                    extra={"fields": {"dataset": dataset.value, "error": str(exc)}},
+                )
+    finally:
+        await lock.release(ENRICHMENT_STATE, token)
+
+
 HOUSEKEEPING_STATE = "housekeeping"
 HOUSEKEEPING_INTERVAL_SECONDS = 24 * 3600
 
@@ -481,7 +568,9 @@ async def run_worker(
                     await _maybe_sync_cves(active_lock)
                 if include_hunting:
                     await _maybe_hunt(active_lock)
+                    await _maybe_correlate(active_lock)
                 await _maybe_housekeeping(active_lock)
+                await _maybe_refresh_enrichment(active_lock)
                 collector.log.info(
                     "worker.cycle",
                     extra={

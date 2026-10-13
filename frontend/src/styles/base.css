@@ -1773,3 +1773,8 @@ textarea {
   display: block;
   overflow-wrap: anywhere;
 }
+
+/* Corrélations : cible (CVE ou valeur d'IOC) tronquée dans la file. */
+.cell-target {
+  max-width: 200px;
+}

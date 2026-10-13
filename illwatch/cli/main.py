@@ -417,6 +417,7 @@ def users_revoke_sessions(username: str) -> None:
 
 def _register_subcommands() -> None:
     from illwatch.cli.audit import audit
+    from illwatch.cli.correlate import assets, correlate
     from illwatch.cli.cves import cves
     from illwatch.cli.dashboard import dashboard
     from illwatch.cli.demo import demo
@@ -427,7 +428,9 @@ def _register_subcommands() -> None:
     from illwatch.cli.status import status
     from illwatch.cli.taxii import taxii
 
+    cli.add_command(assets)
     cli.add_command(audit)
+    cli.add_command(correlate)
     cli.add_command(cves)
     cli.add_command(dashboard)
     cli.add_command(demo)

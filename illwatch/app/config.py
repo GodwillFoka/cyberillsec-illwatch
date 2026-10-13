@@ -157,6 +157,13 @@ class Settings(BaseSettings):
     tor_exit_list_url: str = "https://check.torproject.org/torbulkexitlist"
     # Chasse planifiée sur la base d'IOC par le worker (s) ; 0 = désactivée.
     hunt_interval_seconds: int = Field(default=24 * 3600, ge=0)
+    # Corrélation actifs × CVE × IOC par le worker (s) ; 0 = désactivée (M8, ADR-020).
+    correlation_interval_seconds: int = Field(default=3600, ge=0)
+    # Confiance minimale (0–100) d'un IOC pour la règle CORR-03 (« moyenne » = 40).
+    correlation_min_confidence: int = Field(default=40, ge=0, le=100)
+    # Mise à jour mensuelle automatique des bases DB-IP par le worker (ADR-019), seulement
+    # après un premier `illwatch enrich update` manuel.
+    enrichment_auto_update: bool = True
 
     # --- Scoring & alerting (§3.3.3 du CdC) ---------------------------------
     risk_alert_threshold: float = Field(default=75.0, ge=0, le=100)

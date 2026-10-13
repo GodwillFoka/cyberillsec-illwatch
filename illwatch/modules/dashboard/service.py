@@ -36,6 +36,7 @@ from illwatch.app.models import (
     IndicatorSource,
     ThreatFeed,
 )
+from illwatch.modules.correlation.events import open_count as correlation_open_count
 from illwatch.modules.threat_feeds.indicators import is_active_clause
 from illwatch.shared.enums import FeedStatus, IncidentStatus, RiskPriority
 
@@ -62,6 +63,7 @@ class DashboardSummary:
     alerts: dict[str, Any] = field(default_factory=dict)
     feeds: dict[str, Any] = field(default_factory=dict)
     collectors: dict[str, Any] = field(default_factory=dict)
+    correlations: dict[str, Any] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -222,6 +224,12 @@ async def compute_summary(session: AsyncSession, now: datetime | None = None) ->
         "by_status": {s.value: sum(1 for f in feeds if f.status == s) for s in FeedStatus},
         "degraded": sorted(f.name for f in feeds if f.status == FeedStatus.DEGRADED),
         "last_success": max(last_runs) if last_runs else None,
+    }
+
+    open_by_priority = await correlation_open_count(session)
+    summary.correlations = {
+        "open": sum(open_by_priority.values()),
+        "open_by_priority": open_by_priority,
     }
 
     states = (await session.execute(select(CollectorState))).scalars().all()

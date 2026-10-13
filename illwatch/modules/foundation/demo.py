@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from illwatch.app.config import Settings
 from illwatch.app.models import (
     CVE,
+    Asset,
     CollectionRun,
     CVEAlert,
     CVEPriorityChange,
@@ -31,6 +32,7 @@ from illwatch.app.models import (
     ThreatFeed,
     User,
 )
+from illwatch.modules.correlation.engine import run_correlation
 from illwatch.modules.cve_tracker.scoring import compute_risk_breakdown
 from illwatch.modules.enrichment.dbip import import_dataset
 from illwatch.modules.foundation.seed import seed_reference_feeds
@@ -70,6 +72,16 @@ _DEMO_ASN = [
 ]
 
 
+# Inventaire fictif : produits présents dans les CVE de démonstration, une adresse du pare-feu
+# présente dans les IOC (règle CORR-03).
+_DEMO_ASSETS = [
+    ("Pare-feu siège", "FortiOS", "Fortinet", Severity.CRITICAL, ["203.0.113.19"]),
+    ("Messagerie", "Exchange Server", "Microsoft", Severity.HIGH, []),
+    ("Wiki interne", "Confluence", "Atlassian", Severity.MEDIUM, []),
+    ("Intégration continue", "Jenkins", "Jenkins", Severity.LOW, []),
+]
+
+
 @dataclass(slots=True)
 class DemoReport:
     feeds: int = 0
@@ -79,6 +91,7 @@ class DemoReport:
     incidents: int = 0
     hunts: int = 0
     runs: int = 0
+    correlations: int = 0
     notes: list[str] = field(default_factory=list)
 
 
@@ -422,6 +435,25 @@ async def load_demo_data(
         ):
             await import_dataset(session, dataset, lines, source=origin, now=moment)
         report.notes.append("enrichissement fictif des plages de documentation")
+
+    for name, product, vendor, criticality, addresses in _DEMO_ASSETS:
+        session.add(
+            Asset(
+                name=name,
+                product=product,
+                vendor=vendor,
+                criticality=criticality,
+                addresses=addresses,
+                domains=[],
+                notes=f"Actif fictif {DEMO_TAG}",
+                is_active=True,
+            )
+        )
+    await session.flush()
+    correlation = await run_correlation(
+        session, now=moment, min_confidence=settings.correlation_min_confidence
+    )
+    report.correlations = correlation.created
     await session.flush()
     return report
 

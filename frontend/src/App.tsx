@@ -15,6 +15,8 @@ const Hunting = lazy(() => import("./pages/Hunting").then((m) => ({ default: m.H
 const Incidents = lazy(() => import("./pages/Incidents").then((m) => ({ default: m.Incidents })));
 const Sources = lazy(() => import("./pages/Sources").then((m) => ({ default: m.Sources })));
 const Admin = lazy(() => import("./pages/Admin").then((m) => ({ default: m.Admin })));
+const Correlations = lazy(() => import("./pages/Correlations").then((m) => ({ default: m.Correlations })));
+const Inventory = lazy(() => import("./pages/Inventory").then((m) => ({ default: m.Inventory })));
 const NotFound = lazy(() => import("./pages/NotFound").then((m) => ({ default: m.NotFound })));
 const IncidentPage = lazy(() => import("./pages/IncidentPage").then((m) => ({ default: m.IncidentPage })));
 
@@ -44,6 +46,8 @@ function Screen() {
   if (pathname === "/indicateurs") return <Indicators />;
   if (pathname === "/cve") return <Cves />;
   if (pathname === "/chasse") return <Hunting />;
+  if (pathname === "/correlations") return <Correlations />;
+  if (pathname === "/inventaire") return <Inventory />;
   if (pathname === "/incidents") return <Incidents />;
   const incident = /^\/incidents\/([0-9a-f-]{36})$/i.exec(pathname);
   if (incident) return <IncidentPage key={incident[1]} incidentId={incident[1]} />;

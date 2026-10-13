@@ -87,6 +87,12 @@ const AUDIT_LABELS: Record<string, string> = {
   "data.export": "Export de données",
   "hunt.run": "Chasse lancée",
   "enrichment.import": "Base d'enrichissement importée",
+  "asset.create": "Actif déclaré",
+  "asset.update": "Actif modifié",
+  "asset.delete": "Actif supprimé",
+  "asset.import": "Inventaire importé",
+  "correlation.run": "Corrélation lancée",
+  "correlation.ack": "Corrélation acquittée",
 };
 
 export function auditLabel(action: string): string {

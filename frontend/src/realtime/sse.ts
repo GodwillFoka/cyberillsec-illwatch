@@ -108,6 +108,9 @@ export function queriesFor(kind: string): string[][] {
       return [["dashboard"], ["feeds"], ["indicators"]];
     case "hunt.completed":
       return [["dashboard"], ["hunts"]];
+    case "correlation.created":
+    case "correlation.updated":
+      return [["dashboard"], ["correlations"]];
     default:
       return [];
   }

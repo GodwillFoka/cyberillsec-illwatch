@@ -122,6 +122,11 @@ class CollectorSummary(BaseModel):
     error: str | None
 
 
+class CorrelationSummary(BaseModel):
+    open: int
+    open_by_priority: dict[str, int]
+
+
 class SummaryRead(BaseModel):
     """Synthèse typée : l'interface web en génère ses types TypeScript (ADR-016)."""
 
@@ -132,6 +137,7 @@ class SummaryRead(BaseModel):
     alerts: AlertSummary
     feeds: FeedSummary
     collectors: dict[str, CollectorSummary]
+    correlations: CorrelationSummary
 
 
 @router.get(
