@@ -386,3 +386,14 @@ renomme le dossier et recrée son venv (un venv contient des chemins absolus).
 - Docker : `sudo systemctl enable --now docker` et `sudo usermod -aG docker $USER` (reconnexion).
 - Kali active parfois des services réseau d'audit : vérifier qu'aucun autre service n'écoute
   sur 5433, 6379 ou 8000 (`ss -ltnp`).
+
+## Statut du pipeline GitLab depuis GitHub
+
+Le workflow GitHub « GitLab » (`.github/workflows/gitlab-statut.yml`) lit toutes les heures, et à
+chaque push sur `main`, le dernier pipeline GitLab de `main` et le publie dans le check
+« Statut GitLab » : état de chaque travail et fin du journal des travaux en échec, en annotations.
+
+Projet GitLab privé : créer un jeton personnel GitLab (User settings → Access tokens), **portée
+`read_api` seule**, avec une date d'expiration, puis l'enregistrer dans GitHub → Settings →
+Secrets and variables → Actions → *New repository secret*, nom `GITLAB_TOKEN`. Le jeton ne
+transite jamais ailleurs (ni conversation, ni commit, ni `.env`).

@@ -1,0 +1,37 @@
+# ============================================================================
+# ILL Watch — Statut du pipeline GitLab, remonté dans GitHub
+# Lit le dernier pipeline GitLab de main (API GitLab) et le publie en annotations du
+# check « Statut GitLab » : travaux, états, fin du journal de chaque travail en échec.
+# Contourne la lecture directe de GitLab quand elle est impossible depuis la session de travail.
+# Projet privé : secret GITLAB_TOKEN = jeton personnel GitLab, portée read_api seule.
+# ============================================================================
+name: GitLab
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "41 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitlab-statut
+  cancel-in-progress: true
+
+jobs:
+  statut:
+    name: Statut GitLab
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Dernier pipeline GitLab de main
+        env:
+          GITLAB_PROJECT: GodwillFoka/cyberillsec-illwatch
+          GITLAB_REF: main
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          WAIT_MINUTES: "20"
+        run: python3 scripts/gitlab_status.py
