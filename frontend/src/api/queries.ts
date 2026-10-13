@@ -13,7 +13,9 @@ import type {
   IndicatorDetail,
   IndicatorPage,
   Account,
+  Asset,
   AuditPage,
+  CorrelationPage,
   CollectionRun,
   Feed,
   FeedHealth,
@@ -354,5 +356,29 @@ export function useAudit(filters: AuditFilters, offset: number) {
         signal,
       ),
     placeholderData: keepPreviousData,
+  });
+}
+
+// --- Corrélation (M8, ADR-020) ---------------------------------------------------------------
+
+export function useAssets() {
+  return useQuery({
+    queryKey: ["assets"],
+    queryFn: ({ signal }) => apiGet<Asset[]>("/assets", undefined, signal),
+  });
+}
+
+/** Évènements corrélés : ouverts (non acquittés) ou tous. */
+export function useCorrelations(scope: "open" | "all", assetId: string | null = null) {
+  const refetchInterval = useFallbackInterval();
+  return useQuery({
+    queryKey: ["correlations", scope, assetId],
+    queryFn: ({ signal }) =>
+      apiGet<CorrelationPage>(
+        "/correlations",
+        { open: scope === "open", limit: 200, asset_id: assetId ?? undefined },
+        signal,
+      ),
+    refetchInterval,
   });
 }

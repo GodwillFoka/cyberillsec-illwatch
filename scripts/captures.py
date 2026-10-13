@@ -30,8 +30,17 @@ SCREENS = [
     ("08-sources", "/sources"),
     ("09-administration", "/administration"),
     ("09b-parametres", "/administration?onglet=parametres"),
+    ("10-correlations", "/correlations"),
+    ("11-inventaire", "/inventaire"),
 ]
-MOBILE = {"01-vue-ensemble", "02-triage", "05-indicateurs", "08-sources", "09-administration"}
+MOBILE = {
+    "01-vue-ensemble",
+    "02-triage",
+    "05-indicateurs",
+    "08-sources",
+    "09-administration",
+    "10-correlations",
+}
 
 problems: list[str] = []
 

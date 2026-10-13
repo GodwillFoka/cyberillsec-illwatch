@@ -57,6 +57,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["illwatch*"]
 
+[tool.setuptools.package-data]
+# Jeu de données figé de la mesure de corrélation (M8, incrément 4).
+"illwatch.modules.correlation" = ["benchmark.json"]
+
 # ----------------------------------------------------------------------------
 # Qualité de code — §6.3 du Cahier des Charges
 # ----------------------------------------------------------------------------

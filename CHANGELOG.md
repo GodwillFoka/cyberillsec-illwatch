@@ -8,6 +8,19 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M8, incréments 3 et 4 : corrélation et mesure (ADR-020)
+- Inventaire d'actifs (produit, éditeur, version, criticité, adresses, domaines) : écran
+  Inventaire, API `/api/v1/assets`, `illwatch assets add | import | list | remove`.
+- Corrélation : CORR-01 (CVE KEV × actif), CORR-02 (CVE P0/P1 avec exploit public × actif),
+  CORR-03 (adresse ou domaine de l'organisation dans un IOC de confiance suffisante) ; score
+  0–100 justifié point par point ; un évènement par couple, mis à jour, rouvert s'il s'aggrave ;
+  worker toutes les heures ; écran Corrélations (acquitter, ouvrir l'incident) ; API
+  `/api/v1/correlations` ; `illwatch correlate run | list` ; compteur dans le menu et la synthèse.
+- Mesure sur jeu figé versionné (15 cas, 7 attendus, 8 pièges) : 100 % détectés, 0 % de faux
+  positifs, vérifié par la CI ; `illwatch correlate evaluate` ; `Rapport/M8_MESURE_13-10-2026.md`.
+- Enrichissement : mise à jour mensuelle automatique des bases DB-IP par le worker.
+- Migration `c4d9e2a7f613` (tables `assets`, `correlated_events`).
+
 ### Ajouté — M8, incrément 2 : enrichissement hors ligne des IP (ADR-019)
 - Pays et système autonome de chaque IPv4/IPv6 dans la fiche d'un indicateur, lus dans la base
   DB-IP Lite importée localement (aucune requête sortante à la consultation) ; adresses non

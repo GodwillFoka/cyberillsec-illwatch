@@ -3,7 +3,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiDelete, apiPost, apiSend } from "./http";
-import type { Account, Alert, Feed, Hunt, HuntDetail, IncidentDetail, IncidentEvent, IngestResult } from "./types";
+import type {
+  Account,
+  Alert,
+  Asset,
+  AssetWrite,
+  Correlation,
+  CorrelationRun,
+  Feed,
+  Hunt,
+  HuntDetail,
+  IncidentDetail,
+  IncidentEvent,
+  IngestResult,
+} from "./types";
 
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
@@ -244,5 +257,48 @@ export function useResetPassword(userId: string) {
 export function useRevokeSessions(userId: string) {
   return useAdminMutation(() =>
     apiPost<{ revoked: number }>(`/users/${encodeURIComponent(userId)}/revoke-sessions`),
+  );
+}
+
+// --- Corrélation (M8, ADR-020) ---------------------------------------------------------------
+
+function useCorrelationMutation<TVariables, TResult>(run: (variables: TVariables) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["assets"] });
+      void queryClient.invalidateQueries({ queryKey: ["correlations"] });
+      void queryClient.invalidateQueries({ queryKey: ["incidents"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+export function useSaveAsset(assetId: string | null) {
+  return useCorrelationMutation((body: AssetWrite) =>
+    assetId
+      ? apiSend<Asset>("PUT", `/assets/${encodeURIComponent(assetId)}`, body)
+      : apiPost<Asset>("/assets", body),
+  );
+}
+
+export function useDeleteAsset() {
+  return useCorrelationMutation((assetId: string) => apiDelete(`/assets/${encodeURIComponent(assetId)}`));
+}
+
+export function useRunCorrelation() {
+  return useCorrelationMutation(() => apiPost<CorrelationRun>("/correlations/run"));
+}
+
+export function useAcknowledgeCorrelation() {
+  return useCorrelationMutation((eventId: string) =>
+    apiPost<Correlation>(`/correlations/${encodeURIComponent(eventId)}/ack`),
+  );
+}
+
+export function useIncidentFromCorrelation() {
+  return useCorrelationMutation((eventId: string) =>
+    apiPost<{ incident_id: string; created: boolean }>(`/correlations/${encodeURIComponent(eventId)}/incident`),
   );
 }

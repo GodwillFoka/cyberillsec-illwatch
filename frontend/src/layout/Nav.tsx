@@ -5,8 +5,10 @@ import {
   Bug,
   Crosshair,
   Fingerprint,
+  GitMerge,
   LayoutDashboard,
   RadioTower,
+  Server,
   Settings,
   ShieldAlert,
   Siren,
@@ -87,7 +89,17 @@ export function Nav() {
         <div className="nav-section" id="nav-detect">
           Détection
         </div>
+        <Link
+          to="/correlations"
+          label="Corrélations"
+          icon={GitMerge}
+          count={summary?.correlations.open}
+          tone={
+            summary && (summary.correlations.open_by_priority.P0_CRITIQUE ?? 0) > 0 ? "p0" : "p1"
+          }
+        />
         <Link to="/chasse" label="Chasse" icon={Crosshair} />
+        <Link to="/inventaire" label="Inventaire" icon={Server} />
       </div>
       <div className="nav-spacer" />
       {user?.role === "ADMIN" && (

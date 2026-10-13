@@ -387,6 +387,120 @@ async def _maybe_hunt(lock: FeedLock) -> None:
         await lock.release("hunt", token)
 
 
+async def _maybe_correlate(lock: FeedLock) -> None:
+    """Corrélation actifs × CVE × IOC (M8, ADR-020), une fois par CORRELATION_INTERVAL_SECONDS."""
+    from datetime import UTC, datetime
+
+    from illwatch.app.database import get_session_factory
+    from illwatch.modules.correlation import engine
+
+    settings = get_settings()
+    if settings.correlation_interval_seconds == 0:
+        return
+    now = datetime.now(UTC)
+    async with get_session_factory()() as session:
+        if not await engine.correlation_due(
+            session, interval_seconds=settings.correlation_interval_seconds, now=now
+        ):
+            return
+    token = await lock.acquire(engine.CORRELATION_STATE, settings.collect_lock_ttl_seconds)
+    if token is None:
+        return
+    try:
+        # Tentative consignée AVANT la passe, dans sa propre transaction : une passe en échec
+        # n'est retentée qu'à l'intervalle suivant, pas à chaque cycle du worker. Et un second
+        # worker qui a pris le verrou juste après le premier ne la refait pas.
+        async with get_session_factory()() as session:
+            if not await engine.correlation_due(
+                session, interval_seconds=settings.correlation_interval_seconds, now=now
+            ):
+                return
+            await engine.mark_correlation(session, now, 0)
+            await session.commit()
+        async with get_session_factory()() as session:
+            report = await engine.run_correlation(
+                session, now=now, min_confidence=settings.correlation_min_confidence
+            )
+            await engine.mark_correlation(session, now, report.created + report.updated)
+            await session.commit()
+        collector.log.info("worker.correlation", extra={"fields": report.as_dict()})
+    finally:
+        await lock.release(engine.CORRELATION_STATE, token)
+
+
+ENRICHMENT_STATE = "enrichment"
+ENRICHMENT_MAX_AGE_DAYS = 32
+ENRICHMENT_RETRY_HOURS = 24
+ENRICHMENT_LOCK_SECONDS = 3600
+
+
+async def _maybe_refresh_enrichment(lock: FeedLock) -> None:
+    """Bases DB-IP de plus de 32 jours : nouveau téléchargement (ADR-019), une tentative par
+    jour au plus. Jamais la première fois : l'administrateur lance lui-même le premier
+    `illwatch enrich update`."""
+    from datetime import UTC, datetime, timedelta
+
+    from illwatch.app.database import get_session_factory
+    from illwatch.app.models import CollectorState
+    from illwatch.modules.enrichment.dbip import import_dataset, open_lines
+    from illwatch.modules.enrichment.download import download_latest
+    from illwatch.modules.enrichment.lookup import datasets
+    from illwatch.shared.enums import EnrichmentDataset
+
+    settings = get_settings()
+    if not settings.enrichment_auto_update:
+        return
+    now = datetime.now(UTC)
+
+    def _utc(value: datetime) -> datetime:
+        return value if value.tzinfo else value.replace(tzinfo=UTC)
+
+    async with get_session_factory()() as session:
+        imported = await datasets(session)
+        state = await session.get(CollectorState, ENRICHMENT_STATE)
+        last_try = None if state is None or state.last_success_at is None else state.last_success_at
+    if last_try is not None and now - _utc(last_try) < timedelta(hours=ENRICHMENT_RETRY_HOURS):
+        return
+    stale = [
+        EnrichmentDataset(d.dataset)
+        for d in imported
+        if now - _utc(d.imported_at) > timedelta(days=ENRICHMENT_MAX_AGE_DAYS)
+    ]
+    if not stale:
+        return
+    token = await lock.acquire(ENRICHMENT_STATE, ENRICHMENT_LOCK_SECONDS)
+    if token is None:
+        return
+    try:
+        async with get_session_factory()() as session:
+            state = await session.get(CollectorState, ENRICHMENT_STATE)
+            if state is None:
+                state = CollectorState(name=ENRICHMENT_STATE, items=0)
+                session.add(state)
+            state.last_success_at = now  # tentative du jour, réussie ou non
+            await session.commit()
+        for dataset in stale:
+            try:
+                async with (
+                    download_latest(dataset) as (name, path),
+                    get_session_factory()() as session,
+                ):
+                    with open_lines(path) as lines:
+                        report = await import_dataset(session, dataset, lines, source=name)
+                    await session.commit()
+                collector.log.info(
+                    "worker.enrichment",
+                    extra={"fields": {"dataset": dataset.value, "ranges": report.ranges}},
+                )
+            except Exception as exc:  # noqa: BLE001 - nouvel essai demain, le worker continue
+                collector.log.warning(
+                    "worker.enrichment_failed",
+                    extra={"fields": {"dataset": dataset.value, "error": str(exc)[:300]}},
+                )
+    finally:
+        await lock.release(ENRICHMENT_STATE, token)
+
+
 HOUSEKEEPING_STATE = "housekeeping"
 HOUSEKEEPING_INTERVAL_SECONDS = 24 * 3600
 
@@ -481,7 +595,9 @@ async def run_worker(
                     await _maybe_sync_cves(active_lock)
                 if include_hunting:
                     await _maybe_hunt(active_lock)
+                    await _maybe_correlate(active_lock)
                 await _maybe_housekeeping(active_lock)
+                await _maybe_refresh_enrichment(active_lock)
                 collector.log.info(
                     "worker.cycle",
                     extra={

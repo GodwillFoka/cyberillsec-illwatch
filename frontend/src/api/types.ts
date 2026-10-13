@@ -39,5 +39,11 @@ export type AuditEvent = Schemas["AuditEventRead"];
 export type AuditPage = Schemas["AuditPage"];
 export type SettingsInfo = Schemas["SettingsRead"];
 
+export type Asset = Schemas["AssetRead"];
+export type AssetWrite = Schemas["AssetWrite"];
+export type Correlation = Schemas["CorrelationRead"];
+export type CorrelationPage = Schemas["CorrelationPage"];
+export type CorrelationRun = Schemas["CorrelationRunRead"];
+
 export type Metric = Series["metric"];
 export type SeriesWindow = Series["window"];

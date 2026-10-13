@@ -8,8 +8,10 @@ déclarées : l'OpenAPI exposé reflète strictement ce qui fonctionne.
 from fastapi import APIRouter
 
 from illwatch.app.api.v1 import (
+    assets,
     audit,
     auth,
+    correlations,
     cves,
     dashboard,
     feeds,
@@ -43,6 +45,10 @@ api_router.include_router(dashboard.router)
 
 # Phase 6 — MOD-06 : threat hunting (RF-25 à RF-28)
 api_router.include_router(hunting.router)
+
+# M8 — Detection & Correlation : inventaire d'actifs et évènements corrélés (ADR-020)
+api_router.include_router(assets.router)
+api_router.include_router(correlations.router)
 
 # M7 — Production Hardening : journal d'audit de sécurité (ADR-011)
 api_router.include_router(audit.router)

@@ -73,6 +73,14 @@ class EnrichmentDataset(StrEnum):
     ASN = "asn"  # plage → système autonome et son opérateur
 
 
+class CorrelationRule(StrEnum):
+    """Règles de corrélation — M8, ADR-020 (incrément 3)."""
+
+    KEV_ASSET = "CORR-01"  # CVE exploitée activement (KEV) sur un produit de l'inventaire
+    EXPLOIT_ASSET = "CORR-02"  # CVE P0/P1 avec exploit public sur un produit de l'inventaire
+    ASSET_IN_IOC = "CORR-03"  # adresse ou domaine de l'organisation présent dans un IOC
+
+
 class IncidentStatus(StrEnum):
     """Machine d'état à 6 étapes — RF-18 (NIST SP 800-61 Rev. 2)."""
 

@@ -365,6 +365,8 @@ const AUDIT_FAMILIES: [string, string][] = [
   ["alert.", "Alertes"],
   ["hunt.", "Chasses"],
   ["enrichment.", "Enrichissement"],
+  ["asset.", "Inventaire"],
+  ["correlation.", "Corrélations"],
 ];
 
 const OUTCOME: Record<string, [string, string]> = {

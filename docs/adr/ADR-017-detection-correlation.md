@@ -31,11 +31,12 @@ M8 est livré en quatre incréments, dans cet ordre :
      l'administrateur ; sources de référence : abuse.ch et IPsum en B, OTX en D, les autres C.
 2. **Enrichissement local** (livré le 12/10, ADR-019) : ASN et pays depuis la base DB-IP Lite
    importée localement (aucune requête sortante par IOC) ; âge des domaines reporté.
-3. **Corrélation** : inventaire d'actifs (produits, CPE), règles IOC × CVE × actif × KEV →
-   évènement corrélé → alerte priorisée ; la confiance filtre les IOC éligibles (seuil
-   paramétrable, « moyenne » par défaut).
-4. **Mesure** : jeu de données figé et versionné, 100 % des cas attendus détectés, taux de faux
-   positifs publié (critère de sortie de M8).
+3. **Corrélation** (livrée le 13/10, ADR-020) : inventaire d'actifs, règles KEV × actif,
+   exploit × actif, actif × IOC → évènement corrélé priorisé ; la confiance filtre les IOC
+   éligibles (seuil paramétrable, « moyenne » par défaut).
+4. **Mesure** (livrée le 13/10, ADR-020) : jeu de données figé et versionné, 100 % des cas
+   attendus détectés, 0 % de faux positifs sur ce jeu, vérifié par la CI ; mesure sur données
+   réelles avec le premier pilote.
 
 ## Justification
 
@@ -65,5 +66,4 @@ M8 est livré en quatre incréments, dans cet ordre :
 ## Suivi
 
 - Incrément 2 : ✅ DB-IP Lite (CC BY 4.0), ADR-019.
-- Incrément 3 : modèle d'inventaire d'actifs, colonne de confiance matérialisée et indexée.
-- Incrément 4 : jeu de données figé, mesure publiée dans `Rapport/`.
+- Incréments 3 et 4 : ✅ ADR-020 ; restent la colonne de confiance matérialisée (tri global) et la mesure sur l'inventaire d'un pilote.
