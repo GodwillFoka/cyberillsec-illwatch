@@ -1,6 +1,6 @@
 # ILL Watch — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **13/10/2026, 18 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **13/10/2026, 22 h 00**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -21,7 +21,9 @@ Kali sur données réelles. **Décision du 11/10** : la préproduction publique 
 **reportée** ; elle est remplacée en attendant par une **préproduction locale** vérifiée en CI à
 chaque modification. M7 reste ouvert jusqu'au VPS. **M8 a ses quatre incréments livrés** (ADR-017,
 ADR-019, ADR-020) : confiance des IOC, enrichissement des IP, inventaire et corrélation, mesure
-sur jeu figé (100 % détectés, 0 % de faux positifs) ; reste la mesure sur l'inventaire d'un pilote. M1 à M6 sont constatés sur données réelles, en local et en CI.
+sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réelle sur Kali (13/10)** :
+38 évènements, ≈ 80 % de faux positifs faute de comparer les versions → corrélation par version
+(ADR-021, PR #38) ; mesure réelle à refaire après `illwatch cves refresh-affected`. M1 à M6 sont constatés sur données réelles, en local et en CI.
 
 ## 2. Jalons
 
@@ -34,7 +36,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs) ; reste la mesure sur l'i
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
 | **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, identité ILL Watch v2, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
-| M8 Detection & Correlation | 🟢 critère atteint sur jeu figé | incréments 1 à 4 livrés : confiance (ADR-017), enrichissement (ADR-019), inventaire et corrélation CORR-01 à 03 (ADR-020), mesure 100 % / 0 % FP (`Rapport/M8_MESURE_13-10-2026.md`) ; à confirmer sur l'inventaire d'un pilote |
+| M8 Detection & Correlation | 🟢 critère atteint sur jeu figé | incréments 1 à 4 livrés : confiance (ADR-017), enrichissement (ADR-019), inventaire et corrélation CORR-01 à 03 (ADR-020), mesure 100 % / 0 % FP (`Rapport/M8_MESURE_13-10-2026.md`) ; passe réelle Kali ≈ 80 % FP → corrélation par version (ADR-021) ; mesure réelle à refaire |
 | M9 à M11 | ⏳ | opérer, contextualiser, exploiter |
 
 ## 3. Chantier en cours
@@ -54,6 +56,8 @@ sur jeu figé (100 % détectés, 0 % de faux positifs) ; reste la mesure sur l'i
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 13/10 | PR #38 | **Corrélation par version** (ADR-021) : plages vulnérables NVD conservées (`cves.affected`, migration `e5b8c1d4a907`), verdict par version (hors plage / autre produit écartés), `illwatch cves refresh-affected`, jeu figé 18 cas / 8 attendus ; **débordements** : données de démonstration extrêmes (URL de 440 caractères, titres et noms longs), captures pleine hauteur et tous écrans en mobile, recherche et titres de détail corrigés sur mobile |
+| 13/10 | PR #37 | **Débordements** : libellés des barres (types d'IOC), erreurs TAXII longues, retour à la ligne général des textes ; détecteur de texte qui déborde dans les captures CI |
 | 13/10 | PR #36 | **M8 incréments 3 et 4** : inventaire d'actifs, corrélation CORR-01 à 03 (score justifié, worker horaire, écrans Corrélations et Inventaire), mesure sur jeu figé 100 % / 0 % FP vérifiée par la CI, mise à jour mensuelle automatique de DB-IP ; ADR-020 |
 | 12/10 | PR #35 | Enrichissement : volumes réels mesurés sur Kali (710 834 plages pays, 477 362 AS) |
 | 12/10 | PR #34 | **M8 incrément 2** : enrichissement hors ligne des IP (pays, système autonome) depuis DB-IP Lite importée localement, `illwatch enrich`, ADR-019 ; écrans chargés à la demande (fin de l'avertissement de taille au build) ; captures de la fiche IP et des paramètres |
@@ -129,15 +133,16 @@ sur jeu figé (100 % détectés, 0 % de faux positifs) ; reste la mesure sur l'i
 | Dépôt GitLab à renommer | liens de la documentation | renommé, `main` synchronisé (`955e2a1`) | ✅ |
 | Vérification depuis la session de travail : npm et PyPI bloqués (politique réseau), journaux CI illisibles, suppression de branches refusée | contrôle local impossible côté session | CI GitHub fait foi (erreurs remontées en annotations) ; `ci-local.sh` sur Kali ; workflow « Branches » | ✅ contourné proprement |
 | Pipeline GitLab non consultable depuis la session | jobs `openapi`/`interface` non constatés | autoriser le connecteur GitLab (réglages claude.ai) ou constater après `git push gitlab main` | ⏳ |
+| Source RedEye (osint.digitalside.it) en délai dépassé côté serveur ; IPsum à 50 % de réussite | collectes en échec, bruit dans la santé des sources | suspendre RedEye depuis l'écran Sources tant que le serveur ne répond pas | ⏳ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
 | Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | — |
 
 ## 8. Prochaines étapes
 
-1. **Sur Kali** : `git pull`, `./scripts/build-web.sh`, redémarrer uvicorn ; essayer la
-   préproduction locale (`./scripts/preprod-local.sh up` puis `check`).
-2. **M8, incrément 2** : enrichissement local des IOC (ASN, pays) depuis une base hors ligne.
-3. **M8, incrément 3** : inventaire d'actifs et corrélation IOC × CVE × actif × KEV ; confiance
-   matérialisée et indexée (tri, filtre).
-4. **M8, incrément 4** : jeu de données figé, taux de faux positifs publié (sortie de M8).
+1. **Sur Kali** : mettre à jour (PR #38), `illwatch db upgrade`, `illwatch cves refresh-affected`,
+   `illwatch correlate run` puis `list` ; consigner le résultat dans
+   `Rapport/M8_MESURE_REELLE_13-10-2026.md` (sortie réelle de M8).
+2. Signaler tout débordement restant (capture d'écran) ; les captures CI le détectent désormais.
+3. Suspendre RedEye tant que son serveur ne répond pas.
+4. **M9** : opérer (suite du plan directeur).
 5. **VPS UE** (reporté) : reprendre la préproduction locale avec un domaine réel → clôture de M7.

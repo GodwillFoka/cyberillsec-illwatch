@@ -38,12 +38,14 @@ from illwatch.modules.cve_tracker.sources import (
     Sleep,
     fetch_epss,
     fetch_nvd,
+    nvd_pause,
     nvd_windows,
     parse_kev,
     parse_nvd_page,
 )
 from illwatch.modules.threat_feeds.fetcher import FetchError
 from illwatch.modules.threat_feeds.secrets import mask_secrets
+from illwatch.shared.enums import RiskPriority
 from illwatch.shared.logging import peak_rss_mb
 
 log = logging.getLogger("illwatch.cve")
@@ -116,6 +118,8 @@ async def apply_nvd_page(session: AsyncSession, page: NvdPage, touched: dict[str
         cve.cvss_score = record.cvss_score
         cve.cvss_vector = record.cvss_vector
         cve.has_public_exploit = record.has_public_exploit
+        if record.affected is not None:  # pas encore analysée par la NVD : on garde l'acquis
+            cve.affected = record.affected
         if record.kev_date_added is not None:  # NVD recopie les champs KEV de la CISA
             cve.is_kev = True
             cve.kev_date_added = cve.kev_date_added or record.kev_date_added
@@ -492,4 +496,59 @@ async def import_nvd_file(
             }
         },
     )
+    return report
+
+
+async def refresh_affected(
+    session: AsyncSession,
+    *,
+    settings: Settings,
+    fetch: HeaderFetcher,
+    sleep: Sleep,
+    limit: int = 3000,
+) -> SyncReport:
+    """Complète les produits et versions vulnérables (ADR-021) des CVE utiles à la corrélation.
+
+    1. toutes les CVE du catalogue KEV (filtre `hasKev`, quelques pages) ;
+    2. les CVE P0/P1 avec exploit public encore sans versions connues, une à une (`cveId`),
+       `limit` au plus par passe.
+    Scores recalculés comme à la synchronisation, sans émettre d'alertes (simple rattrapage).
+    Les autres CVE se complètent à leur prochaine modification NVD.
+    """
+    report = SyncReport()
+
+    async def _page(page: NvdPage) -> None:
+        touched: dict[str, str] = {}
+        created = await apply_nvd_page(session, page, touched)
+        report.nvd += len(page.records)
+        report.created += len(created)
+        await rescore(
+            session,
+            touched,
+            settings=settings,
+            alerts_enabled=False,
+            report=report,
+            new_ids=created,
+        )
+        await session.commit()
+
+    await fetch_nvd(settings, fetch, sleep, has_kev=True, on_page=_page)
+    missing = (
+        await session.scalars(
+            select(CVE.id)
+            .where(
+                CVE.affected.is_(None),
+                CVE.is_kev.is_(False),
+                CVE.has_public_exploit.is_(True),
+                CVE.priority.in_([RiskPriority.P0_CRITIQUE, RiskPriority.P1_ELEVE]),
+            )
+            .order_by(CVE.composite_risk_score.desc())
+            .limit(limit)
+        )
+    ).all()
+    pause = nvd_pause(settings)
+    for index, cve_id in enumerate(missing):
+        if index:
+            await sleep(pause)
+        await fetch_nvd(settings, fetch, sleep, cve_id=cve_id, on_page=_page)
     return report

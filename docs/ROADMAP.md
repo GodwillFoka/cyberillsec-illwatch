@@ -54,11 +54,14 @@ figé versionné : 100 % détectés, 0 % de faux positifs, vérifié par la CI).
 - Score de confiance d'un IOC ✅.
 - Règles de corrélation : IOC × CVE × actif × KEV → évènement corrélé ✅.
 - Plancher « KEV ⇒ au moins P1 » et EPSS manquant : ✅ ADR-014 accepté (A + B + C) et appliqué.
+- Corrélation par version (plages vulnérables NVD) ✅ ADR-021.
 - Calibration DGA sur corpus (Tranco + DGArchive), RULE-05 par CPE.
 
 **Critère de sortie :** sur un jeu de données figé, 100 % des cas de corrélation attendus produisent
 une alerte, taux de faux positifs mesuré et publié. ✅ **Atteint le 13/10/2026** sur le jeu figé
-(`Rapport/M8_MESURE_13-10-2026.md`). Reste à confirmer sur l'inventaire réel d'un pilote.
+(`Rapport/M8_MESURE_13-10-2026.md`). Première passe réelle (Kali, 13/10) : ≈ 80 % de faux
+positifs faute de comparer les versions → corrélation par version (ADR-021, plages NVD) ;
+mesure réelle à refaire (`Rapport/M8_MESURE_REELLE_13-10-2026.md`).
 
 ## M9 — SOC Operations
 

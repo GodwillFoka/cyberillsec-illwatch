@@ -35,6 +35,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import CVE, Asset, CollectorState, CorrelatedEvent, Indicator
 from illwatch.modules.correlation.confidence import compute_confidence, source_reliabilities
+from illwatch.modules.correlation.versions import VERDICT_LABEL, assess
 from illwatch.modules.cve_tracker.scoring import classify_priority
 from illwatch.modules.enrichment.lookup import enrich_ip
 from illwatch.shared.enums import (
@@ -159,6 +160,10 @@ async def _cve_findings(session: AsyncSession, asset: Asset) -> list[Finding]:
     for cve in rows:
         if not pattern.search(cve.description):
             continue
+        verdict = assess(product, asset.version, cve.affected)
+        if verdict in ("autre_produit", "hors_plage"):
+            # La NVD dit que ce produit n'est pas touché, ou pas dans cette version (ADR-021).
+            continue
         rule = CorrelationRule.KEV_ASSET if cve.is_kev else CorrelationRule.EXPLOIT_ASSET
         signals = [
             label
@@ -182,6 +187,9 @@ async def _cve_findings(session: AsyncSession, asset: Asset) -> list[Finding]:
                     "cve_score": float(cve.composite_risk_score),
                     "signals": signals,
                     "kev_due_date": cve.kev_due_date.isoformat() if cve.kev_due_date else None,
+                    "version": asset.version,
+                    "version_check": verdict,
+                    "version_label": VERDICT_LABEL.get(verdict, verdict),
                 },
             )
         )

@@ -87,6 +87,13 @@ _DEMO_ASSETS = [
     ("Messagerie", "Exchange Server", "Microsoft", Severity.HIGH, []),
     ("Wiki interne", "Confluence", "Atlassian", Severity.MEDIUM, []),
     ("Intégration continue", "Jenkins", "Jenkins", Severity.LOW, []),
+    (
+        "Passerelle de messagerie sécurisée du siège — cluster de production principal (Francfort)",
+        "Proofpoint Email Protection",
+        "Proofpoint",
+        Severity.MEDIUM,
+        [],
+    ),
 ]
 
 
@@ -104,6 +111,19 @@ class DemoReport:
 
 
 # --- IOC ---------------------------------------------------------------------------------
+
+# Valeurs longues et d'un seul tenant, comme en collecte réelle : les captures vérifient
+# qu'aucun écran ne déborde (URL d'hameçonnage à rallonge, sous-domaine généré, etc.).
+LONG_URL = (
+    "https://secure-login.microsoftonline-verification.phish.example/common/oauth2/v2.0/"
+    "authorize?client_id=4765445b-32c6-49b0-83e6-1d93765276ca&response_type=code&redirect_uri="
+    "https%3A%2F%2Fsecure-login.microsoftonline-verification.phish.example%2Fcallback&scope="
+    "openid%20profile%20offline_access&state=a8f5f167f44f4964e6c998dee827110c&nonce="
+    "6f1ed002ab5595859014ebf0951522d9"
+)
+LONG_DOMAIN = (
+    "verification-compte-securise-office365.authentification-renouvellement-session.phish.example"
+)
 
 _FAMILIES = [
     ("Cobalt Strike C2", Severity.CRITICAL),
@@ -143,6 +163,15 @@ def _observations(rng: random.Random, count: int) -> list[Observation]:
         Observation("beacon.cdn-update.duckdns.org", severity=Severity.HIGH),
         Observation("xjq8wz0vkp3mlq7b.example", severity=Severity.MEDIUM),
         Observation(TOR_EXIT, severity=Severity.MEDIUM, description=f"Scanner {DEMO_TAG}"),
+        Observation(
+            LONG_URL,
+            severity=Severity.HIGH,
+            description=(
+                "Page d'hameçonnage imitant la mire de connexion Microsoft 365, envoyée par "
+                f"courriel aux services financiers {DEMO_TAG}"
+            ),
+        ),
+        Observation(LONG_DOMAIN, severity=Severity.HIGH, description=f"Hameçonnage {DEMO_TAG}"),
     ]
     return items
 
@@ -161,7 +190,11 @@ _PRODUCTS = [
     ("Cisco IOS XE", "élévation de privilèges via l'interface web"),
     ("OpenSSH", "condition de concurrence dans le gestionnaire de signaux"),
     ("WordPress (extension)", "injection SQL authentifiée"),
-    ("Jenkins", "lecture de fichiers arbitraires via le CLI"),
+    (
+        "Jenkins",
+        "lecture de fichiers arbitraires via le CLI (avis : https://www.jenkins.io/security/"
+        "advisory/2099-01-24/#SECURITY-3314-lecture-de-fichiers-arbitraires-via-le-cli)",
+    ),
 ]
 
 
@@ -342,7 +375,13 @@ async def load_demo_data(
             [IncidentStatus.ANALYSE],
             1,
         ),
-        ("Campagne d'hameçonnage Microsoft 365 (12 destinataires)", Severity.MEDIUM, [], 2),
+        (
+            "Campagne d'hameçonnage Microsoft 365 visant la direction financière, les achats "
+            "et deux filiales (12 destinataires, pièces jointes HTML piégées)",
+            Severity.MEDIUM,
+            [],
+            2,
+        ),
         (
             "Exploitation FortiOS SSL-VPN tentée depuis l'extérieur",
             Severity.HIGH,
@@ -428,6 +467,7 @@ async def load_demo_data(
             "beacon.cdn-update.duckdns.org",
             "hxxp://kq3zx9vw7plm2nbt[.]example/gate.php",
             "www.example.org",
+            LONG_URL,
         ],
         assets=["FortiOS", "Exchange", "Confluence"],
         author_id=author,

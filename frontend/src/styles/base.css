@@ -1814,3 +1814,27 @@ textarea {
 .bar-row > * {
   min-width: 0;
 }
+
+/* Débordements (revue des captures pleine hauteur, PR #38) ---------------------------------- */
+
+/* Le titre d'un panneau de détail se lit en entier : il passe à la ligne au lieu d'être coupé. */
+.detail .title .ellipsis {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  /* Barre de recherche : le champ prend toute la largeur, les boutons passent dessous
+   * (sinon il ne reste qu'une dizaine de caractères visibles). */
+  .toolbar form.grow {
+    flex-wrap: wrap;
+  }
+  .toolbar form.grow > input.grow {
+    flex: 1 1 100%;
+  }
+  /* Tableaux défilants : la colonne principale garde une largeur lisible au lieu de
+   * s'écraser en un mot par ligne. */
+  .table .cell-title {
+    min-width: 160px;
+  }
+}

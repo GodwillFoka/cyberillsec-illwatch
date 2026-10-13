@@ -26,6 +26,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [018](ADR-018-identite-ill-watch.md) | Identité ILL Watch : le brand book v2 fait autorité sur l'interface (logo, jetons, Inter, voix) | Accepté |
 | [019](ADR-019-enrichissement-hors-ligne.md) | Enrichissement hors ligne des IP : DB-IP Lite (pays, AS) importée localement, aucune requête par IOC | Accepté |
 | [020](ADR-020-correlation.md) | Corrélation : inventaire d'actifs, trois règles (KEV, exploit, actif dans un IOC), score justifié, mesure sur jeu figé | Accepté |
+| [021](ADR-021-correlation-par-version.md) | Corrélation par version : plages vulnérables NVD, verdict par actif | Accepté |
 
 ## Gabarit
 
