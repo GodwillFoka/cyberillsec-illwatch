@@ -804,7 +804,8 @@ button {
 
 .bar-row {
   display: grid;
-  grid-template-columns: 64px 1fr 72px;
+  /* Libellé plafonné (tronqué si besoin), barre souple, valeur à sa largeur : rien ne déborde. */
+  grid-template-columns: minmax(0, 88px) minmax(0, 1fr) minmax(64px, auto);
   align-items: center;
   gap: var(--s3);
   padding: 6px 0;
@@ -1777,4 +1778,39 @@ textarea {
 /* Corrélations : cible (CVE ou valeur d'IOC) tronquée dans la file. */
 .cell-target {
   max-width: 200px;
+}
+
+/* --- Textes venus des données ------------------------------------------------------------ */
+/* Messages d'erreur, descriptions, titres, valeurs : un « mot » très long (adresse, empreinte,
+ * chemin, identifiant) passe à la ligne au lieu de sortir de son cadre. `anywhere` (et non
+ * `break-word`) compte aussi dans la largeur minimale des grilles et des flex : le cadre ne
+ * s'élargit jamais à cause d'un tel mot. Les cellules de tableau restent sur une ligne et le
+ * tableau défile dans sa carte. */
+.notice,
+.description,
+.reason,
+.empty,
+.card h2,
+.card p,
+.page-head h1,
+.page-head p,
+.detail .title,
+.detail dd,
+.detail li,
+.list li,
+.timeline li,
+.facts dd,
+.cell-sub,
+.value-box {
+  overflow-wrap: anywhere;
+}
+
+.list li > *,
+.timeline li > *,
+.detail .title > * {
+  min-width: 0;
+}
+
+.bar-row > * {
+  min-width: 0;
 }

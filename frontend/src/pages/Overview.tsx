@@ -18,6 +18,7 @@ import { QueryState } from "../components/QueryState";
 import { SeriesChart } from "../components/SeriesChart";
 import { formatAge, formatAgo, formatDateTime, formatNumber, formatTime, parseDate } from "../lib/format";
 import { ALERT_REASON, CHART, INCIDENT_STATUS, PRIORITY_ORDER, rankOf, TONE_COLORS, toneOf } from "../lib/levels";
+import { iocTypeLabel } from "../lib/iocs";
 import { useTimeZone } from "../lib/time";
 import { Link } from "../lib/router";
 import { useFresh } from "../lib/useFresh";
@@ -409,7 +410,9 @@ function IocTypes({ summary }: { summary: Summary | undefined }) {
       {rows.length === 0 && <p className="empty">{summary ? "Aucun indicateur actif." : "Chargement…"}</p>}
       {rows.map(([type, count]) => (
         <div className="bar-row" key={type}>
-          <span className="mono muted">{type}</span>
+          <span className="muted ellipsis" title={type}>
+            {type === "Autres" ? type : iocTypeLabel(type)}
+          </span>
           <div className="bar-track">
             <div className="bar-fill" style={{ width: `${(count / max) * 100}%`, background: CHART.accent }} />
           </div>

@@ -56,6 +56,14 @@ class DemoRefusedError(RuntimeError):
     """La base contient déjà des données réelles."""
 
 
+# Erreur de collecte réaliste (longue, avec une adresse d'un seul tenant) : les captures
+# vérifient qu'elle reste dans son panneau, comme celle qu'un vrai flux TAXII renvoie.
+_DEMO_FEED_ERROR = (
+    "ConnectTimeout : HTTPSConnectionPool(host='feeds.example.org', port=443) : Max retries "
+    "exceeded with url: /taxii2reports/collections/c1f43330-103b-11ee-9ee3-4b022e286589/objects/ "
+    "(connect timeout=15.0) (4 tentatives) [démo]"
+)
+
 # Enrichissement fictif des plages de documentation, avec les numéros d'AS réservés à la
 # documentation (RFC 5398) : jamais chargé si une vraie base DB-IP est déjà importée.
 _DEMO_COUNTRY = [
@@ -259,13 +267,13 @@ async def load_demo_data(
                     inserted=0 if failed else rng.randint(0, 400),
                     updated=0 if failed else rng.randint(0, 900),
                     rejected=0 if failed else rng.randint(0, 12),
-                    error="Délai d'attente dépassé (démo)" if failed else None,
+                    error=_DEMO_FEED_ERROR if failed else None,
                 )
             )
             report.runs += 1
         feed.status = FeedStatus.DEGRADED if feed is degraded else FeedStatus.HEALTHY
         feed.last_successful_run = moment - timedelta(hours=18 if feed is degraded else 1)
-        feed.last_error = "Délai d'attente dépassé (démo)" if feed is degraded else None
+        feed.last_error = _DEMO_FEED_ERROR if feed is degraded else None
 
     # IOC répartis sur 30 jours, attribués à plusieurs sources.
     observations = _observations(rng, 640)
