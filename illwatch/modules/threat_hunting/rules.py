@@ -107,10 +107,10 @@ _TWO_LEVEL_SUFFIXES = frozenset(
 )
 # RULE-03 v2 (14/10/2026), calibrée sur les 100 000 premiers domaines Tranco (workflow
 # « Calibration DGA ») : la v1 (entropie et voyelles) signalait 0,71 % de domaines légitimes
-# (« stackoverflow », « samsungelectronics ») ; le coût des bigrammes anglais distingue une suite
-# de mots d'une chaîne aléatoire.
-DGA_MIN_LENGTH = 12
-DGA_MIN_BIGRAM_COST = 5.5  # bits par transition (anglais ≈ 3,5 à 4,5 ; aléatoire ≈ 5,5 à 7)
+# (« stackoverflow », « samsungelectronics ») pour 49,9 % de DGA synthétiques détectés ; la v2
+# (coût des bigrammes anglais) : 0,094 % de faux positifs pour 64,1 % de détection.
+DGA_MIN_LENGTH = 14
+DGA_MIN_BIGRAM_COST = 5.75  # bits par transition (anglais ≈ 3,5 à 4,5 ; aléatoire ≈ 5,5 à 7)
 DGA_MIN_LETTERS = 8
 DGA_MIN_DIGIT_RATIO = 0.3  # chaînes alphanumériques ou hexadécimales aléatoires
 DGA_MIN_ALTERNATIONS = 4  # passages lettre ↔ chiffre (« web2023archive » : 2)

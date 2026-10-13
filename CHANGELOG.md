@@ -19,7 +19,8 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   positifs sur les 100 000 premiers domaines Tranco, détection sur un corpus synthétique).
   Mesure de la v1 (entropie, voyelles) : **0,71 % de faux positifs**, 49,9 % de détection.
 - RULE-03 v2 : coût des bigrammes anglais (table tirée du dictionnaire SCOWL) et mélange
-  aléatoire lettres/chiffres ; « stackoverflow », « samsungelectronics » ne sont plus signalés.
+  aléatoire lettres/chiffres, libellés de 14 caractères au moins : **0,094 % de faux positifs**
+  (÷ 7,5) et **64,1 % de détection** (+ 14 points) ; « stackoverflow » n'est plus signalé.
 - `Rapport/BILAN_M8.md` : M8 clos.
 
 ### Corrigé — corrélation par version (ADR-021)
