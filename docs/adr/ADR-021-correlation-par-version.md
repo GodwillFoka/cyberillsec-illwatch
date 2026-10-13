@@ -28,6 +28,10 @@ Shellshock (bash) remonté sur OpenSSH, CVE-2022-0543 (paquet Debian de Redis 5/
      vulnérable que sur certaines plateformes (configuration ET, ex. CVE-2022-0543 : Redis
      **dans les paquets Debian 9 à 11**) ou avec une version « - » (faille d'un paquet de
      distribution) → évènement, plateformes requises affichées ;
+   - `hors_plateforme` (ajout du 14/10) : l'actif déclare sa plateforme (« Debian 12 ») et
+     aucune plateforme requise ne correspond → **pas d'évènement** ; plateforme requise
+     présente → `vulnerable`. Comparaison par famille (`debian` ↔ `debian_linux`) et version
+     (12 ≡ 12.0 ≡ 12.5) ;
    - `inconnu` (plages non lues) et `version_non_declaree` → évènement, le verdict étant
      affiché pour que l'analyste vérifie.
    Le doute reste donc du côté de l'alerte : on ne masque que ce qui est démontré hors d'atteinte.

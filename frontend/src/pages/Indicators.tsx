@@ -326,7 +326,7 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
               </section>
 
               {/* Enrichissement hors ligne (ADR-017, incrément 2) : IP seulement. */}
-              {(ioc.type === "IPV4" || ioc.type === "IPV6") && (
+              {(ioc.type === "IPV4" || ioc.type === "IPV6" || ioc.type === "NETWORK") && (
                 <section>
                   <h3>Enrichissement</h3>
                   {ioc.enrichment ? (

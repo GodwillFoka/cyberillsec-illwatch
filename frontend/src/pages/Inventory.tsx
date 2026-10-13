@@ -37,6 +37,7 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
   const [product, setProduct] = useState("");
   const [vendor, setVendor] = useState("");
   const [version, setVersion] = useState("");
+  const [platform, setPlatform] = useState("");
   const [criticality, setCriticality] = useState<AssetWrite["criticality"]>("MEDIUM");
   const [addresses, setAddresses] = useState("");
   const [domains, setDomains] = useState("");
@@ -49,6 +50,7 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
     setProduct(asset?.product ?? "");
     setVendor(asset?.vendor ?? "");
     setVersion(asset?.version ?? "");
+    setPlatform(asset?.platform ?? "");
     setCriticality(asset?.criticality ?? "MEDIUM");
     setAddresses((asset?.addresses ?? []).join("\n"));
     setDomains((asset?.domains ?? []).join("\n"));
@@ -71,6 +73,7 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
         product,
         vendor: vendor || null,
         version: version || null,
+        platform: platform || null,
         criticality,
         addresses: lines(addresses),
         domains: lines(domains),
@@ -122,6 +125,16 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
             <input maxLength={60} value={version} disabled={!canEdit} onChange={(e) => setVersion(e.target.value)} />
           </label>
         </div>
+        <label className="field">
+          Plateforme (système hôte : tranche les CVE propres à une distribution)
+          <input
+            maxLength={80}
+            placeholder="Debian 12, Ubuntu 22.04, Windows Server 2022…"
+            value={platform}
+            disabled={!canEdit}
+            onChange={(e) => setPlatform(e.target.value)}
+          />
+        </label>
         <label className="field">
           Criticité
           <select

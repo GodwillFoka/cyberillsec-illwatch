@@ -105,3 +105,37 @@ def test_url_malformee_rejetee_sans_exception_brute(value: str) -> None:
     """Une URL que `urllib` refuse doit être rejetée seule, jamais faire échouer le lot."""
     with pytest.raises(InvalidIndicatorError):
         normalize_indicator(value)
+
+
+# --- Plages CIDR (14/10/2026) -------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("45.67.89.10/24", (IndicatorType.NETWORK, "45.67.89.0/24")),
+        ("45.67.0.0/16", (IndicatorType.NETWORK, "45.67.0.0/16")),
+        ("45.67.89.10/32", (IndicatorType.IPV4, "45.67.89.10")),  # une adresse : rangée comme IP
+        ("2a00:1450:4001::/48", (IndicatorType.NETWORK, "2a00:1450:4001::/48")),
+        ("45[.]67[.]89[.]0/24", (IndicatorType.NETWORK, "45.67.89.0/24")),
+    ],
+)
+def test_plages_cidr_normalisees(value: str, expected: tuple[IndicatorType, str]) -> None:
+    assert normalize_indicator(value) == expected
+
+
+@pytest.mark.parametrize(
+    "value", ["45.0.0.0/8", "10.20.0.0/16", "192.168.1.0/24", "2a00::/16", "fd00::/48"]
+)
+def test_plages_trop_larges_ou_internes_refusees(value: str) -> None:
+    with pytest.raises(InvalidIndicatorError):
+        normalize_indicator(value)
+
+
+def test_inclusion_dans_une_plage() -> None:
+    from illwatch.modules.threat_feeds.validators import network_contains
+
+    assert network_contains("45.67.89.0/24", "45.67.89.200")
+    assert not network_contains("45.67.89.0/24", "45.67.90.1")
+    assert not network_contains("45.67.89.0/24", "2a00:1450::1")
+    assert not network_contains("pas une plage", "45.67.89.1")

@@ -40,6 +40,7 @@ class AssetInput:
     vendor: str | None = None
     version: str | None = None
     criticality: Severity = Severity.MEDIUM
+    platform: str | None = None
     addresses: tuple[str, ...] = ()
     domains: tuple[str, ...] = ()
     notes: str | None = None
@@ -101,6 +102,7 @@ def _apply(asset: Asset, data: AssetInput) -> None:
     asset.product = product
     asset.vendor = _clean(data.vendor, 120)
     asset.version = _clean(data.version, 60)
+    asset.platform = _clean(data.platform, 80)
     asset.criticality = Severity(data.criticality).value
     asset.addresses = normalize_addresses(data.addresses)
     asset.domains = normalize_domains(data.domains)

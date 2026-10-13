@@ -45,6 +45,7 @@ _CHUNK_SIZE = 500  # 500 lignes x 9 colonnes : loin des 32 767 paramètres de Po
 DEFAULT_TTL: dict[IndicatorType, timedelta | None] = {
     IndicatorType.IPV4: timedelta(days=30),
     IndicatorType.IPV6: timedelta(days=30),
+    IndicatorType.NETWORK: timedelta(days=30),
     IndicatorType.URL: timedelta(days=30),
     IndicatorType.DOMAIN: timedelta(days=90),
     IndicatorType.EMAIL: timedelta(days=90),
@@ -134,7 +135,13 @@ def _prepare(
         except InvalidIndicatorError as exc:
             result.reject(obs.value, str(exc))
             continue
-        if obs.type is not None and IndicatorType(obs.type) is not ioc_type:
+        announced = IndicatorType(obs.type) if obs.type is not None else None
+        if announced is IndicatorType.NETWORK and ioc_type in (
+            IndicatorType.IPV4,
+            IndicatorType.IPV6,
+        ):
+            announced = ioc_type  # plage d'une seule adresse (/32, /128) : rangée comme l'adresse
+        if announced is not None and announced is not ioc_type:
             result.reject(obs.value, f"Type annoncé {obs.type}, type détecté {ioc_type}.")
             continue
 
@@ -294,6 +301,23 @@ async def ingest_indicators(
 
 def is_active_clause(now: datetime) -> ColumnElement[bool]:
     return or_(Indicator.expires_at.is_(None), Indicator.expires_at > now)
+
+
+@dataclass(frozen=True, slots=True)
+class ActiveNetwork:
+    id: UUID
+    value: str
+    description: str | None
+
+
+async def active_networks(session: AsyncSession, now: datetime) -> list[ActiveNetwork]:
+    """Plages CIDR actives : peu nombreuses, comparées en mémoire aux adresses (inclusion)."""
+    rows = await session.execute(
+        select(Indicator.id, Indicator.value, Indicator.description).where(
+            Indicator.type == IndicatorType.NETWORK, is_active_clause(now)
+        )
+    )
+    return [ActiveNetwork(i, v, d) for i, v, d in rows.all()]
 
 
 async def get_indicator(session: AsyncSession, indicator_id: UUID) -> Indicator:

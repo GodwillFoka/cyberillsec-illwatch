@@ -19,6 +19,48 @@ class InvalidIndicatorError(ValueError):
     """La valeur fournie ne correspond à aucun type d'IOC supporté."""
 
 
+# Plages CIDR : au-delà de ces tailles, un « IOC » couvrirait des opérateurs entiers et
+# rendrait suspecte une part notable d'Internet. Les réseaux internes ne sont jamais des IOC.
+MIN_PREFIX = {4: 16, 6: 32}
+_INTERNAL_NETWORKS = tuple(
+    ipaddress.ip_network(n)
+    for n in (
+        "0.0.0.0/8",
+        "10.0.0.0/8",
+        "100.64.0.0/10",
+        "127.0.0.0/8",
+        "169.254.0.0/16",
+        "172.16.0.0/12",
+        "192.168.0.0/16",
+        "224.0.0.0/4",
+        "240.0.0.0/4",
+        "::/8",
+        "fc00::/7",
+        "fe80::/10",
+        "ff00::/8",
+    )
+)
+
+
+_INTERNAL_V4 = tuple(n for n in _INTERNAL_NETWORKS if isinstance(n, ipaddress.IPv4Network))
+_INTERNAL_V6 = tuple(n for n in _INTERNAL_NETWORKS if isinstance(n, ipaddress.IPv6Network))
+
+
+def _is_internal_network(network: ipaddress.IPv4Network | ipaddress.IPv6Network) -> bool:
+    if isinstance(network, ipaddress.IPv4Network):
+        return any(network.overlaps(internal) for internal in _INTERNAL_V4)
+    return any(network.overlaps(internal) for internal in _INTERNAL_V6)
+
+
+def _network(candidate: str) -> ipaddress.IPv4Network | ipaddress.IPv6Network | None:
+    if "/" not in candidate or "://" in candidate:
+        return None
+    try:
+        return ipaddress.ip_network(candidate, strict=False)
+    except ValueError:
+        return None
+
+
 def is_private_ip(value: str) -> bool:
     """Vrai si l'adresse est privée, de loopback, link-local ou réservée."""
     try:
@@ -47,6 +89,9 @@ def detect_indicator_type(value: str) -> IndicatorType:
         pass
     else:
         return IndicatorType.IPV4 if addr.version == 4 else IndicatorType.IPV6
+
+    if _network(candidate) is not None:
+        return IndicatorType.NETWORK
 
     if _SHA256_RE.match(candidate):
         return IndicatorType.HASH_SHA256
@@ -138,4 +183,39 @@ def _normalize(value: str) -> tuple[IndicatorType, str]:
         return ioc_type, str(ipaddress.ip_address(candidate))
     if ioc_type is IndicatorType.URL:
         return ioc_type, _normalize_url(candidate)
+    if ioc_type is IndicatorType.NETWORK:
+        return _normalize_network(candidate)
     return ioc_type, candidate
+
+
+def _normalize_network(candidate: str) -> tuple[IndicatorType, str]:
+    """`203.0.113.7/24` → `203.0.113.0/24` ; une plage d'une seule adresse (/32, /128)
+    devient cette adresse (type IPv4/IPv6) ; plage trop large ou interne refusée."""
+    network = _network(candidate)
+    if network is None:  # pragma: no cover - garanti par detect_indicator_type
+        raise InvalidIndicatorError(f"Plage CIDR malformée : {candidate!r}")
+    if network.prefixlen == network.max_prefixlen:
+        address = network.network_address
+        return (
+            IndicatorType.IPV4 if address.version == 4 else IndicatorType.IPV6,
+            str(address),
+        )
+    minimum = MIN_PREFIX[network.version]
+    if network.prefixlen < minimum:
+        raise InvalidIndicatorError(
+            f"Plage {network} trop large (/{minimum} au plus large) : elle couvrirait des "
+            f"opérateurs entiers."
+        )
+    if _is_internal_network(network):
+        raise InvalidIndicatorError(f"Plage {network} interne ou réservée : pas un IOC.")
+    return IndicatorType.NETWORK, str(network)
+
+
+def network_contains(cidr: str, address: str) -> bool:
+    """Vrai si l'adresse appartient à la plage (versions différentes : faux)."""
+    try:
+        network = ipaddress.ip_network(cidr, strict=False)
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return False
+    return ip.version == network.version and ip in network

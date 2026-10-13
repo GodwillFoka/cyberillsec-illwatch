@@ -22,7 +22,16 @@ from illwatch.shared.enums import Severity
 
 console = Console()
 CRITICALITIES = [s.value for s in Severity]
-CSV_COLUMNS = ["nom", "produit", "editeur", "version", "criticite", "adresses", "domaines"]
+CSV_COLUMNS = [
+    "nom",
+    "produit",
+    "editeur",
+    "version",
+    "criticite",
+    "adresses",
+    "domaines",
+    "plateforme",
+]
 
 
 def _split(value: str | None) -> tuple[str, ...]:
@@ -50,7 +59,8 @@ def assets() -> None:
 @click.argument("name")
 @click.option("--product", required=True, help="Produit tel que nommé dans les avis (FortiOS).")
 @click.option("--vendor", default=None, help="Éditeur (Fortinet).")
-@click.option("--version", "version_", default=None, help="Version (information).")
+@click.option("--version", "version_", default=None, help="Version installée (7.1.5).")
+@click.option("--platform", default=None, help="Système hôte (Debian 12, Windows Server 2022).")
 @click.option(
     "--criticality", type=click.Choice(CRITICALITIES), default="MEDIUM", show_default=True
 )
@@ -61,6 +71,7 @@ def assets_add(
     product: str,
     vendor: str | None,
     version_: str | None,
+    platform: str | None,
     criticality: str,
     address: tuple[str, ...],
     domain: tuple[str, ...],
@@ -77,6 +88,7 @@ def assets_add(
                 product=product,
                 vendor=vendor,
                 version=version_,
+                platform=platform,
                 criticality=Severity(criticality),
                 addresses=address,
                 domains=domain,
@@ -104,8 +116,9 @@ def assets_add(
 def assets_import(path: Path) -> None:
     """Importe un inventaire CSV (séparateur « ; »), une ligne par actif.
 
-    Colonnes : nom;produit;editeur;version;criticite;adresses;domaines — adresses et domaines
-    séparés par des espaces. Un actif déjà présent (même nom) est mis à jour.
+    Colonnes : nom;produit;editeur;version;criticite;adresses;domaines;plateforme — adresses et
+    domaines séparés par des espaces ; plateforme facultative (« Debian 12 »). Un actif déjà
+    présent (même nom) est mis à jour.
     """
     from illwatch.modules.correlation.assets import (
         AssetError,
@@ -141,6 +154,7 @@ def assets_import(path: Path) -> None:
                 product=row.get("produit") or "",
                 vendor=row.get("editeur") or None,
                 version=row.get("version") or None,
+                platform=row.get("plateforme") or None,
                 criticality=Severity(level),
                 addresses=_split(row.get("adresses")),
                 domains=_split(row.get("domaines")),

@@ -258,8 +258,9 @@ async def read_indicator(indicator_id: UUID, session: DbSession, _: CurrentUser)
             status.HTTP_404_NOT_FOUND, detail=f"IOC {indicator_id} introuvable."
         ) from None
     detail = _to_detail(indicator, datetime.now(UTC))
-    if indicator.type in (IndicatorType.IPV4, IndicatorType.IPV6):
-        found = await enrich_ip(session, indicator.value)
+    if indicator.type in (IndicatorType.IPV4, IndicatorType.IPV6, IndicatorType.NETWORK):
+        # Plage CIDR : pays et opérateur de sa première adresse.
+        found = await enrich_ip(session, indicator.value.split("/")[0])
         if found.country or found.asn or not found.public:
             detail.enrichment = IpEnrichmentRead(
                 country=found.country, asn=found.asn, as_org=found.as_org, public=found.public

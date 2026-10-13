@@ -55,13 +55,13 @@ figé versionné : 100 % détectés, 0 % de faux positifs, vérifié par la CI).
 - Règles de corrélation : IOC × CVE × actif × KEV → évènement corrélé ✅.
 - Plancher « KEV ⇒ au moins P1 » et EPSS manquant : ✅ ADR-014 accepté (A + B + C) et appliqué.
 - Corrélation par version (plages vulnérables NVD) ✅ ADR-021.
-- Calibration DGA sur corpus (Tranco + DGArchive), RULE-05 par CPE.
+- Plages CIDR (type réseau) ✅ ; plateforme de l'actif ✅ ; calibration DGA sur Tranco ✅ (workflow mensuel).
 
 **Critère de sortie :** sur un jeu de données figé, 100 % des cas de corrélation attendus produisent
-une alerte, taux de faux positifs mesuré et publié. ✅ **Atteint le 13/10/2026** sur le jeu figé
-(`Rapport/M8_MESURE_13-10-2026.md`). Première passe réelle (Kali, 13/10) : ≈ 80 % de faux
-positifs faute de comparer les versions → corrélation par version (ADR-021, plages NVD) ;
-mesure réelle à refaire (`Rapport/M8_MESURE_REELLE_13-10-2026.md`).
+une alerte, taux de faux positifs mesuré et publié. ✅ **M8 clos le 14/10/2026** : jeu figé
+100 % / 0 % (`Rapport/M8_MESURE_13-10-2026.md`) ; données réelles Kali 38 évènements → 0 vrai
+positif après corrélation par version (ADR-021, `Rapport/M8_MESURE_REELLE_13-10-2026.md`).
+Bilan : `Rapport/BILAN_M8.md`.
 
 ## M9 — SOC Operations
 

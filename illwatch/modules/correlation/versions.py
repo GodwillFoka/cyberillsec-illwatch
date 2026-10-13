@@ -12,6 +12,8 @@ chaque CVE : produits touchés et plages de versions (« de 5.8 incluse à 5.10.
 - Version dans la plage mais seulement sur certaines plateformes (configuration ET de la NVD :
   « Redis sur Debian 9 à 11 », CVE-2022-0543) ou version « - » (sans objet : faille d'un paquet
   de distribution) → « conditionnel » : évènement conservé, condition affichée à l'analyste.
+  Si l'actif déclare sa plateforme (« Debian 12 »), la condition est tranchée : plateforme
+  requise → « vulnérable » ; plateforme différente → « hors_plateforme », pas d'évènement.
 
 Comparaison « naturelle » : 10.5p1 > 10.5 ; 5.10.102 > 5.10.9 ; les suffixes de distribution
 (+kali, -1, ~deb12) sont ignorés.
@@ -22,7 +24,13 @@ from collections.abc import Sequence
 from typing import Any, Literal
 
 Verdict = Literal[
-    "vulnerable", "conditionnel", "hors_plage", "autre_produit", "inconnu", "version_non_declaree"
+    "vulnerable",
+    "conditionnel",
+    "hors_plage",
+    "hors_plateforme",
+    "autre_produit",
+    "inconnu",
+    "version_non_declaree",
 ]
 
 _WILDCARDS = {"", "*", "-"}
@@ -73,6 +81,41 @@ def platforms(product: str, affected: Sequence[dict[str, Any]] | None) -> str | 
     return " ; ".join(sorted(found))[:300] or None
 
 
+def _trimmed(key: tuple[tuple[int, int | str], ...]) -> tuple[tuple[int, int | str], ...]:
+    """9.0 ≡ 9 ; 20.04 reste 20.04."""
+    out = list(key)
+    while out and out[-1] == (0, 0):
+        out.pop()
+    return tuple(out)
+
+
+def platform_matches(declared: str, required: str) -> bool:
+    """Plateforme déclarée de l'actif (« Debian 12.5 ») contre une plateforme NVD
+    (« debian_linux 12.0 », « windows_server_2022 »). Même famille, et même version quand
+    les deux en ont une (la plus courte est préfixe de l'autre : 12 ≡ 12.5)."""
+    name, _, required_version = required.strip().partition(" ")
+    tokens = declared.split()
+    declared_version = tokens[-1] if len(tokens) > 1 and tokens[-1][:1].isdigit() else ""
+    declared_name = " ".join(tokens[:-1]) if declared_version else declared
+    if not required_version:
+        return same_product(declared, name) or same_product(declared_name, name)
+    if not same_product(declared_name, name):
+        return False
+    if not declared_version:
+        return True  # version de la plateforme inconnue : on ne peut pas l'écarter
+    mine, theirs = _trimmed(version_key(declared_version)), _trimmed(version_key(required_version))
+    shortest = min(len(mine), len(theirs))
+    return mine[:shortest] == theirs[:shortest]
+
+
+def _platform_verdict(entry: dict[str, Any], platform: str | None) -> bool | None:
+    """True : plateforme requise présente ; False : absente ; None : impossible à trancher."""
+    required = [p for p in str(entry.get("platforms") or "").split(" ; ") if p.strip()]
+    if not platform or not required:
+        return None
+    return any(platform_matches(platform, r) for r in required)
+
+
 def _within(version: str, entry: dict[str, Any]) -> bool:
     exact = str(entry.get("version") or "")
     has_range = any(
@@ -98,8 +141,14 @@ def _within(version: str, entry: dict[str, Any]) -> bool:
     return not ((bound := entry.get("versionEndExcluding")) and mine >= version_key(str(bound)))
 
 
-def assess(product: str, version: str | None, affected: Sequence[dict[str, Any]] | None) -> Verdict:
-    """Verdict pour un actif (produit, version déclarée) et les versions vulnérables d'une CVE."""
+def assess(
+    product: str,
+    version: str | None,
+    affected: Sequence[dict[str, Any]] | None,
+    platform: str | None = None,
+) -> Verdict:
+    """Verdict pour un actif (produit, version et plateforme déclarées) et les versions
+    vulnérables d'une CVE."""
     if not affected:
         return "inconnu"
     relevant = [e for e in affected if same_product(product, str(e.get("product") or ""))]
@@ -108,13 +157,21 @@ def assess(product: str, version: str | None, affected: Sequence[dict[str, Any]]
     if not version or not version_key(version):
         return "version_non_declaree"
     matching = [e for e in relevant if _within(version, e)]
+    if not matching:
+        return "hors_plage"
     if any(not _conditional(e) for e in matching):
         return "vulnerable"
-    return "conditionnel" if matching else "hors_plage"
+    verdicts = [_platform_verdict(e, platform) for e in matching]
+    if any(v is True for v in verdicts):
+        return "vulnerable"
+    if verdicts and all(v is False for v in verdicts):
+        return "hors_plateforme"
+    return "conditionnel"
 
 
 VERDICT_LABEL: dict[str, str] = {
     "vulnerable": "version déclarée dans une plage vulnérable (NVD)",
+    "hors_plateforme": "plateforme de l'actif différente de celles visées par la NVD",
     "conditionnel": "vulnérable seulement sur certaines plateformes ou paquets de distribution "
     "(NVD) : à vérifier",
     "inconnu": "versions vulnérables pas encore publiées par la NVD : à vérifier",

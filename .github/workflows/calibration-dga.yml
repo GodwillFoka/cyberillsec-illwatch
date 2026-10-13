@@ -1,0 +1,36 @@
+# ============================================================================
+# ILL Watch — Calibration de RULE-03 (domaine généré par algorithme)
+# Faux positifs mesurés sur les 100 000 premiers domaines Tranco (légitimes), détection sur
+# un corpus DGA synthétique ; résultat en annotations du check « Calibration DGA ».
+# Mensuel, à la demande, et à chaque modification de la règle ou du script.
+# ============================================================================
+name: Calibration DGA
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 6 1 * *"
+  push:
+    branches: ["**"]
+    paths:
+      - ".github/workflows/calibration-dga.yml"
+      - "scripts/calibrate_dga.py"
+      - "illwatch/modules/threat_hunting/rules.py"
+
+permissions:
+  contents: read
+
+jobs:
+  calibration:
+    name: Calibration DGA
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Liste Tranco (domaines les plus visités)
+        run: |
+          curl -sSfL --retry 3 https://tranco-list.eu/top-1m.csv.zip -o tranco.zip
+          unzip -q tranco.zip
+          head -3 top-1m.csv
+      - name: Mesure
+        run: python3 scripts/calibrate_dga.py --tranco top-1m.csv --top 100000 --report dga.md

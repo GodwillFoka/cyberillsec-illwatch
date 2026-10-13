@@ -9,6 +9,7 @@ export const MAX_HUNT_OBSERVABLES = 10_000;
 export const IOC_TYPES: [string, string][] = [
   ["IPV4", "IPv4"],
   ["IPV6", "IPv6"],
+  ["NETWORK", "Plage CIDR"],
   ["DOMAIN", "Domaine"],
   ["URL", "URL"],
   ["HASH_SHA256", "SHA-256"],

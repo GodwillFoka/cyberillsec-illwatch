@@ -64,6 +64,7 @@ class IndicatorType(StrEnum):
     HASH_SHA1 = "HASH_SHA1"
     HASH_SHA256 = "HASH_SHA256"
     EMAIL = "EMAIL"
+    NETWORK = "NETWORK"  # plage CIDR (/16 à /31 en IPv4, /32 à /127 en IPv6), ex. 203.0.113.0/24
 
 
 class EnrichmentDataset(StrEnum):

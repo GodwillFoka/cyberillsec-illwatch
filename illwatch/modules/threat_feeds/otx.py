@@ -20,8 +20,9 @@ Règles :
   collecte sans perdre les pages déjà lues (**interrompue**). Dans les deux cas, le curseur
   `modified_since` n'avance pas : la collecte suivante reprend à la page non lue
   (`start_page`, géré par le collecteur), jusqu'à épuisement de la fenêtre.
-- **Types** : seuls les types d'IOC gérés par ILL Watch sont retenus ; les autres (CVE,
-  YARA, CIDR, mutex, chemins…) sont comptés comme ignorés, pas comme rejetés.
+- **Types** : seuls les types d'IOC gérés par ILL Watch sont retenus (plages CIDR comprises
+  depuis le 14/10) ; les autres (CVE, YARA, mutex, chemins…) sont comptés comme ignorés, pas
+  comme rejetés.
 """
 
 import json
@@ -56,6 +57,7 @@ OTX_TYPES: dict[str, IndicatorType] = {
     "FileHash-SHA1": IndicatorType.HASH_SHA1,
     "FileHash-SHA256": IndicatorType.HASH_SHA256,
     "email": IndicatorType.EMAIL,
+    "CIDR": IndicatorType.NETWORK,
 }
 
 
