@@ -48,7 +48,15 @@ Les évènements devenus faux sont **résolus automatiquement** à la passe suiv
 | Évènements ouverts | 38 | **0** |
 
 Les 37 correspondances écartées étaient hors des versions vulnérables ou visaient un autre
-produit. La correspondance restante concerne un évènement déjà acquitté auparavant ; son verdict
-de version est à lire avec `illwatch correlate list --all` (ou l'écran Corrélations, filtre
-« Tous »). Sur un inventaire à jour (noyau 7.1, OpenSSH 10.5, PostgreSQL 18, Redis 8), aucune
-CVE exploitée connue ne s'applique : c'est le résultat attendu.
+produit (état « clos (auto) »).
+
+La correspondance restante (`correlate list --all`, 14/10) est **CVE-2022-0543 sur Redis
+8.0.6**, jugée « vulnérable » et acquittée. C'est un **faux positif** : la faille vient de
+l'empaquetage Debian/Ubuntu de Redis (bac à sable Lua), la NVD la décrit par une
+configuration ET (`redis:redis:-` sur `debian_linux` 9 à 11) que le premier analyseur
+aplatissait. Correction : verdict « conditionnel », plateformes requises affichées (à
+constater sur Kali après `illwatch cves refresh-affected`).
+
+**Bilan : 38 évènements → 0 vrai positif ; 37 écartés automatiquement, 1 requalifié
+« conditionnel » (à vérifier : Kali n'est pas Debian 9 à 11).** Sur un inventaire à jour
+(noyau 7.1, OpenSSH 10.5, PostgreSQL 18, Redis 8), aucune CVE exploitée connue ne s'applique.

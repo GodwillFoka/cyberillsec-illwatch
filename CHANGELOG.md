@@ -14,6 +14,9 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   autre produit, aucun évènement. Supprime les faux positifs constatés sur données réelles
   (≈ 80 % sur Kali : anciennes CVE du noyau, Shellshock sur OpenSSH, Redis CVE-2022-0543).
 - `illwatch cves refresh-affected` relit les plages des CVE déjà en base.
+- Verdict « conditionnel » : vulnérable seulement sur certaines plateformes (configuration ET de
+  la NVD, ex. CVE-2022-0543 propre aux paquets Debian de Redis) ; plateformes affichées.
+- `illwatch correlate list --all` : colonnes Version et État (ouvert, acquitté, clos (auto)).
 - Jeu figé : 18 cas, 8 attendus (pièges de version ajoutés) ; `Rapport/M8_MESURE_REELLE_13-10-2026.md`.
 
 ### Corrigé — débordements de l'interface

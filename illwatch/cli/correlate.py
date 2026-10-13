@@ -229,6 +229,7 @@ def assets_remove(name: str) -> None:
 
 VERDICT_SHORT = {
     "vulnerable": "vulnérable",
+    "conditionnel": "selon plateforme",
     "inconnu": "plages NVD inconnues",
     "version_non_declaree": "à vérifier",
 }

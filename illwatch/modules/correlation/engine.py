@@ -35,7 +35,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import CVE, Asset, CollectorState, CorrelatedEvent, Indicator
 from illwatch.modules.correlation.confidence import compute_confidence, source_reliabilities
-from illwatch.modules.correlation.versions import VERDICT_LABEL, assess
+from illwatch.modules.correlation.versions import VERDICT_LABEL, assess, platforms
 from illwatch.modules.cve_tracker.scoring import classify_priority
 from illwatch.modules.enrichment.lookup import enrich_ip
 from illwatch.shared.enums import (
@@ -190,6 +190,9 @@ async def _cve_findings(session: AsyncSession, asset: Asset) -> list[Finding]:
                     "version": asset.version,
                     "version_check": verdict,
                     "version_label": VERDICT_LABEL.get(verdict, verdict),
+                    "version_platforms": (
+                        platforms(product, cve.affected) if verdict == "conditionnel" else None
+                    ),
                 },
             )
         )
