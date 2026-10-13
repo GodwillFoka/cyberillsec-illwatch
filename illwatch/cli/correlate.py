@@ -227,6 +227,29 @@ def assets_remove(name: str) -> None:
     console.print(f"[green]✔[/] Actif « {name} » supprimé.")
 
 
+VERDICT_SHORT = {
+    "vulnerable": "vulnérable",
+    "inconnu": "plages NVD inconnues",
+    "version_non_declaree": "à vérifier",
+}
+
+
+def event_state(event: Any) -> str:
+    """Ouvert, acquitté par un analyste, ou clos par le moteur (ne correspond plus)."""
+    if (event.detail or {}).get("resolved_at"):
+        return "clos (auto)"
+    return "acquitté" if event.acknowledged_at else "ouvert"
+
+
+def event_version(event: Any) -> str:
+    """Version déclarée et verdict d'ADR-021 ; « non vérifiée » avant la corrélation par version."""
+    detail = event.detail or {}
+    if not event.cve_id:
+        return "—"
+    verdict = VERDICT_SHORT.get(str(detail.get("version_check")), "non vérifiée")
+    return f"{detail.get('version') or '?'} · {verdict}"
+
+
 @click.group()
 def correlate() -> None:
     """Corrélation actifs × CVE × IOC (M8, ADR-020)."""
@@ -262,8 +285,13 @@ def correlate_run() -> None:
 
 
 @correlate.command("list")
-@click.option("--all", "show_all", is_flag=True, help="Inclut les évènements acquittés.")
-@click.option("--limit", default=30, show_default=True)
+@click.option(
+    "--all",
+    "show_all",
+    is_flag=True,
+    help="Inclut les évènements acquittés et ceux clos par le moteur.",
+)
+@click.option("--limit", default=50, show_default=True)
 def correlate_list(show_all: bool, limit: int) -> None:
     """Évènements corrélés (ouverts par défaut), les plus graves d'abord."""
     from illwatch.modules.correlation.events import list_events
@@ -271,7 +299,15 @@ def correlate_list(show_all: bool, limit: int) -> None:
     async def _work(session: Any) -> tuple[list[tuple[str, ...]], int]:
         page = await list_events(session, limit=limit, offset=0, open_only=not show_all)
         return [
-            (e.priority[:2], e.rule_id, f"{float(e.score):.1f}".replace(".", ","), name, e.title)
+            (
+                e.priority[:2],
+                e.rule_id,
+                f"{float(e.score):.1f}".replace(".", ","),
+                name,
+                e.cve_id or str((e.detail or {}).get("value") or e.title),
+                event_version(e),
+                event_state(e),
+            )
             for e, name in page.items
         ], page.total
 
@@ -285,7 +321,7 @@ def correlate_list(show_all: bool, limit: int) -> None:
         )
         return
     table = Table(title=f"Évènements corrélés ({total})")
-    for column in ("Priorité", "Règle", "Score", "Actif", "Évènement"):
+    for column in ("Priorité", "Règle", "Score", "Actif", "CVE / IOC", "Version", "État"):
         table.add_column(column)
     for row in rows:
         table.add_row(*row)

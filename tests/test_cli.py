@@ -55,3 +55,25 @@ def test_db_check_sur_base_injoignable_sort_en_erreur() -> None:
     """La base de test (SQLite mémoire) est joignable ; on vérifie juste le code retour."""
     result = CliRunner().invoke(cli, ["db", "check"])
     assert result.exit_code in (0, 1)
+
+
+def test_correlate_list_etat_et_version() -> None:
+    from types import SimpleNamespace
+
+    from illwatch.cli.correlate import event_state, event_version
+
+    clos = SimpleNamespace(
+        detail={"resolved_at": "2026-10-13T21:00:00+00:00"}, acknowledged_at="x", cve_id="CVE-1"
+    )
+    acquitte = SimpleNamespace(
+        detail={"version": "18.6", "version_check": "vulnerable"},
+        acknowledged_at="x",
+        cve_id="CVE-2",
+    )
+    ouvert = SimpleNamespace(detail={}, acknowledged_at=None, cve_id=None)
+    assert event_state(clos) == "clos (auto)"
+    assert event_state(acquitte) == "acquitté"
+    assert event_state(ouvert) == "ouvert"
+    assert event_version(acquitte) == "18.6 · vulnérable"
+    assert event_version(clos) == "? · non vérifiée"
+    assert event_version(ouvert) == "—"
