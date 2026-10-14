@@ -31,11 +31,22 @@ def main() -> int:
             color_scheme="dark",
         )
         page = context.new_page()
+        console: list[str] = []
+        page.on(
+            "console",
+            lambda m: console.append(f"{m.type}: {m.text}") if m.type == "error" else None,
+        )
+        page.on("requestfailed", lambda r: console.append(f"échec {r.url} {r.failure}"))
+        page.on(
+            "response",
+            lambda r: console.append(f"HTTP {r.status} {r.url}") if r.status >= 400 else None,
+        )
         for name, uid in BOARDS:
             page.goto(f"{BASE}/d/{uid}?orgId=1&from=now-30m&to=now&kiosk", wait_until="load")
             page.wait_for_timeout(8000)
             if page.locator("text=failed to load its application files").count():
                 problems.append(f"{uid} : interface Grafana non chargée")
+                problems += [f"{uid} : {line[:300]}" for line in console[:8]]
             if page.locator("text=Dashboard not found").count():
                 problems.append(f"{uid} : tableau absent")
             errors = page.locator('[data-testid="data-testid Panel status error"]').count()
