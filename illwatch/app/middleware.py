@@ -17,6 +17,7 @@ avec l'identifiant de requête, trace complète dans le journal seulement.
 import logging
 import re
 import time
+from typing import Any
 from uuid import uuid4
 
 from fastapi import Request
@@ -48,6 +49,25 @@ API_HEADERS: tuple[tuple[bytes, bytes], ...] = (
     (b"cache-control", b"no-store"),
 )
 HSTS_HEADER = (b"strict-transport-security", b"max-age=31536000; includeSubDomains")
+
+
+def route_template(route: Any, path: str) -> str:
+    """Modèle de la route servie (`/api/v1/incidents/{incident_id}`), cardinalité bornée (M11).
+
+    FastAPI dépose la route dans le scope ; selon la version, son modèle omet le préfixe du
+    routeur parent (`/api/v1`). Le préfixe est alors repris de l'adresse, jusqu'au point où le
+    modèle de la route correspond à la fin du chemin : il est statique, donc borné.
+    """
+    template = getattr(route, "path", None)
+    regex = getattr(route, "path_regex", None)
+    if not template:
+        return "non_route"
+    if regex is None or regex.match(path):
+        return str(template)
+    for index, char in enumerate(path):
+        if char == "/" and index and regex.match(path[index:]):
+            return path[:index] + str(template)
+    return str(template)
 
 
 def request_id_from(raw: str | None) -> str:
@@ -90,8 +110,7 @@ class SecurityMiddleware:
         finally:
             elapsed = time.perf_counter() - started
             duration_ms = round(elapsed * 1000, 1)
-            # Modèle de route (FastAPI le dépose dans le scope) : cardinalité bornée (M11).
-            route = getattr(scope.get("route"), "path", None) or "non_route"
+            route = route_template(scope.get("route"), path)
             HTTP.observe(str(scope.get("method", "")), route, status_holder[0], elapsed)
             level = logging.DEBUG if path in _QUIET_PATHS else logging.INFO
             client = scope.get("client")
