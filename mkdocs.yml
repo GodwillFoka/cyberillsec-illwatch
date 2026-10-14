@@ -102,6 +102,7 @@ nav:
           - ADR-021 Corrélation par version: adr/ADR-021-correlation-par-version.md
           - ADR-022 SOC Operations: adr/ADR-022-soc-operations.md
           - ADR-023 MITRE ATT&CK: adr/ADR-023-attack.md
+          - ADR-024 Campagnes: adr/ADR-024-campagnes.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:

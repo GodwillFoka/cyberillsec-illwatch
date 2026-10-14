@@ -290,6 +290,7 @@ async def _incident_attack(
         rule_ids=sorted(set(rules)),
         techniques=["T1190"] if exploited else [],
         texts=[incident.title, incident.description, *texts],
+        indicator_ids=[link.indicator_id for link in incident.indicators],
     )
 
 

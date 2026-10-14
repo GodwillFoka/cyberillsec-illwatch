@@ -6,6 +6,7 @@ métamodèle via `Base.metadata`.
 
 from illwatch.app.models.attack import AttackActor, AttackTechnique, AttackUse
 from illwatch.app.models.audit import AuditEvent
+from illwatch.app.models.campaign import Campaign, CampaignIndicator
 from illwatch.app.models.correlation import Asset, CorrelatedEvent
 from illwatch.app.models.cve import CVE, CollectorState, CVEAlert, CVEPriorityChange
 from illwatch.app.models.enrichment import EnrichmentDatasetInfo, IpRange
@@ -25,6 +26,8 @@ __all__ = [
     "CVE",
     "CVEAlert",
     "CVEPriorityChange",
+    "Campaign",
+    "CampaignIndicator",
     "CollectionRun",
     "CollectorState",
     "CorrelatedEvent",

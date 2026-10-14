@@ -12,6 +12,7 @@ from illwatch.app.api.v1 import (
     attack,
     audit,
     auth,
+    campaigns,
     correlations,
     cves,
     dashboard,
@@ -57,6 +58,7 @@ api_router.include_router(exclusions.router)
 
 # M10 — CTI Intelligence Layer : référentiel MITRE ATT&CK (ADR-023)
 api_router.include_router(attack.router)
+api_router.include_router(campaigns.router)
 
 # M7 — Production Hardening : journal d'audit de sécurité (ADR-011)
 api_router.include_router(audit.router)

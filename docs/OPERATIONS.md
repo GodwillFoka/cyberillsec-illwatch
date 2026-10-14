@@ -452,3 +452,11 @@ illwatch attack show T1190              # une technique et les groupes ou logici
 
 Réimporter à chaque nouvelle version d'ATT&CK (deux par an). Les détections affichent leur
 technique et, quand la source le nomme, l'acteur cité. ATT&CK® © The MITRE Corporation.
+
+### Campagnes (M10, ADR-024)
+
+```bash
+illwatch campaigns create "Distribution QakBot" --actor S0650
+illwatch campaigns attach "Distribution QakBot" --contains "Qakbot"   # IOC décrits par…
+illwatch campaigns list
+```

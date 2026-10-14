@@ -18,6 +18,7 @@ import type {
   IncidentHunt,
   IngestResult,
   Exclusion,
+  Campaign,
 } from "./types";
 
 export function useAcknowledgeAlert() {
@@ -360,4 +361,37 @@ export function useFalsePositiveCorrelation() {
       reason: body.reason,
     }),
   );
+}
+
+// --- M10 Campagnes (ADR-024) -----------------------------------------------------------------
+
+function useCampaignMutation<TVariables, TResult>(run: (variables: TVariables) => Promise<TResult>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: run,
+    onSuccess: () => {
+      for (const key of ["campaigns", "correlations", "incidents", "hunts"]) {
+        void queryClient.invalidateQueries({ queryKey: [key] });
+      }
+    },
+  });
+}
+
+export function useCreateCampaign() {
+  return useCampaignMutation((body: { name: string; description?: string; actor_id?: string }) =>
+    apiPost<Campaign>("/campaigns", body),
+  );
+}
+
+export function useAttachToCampaign(campaignId: string) {
+  return useCampaignMutation((body: { values?: string[]; description_contains?: string }) =>
+    apiPost<{ attached: number; unknown: number }>(
+      `/campaigns/${encodeURIComponent(campaignId)}/indicators`,
+      body,
+    ),
+  );
+}
+
+export function useDeleteCampaign() {
+  return useCampaignMutation((campaignId: string) => apiDelete(`/campaigns/${encodeURIComponent(campaignId)}`));
 }

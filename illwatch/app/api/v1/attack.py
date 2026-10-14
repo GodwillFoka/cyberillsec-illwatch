@@ -7,6 +7,7 @@ ces routes donnent l'état du référentiel et le détail d'une technique.
 
 from collections.abc import Iterable, Sequence
 from datetime import datetime
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
@@ -16,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from illwatch.app.api.deps import CurrentUser, DbSession
 from illwatch.app.models import AttackActor, AttackTechnique, AttackUse
 from illwatch.modules.attack import service
+from illwatch.modules.attack.campaigns import campaigns_of
 from illwatch.modules.attack.catalog import actor_url, technique_url
 
 router = APIRouter(prefix="/attack", tags=["MITRE ATT&CK"])
@@ -38,8 +40,17 @@ class ActorRefRead(BaseModel):
     techniques: list[TechniqueRefRead]
 
 
+class CampaignRefRead(BaseModel):
+    id: UUID
+    name: str
+    actor_id: str | None
+
+
 class AttackContextRead(BaseModel):
     techniques: list[TechniqueRefRead] = Field(description="Techniques révélées par la détection.")
+    campaigns: list[CampaignRefRead] = Field(
+        description="Campagnes dont l'infrastructure touchée fait partie (M10, incrément 2)."
+    )
     actors: list[ActorRefRead] = Field(
         description="Groupes ou logiciels cités dans le renseignement, avec leurs techniques."
     )
@@ -68,12 +79,20 @@ async def attack_context(
     texts: Sequence[str | None] = (),
     memo: dict[str, tuple[service.TechniqueRef, ...]] | None = None,
     index: service.ActorIndex | None = None,
+    indicator_ids: Iterable[UUID | None] = (),
 ) -> AttackContextRead:
     ids = [*service.rule_techniques(rule_ids), *techniques]
     refs = await service.technique_refs(session, ids)
-    actors = await service.actors_in(session, texts, memo, index)
+    campaigns = await campaigns_of(session, [i for i in indicator_ids if i is not None])
+    # Attribution par l'infrastructure d'abord (campagne → acteur), puis par le nom cité.
+    actors = await service.actor_refs(
+        session, [(c.actor_id, f"campagne « {c.name} »") for c in campaigns if c.actor_id], memo
+    )
+    seen = {a.id for a in actors}
+    actors += [a for a in await service.actors_in(session, texts, memo, index) if a.id not in seen]
     return AttackContextRead(
         techniques=[TechniqueRefRead(id=t.id, name=t.name, url=t.url) for t in refs],
+        campaigns=[CampaignRefRead(id=c.id, name=c.name, actor_id=c.actor_id) for c in campaigns],
         actors=[
             ActorRefRead(
                 id=a.id,

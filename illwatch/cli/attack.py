@@ -151,3 +151,81 @@ def attack_show(technique_id: str) -> None:
         console.print(f"  {actor_id:<6} {kind:<8} {name}")
     if len(actors) > 60:
         console.print(f"  … et {len(actors) - 60} autres")
+
+
+# --- Campagnes (M10, incrément 2) ---------------------------------------------------------------
+
+
+@click.group()
+def campaigns() -> None:
+    """Campagnes : infrastructure d'une opération adverse et son acteur ATT&CK."""
+
+
+@campaigns.command("create")
+@click.argument("name")
+@click.option("--actor", default=None, help="Groupe ou logiciel ATT&CK (G0102, S0650).")
+@click.option("--description", default=None)
+def campaigns_create(name: str, actor: str | None, description: str | None) -> None:
+    """Crée une campagne."""
+    from illwatch.modules.attack.campaigns import CampaignError, create_campaign
+
+    async def _work(session: Any) -> str:
+        campaign = await create_campaign(
+            session, name=name, description=description, actor_id=actor
+        )
+        return campaign.name
+
+    try:
+        created = _run(_work)
+    except CampaignError as exc:
+        raise click.ClickException(str(exc)) from exc
+    console.print(f"[green]✔[/] Campagne « {created} » créée.")
+
+
+@campaigns.command("attach")
+@click.argument("name")
+@click.option("--contains", "contains", default=None, help="IOC dont la description contient…")
+@click.option("--value", "values", multiple=True, help="Valeur d'IOC connue (répétable).")
+def campaigns_attach(name: str, contains: str | None, values: tuple[str, ...]) -> None:
+    """Rattache l'infrastructure (IOC déjà connus) à une campagne."""
+    from sqlalchemy import select
+
+    from illwatch.app.models import Campaign
+    from illwatch.modules.attack.campaigns import CampaignError, attach
+
+    if not contains and not values:
+        raise click.ClickException("Préciser --contains ou --value.")
+
+    async def _work(session: Any) -> tuple[int, int]:
+        campaign_id = await session.scalar(select(Campaign.id).where(Campaign.name == name))
+        if campaign_id is None:
+            raise CampaignError(f"Aucune campagne nommée « {name} ».")
+        return await attach(
+            session, campaign_id, values=list(values), description_contains=contains
+        )
+
+    try:
+        attached, unknown = _run(_work)
+    except CampaignError as exc:
+        raise click.ClickException(str(exc)) from exc
+    console.print(f"[green]✔[/] {attached} IOC rattaché(s) · {unknown} valeur(s) inconnue(s).")
+
+
+@campaigns.command("list")
+def campaigns_list() -> None:
+    """Campagnes, acteur et volume d'infrastructure."""
+    from rich.table import Table
+
+    from illwatch.modules.attack.campaigns import list_campaigns
+
+    rows = _run(list_campaigns)
+    if not rows:
+        console.print("Aucune campagne.")
+        return
+    table = Table(title=f"Campagnes ({len(rows)})")
+    for column in ("Campagne", "Acteur", "IOC", "Types"):
+        table.add_column(column)
+    for row in rows:
+        types = ", ".join(f"{k} {v}" for k, v in sorted(row.by_type.items()))
+        table.add_row(row.campaign.name, row.campaign.actor_id or "—", str(row.indicators), types)
+    console.print(table)

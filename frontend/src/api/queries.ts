@@ -31,6 +31,8 @@ import type {
   SeriesWindow,
   Exclusion,
   SocMetrics,
+  Campaign,
+  CampaignDetail,
 } from "./types";
 
 /** Sans flux temps réel, les données sont relues toutes les minutes. */
@@ -402,5 +404,23 @@ export function useExclusions() {
   return useQuery({
     queryKey: ["exclusions"],
     queryFn: ({ signal }) => apiGet<Exclusion[]>("/exclusions", undefined, signal),
+  });
+}
+
+// --- M10 Campagnes (ADR-024) -----------------------------------------------------------------
+
+export function useCampaigns() {
+  return useQuery({
+    queryKey: ["campaigns", "list"],
+    queryFn: ({ signal }) => apiGet<Campaign[]>("/campaigns", undefined, signal),
+  });
+}
+
+export function useCampaign(campaignId: string | null) {
+  return useQuery({
+    queryKey: ["campaigns", "detail", campaignId],
+    queryFn: ({ signal }) =>
+      apiGet<CampaignDetail>(`/campaigns/${encodeURIComponent(campaignId ?? "")}`, undefined, signal),
+    enabled: Boolean(campaignId),
   });
 }

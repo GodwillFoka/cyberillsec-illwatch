@@ -114,6 +114,7 @@ async def _reads(
             texts=[str(detail.get("description") or ""), event.title],
             memo=memo,
             index=index,
+            indicator_ids=[event.indicator_id],
         )
         out.append(item)
     return out
