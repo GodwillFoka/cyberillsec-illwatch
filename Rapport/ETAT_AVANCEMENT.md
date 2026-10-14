@@ -1,6 +1,6 @@
 # ILL Watch — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **14/10/2026, 03 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **14/10/2026, 07 h 00**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
@@ -38,7 +38,8 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, identité ILL Watch v2, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
 | M8 Detection & Correlation | ✅ clos le 14/10 | incréments 1 à 4 livrés : confiance (ADR-017), enrichissement (ADR-019), inventaire et corrélation CORR-01 à 03 (ADR-020), mesure 100 % / 0 % FP (`Rapport/M8_MESURE_13-10-2026.md`) ; passe réelle Kali ≈ 80 % FP → corrélation par version (ADR-021), données réelles 38 → 0 vrai positif (`Rapport/BILAN_M8.md`) |
 | M9 SOC Operations | 🟢 livré le 14/10 (ADR-022, PR #46) | critère constaté en CI (parcours L1 → L2 → L3, MTTR mesuré) ; scénario à rejouer sur Kali (`Rapport/BILAN_M9.md`) |
-| M10, M11 | ⏳ | contextualiser (ATT&CK, acteurs), exploiter (observabilité) |
+| M10 CTI Intelligence Layer | 🟡 incrément 1 livré le 14/10 (ADR-023, PR #47) | technique ATT&CK par règle et acteur cité affichés (critère constaté en CI) ; restent campagnes/infrastructure et export STIX/TAXII ; `illwatch attack import` à lancer sur Kali |
+| M11 | ⏳ | exploiter (observabilité, environnements) |
 
 ## 3. Chantier en cours
 
@@ -57,6 +58,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 14/10 | PR #47 | **M10, incrément 1** (ADR-023) : référentiel MITRE ATT&CK importé (`illwatch attack import`), technique par règle, acteur cité en toutes lettres, contexte affiché dans chasses, corrélations et incidents |
 | 14/10 | PR #46 | **M9 SOC Operations** (ADR-022) : niveaux L1/L2/L3 et escalade motivée, liste d'exclusion des faux positifs (tâche 3.6), corrélation « faux positif » jamais rouverte, chasse depuis l'incident, recommandations de réponse, règles versionnées, écran Pilotage (MTTA, MTTR, délais cibles, charge) ; outillage de clôture de M7 (`scripts/deploy-vps.sh`, workflow « Clôture M7 ») |
 | 14/10 | PR #45 | **Clôture de M8** (`Rapport/BILAN_M8.md`) ; plages CIDR (type `NETWORK`) ; plateforme de l'actif ; calibration DGA sur Tranco et RULE-03 v2 (faux positifs 0,71 % → 0,094 %, détection 49,9 % → 64,1 %) |
 | 14/10 | PR #39 à #43 | Statut du pipeline GitLab remonté dans GitHub (pipeline #2944320344 vert, 12/12) ; `correlate list --all` avec Version et État ; verdict « conditionnel » (plateformes NVD) : mesure réelle Kali **38 évènements → 0 vrai positif** (37 clos automatiquement, CVE-2022-0543 sur Redis requalifiée) |
@@ -150,5 +152,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
    plateforme » devient tranché.
 3. **M7** : louer un VPS UE et un nom de domaine, puis `scripts/deploy-vps.sh install` et
    inscrire le domaine dans `deploy/vps-domaine.txt` → workflow « Clôture M7 » (note TLS A).
-4. **M10 — CTI Intelligence Layer** : ATT&CK, acteurs, campagnes.
+4. **M10** : sur Kali, `illwatch attack import` puis constater technique et acteur sur une
+   corrélation ou une chasse ; ensuite incréments 2 (campagnes, infrastructure) et 3 (export
+   STIX 2.1, serveur TAXII sortant).
 5. Suspendre RedEye tant que son serveur ne répond pas.
