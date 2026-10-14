@@ -33,7 +33,9 @@ def main() -> int:
         page = context.new_page()
         for name, uid in BOARDS:
             page.goto(f"{BASE}/d/{uid}?orgId=1&from=now-30m&to=now&kiosk", wait_until="load")
-            page.wait_for_timeout(6000)
+            page.wait_for_timeout(8000)
+            if page.locator("text=failed to load its application files").count():
+                problems.append(f"{uid} : interface Grafana non chargée")
             if page.locator("text=Dashboard not found").count():
                 problems.append(f"{uid} : tableau absent")
             errors = page.locator('[data-testid="data-testid Panel status error"]').count()
