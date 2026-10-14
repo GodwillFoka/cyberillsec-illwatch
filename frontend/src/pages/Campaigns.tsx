@@ -16,6 +16,8 @@ import { iocTypeLabel, splitBatch } from "../lib/iocs";
 import { asUuid, Link, useLocation } from "../lib/router";
 
 const EDITORS = new Set(["ADMIN", "ANALYST"]);
+// Au-delà, la liste se replie : une campagne réelle compte souvent des centaines d'IOC.
+const PREVIEW = 20;
 
 function NewCampaign({ onCreated }: { onCreated: (c: Campaign) => void }) {
   const create = useCreateCampaign();
@@ -128,8 +130,12 @@ function CampaignPanel({ campaignId, onDeleted }: { campaignId: string; onDelete
   const { user } = useAuth();
   const remove = useDeleteCampaign();
   const [confirming, setConfirming] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const canEdit = user ? EDITORS.has(user.role) : false;
-  useEffect(() => setConfirming(false), [campaignId]);
+  useEffect(() => {
+    setConfirming(false);
+    setExpanded(false);
+  }, [campaignId]);
   return (
     <aside className="card detail" aria-label="Détail de la campagne">
       <QueryState query={query}>
@@ -162,7 +168,7 @@ function CampaignPanel({ campaignId, onDeleted }: { campaignId: string; onDelete
                 <p className="empty">Aucun IOC rattaché.</p>
               ) : (
                 <ul className="list">
-                  {c.infrastructure.map((i) => {
+                  {(expanded ? c.infrastructure : c.infrastructure.slice(0, PREVIEW)).map((i) => {
                     const seen = parseDate(i.last_seen);
                     return (
                       <li key={i.id}>
@@ -181,6 +187,15 @@ function CampaignPanel({ campaignId, onDeleted }: { campaignId: string; onDelete
                     );
                   })}
                 </ul>
+              )}
+              {c.infrastructure.length > PREVIEW && (
+                <div className="actions">
+                  <button className="btn quiet small" type="button" onClick={() => setExpanded(!expanded)}>
+                    {expanded
+                      ? "Replier la liste"
+                      : `Afficher les ${formatNumber(c.infrastructure.length)} IOC listés`}
+                  </button>
+                </div>
               )}
             </section>
             {canEdit && (
@@ -252,7 +267,7 @@ export function Campaigns() {
                       <th>Campagne</th>
                       <th>Acteur</th>
                       <th className="num">IOC</th>
-                      <th>Dernière activité</th>
+                      <th className="hide-narrow">Dernière activité</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -274,7 +289,7 @@ export function Campaigns() {
                           <td className="cell-title">{c.name}</td>
                           <td>{c.actor ? c.actor.name : <span className="muted">{c.actor_id ?? "—"}</span>}</td>
                           <td className="num mono">{formatNumber(c.indicators)}</td>
-                          <td className="muted">{seen ? formatAgo(seen) : "—"}</td>
+                          <td className="muted hide-narrow">{seen ? formatAgo(seen) : "—"}</td>
                         </tr>
                       );
                     })}
