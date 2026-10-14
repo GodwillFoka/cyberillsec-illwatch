@@ -49,8 +49,7 @@ class CampaignRefRead(BaseModel):
 class AttackContextRead(BaseModel):
     techniques: list[TechniqueRefRead] = Field(description="Techniques révélées par la détection.")
     campaigns: list[CampaignRefRead] = Field(
-        default_factory=list,
-        description="Campagnes dont l'infrastructure touchée fait partie (M10, incrément 2).",
+        description="Campagnes dont l'infrastructure touchée fait partie (M10, incrément 2)."
     )
     actors: list[ActorRefRead] = Field(
         description="Groupes ou logiciels cités dans le renseignement, avec leurs techniques."
