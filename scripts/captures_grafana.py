@@ -28,7 +28,7 @@ def main() -> int:
     with sync_playwright() as p:
         browser = p.chromium.launch()
         context = browser.new_context(
-            viewport={"width": 1440, "height": 1100},
+            viewport={"width": 1440, "height": 1300},
             # En-tête envoyé d'emblée : Grafana redirige vers /login au lieu de répondre 401.
             extra_http_headers={"Authorization": f"Basic {TOKEN}"},
             color_scheme="dark",
@@ -59,7 +59,8 @@ def main() -> int:
             errors = page.locator('[data-testid="data-testid Panel status error"]').count()
             if errors:
                 problems.append(f"{uid} : {errors} panneau(x) en erreur")
-            page.screenshot(path=str(OUT / f"{name}.png"), full_page=True)
+            # Pas de full_page : le redimensionnement relance la mise en page (capture vide).
+            page.screenshot(path=str(OUT / f"{name}.png"))
             page.close()
             print(f"{name}.png")
         browser.close()
