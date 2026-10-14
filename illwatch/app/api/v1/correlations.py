@@ -4,16 +4,20 @@ Lecture pour tous ; acquittement, ouverture d'incident et passe manuelle de corr
 ADMIN et ANALYST (consignés au journal d'audit).
 """
 
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.api.deps import Audit, CurrentUser, DbSession, require_roles
+from illwatch.app.api.v1.attack import AttackContextRead, attack_context
 from illwatch.app.config import get_settings
 from illwatch.app.models import CorrelatedEvent, User
+from illwatch.modules.attack.service import TechniqueRef, actor_index
 from illwatch.modules.correlation import engine
 from illwatch.modules.correlation import events as service
 from illwatch.modules.incidents.service import IncidentClosedError, LinkTargetNotFoundError
@@ -43,6 +47,9 @@ class CorrelationRead(BaseModel):
     acknowledged_at: datetime | None
     detail: dict[str, Any] = Field(
         description="Pourquoi : produit, signaux, confiance, décomposition du score (breakdown)."
+    )
+    attack: AttackContextRead | None = Field(
+        default=None, description="Technique ATT&CK de la règle, acteurs cités (M10)."
     )
 
 
@@ -91,6 +98,31 @@ def _read(event: CorrelatedEvent, asset_name: str) -> CorrelationRead:
     )
 
 
+async def _reads(
+    session: AsyncSession, pairs: Sequence[tuple[CorrelatedEvent, str]]
+) -> list[CorrelationRead]:
+    """Évènements avec leur contexte ATT&CK (index des acteurs lu une fois par page)."""
+    index = await actor_index(session) if pairs else None
+    memo: dict[str, tuple[TechniqueRef, ...]] = {}
+    out = []
+    for event, name in pairs:
+        item = _read(event, name)
+        detail = event.detail or {}
+        item.attack = await attack_context(
+            session,
+            rule_ids=[event.rule_id],
+            texts=[str(detail.get("description") or ""), event.title],
+            memo=memo,
+            index=index,
+        )
+        out.append(item)
+    return out
+
+
+async def _read_one(session: AsyncSession, event: CorrelatedEvent, name: str) -> CorrelationRead:
+    return (await _reads(session, [(event, name)]))[0]
+
+
 def _not_found(exc: Exception) -> HTTPException:
     return HTTPException(status.HTTP_404_NOT_FOUND, detail=str(exc))
 
@@ -116,7 +148,7 @@ async def list_correlations(
         asset_id=asset_id,
     )
     return CorrelationPage(
-        items=[_read(e, n) for e, n in page.items], total=page.total, limit=limit, offset=offset
+        items=await _reads(session, page.items), total=page.total, limit=limit, offset=offset
     )
 
 
@@ -141,7 +173,7 @@ async def read_correlation(event_id: UUID, session: DbSession, _: CurrentUser) -
         event, name = await service.get_event(session, event_id)
     except service.CorrelationNotFoundError as exc:
         raise _not_found(exc) from None
-    return _read(event, name)
+    return await _read_one(session, event, name)
 
 
 @router.post(
@@ -162,7 +194,7 @@ async def ack_correlation(
         target_id=event_id,
         detail={"rule": event.rule_id, "asset": name},
     )
-    return _read(event, name)
+    return await _read_one(session, event, name)
 
 
 class FalsePositiveRequest(BaseModel):
@@ -207,7 +239,7 @@ async def false_positive(
         target_id=event_id,
         detail={"rule": event.rule_id, "asset": name, "reason": payload.reason[:200]},
     )
-    return _read(event, name)
+    return await _read_one(session, event, name)
 
 
 @router.post(

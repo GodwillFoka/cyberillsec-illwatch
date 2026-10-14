@@ -8,6 +8,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M10, incrément 1 : contexte MITRE ATT&CK (ADR-023)
+- Référentiel ATT&CK Enterprise importé (`illwatch attack import | status | show`) :
+  techniques, groupes, logiciels, relations « utilise » ; migration `d4a8f2c6e019`.
+- Technique ATT&CK par règle (RULE-01 à 05, CORR-01 et 02) ; acteur proposé quand la source
+  le nomme en toutes lettres (groupes et logiciels malveillants, mots courants exclus).
+- Contexte affiché dans les correspondances de chasse, les évènements corrélés et les
+  incidents ; `GET /attack/status`, `GET /attack/techniques/{id}` ; extrait de démonstration.
+
 ### Ajouté — M9 SOC Operations (ADR-022)
 - Niveaux SOC L1/L2/L3 : escalade motivée, consignée dans la chronologie, sans retour en
   arrière ; filtre et colonne « Niveau » ; `illwatch incidents escalate`.

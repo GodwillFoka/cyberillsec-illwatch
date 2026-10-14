@@ -14,6 +14,7 @@ import {
 } from "../api/queries";
 import type { Hunt, HuntRule } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
+import { TechniqueChips } from "../components/Attack";
 import { LevelBadge } from "../components/Badge";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
@@ -148,6 +149,7 @@ function NewHunt({
               <span className="mono muted" title={rule.changes.join("\n")}>
                 {rule.id} v{rule.version}
               </span>
+              {rule.techniques.length > 0 && <span className="mono muted"> · ATT&amp;CK {rule.techniques.join(", ")}</span>}
               <br />
               <span className="muted">{rule.description}</span>
             </span>
@@ -312,7 +314,7 @@ function Matches({ huntId, rules }: { huntId: string; rules: HuntRule[] }) {
                     </div>
                     <div className="muted">
                       <span className="mono">{match.rule_id}</span> · {names.get(match.rule_id) ?? ""} —{" "}
-                      {match.detail}
+                      {match.detail} <TechniqueChips context={match.attack} />
                       {match.cve_id && (
                         <>
                           {" "}

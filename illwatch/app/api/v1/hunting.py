@@ -9,16 +9,21 @@ Une session s'exécute pendant la requête (10 000 observables au plus) : le ré
 immédiatement consultable et reste enregistré.
 """
 
+from collections.abc import Sequence
 from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.api.deps import Audit, CurrentUser, DbSession, require_roles
+from illwatch.app.api.v1.attack import AttackContextRead, TechniqueRefRead, attack_context
 from illwatch.app.config import get_settings
-from illwatch.app.models import HuntingSession, User
+from illwatch.app.models import HuntingMatch, HuntingSession, User
+from illwatch.modules.attack.catalog import RULE_TECHNIQUES
+from illwatch.modules.attack.service import TechniqueRef, actor_index, technique_refs
 from illwatch.modules.threat_feeds.fetcher import fetch_feed_content
 from illwatch.modules.threat_hunting import engine
 from illwatch.modules.threat_hunting.engine import (
@@ -40,6 +45,7 @@ class RuleRead(BaseModel):
     description: str
     severity: Severity
     version: int = Field(description="Version de la règle (règles versionnées, M9).")
+    techniques: list[str] = Field(description="Techniques ATT&CK révélées par la règle (M10).")
     changes: list[str] = Field(description="Historique des versions, de la plus ancienne.")
 
 
@@ -68,6 +74,9 @@ class MatchRead(BaseModel):
     detail: str
     indicator_id: UUID | None
     cve_id: str | None
+    attack: AttackContextRead | None = Field(
+        default=None, description="Technique ATT&CK de la règle, acteurs cités (M10)."
+    )
 
 
 class HuntRead(BaseModel):
@@ -102,10 +111,28 @@ class MatchPage(BaseModel):
     )
 
 
-def _detail(hunt: HuntingSession) -> HuntDetail:
+async def _with_attack(session: AsyncSession, matches: Sequence[HuntingMatch]) -> list[MatchRead]:
+    """Contexte ATT&CK de chaque correspondance : techniques de la règle (lues une fois par
+    règle) et acteurs cités dans le détail (techniques lues une fois par acteur)."""
+    by_rule: dict[str, list[TechniqueRefRead]] = {}
+    memo: dict[str, tuple[TechniqueRef, ...]] = {}
+    index = await actor_index(session) if matches else None
+    out = []
+    for m in matches:
+        if m.rule_id not in by_rule:
+            refs = await technique_refs(session, RULE_TECHNIQUES.get(m.rule_id, ()))
+            by_rule[m.rule_id] = [TechniqueRefRead(id=t.id, name=t.name, url=t.url) for t in refs]
+        item = MatchRead.model_validate(m)
+        actors = await attack_context(session, texts=[m.detail], memo=memo, index=index)
+        item.attack = AttackContextRead(techniques=by_rule[m.rule_id], actors=actors.actors)
+        out.append(item)
+    return out
+
+
+async def _detail(session: AsyncSession, hunt: HuntingSession) -> HuntDetail:
     return HuntDetail(
         **HuntRead.model_validate(hunt).model_dump(),
-        matches=[MatchRead.model_validate(m) for m in hunt.matches],
+        matches=await _with_attack(session, hunt.matches),
     )
 
 
@@ -119,6 +146,7 @@ async def rules(_: CurrentUser) -> list[RuleRead]:
             severity=r.severity,
             version=r.version,
             changes=list(r.changes),
+            techniques=list(RULE_TECHNIQUES.get(r.id, ())),
         )
         for r in CATALOG
     ]
@@ -155,7 +183,7 @@ async def run(payload: HuntRequest, session: DbSession, user: Hunter, audit: Aud
             "status": hunt.status,
         },
     )
-    return _detail(await engine.get_hunt(session, hunt.id))
+    return await _detail(session, await engine.get_hunt(session, hunt.id))
 
 
 @router.get("/sessions", response_model=list[HuntRead], summary="Sessions de chasse (RF-28)")
@@ -174,7 +202,7 @@ async def sessions(
 @router.get("/sessions/{hunt_id}", response_model=HuntDetail, summary="Résultats d'une session")
 async def read(hunt_id: UUID, session: DbSession, _: CurrentUser) -> HuntDetail:
     try:
-        return _detail(await engine.get_hunt(session, hunt_id))
+        return await _detail(session, await engine.get_hunt(session, hunt_id))
     except HuntNotFoundError:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"Session {hunt_id} introuvable."
@@ -204,7 +232,7 @@ async def matches(
             status.HTTP_404_NOT_FOUND, detail=f"Session {hunt_id} introuvable."
         ) from None
     return MatchPage(
-        items=[MatchRead.model_validate(m) for m in page.items],
+        items=await _with_attack(session, page.items),
         total=page.total,
         limit=limit,
         offset=offset,

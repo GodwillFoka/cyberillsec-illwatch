@@ -1915,3 +1915,46 @@ textarea {
 .sla-table td.late {
   color: var(--p0-mark);
 }
+
+/* M10 MITRE ATT&CK (ADR-023) ------------------------------------------------------------------ */
+
+.badge.attack {
+  color: var(--signal);
+  border: 1px solid currentColor;
+  background: transparent;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  text-decoration: none;
+}
+
+.badge.attack::before {
+  display: none;
+}
+
+.badge.attack.actor {
+  color: var(--orange);
+  font-family: inherit;
+}
+
+.attack-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--s1);
+  margin-left: var(--s1);
+  vertical-align: middle;
+}
+
+.attack-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2);
+  overflow-wrap: anywhere;
+}
+
+.attack-line + .attack-line {
+  margin-top: var(--s1);
+}
+
+.attack-actor {
+  display: contents;
+}
