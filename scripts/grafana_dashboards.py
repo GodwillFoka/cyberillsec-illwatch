@@ -193,7 +193,15 @@ def cti() -> dict[str, Any]:
         "illwatch-cti",
         "ILL Watch — Collecte et SOC",
         [
-            panel(lay, "IOC actifs", "stat", [("sum(illwatch_indicators_active)", "")], w=6, h=4),
+            panel(
+                lay,
+                "IOC actifs",
+                "stat",
+                [("sum(illwatch_indicators_active)", "")],
+                w=6,
+                h=4,
+                thresholds=[(None, "text")],
+            ),
             panel(
                 lay, "Nouveaux IOC (24 h)", "stat", [("illwatch_indicators_new_24h", "")], w=6, h=4
             ),

@@ -29,7 +29,17 @@
         "h": 4
       },
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "text"
+              }
+            ]
+          }
+        },
         "overrides": []
       },
       "options": {},
