@@ -23,7 +23,9 @@ from illwatch.app.config import Settings
 from illwatch.app.models import (
     CVE,
     Asset,
+    AttackActor,
     AttackTechnique,
+    Campaign,
     CollectionRun,
     CVEAlert,
     CVEPriorityChange,
@@ -33,6 +35,8 @@ from illwatch.app.models import (
     ThreatFeed,
     User,
 )
+from illwatch.modules.attack.campaigns import attach as attach_to_campaign
+from illwatch.modules.attack.campaigns import create_campaign
 from illwatch.modules.attack.demo import demo_attack_data
 from illwatch.modules.attack.service import import_attack
 from illwatch.modules.correlation.engine import run_correlation
@@ -523,6 +527,17 @@ async def load_demo_data(
     if await session.scalar(select(func.count()).select_from(AttackTechnique)) == 0:
         await import_attack(session, demo_attack_data(), now=moment)
         report.notes.append("extrait ATT&CK de démonstration")
+    demo_campaign = f"Distribution QakBot {DEMO_TAG}"
+    if await session.get(AttackActor, "S0650") is not None and not await session.scalar(
+        select(Campaign.id).where(Campaign.name == demo_campaign)
+    ):
+        campaign = await create_campaign(
+            session,
+            name=demo_campaign,
+            description="Infrastructure de distribution et de commande du chargeur QakBot.",
+            actor_id="S0650",
+        )
+        await attach_to_campaign(session, campaign.id, description_contains="Qakbot")
 
     for name, product, vendor, criticality, addresses in _DEMO_ASSETS:
         session.add(

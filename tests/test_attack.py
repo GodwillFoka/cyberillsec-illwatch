@@ -2,7 +2,7 @@
 
 import json
 from datetime import UTC, datetime, timedelta
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from httpx import AsyncClient
@@ -196,3 +196,77 @@ async def test_contexte_attack_dans_l_api(client: AsyncClient, db_session: Async
     detail = (await client.get(f"/api/v1/incidents/{iid}", headers=headers)).json()
     assert [t["id"] for t in detail["attack"]["techniques"]] == ["T1190"]
     assert [a["id"] for a in detail["attack"]["actors"]] == ["S0650"]
+
+
+# --- Campagnes (M10, incrément 2) --------------------------------------------------------------
+
+
+async def test_campagnes_attribution_par_l_infrastructure(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    from illwatch.modules.attack.campaigns import (
+        CampaignError,
+        CampaignExistsError,
+        attach,
+        campaigns_of,
+        create_campaign,
+    )
+
+    await import_attack(db_session, demo_attack_data(), now=NOW)
+    await ingest_indicators(
+        db_session,
+        [
+            Observation("198.51.100.30", description="Pulse OTX : distribution printemps"),
+            Observation("dl.example.net", description="Pulse OTX : distribution printemps"),
+            Observation("198.51.100.31", description="autre chose"),
+        ],
+    )
+    with pytest.raises(CampaignError):
+        await create_campaign(db_session, name="Op X", actor_id="G9999")
+    campaign = await create_campaign(db_session, name="Opération printemps", actor_id="g0102")
+    assert campaign.actor_id == "G0102"
+    with pytest.raises(CampaignExistsError):
+        await create_campaign(db_session, name="Opération  printemps")
+    attached, unknown = await attach(
+        db_session, campaign.id, description_contains="distribution printemps"
+    )
+    assert (attached, unknown) == (2, 0)
+    again, unknown = await attach(
+        db_session, campaign.id, values=["198.51.100.30", "203.0.113.200", "pas un ioc"]
+    )
+    assert (again, unknown) == (0, 2)  # déjà rattaché ; inconnu ; invalide
+    with pytest.raises(CampaignError):
+        await attach(db_session, campaign.id, description_contains="ab")
+
+    name = f"analyst-{uuid4().hex[:8]}"
+    user = await create_user(
+        db_session,
+        username=name,
+        email=f"{name}@cyberill.test",
+        password="mot-de-passe-robuste-2026",
+        role=UserRole.ANALYST,
+    )
+    headers = {"Authorization": f"Bearer {create_access_token(user.id, user.role)}"}
+    hunt = await client.post(
+        "/api/v1/hunting/sessions",
+        json={"observables": ["198.51.100.30"], "rules": ["RULE-06"]},
+        headers=headers,
+    )
+    context = hunt.json()["matches"][0]["attack"]
+    assert [c["name"] for c in context["campaigns"]] == ["Opération printemps"]
+    assert [(a["id"], a["matched"]) for a in context["actors"]] == [
+        ("G0102", "campagne « Opération printemps »")
+    ]
+    listed = (await client.get("/api/v1/campaigns", headers=headers)).json()
+    assert listed[0]["indicators"] == 2 and listed[0]["actor"]["name"] == "Wizard Spider"
+    detail = (await client.get(f"/api/v1/campaigns/{campaign.id}", headers=headers)).json()
+    assert {i["value"] for i in detail["infrastructure"]} == {"198.51.100.30", "dl.example.net"}
+    refs = await campaigns_of(db_session, [UUID(detail["infrastructure"][0]["id"])])
+    assert refs and refs[0].name == "Opération printemps"
+    created = await client.post(
+        "/api/v1/campaigns", json={"name": "Opération printemps"}, headers=headers
+    )
+    assert created.status_code == 409
+    assert (
+        await client.delete(f"/api/v1/campaigns/{campaign.id}", headers=headers)
+    ).status_code == 403

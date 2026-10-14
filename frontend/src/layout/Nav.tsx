@@ -5,6 +5,7 @@ import {
   Bug,
   Crosshair,
   Fingerprint,
+  Flag,
   Gauge,
   GitMerge,
   LayoutDashboard,
@@ -73,6 +74,7 @@ export function Nav() {
           Renseignement
         </div>
         <Link to="/indicateurs" label="Indicateurs" icon={Fingerprint} />
+        <Link to="/campagnes" label="Campagnes" icon={Flag} />
         <Link
           to="/sources"
           label="Sources CTI"

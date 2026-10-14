@@ -53,6 +53,8 @@ export type SocTier = Incident["tier"];
 export type AttackContext = Schemas["AttackContextRead"];
 export type TechniqueRef = Schemas["TechniqueRefRead"];
 export type AttackStatus = Schemas["AttackStatusRead"];
+export type Campaign = Schemas["CampaignRead"];
+export type CampaignDetail = Schemas["CampaignDetail"];
 
 export type Metric = Series["metric"];
 export type SeriesWindow = Series["window"];

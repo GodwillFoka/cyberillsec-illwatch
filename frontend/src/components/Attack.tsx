@@ -2,6 +2,7 @@
 // groupes ou logiciels cités dans le renseignement, avec leurs techniques connues. Les liens
 // ouvrent attack.mitre.org dans un nouvel onglet, sans transmettre l'adresse d'ILL Watch.
 import type { AttackContext, TechniqueRef } from "../api/types";
+import { Link } from "../lib/router";
 
 export const ATTACK_ATTRIBUTION = "ATT&CK® © The MITRE Corporation, reproduit avec son autorisation.";
 
@@ -24,6 +25,11 @@ export function TechniqueChips({ context }: { context: AttackContext | null | un
   if (!context || (context.techniques.length === 0 && context.actors.length === 0)) return null;
   return (
     <span className="attack-chips">
+      {context.campaigns.map((c) => (
+        <Link key={c.id} className="badge attack campaign" to={`/campagnes?campagne=${c.id}`} title="Campagne">
+          {c.name}
+        </Link>
+      ))}
       {context.techniques.map((t) => (
         <TechniqueChip key={t.id} technique={t} />
       ))}
@@ -45,7 +51,9 @@ export function TechniqueChips({ context }: { context: AttackContext | null | un
 
 /** Section complète (panneaux de détail). */
 export function AttackSection({ context }: { context: AttackContext | null | undefined }) {
-  const empty = !context || (context.techniques.length === 0 && context.actors.length === 0);
+  const empty =
+    !context ||
+    (context.techniques.length === 0 && context.actors.length === 0 && context.campaigns.length === 0);
   return (
     <section>
       <h3>MITRE ATT&amp;CK</h3>
@@ -62,6 +70,19 @@ export function AttackSection({ context }: { context: AttackContext | null | und
                 {context.techniques.map((t) => (
                   <span key={t.id} className="attack-line">
                     <TechniqueChip technique={t} /> {t.name}
+                  </span>
+                ))}
+              </dd>
+            </>
+          )}
+          {context.campaigns.length > 0 && (
+            <>
+              <dt>Campagne</dt>
+              <dd>
+                {context.campaigns.map((c) => (
+                  <span key={c.id} className="attack-line">
+                    <Link to={`/campagnes?campagne=${c.id}`}>{c.name}</Link>
+                    {c.actor_id ? <span className="mono muted">{c.actor_id}</span> : null}
                   </span>
                 ))}
               </dd>

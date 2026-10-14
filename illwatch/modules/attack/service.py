@@ -221,18 +221,52 @@ async def actors_in(
     cache = memo if memo is not None else {}
     out: list[ActorRef] = []
     for actor_id, (kind, name, matched) in found.items():
-        if actor_id not in cache:
-            rows = (
-                await session.execute(
-                    select(AttackTechnique.id, AttackTechnique.name)
-                    .join(AttackUse, AttackUse.technique_id == AttackTechnique.id)
-                    .where(AttackUse.actor_id == actor_id)
-                    .order_by(AttackTechnique.id)
-                    .limit(MAX_TECHNIQUES_PER_ACTOR)
+        techniques = await _actor_techniques(session, actor_id, cache)
+        out.append(ActorRef(actor_id, kind, name, actor_url(actor_id, kind), matched, techniques))
+    return out
+
+
+async def _actor_techniques(
+    session: AsyncSession, actor_id: str, cache: dict[str, tuple[TechniqueRef, ...]]
+) -> tuple[TechniqueRef, ...]:
+    if actor_id not in cache:
+        rows = (
+            await session.execute(
+                select(AttackTechnique.id, AttackTechnique.name)
+                .join(AttackUse, AttackUse.technique_id == AttackTechnique.id)
+                .where(AttackUse.actor_id == actor_id)
+                .order_by(AttackTechnique.id)
+                .limit(MAX_TECHNIQUES_PER_ACTOR)
+            )
+        ).all()
+        cache[actor_id] = tuple(TechniqueRef(t, n, technique_url(t)) for t, n in rows)
+    return cache[actor_id]
+
+
+async def actor_refs(
+    session: AsyncSession,
+    wanted: Sequence[tuple[str, str]],
+    memo: dict[str, tuple[TechniqueRef, ...]] | None = None,
+) -> list[ActorRef]:
+    """Acteurs désignés explicitement (campagne → acteur) : (identifiant, motif affiché)."""
+    if not wanted:
+        return []
+    cache = memo if memo is not None else {}
+    known = {
+        i: (k, n)
+        for i, k, n in (
+            await session.execute(
+                select(AttackActor.id, AttackActor.kind, AttackActor.name).where(
+                    AttackActor.id.in_([w for w, _ in wanted])
                 )
-            ).all()
-            cache[actor_id] = tuple(TechniqueRef(t, n, technique_url(t)) for t, n in rows)
-        out.append(
-            ActorRef(actor_id, kind, name, actor_url(actor_id, kind), matched, cache[actor_id])
-        )
+            )
+        ).all()
+    }
+    out: list[ActorRef] = []
+    for actor_id, reason in wanted:
+        if actor_id not in known:
+            continue
+        kind, name = known[actor_id]
+        techniques = await _actor_techniques(session, actor_id, cache)
+        out.append(ActorRef(actor_id, kind, name, actor_url(actor_id, kind), reason, techniques))
     return out

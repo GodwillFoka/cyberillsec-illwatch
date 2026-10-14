@@ -123,8 +123,12 @@ async def _with_attack(session: AsyncSession, matches: Sequence[HuntingMatch]) -
             refs = await technique_refs(session, RULE_TECHNIQUES.get(m.rule_id, ()))
             by_rule[m.rule_id] = [TechniqueRefRead(id=t.id, name=t.name, url=t.url) for t in refs]
         item = MatchRead.model_validate(m)
-        actors = await attack_context(session, texts=[m.detail], memo=memo, index=index)
-        item.attack = AttackContextRead(techniques=by_rule[m.rule_id], actors=actors.actors)
+        context = await attack_context(
+            session, texts=[m.detail], memo=memo, index=index, indicator_ids=[m.indicator_id]
+        )
+        item.attack = AttackContextRead(
+            techniques=by_rule[m.rule_id], actors=context.actors, campaigns=context.campaigns
+        )
         out.append(item)
     return out
 

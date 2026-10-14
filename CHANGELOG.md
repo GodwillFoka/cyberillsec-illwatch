@@ -8,6 +8,12 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M10, incrément 2 : campagnes (ADR-024)
+- Campagnes : infrastructure (IOC rattachés par valeur ou par description) et acteur ATT&CK ;
+  écran Campagnes, `/api/v1/campaigns`, `illwatch campaigns create | attach | list`.
+- Attribution par l'infrastructure dans les chasses, corrélations et incidents (campagne et
+  acteur), avant les acteurs cités par leur nom. Migration `e2c7a5b9d184`.
+
 ### Ajouté — M10, incrément 1 : contexte MITRE ATT&CK (ADR-023)
 - Référentiel ATT&CK Enterprise importé (`illwatch attack import | status | show`) :
   techniques, groupes, logiciels, relations « utilise » ; migration `d4a8f2c6e019`.

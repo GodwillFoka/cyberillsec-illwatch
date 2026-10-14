@@ -1958,3 +1958,8 @@ textarea {
 .attack-actor {
   display: contents;
 }
+
+.badge.attack.campaign {
+  color: var(--text);
+  font-family: inherit;
+}
