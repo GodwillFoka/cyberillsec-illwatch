@@ -29,6 +29,10 @@ def main() -> int:
             # En-tête envoyé d'emblée : Grafana redirige vers /login au lieu de répondre 401.
             extra_http_headers={"Authorization": f"Basic {TOKEN}"},
             color_scheme="dark",
+            # Sans langue explicite, Chromium sans interface transmet une langue que l'API Intl
+            # refuse (« Incorrect locale information provided ») et Grafana ne démarre pas.
+            locale="fr-FR",
+            timezone_id="Europe/Paris",
         )
         page = context.new_page()
         console: list[str] = []
@@ -43,6 +47,7 @@ def main() -> int:
             lambda r: console.append(f"HTTP {r.status} {r.url}") if r.status >= 400 else None,
         )
         for name, uid in BOARDS:
+            console.clear()
             page.goto(f"{BASE}/d/{uid}?orgId=1&from=now-30m&to=now&kiosk", wait_until="load")
             try:
                 page.wait_for_selector(".react-grid-layout", timeout=45_000)
