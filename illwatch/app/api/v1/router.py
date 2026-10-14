@@ -9,6 +9,7 @@ from fastapi import APIRouter
 
 from illwatch.app.api.v1 import (
     assets,
+    attack,
     audit,
     auth,
     correlations,
@@ -53,6 +54,9 @@ api_router.include_router(correlations.router)
 
 # M9 — SOC Operations : liste d'exclusion des IOC faux positifs (ADR-022)
 api_router.include_router(exclusions.router)
+
+# M10 — CTI Intelligence Layer : référentiel MITRE ATT&CK (ADR-023)
+api_router.include_router(attack.router)
 
 # M7 — Production Hardening : journal d'audit de sécurité (ADR-011)
 api_router.include_router(audit.router)

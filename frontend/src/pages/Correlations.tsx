@@ -12,6 +12,7 @@ import {
 import { useCorrelations } from "../api/queries";
 import type { Correlation } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
+import { AttackSection } from "../components/Attack";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
 import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
@@ -295,6 +296,8 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
           </dd>
         </dl>
       </section>
+
+      <AttackSection context={event.attack} />
 
       {/* 5. Actions */}
       <section>

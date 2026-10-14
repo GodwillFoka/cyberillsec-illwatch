@@ -18,11 +18,22 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.api.deps import Audit, CurrentUser, DbSession, require_roles
+from illwatch.app.api.v1.attack import AttackContextRead, attack_context
 from illwatch.app.config import get_settings
-from illwatch.app.models import Incident, User
+from illwatch.app.models import (
+    CVE,
+    CorrelatedEvent,
+    HuntingMatch,
+    Incident,
+    IncidentCVE,
+    IncidentIndicator,
+    Indicator,
+    User,
+)
 from illwatch.modules.cve_tracker.queries import CVENotFoundError, get_cve
 from illwatch.modules.incidents import service
 from illwatch.modules.incidents.service import (
@@ -173,6 +184,9 @@ class IncidentDetail(IncidentRead):
         description="Recommandations de réponse (M9) : la phase en cours d'abord."
     )
     hunts: list[IncidentHuntRead] = Field(description="Chasses lancées depuis l'incident.")
+    attack: AttackContextRead = Field(
+        description="Techniques ATT&CK (chasses, corrélations, CVE exploitées), acteurs cités."
+    )
 
 
 class EscalationRequest(BaseModel):
@@ -208,6 +222,7 @@ class LinkResult(BaseModel):
 async def _detail(session: AsyncSession, incident: Incident) -> IncidentDetail:
     recommendations = await soc_response.incident_recommendations(session, incident)
     hunts = await soc_response.incident_hunts(session, incident.id)
+    attack = await _incident_attack(session, incident, [h.id for h in hunts])
     return IncidentDetail(
         **IncidentRead.model_validate(incident).model_dump(),
         description=incident.description,
@@ -223,6 +238,58 @@ async def _detail(session: AsyncSession, incident: Incident) -> IncidentDetail:
             for r in recommendations
         ],
         hunts=[IncidentHuntRead.model_validate(h) for h in hunts],
+        attack=attack,
+    )
+
+
+async def _incident_attack(
+    session: AsyncSession, incident: Incident, hunt_ids: list[UUID]
+) -> AttackContextRead:
+    """Règles qui ont parlé (chasses de l'incident, évènements corrélés qui l'ont ouvert),
+    CVE exploitées (T1190), acteurs cités par les IOC ou le titre."""
+    rules: list[str] = []
+    if hunt_ids:
+        rules += list(
+            (
+                await session.scalars(
+                    select(HuntingMatch.rule_id)
+                    .where(HuntingMatch.session_id.in_(hunt_ids))
+                    .distinct()
+                )
+            ).all()
+        )
+    rules += list(
+        (
+            await session.scalars(
+                select(CorrelatedEvent.rule_id)
+                .where(CorrelatedEvent.incident_id == incident.id)
+                .distinct()
+            )
+        ).all()
+    )
+    exploited = await session.scalar(
+        select(func.count())
+        .select_from(IncidentCVE)
+        .join(CVE, CVE.id == IncidentCVE.cve_id)
+        .where(
+            IncidentCVE.incident_id == incident.id,
+            or_(CVE.is_kev.is_(True), CVE.has_public_exploit.is_(True)),
+        )
+    )
+    texts = list(
+        (
+            await session.scalars(
+                select(Indicator.description)
+                .join(IncidentIndicator, IncidentIndicator.indicator_id == Indicator.id)
+                .where(IncidentIndicator.incident_id == incident.id)
+            )
+        ).all()
+    )
+    return await attack_context(
+        session,
+        rule_ids=sorted(set(rules)),
+        techniques=["T1190"] if exploited else [],
+        texts=[incident.title, incident.description, *texts],
     )
 
 

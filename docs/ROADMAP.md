@@ -78,14 +78,16 @@ Bilan : `Rapport/BILAN_M8.md`.
 
 ## M10 — CTI Intelligence Layer
 
-**But.** Donner un contexte adverse à chaque détection.
+**But.** Donner un contexte adverse à chaque détection. **Démarré le 14/10/2026** (ADR-023).
 
-- Modèle : acteur de menace → campagne → malware → infrastructure → IOC → TTP.
-- Import MITRE ATT&CK (collection Enterprise, TAXII public déjà identifié dans ADR-010).
-- Rattachement détection → technique → acteur → campagne.
-- Export STIX 2.1 et serveur TAXII sortant.
+- Modèle : acteur de menace → campagne → malware → infrastructure → IOC → TTP (incrément 2).
+- Import MITRE ATT&CK (collection Enterprise) ✅ (bundle STIX publié par MITRE).
+- Rattachement détection → technique → acteur ✅ (technique par règle, acteur cité) ;
+  campagne (incrément 2).
+- Export STIX 2.1 et serveur TAXII sortant (incrément 3).
 
 **Critère de sortie :** une alerte affiche sa technique ATT&CK et, si connu, l'acteur associé.
+✅ **Constaté en CI le 14/10** (incrément 1) ; à constater sur Kali après `illwatch attack import`.
 
 ## M11 — Observability & Deployment
 

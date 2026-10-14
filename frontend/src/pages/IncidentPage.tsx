@@ -17,6 +17,7 @@ import {
 import { useIncident, useIndicator } from "../api/queries";
 import type { IncidentDetail, IncidentEvent } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
+import { AttackSection } from "../components/Attack";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
 import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
@@ -616,6 +617,9 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                         <NoteForm incident={incident} />
                       </section>
                     )}
+                  </section>
+                  <section className="card detail">
+                    <AttackSection context={incident.attack} />
                   </section>
                   <section className="card detail">
                     <section>

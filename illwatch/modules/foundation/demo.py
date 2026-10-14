@@ -23,6 +23,7 @@ from illwatch.app.config import Settings
 from illwatch.app.models import (
     CVE,
     Asset,
+    AttackTechnique,
     CollectionRun,
     CVEAlert,
     CVEPriorityChange,
@@ -32,6 +33,8 @@ from illwatch.app.models import (
     ThreatFeed,
     User,
 )
+from illwatch.modules.attack.demo import demo_attack_data
+from illwatch.modules.attack.service import import_attack
 from illwatch.modules.correlation.engine import run_correlation
 from illwatch.modules.cve_tracker.scoring import compute_risk_breakdown
 from illwatch.modules.enrichment.dbip import import_dataset
@@ -516,6 +519,10 @@ async def load_demo_data(
         ):
             await import_dataset(session, dataset, lines, source=origin, now=moment)
         report.notes.append("enrichissement fictif des plages de documentation")
+
+    if await session.scalar(select(func.count()).select_from(AttackTechnique)) == 0:
+        await import_attack(session, demo_attack_data(), now=moment)
+        report.notes.append("extrait ATT&CK de démonstration")
 
     for name, product, vendor, criticality, addresses in _DEMO_ASSETS:
         session.add(

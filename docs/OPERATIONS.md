@@ -440,3 +440,15 @@ illwatch soc exclusions                 # liste d'exclusion en vigueur
   rattachée à l'incident et résumée dans sa chronologie.
 - **Délais cibles** (prise en charge / résolution) : critique 1 h / 24 h, élevée 4 h / 72 h,
   moyenne 24 h / 7 j, faible 72 h / 30 j. Écran **Pilotage** (7 ou 30 jours).
+
+## MITRE ATT&CK (M10, ADR-023)
+
+```bash
+illwatch attack import                  # référentiel Enterprise publié par MITRE (~40 Mo)
+illwatch attack import --file enterprise-attack.json   # hors ligne
+illwatch attack status
+illwatch attack show T1190              # une technique et les groupes ou logiciels qui l'emploient
+```
+
+Réimporter à chaque nouvelle version d'ATT&CK (deux par an). Les détections affichent leur
+technique et, quand la source le nomme, l'acteur cité. ATT&CK® © The MITRE Corporation.

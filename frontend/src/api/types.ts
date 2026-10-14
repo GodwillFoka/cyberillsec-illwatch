@@ -50,6 +50,9 @@ export type SocMetrics = Schemas["SocMetricsRead"];
 export type Recommendation = Schemas["RecommendationRead"];
 export type IncidentHunt = Schemas["IncidentHuntRead"];
 export type SocTier = Incident["tier"];
+export type AttackContext = Schemas["AttackContextRead"];
+export type TechniqueRef = Schemas["TechniqueRefRead"];
+export type AttackStatus = Schemas["AttackStatusRead"];
 
 export type Metric = Series["metric"];
 export type SeriesWindow = Series["window"];

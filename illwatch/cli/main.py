@@ -416,6 +416,7 @@ def users_revoke_sessions(username: str) -> None:
 
 
 def _register_subcommands() -> None:
+    from illwatch.cli.attack import attack
     from illwatch.cli.audit import audit
     from illwatch.cli.correlate import assets, correlate
     from illwatch.cli.cves import cves
@@ -430,6 +431,7 @@ def _register_subcommands() -> None:
     from illwatch.cli.taxii import taxii
 
     cli.add_command(assets)
+    cli.add_command(attack)
     cli.add_command(audit)
     cli.add_command(correlate)
     cli.add_command(cves)
