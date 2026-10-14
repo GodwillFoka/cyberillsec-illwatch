@@ -61,6 +61,32 @@ jobs:
           echo "127.0.0.1 illwatch.localhost" | sudo tee -a /etc/hosts >/dev/null
           CAPTURE_PASSWORD="$ADMIN_PASSWORD" python scripts/captures.py https://illwatch.localhost:8443 captures
 
+      # M11 : le scénario d'acceptation tourne à chaque modification sur le jeu de
+      # démonstration (figé, reproductible), en plus de la validation hebdomadaire sur données
+      # réelles. Exécuté dans le conteneur de l'API, contre l'API elle-même.
+      - name: Test d'acceptation (scénario SOC, jeu figé)
+        run: |
+          set -o pipefail
+          export COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml:docker-compose.preprod.yml
+          export COMPOSE_PROFILES=full COMPOSE_PROJECT_NAME=illwatch-preprod
+          set -a; source .env.preprod; set +a
+          docker compose exec -T api illwatch users create --username analyst2 --role analyst \
+            --email analyst2@preprod.illwatch.test --password "$ADMIN_PASSWORD" >/dev/null
+          docker compose exec -T -e SCENARIO_PASSWORD="$ADMIN_PASSWORD" api \
+            python - http://127.0.0.1:8000 < scripts/scenario_soc.py 2>&1 | tee scenario.txt || {
+            grep -E '^✘|Error|prérequis' scenario.txt | head -20 | sed 's/^/::error title=Acceptation::/' || true
+            exit 1; }
+
+      - name: Observabilité (Prometheus, Grafana) et captures des tableaux
+        run: |
+          set -o pipefail
+          ./scripts/preprod-local.sh observability 2>&1 | tee observability.log || {
+            grep '✘' observability.log | sed 's/^/::error title=Observabilité::/' || true
+            exit 1; }
+          set -a; source .env.preprod; set +a
+          sleep 40  # quelques collectes pour remplir les courbes
+          python scripts/captures_grafana.py http://127.0.0.1:3000 captures
+
       - name: Journaux en cas d'échec
         if: failure()
         run: |

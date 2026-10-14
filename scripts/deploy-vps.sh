@@ -11,7 +11,8 @@
 #
 # install : Docker (dépôt officiel), pare-feu (22, 80, 443), code dans /opt/illwatch, secrets
 #           générés dans /opt/illwatch/.env (600), pile de production (Caddy + Let's Encrypt,
-#           API, worker, PostgreSQL, Redis), compte administrateur, sauvegarde quotidienne.
+#           API, worker, PostgreSQL, Redis, Prometheus, Grafana), compte administrateur,
+#           sauvegarde quotidienne, test de restauration mensuel.
 # check   : DNS, HTTPS et certificat, redirection HTTP, TLS 1.0/1.1 refusés, en-têtes,
 #           /ready, /docs masqué, API fermée sans jeton.
 # update  : sauvegarde, nouvelle version du code, reconstruction, migrations, contrôle.
@@ -22,7 +23,8 @@ set -euo pipefail
 
 DIR=/opt/illwatch
 REPO=https://github.com/GodwillFoka/cyberillsec-illwatch.git
-export COMPOSE_FILE="docker-compose.yml:docker-compose.prod.yml"
+# Observabilité (M11) : Prometheus + Grafana, écoute locale seulement (tunnel SSH).
+export COMPOSE_FILE="docker-compose.yml:docker-compose.prod.yml:docker-compose.observability.yml"
 export COMPOSE_PROFILES="full"
 export COMPOSE_PROJECT_NAME="illwatch"
 FAILED=0
@@ -82,6 +84,10 @@ EOF
     chmod 600 "${DIR}/.env"
     ok "secrets générés dans ${DIR}/.env (600)"
   fi
+  if ! grep -q '^GRAFANA_ADMIN_PASSWORD=' "${DIR}/.env"; then
+    echo "GRAFANA_ADMIN_PASSWORD=$(secret 16)" >>"${DIR}/.env"
+    ok "mot de passe Grafana généré (sudo grep GRAFANA ${DIR}/.env, à ranger dans KeePassXC)"
+  fi
 }
 
 dns_check() {
@@ -102,8 +108,10 @@ backups() {
   cat >/etc/cron.d/illwatch-backup <<EOF
 # Sauvegarde quotidienne de la base ILL Watch (14 jours conservés).
 17 2 * * * root cd ${DIR} && ./scripts/backup.sh /srv/illwatch-backups >>/var/log/illwatch-backup.log 2>&1
+# Test de restauration mensuel (M11) : le 1er du mois, après la sauvegarde.
+47 3 1 * * root cd ${DIR} && ./scripts/restore-test.sh /srv/illwatch-backups >>/var/log/illwatch-restore-test.log 2>&1
 EOF
-  ok "sauvegarde quotidienne à 02 h 17 dans /srv/illwatch-backups"
+  ok "sauvegarde quotidienne à 02 h 17 dans /srv/illwatch-backups ; test de restauration le 1er du mois"
 }
 
 cmd_install() {
@@ -168,6 +176,7 @@ cmd_check() {
   done
   grep -qi '^server:' <<<"${headers}" && ko "en-tête Server exposé" || ok "en-tête Server masqué"
   [[ "$(curl -s -o /dev/null -w '%{http_code}' "${base}/docs")" == 404 ]] && ok "/docs masqué" || ko "/docs exposé"
+  [[ "$(curl -s -o /dev/null -w '%{http_code}' "${base}/metrics")" == 404 ]] && ok "/metrics non exposé" || ko "/metrics exposé"
   [[ "$(curl -s -o /dev/null -w '%{http_code}' "${base}/api/v1/indicators")" == 401 ]] \
     && ok "API refusée sans jeton (401)" || ko "API accessible sans jeton"
   printf '\nNote SSL Labs : https://www.ssllabs.com/ssltest/analyze.html?d=%s (ou workflow « Clôture M7 »).\n' "${domain}"
@@ -182,6 +191,7 @@ cmd_update() {
   ./scripts/backup.sh /srv/illwatch-backups
   step "Code et image"
   git pull --ff-only -q
+  write_env "$(grep -E '^ILLWATCH_DOMAIN=' "${DIR}/.env" | cut -d= -f2)"
   docker compose up -d --build
   step "Contrôles"
   cmd_check ""

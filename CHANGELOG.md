@@ -8,6 +8,18 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M11 Observability & Deployment (ADR-026)
+- `GET /metrics` (format Prometheus, sans dépendance) : requêtes HTTP par modèle de route et
+  statut, durées ; IOC actifs, sources (état, dernier succès), collectes 24 h,
+  synchronisations, incidents ouverts, évènements non acquittés, refus d'authentification,
+  base et Redis. Jeton `METRICS_TOKEN` ou réseau interne ; Caddy ne le relaie pas.
+- `docker-compose.observability.yml` : Prometheus (10 alertes) et Grafana (2 tableaux
+  générés par `scripts/grafana_dashboards.py`), activés par `deploy-vps.sh`.
+- Préproduction CI : scénario d'acceptation SOC sur le jeu figé, contrôle TAXII et
+  `/metrics`, Prometheus et Grafana vérifiés et capturés.
+- `scripts/restore-test.sh` : test de restauration mensuel (cron du VPS).
+- `docs/ENVIRONNEMENTS.md` : développement → staging → production.
+
 ### Ajouté — M10, incrément 3 : partage STIX 2.1 / TAXII 2.1 (ADR-025)
 - Serveur TAXII 2.1 en lecture seule `/taxii2/` : collections « indicateurs » (IOC actifs,
   pagination, `added_after`) et « campagnes » (acteurs ATT&CK, relations, infrastructure) ;

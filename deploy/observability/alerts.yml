@@ -1,0 +1,79 @@
+# Alertes ILL Watch (M11, ADR-026). Seuils de départ : à ajuster après 7 jours de staging.
+groups:
+  - name: illwatch
+    rules:
+      - alert: IllwatchApiDown
+        expr: up{job="illwatch-api"} == 0
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "API ILL Watch injoignable depuis 5 min"
+
+      - alert: IllwatchDatabaseDown
+        expr: illwatch_database_up == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "PostgreSQL injoignable depuis l'API"
+
+      - alert: IllwatchRedisDown
+        expr: illwatch_redis_up == 0
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Redis injoignable (limitation de débit en mémoire locale, verrous de collecte absents)"
+
+      # Collecte arrêtée : aucune réussite depuis 3 intervalles (worker arrêté, source en panne).
+      - alert: IllwatchFeedStale
+        expr: >
+          (time() - illwatch_feed_last_success_timestamp_seconds)
+          > on(feed) (3 * illwatch_feed_polling_interval_seconds)
+        for: 15m
+        labels: { severity: warning }
+        annotations:
+          summary: "Source {{ $labels.feed }} sans collecte réussie depuis plus de 3 intervalles"
+
+      - alert: IllwatchNoCollection
+        expr: sum(illwatch_collection_runs_24h) == 0
+        for: 1h
+        labels: { severity: critical }
+        annotations:
+          summary: "Aucune collecte en 24 h : le worker est-il arrêté ?"
+
+      - alert: IllwatchCveSyncStale
+        expr: time() - illwatch_collector_last_success_timestamp_seconds{collector="nvd"} > 86400
+        for: 30m
+        labels: { severity: warning }
+        annotations:
+          summary: "Synchronisation NVD sans succès depuis plus de 24 h"
+
+      - alert: IllwatchHttpErrors
+        expr: >
+          sum(rate(illwatch_http_requests_total{status=~"5.."}[10m]))
+          / clamp_min(sum(rate(illwatch_http_requests_total[10m])), 1e-9) > 0.05
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Plus de 5 % de réponses 5xx sur 10 min"
+
+      - alert: IllwatchSlowApi
+        expr: >
+          histogram_quantile(0.95, sum by (le) (rate(illwatch_http_request_duration_seconds_bucket{route=~"/api/.*"}[10m])))
+          > 2
+        for: 15m
+        labels: { severity: warning }
+        annotations:
+          summary: "p95 de l'API au-dessus de 2 s"
+
+      - alert: IllwatchAuthRefusals
+        expr: sum(illwatch_audit_refusals_24h{action=~"auth.login|taxii.auth"}) > 50
+        labels: { severity: warning }
+        annotations:
+          summary: "Plus de 50 échecs d'authentification en 24 h (force brute ?)"
+
+      - alert: IllwatchCriticalIncidentOpen
+        expr: sum(illwatch_incidents_open{severity="CRITICAL"}) > 0
+        for: 4h
+        labels: { severity: warning }
+        annotations:
+          summary: "Incident critique ouvert depuis plus de 4 h"

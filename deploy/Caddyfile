@@ -18,6 +18,9 @@
 {$ILLWATCH_DOMAIN:localhost} {
 	# Le flux temps réel (Server-Sent Events) n'est ni compressé ni mis en tampon : une
 	# compression retiendrait les trames et l'interface ne verrait plus les changements.
+	# Métriques Prometheus (M11) : collectées dans le réseau interne, jamais relayées.
+	respond /metrics* 404
+
 	@stream path /api/v1/stream
 	@compressible not path /api/v1/stream
 	encode @compressible zstd gzip

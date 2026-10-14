@@ -104,6 +104,9 @@ class Settings(BaseSettings):
     # Force brute : échecs de connexion tolérés par identifiant sur la fenêtre (secondes).
     login_max_failures: int = Field(default=5, ge=1, le=100)
     login_window_seconds: int = Field(default=900, ge=60)
+    # Métriques Prometheus (M11, ADR-026) : `GET /metrics` exige ce jeton (en-tête Bearer)
+    # s'il est défini ; sinon, seules les adresses privées ou locales y accèdent.
+    metrics_token: SecretStr | None = None
 
     # --- Connecteurs CTI externes (clés optionnelles) ------------------------
     # Clé NVD (https://nvd.nist.gov/developers/request-an-api-key, gratuite) : 50 requêtes

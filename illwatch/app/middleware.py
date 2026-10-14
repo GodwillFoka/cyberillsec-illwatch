@@ -25,6 +25,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from illwatch.modules.observability.metrics import HTTP
+
 log = logging.getLogger("illwatch.http")
 
 REQUEST_ID_HEADER = "x-request-id"
@@ -86,7 +88,11 @@ class SecurityMiddleware:
         try:
             await self.app(scope, receive, _send)
         finally:
-            duration_ms = round((time.perf_counter() - started) * 1000, 1)
+            elapsed = time.perf_counter() - started
+            duration_ms = round(elapsed * 1000, 1)
+            # Modèle de route (FastAPI le dépose dans le scope) : cardinalité bornée (M11).
+            route = getattr(scope.get("route"), "path", None) or "non_route"
+            HTTP.observe(str(scope.get("method", "")), route, status_holder[0], elapsed)
             level = logging.DEBUG if path in _QUIET_PATHS else logging.INFO
             client = scope.get("client")
             log.log(

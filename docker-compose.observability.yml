@@ -1,0 +1,53 @@
+# ============================================================================
+# ILL Watch — observabilité (M11, ADR-026) : Prometheus + Grafana
+#
+# Surcouche de la pile de production :
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml:docker-compose.observability.yml
+#   docker compose --profile full up -d
+#
+# Prometheus collecte /metrics de l'API dans le réseau Docker (adresse privée : autorisée sans
+# jeton) et évalue les alertes de deploy/observability/alerts.yml. Grafana écoute sur
+# 127.0.0.1:3000 seulement : y accéder par tunnel SSH (ssh -L 3000:127.0.0.1:3000 vps).
+# GRAFANA_ADMIN_PASSWORD est obligatoire (KeePassXC).
+# ============================================================================
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+    volumes:
+      - ./deploy/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/observability/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on:
+      - api
+    profiles: ["full"]
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD requis}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3000/
+    volumes:
+      - ./deploy/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+    profiles: ["full"]
+
+volumes:
+  prometheus_data:
+  grafana_data:
