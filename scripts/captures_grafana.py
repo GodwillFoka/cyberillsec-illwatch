@@ -36,6 +36,7 @@ def main() -> int:
             "console",
             lambda m: console.append(f"{m.type}: {m.text}") if m.type == "error" else None,
         )
+        page.on("pageerror", lambda e: console.append(f"exception : {e}"))
         page.on("requestfailed", lambda r: console.append(f"échec {r.url} {r.failure}"))
         page.on(
             "response",
@@ -43,8 +44,12 @@ def main() -> int:
         )
         for name, uid in BOARDS:
             page.goto(f"{BASE}/d/{uid}?orgId=1&from=now-30m&to=now&kiosk", wait_until="load")
-            page.wait_for_timeout(8000)
-            if page.locator("text=failed to load its application files").count():
+            try:
+                page.wait_for_selector(".react-grid-layout", timeout=45_000)
+            except Exception:  # noqa: BLE001 - signalé ci-dessous, avec la capture
+                console.append("grille du tableau absente après 45 s")
+            page.wait_for_timeout(5000)
+            if page.locator("text=failed to load its application files").first.is_visible():
                 problems.append(f"{uid} : interface Grafana non chargée")
                 problems += [f"{uid} : {line[:300]}" for line in console[:8]]
             if page.locator("text=Dashboard not found").count():
