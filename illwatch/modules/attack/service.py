@@ -179,9 +179,9 @@ async def actor_index(session: AsyncSession) -> ActorIndex:
     labels: dict[str, tuple[str, str, str]] = {}
     for actor_id, kind, name, aliases in rows:
         for label in [name, *(aliases or [])]:
-            key = " ".join(str(label).split()).lower()
-            if len(key) >= MIN_NAME and key not in COMMON_WORDS:
-                labels.setdefault(key, (actor_id, kind, name))
+            text = " ".join(str(label).split()).lower()
+            if len(text) >= MIN_NAME and text not in COMMON_WORDS:
+                labels.setdefault(text, (actor_id, kind, name))
     pattern = None
     if labels:
         alternatives = sorted(labels, key=len, reverse=True)
