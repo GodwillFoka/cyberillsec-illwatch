@@ -80,14 +80,15 @@ Bilan : `Rapport/BILAN_M8.md`.
 
 **But.** Donner un contexte adverse à chaque détection. **Démarré le 14/10/2026** (ADR-023).
 
-- Modèle : acteur de menace → campagne → malware → infrastructure → IOC → TTP (incrément 2).
+- Modèle : acteur de menace → campagne → malware → infrastructure → IOC → TTP ✅ (ADR-024).
 - Import MITRE ATT&CK (collection Enterprise) ✅ (bundle STIX publié par MITRE).
 - Rattachement détection → technique → acteur ✅ (technique par règle, acteur cité) ;
-  campagne (incrément 2).
-- Export STIX 2.1 et serveur TAXII sortant (incrément 3).
+  campagne ✅ (attribution par l'infrastructure, ADR-024).
+- Export STIX 2.1 et serveur TAXII 2.1 sortant ✅ (ADR-025, `/taxii2/`).
 
 **Critère de sortie :** une alerte affiche sa technique ATT&CK et, si connu, l'acteur associé.
-✅ **Constaté en CI le 14/10** (incrément 1) ; à constater sur Kali après `illwatch attack import`.
+✅ **Constaté en CI le 14/10** (incrément 1) ; incréments 2 et 3 fusionnés le 15/10 (PR #49, #50).
+À constater sur Kali après `illwatch attack import`.
 
 ## M11 — Observability & Deployment
 
@@ -101,6 +102,10 @@ Bilan : `Rapport/BILAN_M8.md`.
 
 **Critère de sortie :** 7 jours de collecte continue en staging sans intervention, tableaux de bord
 complets, restauration testée.
+
+**État au 15/10/2026 :** ✅ codé (ADR-026) : `/metrics`, Prometheus + Grafana, 10 alertes,
+acceptation en CI sur jeu figé, restauration testée en CI et chaque mois sur le VPS,
+`docs/ENVIRONNEMENTS.md`. **Reste** : les 7 jours de staging, qui attendent le VPS de M7.
 
 ## Au-delà de v0.2.0
 

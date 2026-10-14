@@ -8,6 +8,7 @@
 #   ./scripts/preprod-local.sh demo     # données de démonstration FICTIVES (base vide) ; le
 #                                       #   worker est arrêté pour ne jamais les mélanger à une
 #                                       #   collecte réelle (mode « démonstration », mémorisé)
+#   ./scripts/preprod-local.sh observability   # Prometheus + Grafana (M11) : config, collecte, tableaux
 #   ./scripts/preprod-local.sh logs     # journaux (Ctrl+C pour quitter)
 #   ./scripts/preprod-local.sh down     # arrête (données conservées)
 #   ./scripts/preprod-local.sh purge    # arrête et SUPPRIME les données de préproduction
@@ -61,10 +62,13 @@ POSTGRES_PASSWORD=$(openssl rand -hex 24)
 POSTGRES_APP_PASSWORD=$(openssl rand -hex 24)
 REDIS_PASSWORD=$(openssl rand -hex 24)
 ADMIN_PASSWORD=$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-20)
+GRAFANA_ADMIN_PASSWORD=$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-20)
 EOF
     chmod 600 "${ENV_FILE}"
     ok "secrets générés dans ${ENV_FILE} (600)"
   fi
+  grep -q '^GRAFANA_ADMIN_PASSWORD=' "${ENV_FILE}" \
+    || echo "GRAFANA_ADMIN_PASSWORD=$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-20)" >> "${ENV_FILE}"
   set -a
   # shellcheck disable=SC1090
   source "${ENV_FILE}"
@@ -176,6 +180,22 @@ cmd_check() {
     [[ "$(pcurl -o /dev/null -w '%{http_code}' "${BASE}/api/v1/indicators")" == 401 ]] && ok "API refusée sans jeton (401)" || ko "API accessible sans jeton"
   fi
 
+  step "Partage TAXII 2.1 et métriques (M10, M11)"
+  if [[ -n "${tok}" ]]; then
+    taxii=$(pcurl -D - -o /dev/null -H "Authorization: Bearer ${tok}" \
+      -H 'Accept: application/taxii+json;version=2.1' "${BASE}/taxii2/")
+    grep -q '^HTTP/[0-9.]* 200' <<<"${taxii}" && grep -qi '^content-type: application/taxii+json' <<<"${taxii}" \
+      && ok "TAXII 2.1 : découverte servie à travers Caddy" || ko "TAXII 2.1 : découverte en échec"
+  fi
+  [[ "$(pcurl -o /dev/null -w '%{http_code}' "${BASE}/taxii2/")" == 401 ]] && ok "TAXII refusé sans authentification (401)" || ko "TAXII accessible sans authentification"
+  [[ "$(pcurl -o /dev/null -w '%{http_code}' "${BASE}/metrics")" == 404 ]] && ok "/metrics non relayé sur Internet (404)" || ko "/metrics exposé par Caddy"
+  if docker compose exec -T api python -c "import urllib.request as u; print(u.urlopen('http://127.0.0.1:8000/metrics').read().decode())" \
+      | grep -q '^illwatch_database_up 1'; then
+    ok "/metrics lisible depuis le réseau interne (base joignable)"
+  else
+    ko "/metrics illisible depuis le réseau interne"
+  fi
+
   step "Temps réel (SSE) à travers Caddy"
   if [[ -n "${tok}" ]]; then
     local stream="/tmp/illwatch-preprod-sse.$$"
@@ -245,17 +265,56 @@ cmd_check() {
   fi
 }
 
+cmd_observability() {
+  need
+  secrets
+  export COMPOSE_FILE="${COMPOSE_FILE}:docker-compose.observability.yml"
+  step "Configuration Prometheus (promtool)"
+  local prom_image
+  prom_image=$(awk '/image: prom\/prometheus/ {print $2}' docker-compose.observability.yml)
+  if docker run --rm --entrypoint promtool -v "$PWD/deploy/observability:/etc/prometheus:ro" \
+      "${prom_image}" check config /etc/prometheus/prometheus.yml; then
+    ok "prometheus.yml et alerts.yml valides"
+  else
+    ko "configuration Prometheus invalide"
+  fi
+  step "Prometheus et Grafana (127.0.0.1:9090, 127.0.0.1:3000)"
+  docker compose up -d prometheus grafana
+  local i up=""
+  for i in $(seq 1 45); do
+    up=$(curl -s 'http://127.0.0.1:9090/api/v1/query?query=up%7Bjob%3D%22illwatch-api%22%7D' \
+      | python3 -c 'import json,sys; r=json.load(sys.stdin)["data"]["result"]; print(r[0]["value"][1] if r else "")' 2>/dev/null || true)
+    [[ "${up}" == 1 ]] && break
+    sleep 2
+  done
+  [[ "${up}" == 1 ]] && ok "Prometheus collecte l'API (up = 1)" || ko "Prometheus ne collecte pas l'API"
+  local rules
+  rules=$(curl -s http://127.0.0.1:9090/api/v1/rules | python3 -c 'import json,sys; print(sum(len(g["rules"]) for g in json.load(sys.stdin)["data"]["groups"]))' 2>/dev/null || echo 0)
+  [[ "${rules}" -gt 0 ]] && ok "${rules} règles d'alerte chargées" || ko "aucune règle d'alerte chargée"
+  local boards=0
+  for i in $(seq 1 30); do
+    boards=$(curl -s -u "admin:${GRAFANA_ADMIN_PASSWORD}" 'http://127.0.0.1:3000/api/search?tag=illwatch' \
+      | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))' 2>/dev/null || echo 0)
+    [[ "${boards}" -ge 2 ]] && break
+    sleep 2
+  done
+  [[ "${boards}" -ge 2 ]] && ok "Grafana : ${boards} tableaux ILL Watch provisionnés" || ko "Grafana : tableaux absents (${boards})"
+  if ((FAILED)); then die "${FAILED} contrôle(s) d'observabilité en échec."; fi
+}
+
 case "${1:-}" in
   up) cmd_up ;;
   check) cmd_check ;;
+  observability) cmd_observability ;;
   demo) cmd_demo ;;
   logs) need; secrets; docker compose logs -f --tail 100 ;;
-  down) need; secrets; docker compose down; ok "préproduction arrêtée (données conservées)" ;;
+  down) need; secrets; docker compose down --remove-orphans; ok "préproduction arrêtée (données conservées)" ;;
   purge)
     need; secrets
     read -r -p "Supprimer TOUTES les données de préproduction ? Taper PURGER : " answer
     [[ "${answer}" == "PURGER" ]] || die "abandon"
-    docker compose down --volumes
+    docker compose down --volumes --remove-orphans
+    docker volume rm illwatch-preprod_prometheus_data illwatch-preprod_grafana_data >/dev/null 2>&1 || true
     # Volumes de la préproduction nommés explicitement : ceux du développement ne sont jamais visés.
     docker volume rm illwatch_preprod_pgdata illwatch_preprod_redisdata >/dev/null 2>&1 || true
     rm -f "${ENV_FILE}"

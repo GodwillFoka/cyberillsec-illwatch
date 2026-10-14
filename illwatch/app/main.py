@@ -8,6 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from illwatch.app.api.health import router as health_router
+from illwatch.app.api.metrics import router as metrics_router
 from illwatch.app.api.taxii import TaxiiError, taxii_error_handler
 from illwatch.app.api.taxii import router as taxii_router
 from illwatch.app.api.v1.router import api_router
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
     app.add_exception_handler(TaxiiError, taxii_error_handler)
 
     app.include_router(health_router)
+    app.include_router(metrics_router)  # M11 — Prometheus (ADR-026)
     app.include_router(api_router, prefix=settings.api_v1_prefix)
     # M10 — partage STIX 2.1 / TAXII 2.1 en lecture seule (ADR-025)
     app.include_router(taxii_router)

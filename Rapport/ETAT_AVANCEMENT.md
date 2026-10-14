@@ -1,9 +1,16 @@
 # ILL Watch — État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **14/10/2026, 07 h 00**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **15/10/2026, 03 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
+
+> **15/10 — M10 livré, M11 livré.** M10 : campagnes et attribution par l'infrastructure
+> (ADR-024, PR #49), partage STIX 2.1 / serveur TAXII 2.1 en lecture seule (ADR-025, PR #50).
+> M11 : `/metrics` Prometheus, Prometheus + Grafana (10 alertes, 2 tableaux), scénario
+> d'acceptation en CI sur jeu figé, restauration testée en CI et chaque mois sur le VPS,
+> environnements dev → staging → production (ADR-026, PR #51). **M7 et la clôture de M11
+> attendent le VPS** (7 jours de staging) ; M9 et M10 restent à constater sur Kali.
 
 > **11-12/10 — Identité ILL Watch v2** (brand book, ADR-018) : nom affiché « ILL Watch » (identifiants
 > techniques inchangés), logo écu-radar, palette Nuit et Signal, Inter et JetBrains Mono, voix de la
@@ -38,8 +45,8 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, identité ILL Watch v2, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
 | M8 Detection & Correlation | ✅ clos le 14/10 | incréments 1 à 4 livrés : confiance (ADR-017), enrichissement (ADR-019), inventaire et corrélation CORR-01 à 03 (ADR-020), mesure 100 % / 0 % FP (`Rapport/M8_MESURE_13-10-2026.md`) ; passe réelle Kali ≈ 80 % FP → corrélation par version (ADR-021), données réelles 38 → 0 vrai positif (`Rapport/BILAN_M8.md`) |
 | M9 SOC Operations | 🟢 livré le 14/10 (ADR-022, PR #46) | critère constaté en CI (parcours L1 → L2 → L3, MTTR mesuré) ; scénario à rejouer sur Kali (`Rapport/BILAN_M9.md`) |
-| M10 CTI Intelligence Layer | 🟡 incrément 1 livré le 14/10 (ADR-023, PR #47) | technique ATT&CK par règle et acteur cité affichés (critère constaté en CI) ; restent campagnes/infrastructure et export STIX/TAXII ; `illwatch attack import` à lancer sur Kali |
-| M11 | ⏳ | exploiter (observabilité, environnements) |
+| M10 CTI Intelligence Layer | 🟢 livré le 15/10 (ADR-023 à 025, PR #47, #49, #50) | technique ATT&CK et acteur (critère constaté en CI) ; campagnes et attribution par l'infrastructure ; export STIX 2.1 et serveur TAXII 2.1 `/taxii2/` ; à constater sur Kali après `illwatch attack import` |
+| M11 Observability & Deployment | 🟢 livré le 15/10 (ADR-026, PR #51) | `/metrics`, Prometheus + Grafana vérifiés et capturés en CI, acceptation sur jeu figé, restauration testée ; clôture : 7 jours de staging sur le VPS (`Rapport/BILAN_M11.md`) |
 
 ## 3. Chantier en cours
 
@@ -58,6 +65,9 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 15/10 | PR #51 | **M11 Observability & Deployment** (ADR-026) : `/metrics` (HTTP par modèle de route, IOC, sources, collectes, synchronisations, incidents, refus d'authentification), Prometheus + Grafana (10 alertes, 2 tableaux générés), acceptation SOC en CI sur jeu figé, `scripts/restore-test.sh` mensuel, `docs/ENVIRONNEMENTS.md` |
+| 15/10 | PR #50 | **M10, incrément 3** (ADR-025) : serveur TAXII 2.1 en lecture seule `/taxii2/` (indicateurs, campagnes ; Bearer ou Basic), export STIX 2.1 (`/api/v1/stix/bundle`, `illwatch stix export`) ; infrastructure des campagnes repliée au-delà de 20 IOC |
+| 15/10 | PR #49 | **M10, incrément 2** (ADR-024) : campagnes, infrastructure (IOC rattachés par valeur ou description), attribution par l'infrastructure dans chasses, corrélations et incidents ; écran Campagnes |
 | 14/10 | PR #47 | **M10, incrément 1** (ADR-023) : référentiel MITRE ATT&CK importé (`illwatch attack import`), technique par règle, acteur cité en toutes lettres, contexte affiché dans chasses, corrélations et incidents |
 | 14/10 | PR #46 | **M9 SOC Operations** (ADR-022) : niveaux L1/L2/L3 et escalade motivée, liste d'exclusion des faux positifs (tâche 3.6), corrélation « faux positif » jamais rouverte, chasse depuis l'incident, recommandations de réponse, règles versionnées, écran Pilotage (MTTA, MTTR, délais cibles, charge) ; outillage de clôture de M7 (`scripts/deploy-vps.sh`, workflow « Clôture M7 ») |
 | 14/10 | PR #45 | **Clôture de M8** (`Rapport/BILAN_M8.md`) ; plages CIDR (type `NETWORK`) ; plateforme de l'actif ; calibration DGA sur Tranco et RULE-03 v2 (faux positifs 0,71 % → 0,094 %, détection 49,9 % → 64,1 %) |
@@ -145,14 +155,15 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 ## 8. Prochaines étapes
 
-1. **Sur Kali** : mettre à jour (PR #45 et #46 : `illwatch db upgrade` pour les migrations
-   `b7e4d2a9c613` et `c9f1a3e5b742`), essayer l'écran Pilotage, escalader un incident, lancer
-   une chasse depuis un incident ; rejouer le scénario d'acceptation → clôture de M9.
+1. **Sur Kali** (dans l'ordre) : `git pull`, `pip install -e .`, `illwatch db upgrade`
+   (migrations jusqu'à `e2c7a5b9d184`), `./scripts/build-web.sh`, `illwatch attack import`,
+   redémarrer uvicorn et le worker, `git push gitlab main`. Puis constater : M9 (escalade
+   L1 → L3, écran Pilotage), M10 (section ATT&CK, campagne, `curl /taxii2/`), M11
+   (`curl -s http://127.0.0.1:8000/metrics | grep illwatch_`).
 2. Renseigner la plateforme des actifs (« Kali Linux 2026.3 ») : le verdict « selon
    plateforme » devient tranché.
-3. **M7** : louer un VPS UE et un nom de domaine, puis `scripts/deploy-vps.sh install` et
-   inscrire le domaine dans `deploy/vps-domaine.txt` → workflow « Clôture M7 » (note TLS A).
-4. **M10** : sur Kali, `illwatch attack import` puis constater technique et acteur sur une
-   corrélation ou une chasse ; ensuite incréments 2 (campagnes, infrastructure) et 3 (export
-   STIX 2.1, serveur TAXII sortant).
-5. Suspendre RedEye tant que son serveur ne répond pas.
+3. **M7 puis M11** : louer un VPS UE et un nom de domaine, `scripts/deploy-vps.sh install`
+   (Prometheus et Grafana compris), inscrire le domaine dans `deploy/vps-domaine.txt` →
+   workflow « Clôture M7 » ; puis 7 jours de staging sans intervention → clôture de M11.
+4. Suspendre RedEye tant que son serveur ne répond pas ; régler le fuseau de la VM Kali.
+5. Après M11 : tag `v0.2.0`.

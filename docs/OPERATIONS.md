@@ -473,3 +473,16 @@ Côté consommateur (OpenCTI, MISP, `taxii2-client`) : découverte `https://<dom
 API root `…/taxii2/illwatch/`, authentification **Basic** avec le compte LECTEUR dédié (un
 compte par consommateur, désactivable seul). Les IOC exclus (faux positifs) ne sont jamais
 partagés. Les échecs d'authentification apparaissent dans le journal (`taxii.auth`).
+
+## Observabilité (M11, ADR-026)
+
+```bash
+curl -s http://127.0.0.1:8000/metrics | grep '^illwatch_'      # sur le poste ou le VPS
+./scripts/preprod-local.sh observability                       # Prometheus + Grafana locaux
+sudo ./scripts/restore-test.sh /srv/illwatch-backups           # test de restauration à la main
+```
+
+Sur le VPS, Prometheus (9090) et Grafana (3000) n'écoutent qu'en local : tunnel SSH (voir
+`docs/ENVIRONNEMENTS.md`). Tableaux « ILL Watch — Service » et « ILL Watch — Collecte et SOC ».
+Alerte à surveiller pendant les 7 jours de staging : `IllwatchFeedStale` (source sans succès
+depuis 3 intervalles) et `IllwatchNoCollection` (worker arrêté).

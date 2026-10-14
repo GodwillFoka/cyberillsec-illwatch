@@ -77,6 +77,7 @@ nav:
       - Architecture: ARCHITECTURE.md
       - Prise en main: ONBOARDING.md
       - Exploitation: OPERATIONS.md
+      - Environnements: ENVIRONNEMENTS.md
       - Décisions (ADR):
           - adr/README.md
           - ADR-001 Scoring composite: adr/ADR-001-scoring-composite.md
@@ -103,6 +104,8 @@ nav:
           - ADR-022 SOC Operations: adr/ADR-022-soc-operations.md
           - ADR-023 MITRE ATT&CK: adr/ADR-023-attack.md
           - ADR-024 Campagnes: adr/ADR-024-campagnes.md
+          - ADR-025 STIX / TAXII: adr/ADR-025-stix-taxii.md
+          - ADR-026 Observabilité: adr/ADR-026-observabilite.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:
