@@ -203,7 +203,13 @@ def cti() -> dict[str, Any]:
                 thresholds=[(None, "text")],
             ),
             panel(
-                lay, "Nouveaux IOC (24 h)", "stat", [("illwatch_indicators_new_24h", "")], w=6, h=4
+                lay,
+                "Nouveaux IOC (24 h)",
+                "stat",
+                [("illwatch_indicators_new_24h", "")],
+                w=6,
+                h=4,
+                thresholds=[(None, "text")],
             ),
             panel(
                 lay,
