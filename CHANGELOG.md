@@ -8,6 +8,15 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — M10, incrément 3 : partage STIX 2.1 / TAXII 2.1 (ADR-025)
+- Serveur TAXII 2.1 en lecture seule `/taxii2/` : collections « indicateurs » (IOC actifs,
+  pagination, `added_after`) et « campagnes » (acteurs ATT&CK, relations, infrastructure) ;
+  authentification Bearer ou Basic (limiteur de tentatives, audit des échecs).
+- Export STIX 2.1 : `GET /api/v1/stix/bundle`, `illwatch stix export` ; identifiants
+  déterministes, confiance 0–100, IOC exclus jamais partagés.
+- Écran Campagnes : infrastructure repliée au-delà de 20 IOC ; colonne d'activité masquée
+  sur mobile.
+
 ### Ajouté — M10, incrément 2 : campagnes (ADR-024)
 - Campagnes : infrastructure (IOC rattachés par valeur ou par description) et acteur ATT&CK ;
   écran Campagnes, `/api/v1/campaigns`, `illwatch campaigns create | attach | list`.

@@ -22,6 +22,7 @@ from illwatch.app.api.v1 import (
     incidents,
     indicators,
     settings,
+    stix,
     stream,
     users,
 )
@@ -59,6 +60,8 @@ api_router.include_router(exclusions.router)
 # M10 — CTI Intelligence Layer : référentiel MITRE ATT&CK (ADR-023)
 api_router.include_router(attack.router)
 api_router.include_router(campaigns.router)
+# M10 — export STIX 2.1 (ADR-025) ; le serveur TAXII 2.1 est monté hors /api (main.py)
+api_router.include_router(stix.router)
 
 # M7 — Production Hardening : journal d'audit de sécurité (ADR-011)
 api_router.include_router(audit.router)

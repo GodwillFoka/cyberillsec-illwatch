@@ -30,7 +30,17 @@ UI_CSP = (
     "form-action 'self'; frame-ancestors 'none'"
 )
 _PUBLIC_CACHE = {"Cache-Control": "public, max-age=3600"}
-_RESERVED_PREFIXES = ("/api/", "/docs", "/redoc", "/openapi.json", "/health", "/ready", "/assets/")
+_RESERVED_PREFIXES = (
+    "/api/",
+    "/docs",
+    "/redoc",
+    "/openapi.json",
+    "/health",
+    "/ready",
+    "/assets/",
+    "/taxii2",
+    "/metrics",
+)
 
 
 class _ImmutableAssets(StaticFiles):

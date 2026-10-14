@@ -460,3 +460,16 @@ illwatch campaigns create "Distribution QakBot" --actor S0650
 illwatch campaigns attach "Distribution QakBot" --contains "Qakbot"   # IOC décrits par…
 illwatch campaigns list
 ```
+
+### Partage STIX 2.1 / TAXII 2.1 (M10, ADR-025)
+
+```bash
+illwatch users create --username siem-partenaire --role viewer --email … --password …
+illwatch stix export -o illwatch-stix.json             # bundle ponctuel
+illwatch taxii discover https://<domaine>/taxii2/      # vérification avec notre propre client
+```
+
+Côté consommateur (OpenCTI, MISP, `taxii2-client`) : découverte `https://<domaine>/taxii2/`,
+API root `…/taxii2/illwatch/`, authentification **Basic** avec le compte LECTEUR dédié (un
+compte par consommateur, désactivable seul). Les IOC exclus (faux positifs) ne sont jamais
+partagés. Les échecs d'authentification apparaissent dans le journal (`taxii.auth`).

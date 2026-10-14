@@ -428,6 +428,7 @@ def _register_subcommands() -> None:
     from illwatch.cli.incidents import incidents
     from illwatch.cli.soc import soc
     from illwatch.cli.status import status
+    from illwatch.cli.stix import stix
     from illwatch.cli.taxii import taxii
 
     cli.add_command(assets)
@@ -445,6 +446,7 @@ def _register_subcommands() -> None:
     cli.add_command(soc)
     cli.add_command(taxii)
     cli.add_command(status)
+    cli.add_command(stix)
 
 
 _register_subcommands()
