@@ -124,6 +124,7 @@ def service() -> dict[str, Any]:
                 w=6,
                 h=4,
                 unit="dateTimeFromNow",
+                thresholds=[(None, "text")],
             ),
             panel(
                 lay,

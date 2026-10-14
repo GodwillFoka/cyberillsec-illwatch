@@ -16,7 +16,10 @@ from playwright.sync_api import sync_playwright
 BASE = sys.argv[1].rstrip("/")
 OUT = Path(sys.argv[2])
 TOKEN = base64.b64encode(f"admin:{os.environ['GRAFANA_ADMIN_PASSWORD']}".encode()).decode()
-BOARDS = [("14-grafana-service", "illwatch-service"), ("15-grafana-collecte", "illwatch-cti")]
+BOARDS = [
+    ("14-grafana-service", "illwatch-service", "API joignable"),
+    ("15-grafana-collecte", "illwatch-cti", "IOC actifs"),
+]
 
 
 def main() -> int:
@@ -34,35 +37,30 @@ def main() -> int:
             locale="fr-FR",
             timezone_id="Europe/Paris",
         )
-        page = context.new_page()
-        console: list[str] = []
-        page.on(
-            "console",
-            lambda m: console.append(f"{m.type}: {m.text}") if m.type == "error" else None,
-        )
-        page.on("pageerror", lambda e: console.append(f"exception : {e}"))
-        page.on("requestfailed", lambda r: console.append(f"échec {r.url} {r.failure}"))
-        page.on(
-            "response",
-            lambda r: console.append(f"HTTP {r.status} {r.url}") if r.status >= 400 else None,
-        )
-        for name, uid in BOARDS:
-            console.clear()
+        for name, uid, first_panel in BOARDS:
+            page = context.new_page()  # page neuve : aucun état d'un tableau précédent
+            console: list[str] = []
+            page.on(
+                "console",
+                lambda m, log=console: (
+                    log.append(f"{m.type}: {m.text}") if m.type == "error" else None
+                ),
+            )
+            page.on("pageerror", lambda e, log=console: log.append(f"exception : {e}"))
             page.goto(f"{BASE}/d/{uid}?orgId=1&from=now-30m&to=now&kiosk", wait_until="load")
             try:
-                page.wait_for_selector(".react-grid-layout", timeout=45_000)
+                page.get_by_text(first_panel, exact=True).first.wait_for(timeout=45_000)
             except Exception:  # noqa: BLE001 - signalé ci-dessous, avec la capture
-                console.append("grille du tableau absente après 45 s")
-            page.wait_for_timeout(5000)
-            if page.locator("text=failed to load its application files").first.is_visible():
-                problems.append(f"{uid} : interface Grafana non chargée")
+                problems.append(f"{uid} : panneau « {first_panel} » absent après 45 s")
                 problems += [f"{uid} : {line[:300]}" for line in console[:8]]
+            page.wait_for_timeout(5000)
             if page.locator("text=Dashboard not found").count():
                 problems.append(f"{uid} : tableau absent")
             errors = page.locator('[data-testid="data-testid Panel status error"]').count()
             if errors:
                 problems.append(f"{uid} : {errors} panneau(x) en erreur")
             page.screenshot(path=str(OUT / f"{name}.png"), full_page=True)
+            page.close()
             print(f"{name}.png")
         browser.close()
     for problem in problems:
