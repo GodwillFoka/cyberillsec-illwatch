@@ -60,3 +60,8 @@ docs/code_of_conduct.md
 # Rapports d'analyse GitLab (Container Scanning, SBOM) téléchargés localement
 gl-*-report*.json
 gl-sbom-*.json
+
+# Sauvegardes de la base (scripts/backup.sh) : comptes et renseignement, jamais versionnées
+backups/
+*.dump
+*.dump.sha256
