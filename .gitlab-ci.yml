@@ -257,6 +257,7 @@ container_scanning:
 #Publication de l'interface d'accueil du document de presentation.
 pages:
   stage: build
+  needs: []
   image: alpine:3.20
   script:
     - mkdir -p public/assets
@@ -269,3 +270,4 @@ pages:
       - public
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+ 
