@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ILL Watch — veille sur la menace open source pour les équipes SOC</title>
+<meta name="description" content="ILL Watch dit chaque matin à une petite équipe SOC quelle faille corriger, quelle adresse bloquer et quel incident traiter en premier. Open source (MIT), auto-hébergé, moins de 256 Mo de mémoire.">
+<meta property="og:title" content="ILL Watch — Patcher ce qui est exploité, pas ce qui fait peur.">
+<meta property="og:description" content="Plateforme de veille sur la menace open source pour les équipes SOC de 1 à 10 personnes. Par CYBERILL.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a0e1a">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<style>
+body{margin:0;background:#0a0e1a}
+a{color:#22d3ee}a:hover{color:#8fe9f7}
+a:focus-visible{outline:2px solid #22d3ee;outline-offset:2px}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+@media (max-width: 640px){h1{font-size:40px !important;line-height:46px !important}h2{font-size:28px !important;line-height:36px !important}}
+</style>
+</head>
+<body>
+<div style="width: 100%; background: #0a0e1a; color: #eceff5; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 16px; line-height: 26px;">
+
+<header style="border-bottom: 1px solid #222c42; background: #0d1220;">
+<nav aria-label="Navigation principale" style="max-width: 1200px; margin: 0 auto; padding: 16px 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
+<a href="#haut" style="display: flex; align-items: center; flex-grow: 1;"><img src="assets/illwatch-logo-dark.svg" alt="ILL Watch" style="height: 36px; width: auto;"></a>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; font-size: 15px;">
+<a href="#fonctionnement" style="color: #a3acbf; text-decoration: none;">Fonctionnement</a>
+<a href="#preuves" style="color: #a3acbf; text-decoration: none;">Preuves</a>
+<a href="#installer" style="color: #a3acbf; text-decoration: none;">Installer</a>
+<a href="https://godwillfoka.github.io/cyberillsec-illwatch/" style="color: #a3acbf; text-decoration: none;">Documentation</a>
+<a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid #34405a; border-radius: 8px; color: #eceff5; text-decoration: none; font-weight: 500;">Voir sur GitLab</a>
+</div>
+</nav>
+</header>
+
+<section id="haut" style="position: relative; overflow: hidden; border-bottom: 1px solid #222c42;">
+<svg aria-hidden="true" viewBox="0 0 600 600" style="position: absolute; right: -180px; top: -140px; width: 640px; height: 640px; opacity: 0.18;"><g fill="none" stroke="#22d3ee" stroke-width="1.5"><circle cx="300" cy="300" r="90"></circle><circle cx="300" cy="300" r="170"></circle><circle cx="300" cy="300" r="250"></circle></g></svg>
+<div style="position: relative; max-width: 1200px; margin: 0 auto; padding: 88px 32px 96px; display: flex; flex-wrap: wrap; gap: 56px; align-items: center;">
+<div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+<p style="margin: 0; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Veille sur la menace open source · par CYBERILL</p>
+<h1 style="margin: 0; font-size: 56px; line-height: 62px; font-weight: 800; letter-spacing: -0.02em; text-wrap: balance;">Patcher ce qui est exploité, pas ce qui fait peur.</h1>
+<p style="margin: 0; font-size: 19px; line-height: 30px; color: #c9cfdb; max-width: 600px;">ILL Watch dit chaque matin à une petite équipe SOC quelle faille corriger, quelle adresse bloquer et quel incident traiter en premier. Open source, auto-hébergé, moins de 256 Mo de mémoire.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 8px;">
+<a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch#démarrage-rapide" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; border-radius: 8px; background: #e6681b; color: #1b0d04; font-weight: 600; text-decoration: none;">Essayer ILL Watch</a>
+<a href="https://godwillfoka.github.io/cyberillsec-illwatch/" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; border-radius: 8px; border: 1px solid #34405a; color: #eceff5; font-weight: 500; text-decoration: none;">Lire la documentation</a>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #a3acbf;">Licence MIT · version de pré-production (v0.1.1 publiée, v0.2.0 en cours) : à évaluer en laboratoire.</p>
+</div>
+
+<div style="flex: 1 1 380px; min-width: 0; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+<p style="margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Failles en base</p>
+<div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+<span style="font-size: 40px; line-height: 44px; font-weight: 800; font-variant-numeric: tabular-nums;">26 416</span>
+<span style="font-size: 15px; color: #a3acbf;">CVE suivies</span>
+</div>
+<div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+<span style="font-size: 40px; line-height: 44px; font-weight: 800; color: #22d3ee; font-variant-numeric: tabular-nums;">495</span>
+<span style="font-size: 15px; color: #a3acbf;">à corriger sous 24 h</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding-top: 8px; border-top: 1px solid #222c42;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 8px;"><span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 6px; background: #3b1518; color: #ff9b9e; font-size: 12px; font-weight: 600;"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 3px; background: #ff9b9e;"></span>P0 · 24 h</span><span style="font-size: 15px; font-variant-numeric: tabular-nums;">495</span></div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;"><span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 6px; background: #3a2c0c; color: #f7cb70; font-size: 12px; font-weight: 600;"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 3px; background: #f7cb70;"></span>P1 · 7 jours</span><span style="font-size: 15px; font-variant-numeric: tabular-nums;">1 239</span></div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;"><span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 6px; background: #122848; color: #9bc2ff; font-size: 12px; font-weight: 600;"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 3px; background: #9bc2ff;"></span>P2 · 30 jours</span><span style="font-size: 15px; font-variant-numeric: tabular-nums;">36</span></div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;"><span style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 6px; background: #1e2535; color: #c6cdd9; font-size: 12px; font-weight: 600;"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 3px; background: #c6cdd9;"></span>P3 · maintenance</span><span style="font-size: 15px; font-variant-numeric: tabular-nums;">24 646</span></div>
+</div>
+<p style="margin: 0; font-size: 12px; line-height: 16px; color: #a3acbf;">Données réelles, poste de développement, 07/10/2026. Les 1 734 CVE du catalogue CISA KEV sont toutes en P0 ou P1.</p>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="titre-probleme" style="border-bottom: 1px solid #222c42;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 80px 32px; display: flex; flex-direction: column; gap: 32px;">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 760px;">
+<p style="margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Le problème</p>
+<h2 id="titre-probleme" style="margin: 0; font-size: 36px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em;">Trop de failles, trop d'outils, pas assez de temps.</h2>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px;">
+<div style="flex: 1 1 300px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Le CVSS seul trie mal</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">Il mesure la gravité technique, pas l'exploitation. Une équipe qui patche par CVSS passe ses nuits sur des failles que personne n'attaque.</p>
+</div>
+<div style="flex: 1 1 300px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Les plateformes complètes sont lourdes</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">OpenCTI demande au minimum 8 Go de RAM pour la plateforme et 8 Go pour son moteur de recherche, plus Redis, RabbitMQ et un stockage objet (<a href="https://docs.opencti.io/latest/deployment/overview/">documentation OpenCTI</a>).</p>
+</div>
+<div style="flex: 1 1 300px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">NIS 2 et DORA demandent des preuves</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">Veille active, réponse tracée, notification d'incident dans des délais courts : il faut pouvoir montrer ce qui a été fait, et quand.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="fonctionnement" aria-labelledby="titre-fonctionnement" style="border-bottom: 1px solid #222c42;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 80px 32px; display: flex; flex-direction: column; gap: 32px;">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 760px;">
+<p style="margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Fonctionnement</p>
+<h2 id="titre-fonctionnement" style="margin: 0; font-size: 36px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em;">Le travail répétitif est fait. Il vous reste les décisions.</h2>
+</div>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 16px;">
+<li style="flex: 1 1 240px; border-top: 2px solid #22d3ee; padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 13px; color: #22d3ee;">01</span>
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Collecter</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">NVD 2.0, CISA KEV, FIRST EPSS, AlienVault OTX, STIX et TAXII 2.1, flux CSV et JSON. Indicateurs dédupliqués, provenance gardée.</p>
+</li>
+<li style="flex: 1 1 240px; border-top: 2px solid #22d3ee; padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 13px; color: #22d3ee;">02</span>
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Prioriser</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">Un score de 0 à 100 par CVE, fondé sur l'exploitation réelle, recalculé à chaque changement, avec alerte au franchissement du seuil.</p>
+</li>
+<li style="flex: 1 1 240px; border-top: 2px solid #22d3ee; padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 13px; color: #22d3ee;">03</span>
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Répondre</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">Incident ouvert depuis une alerte, cycle NIST SP 800-61, chronologie que personne ne peut modifier ni effacer.</p>
+</li>
+<li style="flex: 1 1 240px; border-top: 2px solid #22d3ee; padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 13px; color: #22d3ee;">04</span>
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Chasser</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">Six règles déterministes sur vos journaux : Tor, DNS dynamique, DGA, infrastructures ransomware, CVE exploitables sur votre inventaire.</p>
+</li>
+</ol>
+</div>
+</section>
+
+<section aria-labelledby="titre-score" style="border-bottom: 1px solid #222c42; background: #0d1220;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 80px 32px; display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start;">
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+<p style="margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Le score</p>
+<h2 id="titre-score" style="margin: 0; font-size: 36px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em;">Chaque point se justifie.</h2>
+<p style="margin: 0; font-size: 17px; line-height: 28px; color: #c9cfdb;">Une CVSS 10,0 sans exploitation observée plafonne à 30 sur 100 et ne réveille personne la nuit. Une faille du catalogue KEV ne descend jamais sous P1, même quand EPSS manque.</p>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">Décomposition et historique de chaque score disponibles dans l'interface et par l'API.</p>
+</div>
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+<div style="background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 20px 24px; overflow-x: auto;">
+<code style="font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 15px; line-height: 24px; color: #eceff5; white-space: nowrap;">R = min(100, CVSS×3 + EPSS×25 + KEV×25 + Exploit×10 + Ransomware×10)</code>
+</div>
+<div style="background: #121a2b; border: 1px solid #222c42; border-radius: 12px; overflow-x: auto;">
+<table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px;">
+<thead><tr style="background: #0f1626;"><th scope="col" style="text-align: left; padding: 12px 16px; font-weight: 600; color: #a3acbf;">Composante</th><th scope="col" style="text-align: left; padding: 12px 16px; font-weight: 600; color: #a3acbf;">Source</th><th scope="col" style="text-align: right; padding: 12px 16px; font-weight: 600; color: #a3acbf;">Max</th></tr></thead>
+<tbody>
+<tr style="border-top: 1px solid #222c42;"><td style="padding: 12px 16px;">Sévérité technique</td><td style="padding: 12px 16px; color: #a3acbf;">CVSS v3.1, NVD</td><td style="padding: 12px 16px; text-align: right; font-variant-numeric: tabular-nums;">30</td></tr>
+<tr style="border-top: 1px solid #222c42;"><td style="padding: 12px 16px;">Probabilité d'exploitation à 30 jours</td><td style="padding: 12px 16px; color: #a3acbf;">EPSS, FIRST</td><td style="padding: 12px 16px; text-align: right; font-variant-numeric: tabular-nums;">25</td></tr>
+<tr style="border-top: 1px solid #222c42;"><td style="padding: 12px 16px;">Exploitation avérée</td><td style="padding: 12px 16px; color: #a3acbf;">CISA KEV</td><td style="padding: 12px 16px; text-align: right; font-variant-numeric: tabular-nums;">25</td></tr>
+<tr style="border-top: 1px solid #222c42;"><td style="padding: 12px 16px;">Exploit public documenté</td><td style="padding: 12px 16px; color: #a3acbf;">Références NVD</td><td style="padding: 12px 16px; text-align: right; font-variant-numeric: tabular-nums;">10</td></tr>
+<tr style="border-top: 1px solid #222c42;"><td style="padding: 12px 16px;">Campagne ransomware confirmée</td><td style="padding: 12px 16px; color: #a3acbf;">CISA KEV</td><td style="padding: 12px 16px; text-align: right; font-variant-numeric: tabular-nums;">10</td></tr>
+</tbody>
+</table>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #a3acbf;">R ≥ 80 : P0, correctif sous 24 h · 60 à 79 : P1, 7 jours · 40 à 59 : P2, 30 jours · sous 40 : P3.</p>
+</div>
+</div>
+</section>
+
+<section id="preuves" aria-labelledby="titre-preuves" style="border-bottom: 1px solid #222c42;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 80px 32px; display: flex; flex-direction: column; gap: 32px;">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 760px;">
+<p style="margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Preuves</p>
+<h2 id="titre-preuves" style="margin: 0; font-size: 36px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em;">Vérifié, pas déclaré.</h2>
+<p style="margin: 0; font-size: 17px; line-height: 28px; color: #c9cfdb;">Chaque chiffre ci-dessous a été constaté par l'outil ou par la CI publique, sur données réelles.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px;">
+<div style="flex: 1 1 260px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 36px; line-height: 44px; font-weight: 800; color: #22d3ee; font-variant-numeric: tabular-nums;">48/48</span><span style="font-size: 15px; line-height: 22px;">étapes du scénario SOC, rejouées chaque lundi sur les vraies sources</span></div>
+<div style="flex: 1 1 260px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 36px; line-height: 44px; font-weight: 800; color: #22d3ee; font-variant-numeric: tabular-nums;">0</span><span style="font-size: 15px; line-height: 22px;">faille exploitée (CISA KEV) sous P1, sur 1 734</span></div>
+<div style="flex: 1 1 260px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 36px; line-height: 44px; font-weight: 800; color: #22d3ee; font-variant-numeric: tabular-nums;">&lt; 256 Mo</span><span style="font-size: 15px; line-height: 22px;">de mémoire ; pic à 120 Mo pour 37 000 indicateurs ingérés</span></div>
+<div style="flex: 1 1 260px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 36px; line-height: 44px; font-weight: 800; color: #22d3ee; font-variant-numeric: tabular-nums;">528 453</span><span style="font-size: 15px; line-height: 22px;">indicateurs (IOC) tenus sur un poste, tableau de bord en 0,63 s</span></div>
+<div style="flex: 1 1 260px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 36px; line-height: 44px; font-weight: 800; color: #22d3ee; font-variant-numeric: tabular-nums;">≈ 94 %</span><span style="font-size: 15px; line-height: 22px;">de couverture de tests, sur PostgreSQL réel, Python 3.12 et 3.14</span></div>
+<div style="flex: 1 1 260px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 36px; line-height: 44px; font-weight: 800; color: #22d3ee; font-variant-numeric: tabular-nums;">0</span><span style="font-size: 15px; line-height: 22px;">vulnérabilité critique dans l'image ; 0 constat SAST, 0 vrai secret dans l'historique Git</span></div>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 20px; color: #a3acbf;">Sources : rapports d'avancement des 06, 07 et 08/10/2026 (<a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch/-/tree/main/Rapport">dossier Rapport du dépôt</a>).</p>
+</div>
+</section>
+
+<section aria-labelledby="titre-comparaison" style="border-bottom: 1px solid #222c42;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 80px 32px; display: flex; flex-direction: column; gap: 32px;">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 760px;">
+<p style="margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Pour qui</p>
+<h2 id="titre-comparaison" style="margin: 0; font-size: 36px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em;">À la mesure d'une équipe de 1 à 10 personnes.</h2>
+<p style="margin: 0; font-size: 17px; line-height: 28px; color: #c9cfdb;">ILL Watch ne remplace pas un graphe de connaissances CTI complet. Il répond aux questions du lundi matin : quoi patcher d'abord, quoi bloquer, qu'est-ce qui a changé.</p>
+</div>
+<div style="background: #121a2b; border: 1px solid #222c42; border-radius: 12px; overflow-x: auto;">
+<table style="width: 100%; min-width: 620px; border-collapse: collapse; font-size: 15px; line-height: 22px;">
+<thead><tr style="background: #0f1626;"><th scope="col" style="text-align: left; padding: 14px 20px; font-weight: 600; color: #a3acbf;"></th><th scope="col" style="text-align: left; padding: 14px 20px; font-weight: 600; color: #a3acbf;">Plateforme CTI complète (ex. OpenCTI)</th><th scope="col" style="text-align: left; padding: 14px 20px; font-weight: 600; color: #eceff5;">ILL Watch</th></tr></thead>
+<tbody>
+<tr style="border-top: 1px solid #222c42;"><th scope="row" style="text-align: left; padding: 14px 20px; font-weight: 500;">Mémoire minimale</th><td style="padding: 14px 20px; color: #a3acbf;">8 Go plateforme + 8 Go recherche</td><td style="padding: 14px 20px;">moins de 256 Mo</td></tr>
+<tr style="border-top: 1px solid #222c42;"><th scope="row" style="text-align: left; padding: 14px 20px; font-weight: 500;">Services à opérer</th><td style="padding: 14px 20px; color: #a3acbf;">plateforme, moteur de recherche, Redis, RabbitMQ, stockage objet</td><td style="padding: 14px 20px;">PostgreSQL et Redis</td></tr>
+<tr style="border-top: 1px solid #222c42;"><th scope="row" style="text-align: left; padding: 14px 20px; font-weight: 500;">Priorisation des CVE par l'exploitation</th><td style="padding: 14px 20px; color: #a3acbf;">via connecteurs</td><td style="padding: 14px 20px;">native : KEV, EPSS, exploit public</td></tr>
+<tr style="border-top: 1px solid #222c42;"><th scope="row" style="text-align: left; padding: 14px 20px; font-weight: 500;">Licence</th><td style="padding: 14px 20px; color: #a3acbf;">open source</td><td style="padding: 14px 20px;">MIT</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+
+<section id="installer" aria-labelledby="titre-installer" style="border-bottom: 1px solid #222c42; background: #0d1220;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 80px 32px; display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start;">
+<div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+<p style="margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Installer</p>
+<h2 id="titre-installer" style="margin: 0; font-size: 36px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em;">Une image, deux services, votre serveur.</h2>
+<p style="margin: 0; font-size: 17px; line-height: 28px; color: #c9cfdb;">L'image est publiée à chaque release. Vos données ne quittent pas votre infrastructure ; l'enrichissement des adresses IP fonctionne hors ligne.</p>
+<a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch/-/blob/main/docs/OPERATIONS.md" style="font-size: 15px;">Guide d'exploitation complet</a>
+</div>
+<div style="flex: 1 1 520px; min-width: 0; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 20px 24px; overflow-x: auto;">
+<pre style="margin: 0; font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: 14px; line-height: 24px; color: #eceff5;"><span style="color: #a3acbf;"># Image publiée sur GitHub Container Registry</span>
+docker pull ghcr.io/godwillfoka/cyberillsec-illwatch:latest
+
+<span style="color: #a3acbf;"># Configuration, puis démarrage derrière TLS (Caddy)</span>
+cp .env.example .env
+export ILLWATCH_IMAGE=ghcr.io/godwillfoka/cyberillsec-illwatch:latest
+docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+  --profile full up -d --no-build</pre>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="titre-rssi" style="border-bottom: 1px solid #222c42;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 80px 32px; display: flex; flex-direction: column; gap: 32px;">
+<div style="display: flex; flex-direction: column; gap: 12px; max-width: 760px;">
+<p style="margin: 0; font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #a3acbf;">Pour les RSSI</p>
+<h2 id="titre-rssi" style="margin: 0; font-size: 36px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em;">Le jour de l'audit, la preuve est là.</h2>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px;">
+<div style="flex: 1 1 300px; border-left: 0; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Chronologie immuable</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">La chronologie d'incident et le journal d'audit refusent modification, suppression et vidage, jusque dans PostgreSQL.</p>
+</div>
+<div style="flex: 1 1 300px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Qui a fait quoi, quand</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">Connexions, refus d'accès, exports, chasses et administration journalisés avec l'acteur, l'adresse et l'identifiant de requête.</p>
+</div>
+<div style="flex: 1 1 300px; background: #121a2b; border: 1px solid #222c42; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+<h3 style="margin: 0; font-size: 18px; line-height: 26px; font-weight: 600;">Auto-hébergé, ouvert</h3>
+<p style="margin: 0; font-size: 15px; line-height: 24px; color: #a3acbf;">Sur votre serveur, dans l'UE si vous le choisissez. Code sous licence MIT, décisions d'architecture publiques et documentées.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="titre-testeurs" style="position: relative; overflow: hidden; background: #20155c;">
+<svg aria-hidden="true" viewBox="0 0 600 600" style="position: absolute; left: -220px; bottom: -260px; width: 600px; height: 600px; opacity: 0.22;"><g fill="none" stroke="#22d3ee" stroke-width="1.5"><circle cx="300" cy="300" r="110"></circle><circle cx="300" cy="300" r="200"></circle><circle cx="300" cy="300" r="290"></circle></g></svg>
+<div style="position: relative; max-width: 880px; margin: 0 auto; padding: 88px 32px; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center;">
+<h2 id="titre-testeurs" style="margin: 0; font-size: 36px; line-height: 44px; font-weight: 800; letter-spacing: -0.01em; color: #ffffff;">Nous cherchons 30 équipes SOC pour l'essayer.</h2>
+<p style="margin: 0; font-size: 18px; line-height: 28px; color: #ffffff;">Une installation, une semaine de veille, un avis franc. Vos priorités entrent dans la feuille de route : la corrélation indicateurs × CVE × actifs est en cours.</p>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding-top: 8px;">
+<a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch#démarrage-rapide" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; border-radius: 8px; background: #e6681b; color: #1b0d04; font-weight: 600; text-decoration: none;">Essayer ILL Watch</a>
+<a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch/-/issues" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; border-radius: 8px; border: 1px solid #ffffff; color: #ffffff; font-weight: 500; text-decoration: none;">Donner votre avis</a>
+</div>
+</div>
+</section>
+
+<footer style="background: #0d1220;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px 32px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between;">
+<img src="assets/illwatch-logo-endorsed-dark.svg" alt="ILL Watch par CYBERILL" style="height: 40px; width: auto;">
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #a3acbf;">Voir la menace avant qu'elle ne vous voie. · MIT © CYBERILL, Berlin · <a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch/-/blob/main/SECURITY.md">Signaler une vulnérabilité</a></p>
+</div>
+</footer>
+
+</div>
+</body>
+</html>
