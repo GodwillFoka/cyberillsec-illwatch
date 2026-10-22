@@ -252,3 +252,19 @@ container_scanning:
   variables:
     CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   allow_failure: true
+
+#Publication de l'interface d'accueil du document de presentation.
+pages:
+  stage: build
+  image: alpine:3.20
+  script:
+    - mkdir -p public/assets
+    - cp site/index.html public/index.html
+    - cp docs/assets/*.svg public/assets/
+    - test -f public/assets/illwatch-logo-dark.svg
+    - test -f public/assets/illwatch-logo-endorsed-dark.svg
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
