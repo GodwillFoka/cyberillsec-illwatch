@@ -68,3 +68,4 @@ backups/
 
 # Site de présentation (ADR-027)
 Website/captures/
+!Website/src/data/
