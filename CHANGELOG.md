@@ -8,6 +8,22 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Site de présentation, lot S1 (ADR-027)
+- Dossier `Website/` : site de présentation international, distinct de la documentation et de
+  l'application, en **cinq langues** (français, anglais, allemand, espagnol, chinois simplifié).
+- Choix automatique de la langue à la première visite : choix mémorisé, langue du navigateur,
+  pays (IP côté serveur au lot S6 ; fuseau horaire tant que le site est statique), anglais.
+- Générateur statique sans dépendance (`node Website/build.mjs`) : clé de traduction manquante,
+  style ou script en ligne, ressource tierce, lien cassé ou budget de poids dépassé font
+  échouer la construction ; CSP `script-src 'self'; style-src 'self'`.
+- Accueil : promesse, chiffres constatés datés (`Website/src/data/facts.json`), modules, visite
+  des écrans (captures de la CI), **simulateur de priorité CVE** à la formule du moteur
+  (parité vérifiée par `tests/test_site_score_parity.py` et `node --test`), pipeline,
+  preuves de confiance, feuille de route.
+- Workflow « Site web » : construction, tests, captures grand écran et téléphone des cinq
+  langues, contrôle de la détection de langue.
+- Feuille de route du site : `Website/ROADMAP.md`.
+
 ### Ajouté — M11 Observability & Deployment (ADR-026)
 - `GET /metrics` (format Prometheus, sans dépendance) : requêtes HTTP par modèle de route et
   statut, durées ; IOC actifs, sources (état, dernier succès), collectes 24 h,

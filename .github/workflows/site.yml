@@ -1,0 +1,68 @@
+# ============================================================================
+# ILL Watch — Site de présentation (ADR-027)
+# Construction sans dépendance, tests, captures grand écran et téléphone des cinq langues,
+# contrôle de la détection de langue. Publication : lot S6 (VPS, derrière Caddy).
+# ============================================================================
+name: Site web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Website/**"
+      - "docs/assets/**"
+      - "illwatch/modules/cve_tracker/scoring.py"
+      - "tests/test_site_score_parity.py"
+      - ".github/workflows/site.yml"
+  pull_request:
+    paths:
+      - "Website/**"
+      - "docs/assets/**"
+      - "illwatch/modules/cve_tracker/scoring.py"
+      - "tests/test_site_score_parity.py"
+      - ".github/workflows/site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    name: Construction, tests et captures
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Construction et contrôles
+        run: node Website/build.mjs
+
+      - name: Tests (simulateur, choix de la langue)
+        run: node --test Website/tests/*.test.mjs
+
+      - name: Parité simulateur ↔ moteur
+        run: |
+          python -m pip install --quiet pytest
+          PYTHONPATH=. python -m pytest -q -p no:cacheprovider --noconftest tests/test_site_score_parity.py
+
+      - name: Captures et contrôles navigateur
+        run: |
+          python -m pip install --quiet "playwright==1.49.1"
+          python -m playwright install --with-deps chromium >/dev/null
+          python -m http.server 8080 -d Website/dist >/dev/null 2>&1 &
+          sleep 1
+          python Website/scripts/captures.py http://127.0.0.1:8080 Website/captures
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: site-web
+          path: |
+            Website/dist
+            Website/captures
+          retention-days: 14

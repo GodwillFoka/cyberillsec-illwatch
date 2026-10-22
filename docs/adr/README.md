@@ -32,6 +32,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [024](ADR-024-campagnes.md) | M10, incrément 2 : campagnes, infrastructure (IOC rattachés), attribution par l'infrastructure | Accepté |
 | [025](ADR-025-stix-taxii.md) | M10, incrément 3 : export STIX 2.1 et serveur TAXII 2.1 en lecture seule (Bearer ou Basic) | Accepté |
 | [026](ADR-026-observabilite.md) | M11 : métriques Prometheus, Grafana, alertes, environnements, acceptation en CI, restauration mensuelle | Accepté |
+| [027](ADR-027-site-de-presentation.md) | Site de présentation international `Website/` : 5 langues, choix automatique (navigateur puis pays), générateur sans dépendance, CSP stricte | Accepté |
 
 ## Gabarit
 

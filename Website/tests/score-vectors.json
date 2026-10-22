@@ -1,0 +1,200 @@
+{
+  "_comment": "Cas partagés : Website/tests/score.test.mjs (simulateur du site) et tests/test_site_score_parity.py (moteur) doivent donner ces résultats (ADR-027, décision 6).",
+  "cases": [
+    {
+      "name": "vide",
+      "input": {
+        "cvss": 0,
+        "epss": 0,
+        "kev": false,
+        "exploit": false,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 0.0,
+        "priority": "P3",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "maximum borné à 100",
+      "input": {
+        "cvss": 10,
+        "epss": 1,
+        "kev": true,
+        "exploit": true,
+        "ransomware": true
+      },
+      "expected": {
+        "total": 100.0,
+        "priority": "P0",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "préréglage critique et exploitée",
+      "input": {
+        "cvss": 9.8,
+        "epss": 0.94,
+        "kev": true,
+        "exploit": true,
+        "ransomware": true
+      },
+      "expected": {
+        "total": 97.9,
+        "priority": "P0",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "préréglage grave mais théorique",
+      "input": {
+        "cvss": 9.1,
+        "epss": 0.02,
+        "kev": false,
+        "exploit": false,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 27.8,
+        "priority": "P3",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "préréglage modérée mais exploitée (plancher KEV)",
+      "input": {
+        "cvss": 6.5,
+        "epss": 0.15,
+        "kev": true,
+        "exploit": false,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 48.25,
+        "priority": "P1",
+        "kevFloor": true
+      }
+    },
+    {
+      "name": "départ du simulateur",
+      "input": {
+        "cvss": 7.5,
+        "epss": 0.18,
+        "kev": true,
+        "exploit": true,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 62.0,
+        "priority": "P1",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "seuil P0 exact (80)",
+      "input": {
+        "cvss": 10,
+        "epss": 0.2,
+        "kev": true,
+        "exploit": true,
+        "ransomware": true
+      },
+      "expected": {
+        "total": 80.0,
+        "priority": "P0",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "juste sous P0",
+      "input": {
+        "cvss": 10,
+        "epss": 0.19,
+        "kev": true,
+        "exploit": true,
+        "ransomware": true
+      },
+      "expected": {
+        "total": 79.75,
+        "priority": "P1",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "seuil P1 exact (60)",
+      "input": {
+        "cvss": 10,
+        "epss": 0.2,
+        "kev": true,
+        "exploit": false,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 60.0,
+        "priority": "P1",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "seuil P2 exact (40)",
+      "input": {
+        "cvss": 10,
+        "epss": 0.4,
+        "kev": false,
+        "exploit": false,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 40.0,
+        "priority": "P2",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "plancher KEV sur score bas",
+      "input": {
+        "cvss": 0,
+        "epss": 0,
+        "kev": true,
+        "exploit": false,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 25.0,
+        "priority": "P1",
+        "kevFloor": true
+      }
+    },
+    {
+      "name": "KEV déjà en P1 sans plancher",
+      "input": {
+        "cvss": 8,
+        "epss": 0.04,
+        "kev": true,
+        "exploit": true,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 60.0,
+        "priority": "P1",
+        "kevFloor": false
+      }
+    },
+    {
+      "name": "EPSS au centième",
+      "input": {
+        "cvss": 5.3,
+        "epss": 0.37,
+        "kev": false,
+        "exploit": true,
+        "ransomware": false
+      },
+      "expected": {
+        "total": 35.15,
+        "priority": "P3",
+        "kevFloor": false
+      }
+    }
+  ]
+}
