@@ -1,4 +1,4 @@
-"""Génère les tableaux Grafana d'ILL Watch (M11, ADR-026).
+"""Génère les tableaux Grafana d'ILLWATCH (M11, ADR-026).
 
     python3 scripts/grafana_dashboards.py  # écrit deploy/observability/grafana/dashboards/*.json
 
@@ -101,7 +101,7 @@ def service() -> dict[str, Any]:
     ok = [(None, "red"), (1, "green")]
     return dashboard(
         "illwatch-service",
-        "ILL Watch — Service",
+        "ILLWATCH — Service",
         [
             panel(
                 lay,
@@ -191,7 +191,7 @@ def cti() -> dict[str, Any]:
     lay = Layout()
     return dashboard(
         "illwatch-cti",
-        "ILL Watch — Collecte et SOC",
+        "ILLWATCH — Collecte et SOC",
         [
             panel(
                 lay,

@@ -1,9 +1,9 @@
-# Documentation ILL Watch
+# Documentation ILLWATCH
 
-![ILL Watch](assets/illwatch-logo-light.svg#only-light){ width="360" }
-![ILL Watch](assets/illwatch-logo-dark.svg#only-dark){ width="360" }
+![ILLWATCH](assets/illwatch-logo-light.svg#only-light){ width="360" }
+![ILLWATCH](assets/illwatch-logo-dark.svg#only-dark){ width="360" }
 
-**ILL Watch** est la plateforme open source de Cyber Threat Intelligence de CyberillSec : collecte
+**ILLWATCH** est la plateforme open source de Cyber Threat Intelligence de CyberillSec : collecte
 et déduplication des IOC (STIX/TAXII 2.1, OTX, flux publics), priorisation des CVE (CVSS + EPSS +
 KEV), gestion d'incidents NIST SP 800-61, chasse aux menaces et pilotage SOC.
 

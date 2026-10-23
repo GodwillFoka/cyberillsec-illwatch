@@ -1,14 +1,14 @@
-# ILL Watch — Système de design (v8 « Identité ILL Watch »)
+# ILLWATCH — Système de design (v8 « Identité ILLWATCH »)
 
 v6 adoptée le 08/10/2026 (ADR-016) ; v7 « Veille de nuit » le 11/10/2026 ; **v8 le 11/10/2026** :
-application du **brand book ILL Watch v2** (ADR-018), qui fait autorité pour la marque, la
+application du **brand book ILLWATCH v2** (ADR-018), qui fait autorité pour la marque, la
 palette, la typographie et la voix. Ce document en est la déclinaison pour l'interface.
 Référence vivante : `frontend/src/styles/tokens.css` (jetons) et `base.css` (composants).
 
 > La v7 avait choisi IBM Plex, un accent violet et un logo en forme d'œil. Le brand book les
 > remplace : Inter et JetBrains Mono, accent **Signal**, symbole **écu-radar**.
 
-**Idée directrice.** ILL Watch est un poste de veille : des analystes y passent des heures, souvent
+**Idée directrice.** ILLWATCH est un poste de veille : des analystes y passent des heures, souvent
 de nuit. Le thème **Nuit** est celui de l'application ; la couleur ne sert qu'à informer. Quatre
 couleurs ont un sens fixe, partout :
 
@@ -22,7 +22,9 @@ La confiance d'un IOC (ADR-017) n'utilise pas l'échelle de gravité : jauge Sig
 
 ## Marque
 
-- **Nom** : « ILL Watch » (jamais ILLWATCH, IllWatch ou Ill Watch dans un texte). Endossement :
+- **Nom** : « ILLWATCH », en un seul mot et en capitales (décision du 23/10/2026) ; jamais
+  « ILL Watch », IllWatch ou Ill Watch dans un texte ; le dessin du logo (ILL + Watch) reste
+  inchangé pour l'instant. Endossement :
   « PAR CYBERILL ». Les identifiants techniques (`illwatch`, `ILLWATCH_*`, en-tête
   `User-Agent: ILLWATCH/…`) ne changent pas.
 - **Symbole** : écu indigo `#20155C`, contour et radar Signal `#22D3EE`, point de menace orange
@@ -106,7 +108,7 @@ pause » / « Reprendre le direct ». Heure : « UTC · 08:02:17 ».
 
 ## Composants
 
-- **Menu latéral** (240 px) : symbole 32 px, « ILL Watch » 700 et « PAR CYBERILL » (10 px,
+- **Menu latéral** (240 px) : symbole 32 px, « ILLWATCH » 700 et « PAR CYBERILL » (10 px,
   capitales, 0,12 em, `muted`) ; sections en capitales ; liens de 40 px ; élément actif = fond
   indigo, texte et icône blancs, repère orange de 3 px à gauche ; compteurs en badge P1 (P0 pour
   les sources dégradées), seulement s'il y a quelque chose à traiter. Sous 900 px, le menu devient

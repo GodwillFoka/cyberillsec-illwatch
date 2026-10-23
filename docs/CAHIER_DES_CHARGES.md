@@ -1,14 +1,14 @@
-# ILL Watch — Cahier des charges & dossier d'ingénierie logicielle
+# ILLWATCH — Cahier des charges & dossier d'ingénierie logicielle
 
 > **Conversion Markdown versionnable** du document maître
-> `CYBERILL-ILL Watch — Cahier des Charges & Dossier d'Ingénierie v1.0.0`.
+> `CYBERILL-ILLWATCH — Cahier des Charges & Dossier d'Ingénierie v1.0.0`.
 > Le PDF d'origine est conservé dans [`pdf/SENTRY_Cahier_des_Charges.pdf`](pdf/SENTRY_Cahier_des_Charges.pdf).
 > En cas de divergence, **ce fichier Markdown fait foi** : il est celui que la CI, les revues de
 > code et les merge requests référencent.
 
 | | |
 |---|---|
-| **Projet** | ILL Watch — Security Monitoring & Threat Intelligence Platform |
+| **Projet** | ILLWATCH — Security Monitoring & Threat Intelligence Platform |
 | **Initiative** | CyberillSec — A CYBERILL Initiative |
 | **Auteur & architecte** | Godwill FOKA, Lead Architect & Security Engineer |
 | **Destinataire** | Équipe d'ingénierie logicielle / développeurs en onboarding |
@@ -40,7 +40,7 @@ FOKA, articulée autour de six piliers :
 
 | Branche | Domaine | Périmètre |
 |---|---|---|
-| **CyberillSec / ILL Watch** | Threat Intelligence | Plateforme de veille CTI |
+| **CyberillSec / ILLWATCH** | Threat Intelligence | Plateforme de veille CTI |
 | Cyberill Labs | Recherche | Analyse de malware, offensif, pentest |
 | Cyberill Academy | Formation | Certifications, workshops, sensibilisation |
 | Cyberill Consulting | Conseil | GRC, audit, advisory |
@@ -50,13 +50,13 @@ FOKA, articulée autour de six piliers :
 CyberillSec est le bras armé de veille stratégique : collecter, analyser, corréler et vulgariser les
 données relatives aux cyberattaques mondiales.
 
-### 1.2 Mission d'ILL Watch
+### 1.2 Mission d'ILLWATCH
 
-ILL Watch est le moteur logiciel qui propulse CyberillSec. Dans l'industrie, un analyste sécurité passe
+ILLWATCH est le moteur logiciel qui propulse CyberillSec. Dans l'industrie, un analyste sécurité passe
 60 à 70 % de son temps à copier-coller des indicateurs entre une dizaine d'outils, lire des bulletins
 illisibles et trier des alertes en double.
 
-ILL Watch crée un cerveau centralisé qui :
+ILLWATCH crée un cerveau centralisé qui :
 
 1. collecte automatiquement le renseignement sur les menaces (flux publics, bases gouvernementales,
    flux communautaires) ;
@@ -82,12 +82,12 @@ ILL Watch crée un cerveau centralisé qui :
 
 ### 1.4 La journée type de l'analyste SOC
 
-**Sans ILL Watch** — Alex ouvre quinze onglets (CISA, NVD, AlienVault, réseaux sociaux, presse
+**Sans ILLWATCH** — Alex ouvre quinze onglets (CISA, NVD, AlienVault, réseaux sociaux, presse
 spécialisée), lit quarante articles, repère une faille Fortinet, cherche manuellement son CVSS,
 vérifie l'existence d'un exploit public, croise les IP attaquantes, ouvre un ticket. Il est 11 h 30
 et rien n'est encore bloqué.
 
-**Avec ILL Watch** — les tâches asynchrones ont tourné toute la nuit. À 08 h 01, `illwatch dashboard show`
+**Avec ILLWATCH** — les tâches asynchrones ont tourné toute la nuit. À 08 h 01, `illwatch dashboard show`
 affiche les trois CVE critiques de la nuit (score > 80 parce que KEV = oui et EPSS > 0.85), les
 quarante nouveaux IOC dédupliqués et rattachés à la campagne en cours, et l'incident créé
 automatiquement avec sa chronologie pré-remplie. En cinq minutes, le blocage firewall est lancé et
@@ -156,7 +156,7 @@ externes ; absence d'IHM lourde en phase 1 (choix assumé au profit de l'API et 
 **Opportunités** — NIS 2 impose la surveillance CTI ; forte demande pour des briques CTI autonomes
 et transparentes déployables on-premise ; possibilité de fédérer une communauté internationale.
 
-**Aspirations** — positionner ILL Watch comme le standard open source européen de surveillance des
+**Aspirations** — positionner ILLWATCH comme le standard open source européen de surveillance des
 menaces d'ici 2030 ; démontrer une excellence technique au niveau des plus grands centres de R&D.
 
 **Menaces** — évolution ou fermeture des points d'accès API gratuits ; concurrence d'outils massifs
@@ -624,7 +624,7 @@ par dossier, standards d'ingénierie, GitFlow et première tâche — vit dans u
 
 <div align="center">
 
-**FIN DU CAHIER DES CHARGES ILL Watch**
+**FIN DU CAHIER DES CHARGES ILLWATCH**
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
 

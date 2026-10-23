@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILL Watch — Réplique locale du pipeline GitLab (.gitlab-ci.yml)
+# ILLWATCH — Réplique locale du pipeline GitLab (.gitlab-ci.yml)
 #
 # À lancer avant chaque push : un pipeline rouge sur GitLab coûte un aller-retour,
 # celui-ci coûte une minute. Mêmes étapes, même ordre, même seuils.

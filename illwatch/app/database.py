@@ -23,7 +23,7 @@ from illwatch.app.config import get_settings
 
 
 class Base(AsyncAttrs, DeclarativeBase):
-    """Classe de base déclarative de tous les modèles ILL Watch."""
+    """Classe de base déclarative de tous les modèles ILLWATCH."""
 
     type_annotation_map: dict[Any, Any] = {}
 

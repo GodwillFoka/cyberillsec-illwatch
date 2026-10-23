@@ -7,7 +7,7 @@
 
 ## Contexte
 
-ILL Watch tourne seul (worker de collecte, synchronisations CVE, corrélation) : sans mesure, une
+ILLWATCH tourne seul (worker de collecte, synchronisations CVE, corrélation) : sans mesure, une
 source arrêtée ou un worker tombé ne se voit qu'à l'écran Sources, quand quelqu'un le regarde.
 Le critère de sortie de M11 (« 7 jours de collecte continue en staging sans intervention »)
 exige de le constater, donc de le mesurer.

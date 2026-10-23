@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "ILL Watch — Open-Source-Plattform für Threat Intelligence und SOC",
-    "description": "ILL Watch sammelt Bedrohungsinformationen, priorisiert Schwachstellen nach realem Risiko, gleicht sie mit Ihren Assets ab und steuert die Incident Response. Open Source, selbst gehostet, auf einem einzigen Server."
+    "title": "ILLWATCH — Open-Source-Plattform für Threat Intelligence und SOC",
+    "description": "ILLWATCH sammelt Bedrohungsinformationen, priorisiert Schwachstellen nach realem Risiko, gleicht sie mit Ihren Assets ab und steuert die Incident Response. Open Source, selbst gehostet, auf einem einzigen Server."
   },
   "nav": {
     "skip": "Zum Inhalt springen",
@@ -25,7 +25,7 @@
     "eyebrow": "Open-Source-Plattform für Threat Intelligence und SOC",
     "title_a": "Aus Bedrohungsrauschen werden",
     "title_b": "Entscheidungen, die zählen.",
-    "lead": "ILL Watch sammelt Bedrohungsinformationen, priorisiert Schwachstellen nach realem Risiko, gleicht sie mit Ihren Assets ab und steuert die Incident Response — auf Ihrem eigenen Server, ohne Lizenzkosten.",
+    "lead": "ILLWATCH sammelt Bedrohungsinformationen, priorisiert Schwachstellen nach realem Risiko, gleicht sie mit Ihren Assets ab und steuert die Incident Response — auf Ihrem eigenen Server, ohne Lizenzkosten.",
     "cta_demo": "Demo anfragen",
     "cta_start": "Kostenlos starten",
     "chips_label": "Highlights",
@@ -33,7 +33,7 @@
     "chip_self": "Selbst gehostet: Ihre Daten bleiben bei Ihnen",
     "chip_memory": "Unter {memory} MB Arbeitsspeicher",
     "chip_langs": "5 Sprachen",
-    "img_alt": "Übersicht von ILL Watch: Warteschlange priorisierter Alarme, schwerster Vorfall, aktive Indikatoren, CVEs nach Priorität und Zustand der Quellen",
+    "img_alt": "Übersicht von ILLWATCH: Warteschlange priorisierter Alarme, schwerster Vorfall, aktive Indikatoren, CVEs nach Priorität und Zustand der Quellen",
     "demo_note": "Echte Oberfläche, fiktive Demonstrationsdaten",
     "pop1_label": "P0 · Score 96",
     "pop1_text": "Aktiv ausgenutzte CVE (CISA KEV)",
@@ -52,7 +52,7 @@
     "note": "Screenshots, automatisch von der CI mit dem fiktiven Demonstrationsdatensatz erstellt.",
     "prioritize_tab": "Priorisieren",
     "prioritize_title": "Wissen, welche Schwachstelle zuerst zu beheben ist",
-    "prioritize_text": "ILL Watch kombiniert die NVD-Schwere, den CISA-Katalog ausgenutzter Schwachstellen und die FIRST-EPSS-Wahrscheinlichkeit zu einem einzigen, nachvollziehbaren Score von 0 bis 100.",
+    "prioritize_text": "ILLWATCH kombiniert die NVD-Schwere, den CISA-Katalog ausgenutzter Schwachstellen und die FIRST-EPSS-Wahrscheinlichkeit zu einem einzigen, nachvollziehbaren Score von 0 bis 100.",
     "prioritize_b1": "Deterministische Priorität P0–P3 mit Behebungsfrist",
     "prioritize_b2": "Eine aktiv ausgenutzte CVE liegt nie unter P1",
     "prioritize_b3": "Alarm, sobald eine CVE Ihren Schwellenwert überschreitet",
@@ -124,8 +124,8 @@
   },
   "sim": {
     "label": "Ausprobieren",
-    "title": "So denkt ILL Watch",
-    "lead": "Die echte Formel der ILL-Watch-Engine, direkt in Ihrem Browser. Passen Sie die Signale an und beobachten Sie, wie sich die Priorität ändert.",
+    "title": "So denkt ILLWATCH",
+    "lead": "Die echte Formel der ILLWATCH-Engine, direkt in Ihrem Browser. Passen Sie die Signale an und beobachten Sie, wie sich die Priorität ändert.",
     "cvss": "CVSS-Schweregrad",
     "cvss_help": "Technischer Schweregrad, von 0 bis 10",
     "epss": "Ausnutzungswahrscheinlichkeit (EPSS)",
@@ -162,7 +162,7 @@
   "solutions": {
     "label": "Lösungen",
     "title": "Gemacht für die Teams, die verteidigen",
-    "lead": "Unabhängig von Größe und Branche passt sich ILL Watch Ihrer Arbeitsweise an.",
+    "lead": "Unabhängig von Größe und Branche passt sich ILLWATCH Ihrer Arbeitsweise an.",
     "soc_title": "SOC-Teams",
     "soc_hook": "Analystenzeit für Entscheidungen, nicht fürs Sortieren.",
     "soc_b1": "Alarm-Warteschlange nach realem Risiko sortiert",
@@ -194,14 +194,14 @@
     "gdpr_text": "Daten bleiben auf Ihrer Infrastruktur, ohne Verarbeitung Ihrer Bedrohungsinformationen durch Dritte.",
     "iso_title": "ISO/IEC 27001",
     "iso_text": "Nachweise für Threat Intelligence (Maßnahme 5.7) und das Management technischer Schwachstellen (8.8).",
-    "note": "ILL Watch hilft Ihnen, diese Pflichten zu erfüllen; es ersetzt nicht Ihren Compliance-Prozess und zertifiziert Ihre Organisation nicht."
+    "note": "ILLWATCH hilft Ihnen, diese Pflichten zu erfüllen; es ersetzt nicht Ihren Compliance-Prozess und zertifiziert Ihre Organisation nicht."
   },
   "compare": {
-    "label": "Warum ILL Watch",
+    "label": "Warum ILLWATCH",
     "title": "Die Leistung einer kommerziellen Plattform, ohne Lock-in",
-    "lead": "ILL Watch vereint, wofür sonst mehrere Werkzeuge nötig sind — und behält alles auf Ihrer Infrastruktur.",
+    "lead": "ILLWATCH vereint, wofür sonst mehrere Werkzeuge nötig sind — und behält alles auf Ihrer Infrastruktur.",
     "criterion": "Kriterium",
-    "col_illwatch": "ILL Watch",
+    "col_illwatch": "ILLWATCH",
     "col_commercial": "Kommerzielle Threat-Intelligence-Plattform",
     "col_diy": "Zusammenstellung von Open-Source-Werkzeugen",
     "cost": "Lizenzkosten",
@@ -287,7 +287,7 @@
     "community_cta": "Loslegen",
     "pilot_title": "Begleiteter Pilot",
     "pilot_price": "ab 4.900 €",
-    "pilot_text": "Wir stellen ILL Watch gemeinsam mit Ihrem Team bereit und konfigurieren es auf Ihre eigenen Quellen und Ihr Inventar.",
+    "pilot_text": "Wir stellen ILLWATCH gemeinsam mit Ihrem Team bereit und konfigurieren es auf Ihre eigenen Quellen und Ihr Inventar.",
     "pilot_b1": "Bereitstellung auf Ihrer Infrastruktur",
     "pilot_b2": "Quellen, Inventar und Alarmschwellen konfiguriert",
     "pilot_b3": "Einarbeitung Ihrer Analysten",
@@ -295,7 +295,7 @@
     "pilot_cta": "Demo anfragen",
     "support_title": "Support und Integration",
     "support_price": "ab 790 €",
-    "support_text": "Für Teams, die ILL Watch produktiv betreiben.",
+    "support_text": "Für Teams, die ILLWATCH produktiv betreiben.",
     "support_b1": "Hilfe bei Updates und Backups",
     "support_b2": "Konnektoren zu Ihren Quellen und Werkzeugen",
     "support_b3": "An Ihren Kontext angepasste Erkennungsregeln",
@@ -310,28 +310,28 @@
   "faq": {
     "label": "FAQ",
     "title": "Häufige Fragen",
-    "free_q": "Ist ILL Watch wirklich kostenlos?",
+    "free_q": "Ist ILLWATCH wirklich kostenlos?",
     "free_a": "Ja. Der Quellcode ist unter der MIT-Lizenz öffentlich: Sie können ihn ohne Lizenzgebühr installieren, nutzen und ändern. Pilot und Support sind optionale Dienstleistungen.",
     "data_q": "Wo werden unsere Daten gespeichert?",
-    "data_a": "Ausschließlich auf Ihrem eigenen Server. Geolokalisierung und Netzwerkanreicherung nutzen Offline-Datenbanken; ILL Watch sendet weder Bedrohungsinformationen noch Telemetrie an Dritte.",
+    "data_a": "Ausschließlich auf Ihrem eigenen Server. Geolokalisierung und Netzwerkanreicherung nutzen Offline-Datenbanken; ILLWATCH sendet weder Bedrohungsinformationen noch Telemetrie an Dritte.",
     "requirements_q": "Was brauchen wir für den Betrieb?",
     "requirements_a": "Einen Linux-Server mit Docker. Die Anwendung läuft mit unter {memory} MB Arbeitsspeicher; PostgreSQL und Redis sind Teil des Docker-Compose-Stacks.",
     "languages_q": "Welche Sprachen sind verfügbar?",
     "languages_a": "Die Oberfläche und diese Website gibt es auf Englisch, Französisch, Deutsch, Spanisch und vereinfachtem Chinesisch, automatisch gewählt nach Land und Browser. Jede Person kann jederzeit wechseln.",
     "ready_q": "Ist es bereit für die Produktion?",
-    "ready_a": "ILL Watch befindet sich in der Vorproduktion: Die Module sind geliefert und werden bei jeder Änderung getestet, der Meilenstein zur Härtung für die Produktion läuft. Ein begleiteter Pilot ist der empfohlene Einstieg.",
+    "ready_a": "ILLWATCH befindet sich in der Vorproduktion: Die Module sind geliefert und werden bei jeder Änderung getestet, der Meilenstein zur Härtung für die Produktion läuft. Ein begleiteter Pilot ist der empfohlene Einstieg.",
     "integrate_q": "Funktioniert es mit unseren vorhandenen Werkzeugen?",
     "integrate_a": "Ja, über offene Standards: STIX-2.1-Import und -Export, ein TAXII-2.1-Server, eine REST-API, Webhooks für Alarme und Prometheus-Metriken."
   },
   "cta": {
     "title": "Gewinnen Sie die Kontrolle über Ihre Bedrohungslage zurück",
-    "text": "Erleben Sie ILL Watch mit Ihren eigenen Anwendungsfällen oder stellen Sie es selbst mit einem einzigen Befehl bereit.",
+    "text": "Erleben Sie ILLWATCH mit Ihren eigenen Anwendungsfällen oder stellen Sie es selbst mit einem einzigen Befehl bereit.",
     "demo": "Demo anfragen",
     "docs": "Einstiegsanleitung",
     "code_label": "Installation mit Docker Compose",
     "step1": "Code holen",
     "step2": "Stack starten",
-    "step3": "ILL Watch läuft"
+    "step3": "ILLWATCH läuft"
   },
   "footer": {
     "tagline": "Engineering Cyber Resilience. Empowering Digital Trust.",
@@ -351,7 +351,7 @@
     "privacy_policy": "Datenschutzerklärung"
   },
   "root": {
-    "title": "ILL Watch — Sprache wählen",
+    "title": "ILLWATCH — Sprache wählen",
     "choose": "Diese Sprache wählen"
   },
   "notfound": {
@@ -361,7 +361,7 @@
   },
   "platformPage": {
     "title": "Vom Rohsignal bis zum abgeschlossenen Vorfall, auf einer Plattform",
-    "lead": "ILL Watch vereint Threat Intelligence, Schwachstellenpriorisierung, Erkennung, Threat Hunting und Incident Response. Alle Module arbeiten auf denselben Daten, mit demselben Audit-Trail.",
+    "lead": "ILLWATCH vereint Threat Intelligence, Schwachstellenpriorisierung, Erkennung, Threat Hunting und Incident Response. Alle Module arbeiten auf denselben Daten, mit demselben Audit-Trail.",
     "flow_label": "Funktionsweise",
     "flow_title": "Sechs Schritte, kontinuierlich",
     "flow_lead": "Jedes Signal nimmt denselben Weg: kein Kopieren zwischen Werkzeugen, und jede Entscheidung lässt sich bis zur Quelle zurückverfolgen.",
@@ -394,15 +394,15 @@
     "obs_b3": "Zehn Betriebsalarme und monatlich getestete Wiederherstellungen"
   },
   "explorer": {
-    "title": "Diese Techniken hilft Ihnen ILL Watch zu erkennen",
+    "title": "Diese Techniken hilft Ihnen ILLWATCH zu erkennen",
     "lead": "Ein Ausschnitt aus MITRE ATT&CK, abgedeckt durch die Erkennungsregeln. Wählen Sie eine Technik, um zu sehen, wie die Plattform reagiert.",
     "list": "Abgedeckte Techniken",
     "rules": "Regeln",
     "context": "Nur Kontext: Kampagnen und Akteure",
     "mitre": "Technik auf attack.mitre.org",
     "note": "ATT&CK® © The MITRE Corporation, Wiedergabe mit Genehmigung. Ausschnitt beschränkt auf die Techniken, die den Regeln der aktuellen Version zugeordnet sind.",
-    "T1190": "Eine Schwachstelle in einem exponierten Produkt wird ausgenutzt. ILL Watch alarmiert, wenn eine aktiv ausgenutzte CVE oder eine mit öffentlichem Exploit ein Produkt Ihres Inventars in einer verwundbaren Version betrifft — und das Hunting meldet ausgenutzte CVEs auf Ihren Assets.",
-    "T1566_001": "Präparierte Anhänge per E-Mail. Nutzt eine Kampagne diese Technik (zum Beispiel QakBot), verknüpft ILL Watch den Akteur mit den IOCs seiner Infrastruktur: Ein Alarm zu einem dieser IOCs kommt mit dem richtigen Kontext.",
+    "T1190": "Eine Schwachstelle in einem exponierten Produkt wird ausgenutzt. ILLWATCH alarmiert, wenn eine aktiv ausgenutzte CVE oder eine mit öffentlichem Exploit ein Produkt Ihres Inventars in einer verwundbaren Version betrifft — und das Hunting meldet ausgenutzte CVEs auf Ihren Assets.",
+    "T1566_001": "Präparierte Anhänge per E-Mail. Nutzt eine Kampagne diese Technik (zum Beispiel QakBot), verknüpft ILLWATCH den Akteur mit den IOCs seiner Infrastruktur: Ein Alarm zu einem dieser IOCs kommt mit dem richtigen Kontext.",
     "T1090_003": "Datenverkehr über mehrere Proxys, etwa Tor, um seine Herkunft zu verschleiern. Die Hunting-Regel erkennt Tor-Exit-Relays anhand der offiziellen Liste.",
     "T1568": "Infrastruktur, die ihre Adresse über dynamisches DNS wechselt. Die Hunting-Regel erkennt rund vierzig kostenlose Anbieter für dynamisches DNS, die bei C2-Servern und Phishing beliebt sind.",
     "T1568_002": "Algorithmisch erzeugte Domainnamen (DGA), um Steuerserver zu erreichen. Die Regel misst, wie unwahrscheinlich ein Name im Englischen ist — kalibriert auf 100.000 echten Domains.",
@@ -410,20 +410,20 @@
   },
   "taxii": {
     "title": "Teilen Sie Ihre Bedrohungsinformationen im Standardformat",
-    "lead": "ILL Watch stellt seine Indikatoren und Kampagnen per TAXII 2.1 im STIX-2.1-Format bereit — für Ihr SIEM, Ihre Firewall oder ein Partner-CERT.",
+    "lead": "ILLWATCH stellt seine Indikatoren und Kampagnen per TAXII 2.1 im STIX-2.1-Format bereit — für Ihr SIEM, Ihre Firewall oder ein Partner-CERT.",
     "discovery": "Discovery",
     "collections": "Collections",
     "objects": "Objekte",
-    "discovery_text": "Der Client findet den TAXII-Server und seine API-Root. Anmeldung mit einem ILL-Watch-Konto oder einem API-Token.",
+    "discovery_text": "Der Client findet den TAXII-Server und seine API-Root. Anmeldung mit einem ILLWATCH-Konto oder einem API-Token.",
     "collections_text": "Zwei lesende Collections: aktive Indikatoren sowie Kampagnen mit ihren Akteuren und ihrer Infrastruktur.",
     "objects_text": "Seit einem Datum hinzugefügte Indikatoren, seitenweise, mit Konfidenz und Schweregrad: bereit für ein SIEM oder eine Sperrliste.",
     "request": "Anfrage",
     "response": "Antwort (gekürzt)",
-    "note": "Echte Anfragen an den TAXII-Server von ILL Watch; Antworten gekürzt, auf dem fiktiven Demonstrationsdatensatz."
+    "note": "Echte Anfragen an den TAXII-Server von ILLWATCH; Antworten gekürzt, auf dem fiktiven Demonstrationsdatensatz."
   },
   "securityPage": {
     "title": "Sicherheit von der ersten Codezeile an",
-    "lead": "ILL Watch verarbeitet sensible Informationen. Es läuft auf Ihrer Infrastruktur, Ihre Daten bleiben bei Ihnen, und jede Sicherheitsmaßnahme lässt sich im Quellcode prüfen.",
+    "lead": "ILLWATCH verarbeitet sensible Informationen. Es läuft auf Ihrer Infrastruktur, Ihre Daten bleiben bei Ihnen, und jede Sicherheitsmaßnahme lässt sich im Quellcode prüfen.",
     "arch_label": "Architektur",
     "arch_title": "Alles läuft auf Ihrem Server",
     "arch_lead": "Für den Betrieb wird kein externer Dienst benötigt. Kontaktiert werden nur die Quellen, die Sie aktivieren — per HTTPS.",
@@ -435,7 +435,7 @@
     "arch_sources_text": "Nur ausgehende HTTPS-Anfragen, zu den Feeds Ihrer Wahl",
     "arch_proxy": "Caddy",
     "arch_proxy_text": "Automatisches TLS, Sicherheits-Header, einziger offener Port",
-    "arch_app": "ILL-Watch-API und -Oberfläche",
+    "arch_app": "ILLWATCH-API und -Oberfläche",
     "arch_app_text": "Authentifizierung, Rollen, strikte Content Security Policy",
     "arch_worker": "Collection-Worker",
     "arch_worker_text": "Abruf, Anreicherung, Korrelation, geplante Jagden",
@@ -493,7 +493,7 @@
     "row_priority": "Bevorzugte Bearbeitung Ihrer Anfragen",
     "faq_title": "Fragen zu den Preisen",
     "indicative_q": "Warum Richtpreise?",
-    "indicative_a": "ILL Watch befindet sich in der Vorproduktion, und unsere Angebote werden mit den ersten Organisationen evaluiert. Die endgültigen Preise werden am Ende dieser Phase veröffentlicht; bis dahin wird jedes Angebot schriftlich bestätigt.",
+    "indicative_a": "ILLWATCH befindet sich in der Vorproduktion, und unsere Angebote werden mit den ersten Organisationen evaluiert. Die endgültigen Preise werden am Ende dieser Phase veröffentlicht; bis dahin wird jedes Angebot schriftlich bestätigt.",
     "limited_q": "Ist die kostenlose Version eingeschränkt?",
     "limited_a": "Nein. Die Community-Edition ist die vollständige Plattform unter MIT-Lizenz, ohne Begrenzung bei Benutzern, Quellen oder Indikatoren.",
     "start_q": "Wie fangen wir an?",
@@ -503,11 +503,11 @@
   },
   "aboutPage": {
     "title": "Threat Intelligence für alle Verteidiger zugänglich machen",
-    "lead": "ILL Watch wird von CYBERILL entwickelt, einer Initiative, die offene und überprüfbare Cybersicherheitswerkzeuge für Organisationen jeder Größe baut, weltweit.",
+    "lead": "ILLWATCH wird von CYBERILL entwickelt, einer Initiative, die offene und überprüfbare Cybersicherheitswerkzeuge für Organisationen jeder Größe baut, weltweit.",
     "story_label": "Unsere Geschichte",
-    "story_title": "Warum es ILL Watch gibt",
+    "story_title": "Warum es ILLWATCH gibt",
     "story_p1": "Kommerzielle Threat-Intelligence-Plattformen kosten Zehntausende pro Jahr. Vollständige Open-Source-Alternativen verlangen eine schwere Infrastruktur und ein Team für den Betrieb. Dazwischen arbeiten viele SOCs, CERTs und Behörden mit Tabellen und Copy-and-Paste.",
-    "story_p2": "ILL Watch entstand 2026, um diese Lücke zu schließen: eine Plattform auf einem Server, die die Routinearbeit eines SOC erledigt und die Entscheidungen den Analysten überlässt.",
+    "story_p2": "ILLWATCH entstand 2026, um diese Lücke zu schließen: eine Plattform auf einem Server, die die Routinearbeit eines SOC erledigt und die Entscheidungen den Analysten überlässt.",
     "story_p3": "Das Projekt ist Open Source und wird über gemessene Meilensteine gesteuert: Ein Meilenstein ist abgeschlossen, wenn seine Kriterien auf echten Daten geprüft sind, nicht wenn der Code gemergt ist.",
     "founder_role": "Gründer und leitender Entwickler — IT-Sicherheitsspezialist (SOC, SIEM, Netzwerksicherheit, Forensik)",
     "values_label": "Unsere Prinzipien",
@@ -523,7 +523,7 @@
     "roadmap_title": "Wo das Projekt steht"
   },
   "demoPage": {
-    "title": "Erleben Sie ILL Watch mit Ihren eigenen Anwendungsfällen",
+    "title": "Erleben Sie ILLWATCH mit Ihren eigenen Anwendungsfällen",
     "lead": "Erzählen Sie uns von Ihrem Team und Ihrem Kontext: Wir zeigen Ihnen die Plattform und beantworten Ihre Fragen zu Bereitstellung und Sicherheit.",
     "next_label": "So geht es weiter",
     "step1_title": "Wir melden uns",
@@ -544,7 +544,7 @@
     "interest_PILOT": "Ein begleiteter Pilot",
     "interest_SUPPORT": "Support und Integration",
     "interest_OTHER": "Etwas anderes",
-    "consent": "Ich bin einverstanden, dass ILL Watch diese Angaben zur Beantwortung meiner Anfrage verwendet, wie in der {privacy} beschrieben.",
+    "consent": "Ich bin einverstanden, dass ILLWATCH diese Angaben zur Beantwortung meiner Anfrage verwendet, wie in der {privacy} beschrieben.",
     "submit": "Anfrage senden",
     "sent": "Vielen Dank — Ihre Anfrage ist eingegangen. Wir melden uns in Kürze.",
     "error": "Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",

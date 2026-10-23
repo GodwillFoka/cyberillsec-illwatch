@@ -1,4 +1,4 @@
-"""CLI ILL Watch — RF-03. Point d'entrée `illwatch` (Click + Rich)."""
+"""CLI ILLWATCH — RF-03. Point d'entrée `illwatch` (Click + Rich)."""
 
 import asyncio
 
@@ -18,7 +18,7 @@ console = Console()
 @click.group()
 @click.version_option(package_name="illwatch", prog_name="illwatch")
 def cli() -> None:
-    """ILL Watch — Security Monitoring & Threat Intelligence Platform (CyberillSec)."""
+    """ILLWATCH — Security Monitoring & Threat Intelligence Platform (CyberillSec)."""
 
 
 @cli.command()
@@ -52,7 +52,7 @@ def openapi(output: str | None) -> None:
 def config() -> None:
     """Affiche la configuration effective (secrets masqués)."""
     settings = get_settings()
-    table = Table(title="Configuration ILL Watch", show_lines=False)
+    table = Table(title="Configuration ILLWATCH", show_lines=False)
     table.add_column("Clé", style="cyan", no_wrap=True)
     table.add_column("Valeur", style="white")
 

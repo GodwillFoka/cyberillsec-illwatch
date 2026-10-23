@@ -9,7 +9,7 @@
 ## Contexte
 
 M9 doit « outiller le travail des analystes L1/L2/L3 », avec ce critère de sortie : **un
-incident traverse L1 → L2 → L3 sans quitter ILL Watch, MTTR mesuré**. Jusqu'ici, un incident
+incident traverse L1 → L2 → L3 sans quitter ILLWATCH, MTTR mesuré**. Jusqu'ici, un incident
 n'avait pas de niveau, un faux positif ne pouvait qu'être acquitté (et revenait), la chasse
 était séparée de l'investigation et aucun délai n'était mesuré.
 
@@ -35,7 +35,7 @@ n'avait pas de niveau, un faux positif ne pouvait qu'être acquitté (et revenai
    v2 (calibration Tranco) et RULE-06 v3 (plages CIDR, exclusions) en sont les premiers usages.
 5. **Recommandations de réponse** déduites du contenu de l'incident (types d'IOC, CVE KEV avec
    échéance CISA ou à exploit, rançongiciel) et de sa phase NIST, phase en cours d'abord.
-   ILL Watch **recommande, n'exécute rien** : l'analyste déclare ensuite l'action menée.
+   ILLWATCH **recommande, n'exécute rien** : l'analyste déclare ensuite l'action menée.
 6. **Pilotage** (`GET /dashboard/soc?days=7|30`, écran Pilotage, `illwatch soc metrics`) :
    - **MTTA** : ouverture → premier geste d'un analyste (assignation, statut, escalade, action,
      chasse) ; **MTTR** : ouverture → clôture ;

@@ -1,6 +1,6 @@
 ---
 name: Anomalie
-about: Signaler un comportement incorrect d'ILL Watch
+about: Signaler un comportement incorrect d'ILLWATCH
 labels: bug
 ---
 

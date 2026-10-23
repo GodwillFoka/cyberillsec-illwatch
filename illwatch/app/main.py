@@ -1,4 +1,4 @@
-"""Point d'entrée de l'application FastAPI ILL Watch."""
+"""Point d'entrée de l'application FastAPI ILLWATCH."""
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -35,7 +35,7 @@ def create_app() -> FastAPI:
     settings = get_settings()
 
     app = FastAPI(
-        title="ILL Watch — Security Monitoring & Threat Intelligence Platform",
+        title="ILLWATCH — Security Monitoring & Threat Intelligence Platform",
         description=(
             "CyberillSec, a CYBERILL initiative. "
             "Plateforme CTI open source : collecte de flux de menaces, suivi CVE "

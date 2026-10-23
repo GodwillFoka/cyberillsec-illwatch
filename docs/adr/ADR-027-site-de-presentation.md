@@ -4,12 +4,12 @@
   langues, langue du navigateur puis pays, dossier `Website`, dépôt GitHub par PR)
 - **Date :** 2026-10-22
 - **Décideurs :** Godwill FOKA
-- **Concerne :** ADR-013 (Caddy), ADR-016 (interface web), ADR-018 (identité ILL Watch v2),
+- **Concerne :** ADR-013 (Caddy), ADR-016 (interface web), ADR-018 (identité ILLWATCH v2),
   ADR-019 (DB-IP Lite), feuille de route `Website/ROADMAP.md`
 
 ## Contexte
 
-ILL Watch a une documentation (MkDocs, GitHub Pages) et une interface d'analyste, mais rien qui
+ILLWATCH a une documentation (MkDocs, GitHub Pages) et une interface d'analyste, mais rien qui
 **présente** la solution à quelqu'un qui ne la connaît pas : RSSI, responsable de SOC, CERT
 national, décideur public ou privé, contributeur open source. La cible est **internationale** :
 le site doit parler la langue du visiteur dès la première page et être hébergé à terme avec la

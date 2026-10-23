@@ -175,8 +175,8 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   propres fichiers : l'écran de connexion n'attend plus les graphiques, plus d'avertissement
   « chunk > 900 kB » au build.
 
-### Modifié — identité ILL Watch v2 (brand book, ADR-018)
-- Nom affiché « ILL Watch », endossement « PAR CYBERILL » (interface, API, CLI, documentation) ;
+### Modifié — identité ILLWATCH v2 (brand book, ADR-018)
+- Nom affiché « ILLWATCH », endossement « PAR CYBERILL » (interface, API, CLI, documentation) ;
   identifiants techniques inchangés (`illwatch`, `ILLWATCH_*`).
 - Logos, symbole écu-radar, favicon, icône d'application et avatar du kit dans `docs/assets/` ;
   composant `Logo` à la géométrie de `illwatch-mark.svg` ; logotype vectorisé à la connexion.

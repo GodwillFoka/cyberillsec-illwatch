@@ -20,7 +20,7 @@ Règles :
   collecte sans perdre les pages déjà lues (**interrompue**). Dans les deux cas, le curseur
   `modified_since` n'avance pas : la collecte suivante reprend à la page non lue
   (`start_page`, géré par le collecteur), jusqu'à épuisement de la fenêtre.
-- **Types** : seuls les types d'IOC gérés par ILL Watch sont retenus (plages CIDR comprises
+- **Types** : seuls les types d'IOC gérés par ILLWATCH sont retenus (plages CIDR comprises
   depuis le 14/10) ; les autres (CVE, YARA, mutex, chemins…) sont comptés comme ignorés, pas
   comme rejetés.
 """

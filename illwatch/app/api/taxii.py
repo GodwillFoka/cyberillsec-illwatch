@@ -1,6 +1,6 @@
 """Serveur TAXII 2.1 en lecture seule — `/taxii2/` (M10, incrément 3, ADR-025).
 
-Partage le renseignement d'ILL Watch avec un SIEM, un pare-feu ou une autre plateforme CTI
+Partage le renseignement d'ILLWATCH avec un SIEM, un pare-feu ou une autre plateforme CTI
 (OpenCTI, MISP, `taxii2-client`) au format standard :
 
 - découverte `GET /taxii2/` → API root `GET /taxii2/illwatch/` ;
@@ -10,7 +10,7 @@ Partage le renseignement d'ILL Watch avec un SIEM, un pare-feu ou une autre plat
   `X-TAXII-Date-Added-First` et `-Last`.
 
 Authentification : jeton Bearer de l'API **ou** HTTP Basic (identifiant et mot de passe d'un
-compte ILL Watch, de préférence un compte LECTEUR dédié au consommateur). Le Basic passe par le
+compte ILLWATCH, de préférence un compte LECTEUR dédié au consommateur). Le Basic passe par le
 même limiteur de tentatives que la connexion et chaque échec est consigné au journal d'audit.
 Aucune écriture : `can_write` est faux sur toutes les collections.
 """
@@ -69,7 +69,7 @@ class _Collection:
 
 INDICATORS = _Collection(
     "indicateurs",
-    ("Indicateurs ILL Watch", "ILL Watch indicators"),
+    ("Indicateurs ILLWATCH", "ILLWATCH indicators"),
     (
         "IOC actifs (non expirés, non exclus), confiance 0–100, sévérité en étiquette.",
         "Active IOCs (not expired, not excluded), confidence 0–100, severity as a label.",
@@ -77,7 +77,7 @@ INDICATORS = _Collection(
 )
 CAMPAIGNS = _Collection(
     "campagnes",
-    ("Campagnes ILL Watch", "ILL Watch campaigns"),
+    ("Campagnes ILLWATCH", "ILLWATCH campaigns"),
     (
         "Campagnes, acteurs MITRE ATT&CK et IOC de leur infrastructure, avec leurs relations.",
         "Campaigns, MITRE ATT&CK actors and the IOCs of their infrastructure, with relationships.",
@@ -99,7 +99,7 @@ def _error(status: int, title: str, description: str | None = None) -> JSONRespo
     body: dict[str, Any] = {"title": title, "http_status": str(status)}
     if description:
         body["description"] = description
-    headers = {"WWW-Authenticate": 'Basic realm="ILL Watch TAXII", Bearer'} if status == 401 else {}
+    headers = {"WWW-Authenticate": 'Basic realm="ILLWATCH TAXII", Bearer'} if status == 401 else {}
     return JSONResponse(body, status_code=status, media_type=TAXII_MEDIA, headers=headers)
 
 
@@ -124,7 +124,7 @@ async def taxii_user(
     throttle: Annotated[LoginThrottle, Depends(get_login_throttle)],
     audit: Annotated[AuditRecorder, Depends(get_audit_recorder)],
 ) -> User:
-    """Bearer (jeton de l'API) ou Basic (compte ILL Watch) ; refus 401 au format TAXII."""
+    """Bearer (jeton de l'API) ou Basic (compte ILLWATCH) ; refus 401 au format TAXII."""
     if not _accepts(request):
         raise TaxiiError(406, "Type de média non pris en charge : " + TAXII_MEDIA)
     header = request.headers.get("authorization", "")
@@ -195,10 +195,10 @@ async def discovery(request: Request, _: TaxiiUser) -> JSONResponse:
     root = str(request.url_for("api_root"))
     return taxii_response(
         {
-            "title": "ILL Watch — TAXII 2.1",
+            "title": "ILLWATCH — TAXII 2.1",
             "description": tr(
-                "Renseignement sur les menaces partagé par ILL Watch (CyberillSec).",
-                "Threat intelligence shared by ILL Watch (CyberillSec).",
+                "Renseignement sur les menaces partagé par ILLWATCH (CyberillSec).",
+                "Threat intelligence shared by ILLWATCH (CyberillSec).",
             ),
             "contact": "CyberillSec",
             "default": root,
@@ -211,7 +211,7 @@ async def discovery(request: Request, _: TaxiiUser) -> JSONResponse:
 async def api_root(_: TaxiiUser) -> JSONResponse:
     return taxii_response(
         {
-            "title": "ILL Watch",
+            "title": "ILLWATCH",
             "description": tr(
                 "Indicateurs et campagnes au format STIX 2.1 (lecture seule).",
                 "Indicators and campaigns in STIX 2.1 format (read only).",

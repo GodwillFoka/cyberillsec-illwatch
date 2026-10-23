@@ -1,4 +1,4 @@
-# ILL Watch — Feuille de route du site de présentation
+# ILLWATCH — Feuille de route du site de présentation
 
 **Version :** 23/10/2026 · **Décision :** [ADR-027](../docs/adr/ADR-027-site-de-presentation.md) ·
 **Dossier :** `Website/`
@@ -9,7 +9,7 @@ la CI fait foi.
 ## 1. Positionnement
 
 Le site **présente et convainc** ; la documentation explique ; l'application sert. Comme
-about.gitlab.com ou github.com, il s'adresse à quelqu'un qui découvre ILL Watch.
+about.gitlab.com ou github.com, il s'adresse à quelqu'un qui découvre ILLWATCH.
 
 **Portée : internationale.** Le site vise toute organisation, partout dans le monde, qui doit
 surveiller les menaces sans budget de plateforme commerciale ni infrastructure lourde.

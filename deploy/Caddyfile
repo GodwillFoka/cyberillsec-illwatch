@@ -1,5 +1,5 @@
 # ============================================================================
-# ILL Watch — reverse proxy TLS (M7 lot 3, ADR-013)
+# ILLWATCH — reverse proxy TLS (M7 lot 3, ADR-013)
 #
 # ILLWATCH_DOMAIN=illwatch.exemple.eu : certificat Let's Encrypt automatique (ports 80 et 443
 #                                   joignables depuis Internet, DNS pointant sur l'hôte).

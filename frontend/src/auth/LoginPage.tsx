@@ -1,4 +1,4 @@
-// Connexion (brand book v2) : le logotype ILL Watch et la signature à gauche, le formulaire
+// Connexion (brand book v2) : le logotype ILLWATCH et la signature à gauche, le formulaire
 // à droite. Le motif radar du fond fait un seul balayage de 1,2 s au chargement, jamais sous
 // le texte, et aucun si l'utilisateur a réduit les animations.
 import { useState, type FormEvent } from "react";

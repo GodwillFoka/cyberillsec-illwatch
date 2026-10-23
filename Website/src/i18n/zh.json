@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "ILL Watch — 开源威胁情报与 SOC 平台",
-    "description": "ILL Watch 收集威胁情报，按真实风险为漏洞排序，将其与您的资产关联，并推动事件响应。开源、自托管，单台服务器即可运行。"
+    "title": "ILLWATCH — 开源威胁情报与 SOC 平台",
+    "description": "ILLWATCH 收集威胁情报，按真实风险为漏洞排序，将其与您的资产关联，并推动事件响应。开源、自托管，单台服务器即可运行。"
   },
   "nav": {
     "skip": "跳到正文",
@@ -25,7 +25,7 @@
     "eyebrow": "开源威胁情报与 SOC 平台",
     "title_a": "把威胁噪声变成",
     "title_b": "真正重要的决策。",
-    "lead": "ILL Watch 收集威胁情报，按真实风险为漏洞排序，将其与您的资产关联，并推动事件响应——运行在您自己的服务器上，无需许可费用。",
+    "lead": "ILLWATCH 收集威胁情报，按真实风险为漏洞排序，将其与您的资产关联，并推动事件响应——运行在您自己的服务器上，无需许可费用。",
     "cta_demo": "预约演示",
     "cta_start": "免费开始",
     "chips_label": "亮点",
@@ -33,7 +33,7 @@
     "chip_self": "自托管：数据留在您手中",
     "chip_memory": "内存占用低于 {memory} MB",
     "chip_langs": "5 种语言",
-    "img_alt": "ILL Watch 总览：优先告警队列、最严重的事件、活跃指标、按优先级划分的 CVE 以及数据源健康状况",
+    "img_alt": "ILLWATCH 总览：优先告警队列、最严重的事件、活跃指标、按优先级划分的 CVE 以及数据源健康状况",
     "demo_note": "真实界面，虚构的演示数据",
     "pop1_label": "P0 · 评分 96",
     "pop1_text": "正被积极利用的 CVE（CISA KEV）",
@@ -52,7 +52,7 @@
     "note": "截图由 CI 基于虚构的演示数据集自动生成。",
     "prioritize_tab": "排序",
     "prioritize_title": "知道应该先修复哪个漏洞",
-    "prioritize_text": "ILL Watch 将 NVD 严重性、CISA 已被利用漏洞目录和 FIRST EPSS 利用概率合并为一个 0 到 100 的可解释评分。",
+    "prioritize_text": "ILLWATCH 将 NVD 严重性、CISA 已被利用漏洞目录和 FIRST EPSS 利用概率合并为一个 0 到 100 的可解释评分。",
     "prioritize_b1": "确定性的 P0–P3 优先级，并附修复期限",
     "prioritize_b2": "正被积极利用的 CVE 绝不低于 P1",
     "prioritize_b3": "CVE 一旦超过阈值立即告警",
@@ -124,8 +124,8 @@
   },
   "sim": {
     "label": "试一试",
-    "title": "看看 ILL Watch 如何思考",
-    "lead": "ILL Watch 引擎的真实公式，直接在您的浏览器中运行。调整各项信号，观察优先级如何变化。",
+    "title": "看看 ILLWATCH 如何思考",
+    "lead": "ILLWATCH 引擎的真实公式，直接在您的浏览器中运行。调整各项信号，观察优先级如何变化。",
     "cvss": "CVSS 严重性",
     "cvss_help": "技术严重性，0 到 10",
     "epss": "利用概率（EPSS）",
@@ -162,7 +162,7 @@
   "solutions": {
     "label": "解决方案",
     "title": "为守护者团队而打造",
-    "lead": "无论规模大小、身处哪个行业，ILL Watch 都能适应您的工作方式。",
+    "lead": "无论规模大小、身处哪个行业，ILLWATCH 都能适应您的工作方式。",
     "soc_title": "SOC 团队",
     "soc_hook": "把分析师的时间用于决策，而不是分拣。",
     "soc_b1": "按真实风险排序的告警队列",
@@ -194,14 +194,14 @@
     "gdpr_text": "数据保存在您的基础设施上，情报不会交由第三方处理。",
     "iso_title": "ISO/IEC 27001",
     "iso_text": "为威胁情报（控制 5.7）和技术漏洞管理（8.8）提供证据。",
-    "note": "ILL Watch 帮助您履行这些义务；它不能替代您的合规流程，也不为您的组织提供认证。"
+    "note": "ILLWATCH 帮助您履行这些义务；它不能替代您的合规流程，也不为您的组织提供认证。"
   },
   "compare": {
-    "label": "为什么选择 ILL Watch",
+    "label": "为什么选择 ILLWATCH",
     "title": "商业平台的能力，却没有厂商锁定",
-    "lead": "ILL Watch 把通常需要多种工具才能完成的工作整合在一起——并全部保留在您的基础设施上。",
+    "lead": "ILLWATCH 把通常需要多种工具才能完成的工作整合在一起——并全部保留在您的基础设施上。",
     "criterion": "评估项",
-    "col_illwatch": "ILL Watch",
+    "col_illwatch": "ILLWATCH",
     "col_commercial": "商业威胁情报平台",
     "col_diy": "开源工具自行组合",
     "cost": "许可费用",
@@ -287,7 +287,7 @@
     "community_cta": "开始使用",
     "pilot_title": "陪同试点",
     "pilot_price": "4,900 欧元起",
-    "pilot_text": "我们与您的团队一起部署 ILL Watch，并根据您自己的数据源和资产清单完成配置。",
+    "pilot_text": "我们与您的团队一起部署 ILLWATCH，并根据您自己的数据源和资产清单完成配置。",
     "pilot_b1": "部署到您的基础设施上",
     "pilot_b2": "配置数据源、资产清单和告警阈值",
     "pilot_b3": "帮助分析师快速上手",
@@ -295,7 +295,7 @@
     "pilot_cta": "预约演示",
     "support_title": "支持与集成",
     "support_price": "790 欧元起",
-    "support_text": "面向在生产环境中运行 ILL Watch 的团队。",
+    "support_text": "面向在生产环境中运行 ILLWATCH 的团队。",
     "support_b1": "协助升级与备份",
     "support_b2": "对接您的数据源和工具",
     "support_b3": "贴合您场景的检测规则",
@@ -310,28 +310,28 @@
   "faq": {
     "label": "常见问题",
     "title": "常见问题",
-    "free_q": "ILL Watch 真的免费吗？",
+    "free_q": "ILLWATCH 真的免费吗？",
     "free_a": "是的。源代码以 MIT 许可公开：您可以免许可费安装、使用和修改。试点与支持方案属于可选服务。",
     "data_q": "我们的数据存储在哪里？",
-    "data_a": "只存储在您自己的服务器上。地理位置和网络富化使用离线数据库；ILL Watch 不会向任何第三方发送情报或遥测数据。",
+    "data_a": "只存储在您自己的服务器上。地理位置和网络富化使用离线数据库；ILLWATCH 不会向任何第三方发送情报或遥测数据。",
     "requirements_q": "运行它需要什么？",
     "requirements_a": "一台安装了 Docker 的 Linux 服务器。应用内存占用低于 {memory} MB；PostgreSQL 和 Redis 已包含在 Docker Compose 栈中。",
     "languages_q": "支持哪些语言？",
     "languages_a": "界面和本网站提供英语、法语、德语、西班牙语和简体中文，并根据您的国家和浏览器自动选择。每位用户都可以随时切换。",
     "ready_q": "可以用于生产环境了吗？",
-    "ready_a": "ILL Watch 目前处于预生产阶段：各模块已交付，每次修改都会测试，生产加固里程碑正在进行中。推荐以陪同试点的方式开始。",
+    "ready_a": "ILLWATCH 目前处于预生产阶段：各模块已交付，每次修改都会测试，生产加固里程碑正在进行中。推荐以陪同试点的方式开始。",
     "integrate_q": "能与我们现有的工具配合使用吗？",
     "integrate_a": "可以，通过开放标准：STIX 2.1 导入与导出、TAXII 2.1 服务器、REST API、告警 Webhook 以及 Prometheus 指标。"
   },
   "cta": {
     "title": "重新掌控您的威胁态势",
-    "text": "用您自己的用例体验 ILL Watch，或用一条命令自行部署。",
+    "text": "用您自己的用例体验 ILLWATCH，或用一条命令自行部署。",
     "demo": "预约演示",
     "docs": "入门指南",
     "code_label": "使用 Docker Compose 安装",
     "step1": "获取代码",
     "step2": "启动服务栈",
-    "step3": "ILL Watch 已运行"
+    "step3": "ILLWATCH 已运行"
   },
   "footer": {
     "tagline": "Engineering Cyber Resilience. Empowering Digital Trust.",
@@ -351,7 +351,7 @@
     "privacy_policy": "隐私政策"
   },
   "root": {
-    "title": "ILL Watch — 选择语言",
+    "title": "ILLWATCH — 选择语言",
     "choose": "选择此语言"
   },
   "notfound": {
@@ -361,7 +361,7 @@
   },
   "platformPage": {
     "title": "从原始信号到事件关闭，一个平台全部完成",
-    "lead": "ILL Watch 整合了威胁情报、漏洞优先级排序、检测、威胁狩猎和事件响应。所有模块基于同一份数据工作，共享同一条审计轨迹。",
+    "lead": "ILLWATCH 整合了威胁情报、漏洞优先级排序、检测、威胁狩猎和事件响应。所有模块基于同一份数据工作，共享同一条审计轨迹。",
     "flow_label": "工作原理",
     "flow_title": "六个步骤，持续运行",
     "flow_lead": "每个信号都走同一条路径：无需在工具之间复制粘贴，每个决策都能追溯到来源。",
@@ -394,15 +394,15 @@
     "obs_b3": "十项运维告警，每月测试恢复"
   },
   "explorer": {
-    "title": "ILL Watch 能帮您检测的技术",
+    "title": "ILLWATCH 能帮您检测的技术",
     "lead": "检测规则所覆盖的 MITRE ATT&CK 节选。选择一项技术，看看平台如何应对。",
     "list": "已覆盖的技术",
     "rules": "规则",
     "context": "仅提供上下文：攻击活动与攻击者",
     "mitre": "在 attack.mitre.org 上查看该技术",
     "note": "ATT&CK® © The MITRE Corporation，经许可转载。节选仅限于当前版本规则所映射的技术。",
-    "T1190": "暴露在外的产品中的漏洞被利用。当正被积极利用或存在公开利用代码的 CVE 影响到您资产清单中处于受影响版本的产品时，ILL Watch 会告警；威胁狩猎也会标出您资产上被利用的 CVE。",
-    "T1566_001": "通过电子邮件发送的恶意附件。当某个攻击活动使用这项技术（例如 QakBot）时，ILL Watch 会把攻击者与其基础设施的 IOC 关联起来：针对这些 IOC 的告警会带上正确的上下文。",
+    "T1190": "暴露在外的产品中的漏洞被利用。当正被积极利用或存在公开利用代码的 CVE 影响到您资产清单中处于受影响版本的产品时，ILLWATCH 会告警；威胁狩猎也会标出您资产上被利用的 CVE。",
+    "T1566_001": "通过电子邮件发送的恶意附件。当某个攻击活动使用这项技术（例如 QakBot）时，ILLWATCH 会把攻击者与其基础设施的 IOC 关联起来：针对这些 IOC 的告警会带上正确的上下文。",
     "T1090_003": "通过多层代理（例如 Tor）转发流量以隐藏来源。狩猎规则根据官方列表识别 Tor 出口节点。",
     "T1568": "借助动态 DNS 不断变换地址的基础设施。狩猎规则能识别约四十家受 C2 服务器和钓鱼活动青睐的免费动态 DNS 服务商。",
     "T1568_002": "由算法生成的域名（DGA），用于连接控制服务器。该规则衡量一个名称在英语中的罕见程度，并基于 100,000 个真实域名进行了校准。",
@@ -410,20 +410,20 @@
   },
   "taxii": {
     "title": "以标准格式共享您的情报",
-    "lead": "ILL Watch 通过 TAXII 2.1 以 STIX 2.1 格式提供指标和攻击活动，可供您的 SIEM、防火墙或合作 CERT 使用。",
+    "lead": "ILLWATCH 通过 TAXII 2.1 以 STIX 2.1 格式提供指标和攻击活动，可供您的 SIEM、防火墙或合作 CERT 使用。",
     "discovery": "发现",
     "collections": "集合",
     "objects": "对象",
-    "discovery_text": "客户端发现 TAXII 服务器及其 API 根。可使用 ILL Watch 账户或 API 令牌认证。",
+    "discovery_text": "客户端发现 TAXII 服务器及其 API 根。可使用 ILLWATCH 账户或 API 令牌认证。",
     "collections_text": "两个只读集合：活跃指标，以及附带攻击者和基础设施的攻击活动。",
     "objects_text": "自某个日期以来新增的指标，分页返回，附置信度和严重性：可直接用于 SIEM 或封锁列表。",
     "request": "请求",
     "response": "响应（节选）",
-    "note": "针对 ILL Watch TAXII 服务器的真实请求；响应为节选，基于虚构的演示数据集。"
+    "note": "针对 ILLWATCH TAXII 服务器的真实请求；响应为节选，基于虚构的演示数据集。"
   },
   "securityPage": {
     "title": "从第一行代码起就内置安全",
-    "lead": "ILL Watch 处理敏感信息。它运行在您的基础设施上，数据留在您手中，每项安全措施都可以在源代码中核实。",
+    "lead": "ILLWATCH 处理敏感信息。它运行在您的基础设施上，数据留在您手中，每项安全措施都可以在源代码中核实。",
     "arch_label": "架构",
     "arch_title": "一切都运行在您的服务器上",
     "arch_lead": "运行无需任何外部服务。只会通过 HTTPS 联系您启用的情报源。",
@@ -435,7 +435,7 @@
     "arch_sources_text": "仅向您选择的情报源发起出站 HTTPS 请求",
     "arch_proxy": "Caddy",
     "arch_proxy_text": "自动 TLS、安全响应头，唯一对外开放的端口",
-    "arch_app": "ILL Watch API 与界面",
+    "arch_app": "ILLWATCH API 与界面",
     "arch_app_text": "认证、角色、严格的内容安全策略",
     "arch_worker": "收集 Worker",
     "arch_worker_text": "收集、富化、关联、定时狩猎",
@@ -493,7 +493,7 @@
     "row_priority": "优先处理您的请求",
     "faq_title": "价格相关问题",
     "indicative_q": "为什么是参考价格？",
-    "indicative_a": "ILL Watch 目前处于预生产阶段，我们正在与首批组织一起评估方案。最终价格将在这一阶段结束后公布；在此之前，每份报价都会书面确认。",
+    "indicative_a": "ILLWATCH 目前处于预生产阶段，我们正在与首批组织一起评估方案。最终价格将在这一阶段结束后公布；在此之前，每份报价都会书面确认。",
     "limited_q": "免费版有限制吗？",
     "limited_a": "没有。社区版就是完整的平台，采用 MIT 许可，对用户、数据源和指标数量都没有限制。",
     "start_q": "如何开始？",
@@ -503,11 +503,11 @@
   },
   "aboutPage": {
     "title": "让每一位防御者都能用上威胁情报",
-    "lead": "ILL Watch 由 CYBERILL 开发。这一倡议致力于为世界各地各种规模的组织打造开放、可验证的网络安全工具。",
+    "lead": "ILLWATCH 由 CYBERILL 开发。这一倡议致力于为世界各地各种规模的组织打造开放、可验证的网络安全工具。",
     "story_label": "我们的故事",
-    "story_title": "ILL Watch 为何诞生",
+    "story_title": "ILLWATCH 为何诞生",
     "story_p1": "商业威胁情报平台每年花费数万。完整的开源替代方案又需要沉重的基础设施和专门团队来运维。夹在两者之间，许多 SOC、CERT 和公共机构只能靠电子表格和复制粘贴工作。",
-    "story_p2": "ILL Watch 于 2026 年诞生，就是为了填补这一空白：一个平台、一台服务器，承担 SOC 的重复性工作，把决策留给分析师。",
+    "story_p2": "ILLWATCH 于 2026 年诞生，就是为了填补这一空白：一个平台、一台服务器，承担 SOC 的重复性工作，把决策留给分析师。",
     "story_p3": "该项目开源，并以可度量的里程碑推进：里程碑在其标准经真实数据验证后才算完成，而不是在代码合并时。",
     "founder_role": "创始人兼首席开发者——IT 安全专家（SOC、SIEM、网络安全、取证）",
     "values_label": "我们的原则",
@@ -523,7 +523,7 @@
     "roadmap_title": "项目进展"
   },
   "demoPage": {
-    "title": "用您自己的用例体验 ILL Watch",
+    "title": "用您自己的用例体验 ILLWATCH",
     "lead": "告诉我们您的团队和需求：我们会为您展示平台，并解答部署和安全方面的问题。",
     "next_label": "接下来",
     "step1_title": "我们与您联系",
@@ -544,7 +544,7 @@
     "interest_PILOT": "陪同试点",
     "interest_SUPPORT": "支持与集成",
     "interest_OTHER": "其他",
-    "consent": "我同意 ILL Watch 按照{privacy}所述，使用这些信息回复我的申请。",
+    "consent": "我同意 ILLWATCH 按照{privacy}所述，使用这些信息回复我的申请。",
     "submit": "提交申请",
     "sent": "谢谢——我们已收到您的申请，会尽快与您联系。",
     "error": "申请未能发送，请稍后重试。",

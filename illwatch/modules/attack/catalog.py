@@ -1,4 +1,4 @@
-"""Techniques ATT&CK de chaque détection d'ILL Watch — M10, ADR-023.
+"""Techniques ATT&CK de chaque détection d'ILLWATCH — M10, ADR-023.
 
 Chaque règle de chasse et de corrélation déclare la ou les techniques qu'elle révèle. La
 table est versionnée avec les règles ; les noms ci-dessous servent tant que le référentiel

@@ -1,6 +1,6 @@
 """M9 SOC Operations (ADR-022) : niveaux, faux positifs, chasse depuis l'incident,
 recommandations, pilotage — et le critère de sortie : un incident traverse L1 → L2 → L3 sans
-quitter ILL Watch, MTTR mesuré."""
+quitter ILLWATCH, MTTR mesuré."""
 
 from datetime import UTC, date, datetime, timedelta
 from uuid import uuid4
@@ -276,7 +276,7 @@ async def test_pilotage_mtta_mttr_delais_et_charge(db_session: AsyncSession) -> 
         await soc_metrics(db_session, viewer=admin, days=14, now=NOW)
 
 
-# --- Critère de sortie : L1 → L2 → L3 sans quitter ILL Watch, MTTR mesuré ----------------------
+# --- Critère de sortie : L1 → L2 → L3 sans quitter ILLWATCH, MTTR mesuré ----------------------
 
 
 async def test_parcours_l1_l2_l3_de_bout_en_bout(

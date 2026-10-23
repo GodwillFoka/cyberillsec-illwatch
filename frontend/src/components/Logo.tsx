@@ -1,4 +1,4 @@
-// Marque ILL Watch (brand book v2, ADR-018). Le symbole reprend exactement la géométrie de
+// Marque ILLWATCH (brand book v2, ADR-018). Le symbole reprend exactement la géométrie de
 // docs/assets/illwatch-mark.svg : écu indigo, contour et radar Signal, point de menace orange.
 // Couleurs en attributs SVG (aucun style en ligne) : compatible avec `style-src 'self'`.
 // Le logotype n'est jamais recomposé avec une police : l'écran de connexion affiche le fichier
@@ -52,13 +52,13 @@ export function Logo({ size = 32, title }: { size?: number; title?: string }) {
   );
 }
 
-/** Menu latéral : symbole 32 px, « ILL Watch » et l'endossement « PAR CYBERILL ». */
+/** Menu latéral : symbole 32 px, « ILLWATCH » et l'endossement « PAR CYBERILL ». */
 export function Lockup({ size = 32 }: { size?: number }) {
   return (
     <span className="lockup">
       <Logo size={size} />
       <span className="lockup-text">
-        <strong>ILL Watch</strong>
+        <strong>ILLWATCH</strong>
         <small>{shell("endorsement")}</small>
       </span>
     </span>

@@ -1,4 +1,4 @@
-// Configuration du site de présentation ILL Watch (ADR-027).
+// Configuration du site de présentation ILLWATCH (ADR-027).
 // Ajouter une langue : un dictionnaire src/i18n/<code>.json + une ligne dans LANGS.
 
 export const LANGS = [

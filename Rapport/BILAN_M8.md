@@ -1,4 +1,4 @@
-# ILL Watch — Bilan de M8 « Detection & Correlation » — clos le 14/10/2026
+# ILLWATCH — Bilan de M8 « Detection & Correlation » — clos le 14/10/2026
 
 ## Critère de sortie
 

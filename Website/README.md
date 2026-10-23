@@ -1,6 +1,6 @@
-# Site de présentation ILL Watch
+# Site de présentation ILLWATCH
 
-Site public qui **vend** ILL Watch (la documentation explique, l'application sert), inspiré des
+Site public qui **vend** ILLWATCH (la documentation explique, l'application sert), inspiré des
 grands sites de produits sans les copier : accueil (héros animé, fonctionnalités en onglets avec
 captures **en anglais**, chiffres constatés animés, solutions, comparaison, offres, FAQ) et pages
 Plateforme (fonctionnement animé, modules, explorateur ATT&CK, exemple TAXII), Sécurité, Tarifs

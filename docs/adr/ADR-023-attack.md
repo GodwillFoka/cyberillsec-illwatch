@@ -8,7 +8,7 @@
 ## Contexte
 
 Critère de sortie de M10 : « une alerte affiche sa technique ATT&CK et, si connu, l'acteur
-associé ». ILL Watch détecte (chasse, corrélation) sans dire **comment** l'adversaire opère
+associé ». ILLWATCH détecte (chasse, corrélation) sans dire **comment** l'adversaire opère
 ni **qui** il est.
 
 ## Décision

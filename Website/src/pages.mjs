@@ -19,7 +19,7 @@ import {
   trustCards,
 } from "./templates.mjs";
 
-const title = (ctx, key) => `${ctx.t(key, {}, false)} — ILL Watch`;
+const title = (ctx, key) => `${ctx.t(key, {}, false)} — ILLWATCH`;
 
 // ── Plateforme ──────────────────────────────────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ const MODULE_SHOTS = {
   obs: "12-pilotage",
 };
 
-// Extrait de MITRE ATT&CK couvert par les règles d'ILL Watch (illwatch/modules/attack/catalog.py,
+// Extrait de MITRE ATT&CK couvert par les règles d'ILLWATCH (illwatch/modules/attack/catalog.py,
 // RULE_TECHNIQUES). Noms officiels d'ATT&CK, non traduits.
 const TECHNIQUES = [
   ["T1190", "Exploit Public-Facing Application", "Initial Access", ["RULE-05", "CORR-01", "CORR-02"]],
@@ -110,7 +110,7 @@ function explorer(ctx) {
   </section>`;
 }
 
-// Exemple TAXII 2.1 : requêtes réelles du serveur d'ILL Watch (illwatch/app/api/taxii.py),
+// Exemple TAXII 2.1 : requêtes réelles du serveur d'ILLWATCH (illwatch/app/api/taxii.py),
 // réponses abrégées sur le jeu de démonstration (identifiants calculés comme le serveur).
 const TAXII_STEPS = [
   [
@@ -119,8 +119,8 @@ const TAXII_STEPS = [
   -u analyst \\
   -H "Accept: application/taxii+json;version=2.1"`,
     `{
-  "title": "ILL Watch — TAXII 2.1",
-  "description": "Threat intelligence shared by ILL Watch (CyberillSec).",
+  "title": "ILLWATCH — TAXII 2.1",
+  "description": "Threat intelligence shared by ILLWATCH (CyberillSec).",
   "default": "https://illwatch.example/taxii2/illwatch/",
   "api_roots": ["https://illwatch.example/taxii2/illwatch/"]
 }`,
@@ -134,12 +134,12 @@ const TAXII_STEPS = [
   "collections": [
     {
       "id": "663961a0-f87f-5c0e-92b3-98ba9b2e748b",
-      "title": "ILL Watch indicators",
+      "title": "ILLWATCH indicators",
       "can_read": true,
       "can_write": false,
       "media_types": ["application/stix+json;version=2.1"]
     },
-    { "title": "ILL Watch campaigns", "…": "…" }
+    { "title": "ILLWATCH campaigns", "…": "…" }
   ]
 }`,
   ],

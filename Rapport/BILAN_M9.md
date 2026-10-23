@@ -1,8 +1,8 @@
-# ILL Watch — Bilan de M9 « SOC Operations » — 14/10/2026
+# ILLWATCH — Bilan de M9 « SOC Operations » — 14/10/2026
 
 ## Critère de sortie
 
-> Un incident traverse L1 → L2 → L3 sans quitter ILL Watch, MTTR mesuré.
+> Un incident traverse L1 → L2 → L3 sans quitter ILLWATCH, MTTR mesuré.
 
 | Constat | Résultat | Preuve |
 |---|---|---|
@@ -28,5 +28,5 @@ un jalon est clos quand son critère est constaté sur données réelles).
   non paramétrables à ce stade.
 - Les comptes n'ont pas de niveau : la traçabilité (qui escalade, qui agit) tient lieu de
   séparation des rôles L1/L2/L3.
-- Les recommandations sont des règles déterministes, pas un playbook exécuté (ILL Watch
+- Les recommandations sont des règles déterministes, pas un playbook exécuté (ILLWATCH
   n'agit pas sur le SI).

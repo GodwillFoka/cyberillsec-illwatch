@@ -1,5 +1,5 @@
 # ============================================================================
-# ILL Watch — Clôture de M7 : contrôle du VPS public
+# ILLWATCH — Clôture de M7 : contrôle du VPS public
 # Critère : « … up sur un VPS UE, note SSL Labs ≥ A ». La note est mesurée par testssl.sh
 # (même grille que SSL Labs), avec les contrôles HTTP de scripts/deploy-vps.sh check.
 # Déclenché quand deploy/vps-domaine.txt change, ou à la demande ; résultat en annotations.

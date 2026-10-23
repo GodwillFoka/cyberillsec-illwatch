@@ -2,7 +2,7 @@
   "name": "illwatch-website",
   "private": true,
   "version": "0.1.0",
-  "description": "Site de présentation international d'ILL Watch (ADR-027) : Node seul, aucune dépendance.",
+  "description": "Site de présentation international d'ILLWATCH (ADR-027) : Node seul, aucune dépendance.",
   "type": "module",
   "engines": {
     "node": ">=20.19"

@@ -362,8 +362,8 @@ def _known_ioc(ctx: HuntContext) -> Iterable[Match]:
                 Severity.HIGH,
                 o.value,
                 tr(
-                    f"IOC actif connu d'ILL Watch ({known.description or 'sans description'}).",
-                    f"Active IOC known to ILL Watch ({known.description or 'no description'}).",
+                    f"IOC actif connu d'ILLWATCH ({known.description or 'sans description'}).",
+                    f"Active IOC known to ILLWATCH ({known.description or 'no description'}).",
                 ),
                 known.indicator_id,
             )
@@ -432,12 +432,12 @@ CATALOG: tuple[Rule, ...] = (
     Rule(
         "RULE-06",
         "IOC connu",
-        "Observable soumis déjà présent comme IOC actif dans ILL Watch.",
+        "Observable soumis déjà présent comme IOC actif dans ILLWATCH.",
         Severity.HIGH,
         False,
         _known_ioc,
         name_en="Known IOC",
-        description_en="Submitted observable already present as an active IOC in ILL Watch.",
+        description_en="Submitted observable already present as an active IOC in ILLWATCH.",
         version=3,
         changes=(
             "v1 (03/10/2026) : correspondance exacte avec un IOC actif.",

@@ -35,7 +35,7 @@ export const t = defineMessages({
     count_one: "{count} actif",
     count_other: "{count} actifs",
     empty:
-      "Inventaire vide. Déclarez vos produits exposés (pare-feu, messagerie, VPN…) : ILL Watch vous signalera les CVE exploitées qui les touchent et vos adresses présentes dans les IOC.",
+      "Inventaire vide. Déclarez vos produits exposés (pare-feu, messagerie, VPN…) : ILLWATCH vous signalera les CVE exploitées qui les touchent et vos adresses présentes dans les IOC.",
     tableLabel: "Actifs",
     colCriticality: "Criticité",
     colAsset: "Actif",
@@ -82,7 +82,7 @@ export const t = defineMessages({
     count_one: "{count} asset",
     count_other: "{count} assets",
     empty:
-      "Empty inventory. Declare your exposed products (firewall, email, VPN…): ILL Watch will report the exploited CVEs that affect them and your addresses found in IOCs.",
+      "Empty inventory. Declare your exposed products (firewall, email, VPN…): ILLWATCH will report the exploited CVEs that affect them and your addresses found in IOCs.",
     tableLabel: "Assets",
     colCriticality: "Criticality",
     colAsset: "Asset",
@@ -129,7 +129,7 @@ export const t = defineMessages({
     count_one: "{count} Asset",
     count_other: "{count} Assets",
     empty:
-      "Inventar leer. Erfassen Sie Ihre exponierten Produkte (Firewall, E-Mail, VPN…): ILL Watch meldet Ihnen die ausgenutzten CVEs, die sie betreffen, und Ihre Adressen in IOC.",
+      "Inventar leer. Erfassen Sie Ihre exponierten Produkte (Firewall, E-Mail, VPN…): ILLWATCH meldet Ihnen die ausgenutzten CVEs, die sie betreffen, und Ihre Adressen in IOC.",
     tableLabel: "Assets",
     colCriticality: "Kritikalität",
     colAsset: "Asset",
@@ -176,7 +176,7 @@ export const t = defineMessages({
     count_one: "{count} activo",
     count_other: "{count} activos",
     empty:
-      "Inventario vacío. Declare sus productos expuestos (cortafuegos, correo, VPN…): ILL Watch le avisará de las CVE explotadas que les afectan y de sus direcciones presentes en los IOC.",
+      "Inventario vacío. Declare sus productos expuestos (cortafuegos, correo, VPN…): ILLWATCH le avisará de las CVE explotadas que les afectan y de sus direcciones presentes en los IOC.",
     tableLabel: "Activos",
     colCriticality: "Criticidad",
     colAsset: "Activo",
@@ -222,7 +222,7 @@ export const t = defineMessages({
     subtitle: "组织的产品、地址和域名：关联分析的基础",
     count_one: "{count} 个资产",
     count_other: "{count} 个资产",
-    empty: "资产清单为空。请登记对外暴露的产品（防火墙、邮件、VPN…）：ILL Watch 将提示影响它们的已被利用 CVE，以及出现在 IOC 中的您的地址。",
+    empty: "资产清单为空。请登记对外暴露的产品（防火墙、邮件、VPN…）：ILLWATCH 将提示影响它们的已被利用 CVE，以及出现在 IOC 中的您的地址。",
     tableLabel: "资产",
     colCriticality: "重要性",
     colAsset: "资产",

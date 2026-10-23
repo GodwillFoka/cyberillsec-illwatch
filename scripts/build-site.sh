@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILL Watch — Construire le site de présentation servi par Caddy (ADR-027, lot S6)
+# ILLWATCH — Construire le site de présentation servi par Caddy (ADR-027, lot S6)
 #
 #   ILLWATCH_SITE_DOMAIN=illwatch.exemple.eu ./scripts/build-site.sh
 #

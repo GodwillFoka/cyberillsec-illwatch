@@ -1,4 +1,4 @@
-# Alertes ILL Watch (M11, ADR-026). Seuils de départ : à ajuster après 7 jours de staging.
+# Alertes ILLWATCH (M11, ADR-026). Seuils de départ : à ajuster après 7 jours de staging.
 groups:
   - name: illwatch
     rules:
@@ -7,7 +7,7 @@ groups:
         for: 5m
         labels: { severity: critical }
         annotations:
-          summary: "API ILL Watch injoignable depuis 5 min"
+          summary: "API ILLWATCH injoignable depuis 5 min"
 
       - alert: IllwatchDatabaseDown
         expr: illwatch_database_up == 0

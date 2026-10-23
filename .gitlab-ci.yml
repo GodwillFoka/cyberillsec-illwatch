@@ -1,5 +1,5 @@
 # ============================================================================
-# ILL Watch — Pipeline d'intégration continue GitLab
+# ILLWATCH — Pipeline d'intégration continue GitLab
 # Cinq étapes : qualité, tests, build, sécurité, publication (GitLab Pages).
 # Une merge request ne peut être fusionnée que si tout est vert (RSK-05).
 # ============================================================================

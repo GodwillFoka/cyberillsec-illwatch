@@ -110,7 +110,7 @@ function header(ctx) {
   ${announce(ctx)}
   <header class="topbar">
     <div class="wrap topbar__inner">
-      <a class="brand" href="${base}${lang.code}/"><img src="${asset("img/illwatch-logo-endorsed-dark.svg")}" alt="ILL Watch" width="129" height="40"></a>
+      <a class="brand" href="${base}${lang.code}/"><img src="${asset("img/illwatch-logo-endorsed-dark.svg")}" alt="ILLWATCH" width="129" height="40"></a>
       <nav class="mainnav" aria-label="${t("nav.menu")}">
         <ul>${links}<li><a href="${site.links.docs}">${t("nav.docs")}</a></li></ul>
       </nav>
@@ -143,7 +143,7 @@ function footer(ctx) {
     <div class="wrap footer__inner">
       <div class="footer__brand">
         <img src="${asset("img/illwatch-mark.svg")}" alt="" width="40" height="40">
-        <p><strong>ILL Watch</strong> · CYBERILL<br><span class="muted">${t("footer.tagline")}</span></p>
+        <p><strong>ILLWATCH</strong> · CYBERILL<br><span class="muted">${t("footer.tagline")}</span></p>
         <a class="btn btn--primary btn--sm" href="${href(ctx, "demo/")}">${t("nav.demo")}</a>
       </div>
       <nav aria-label="${t("footer.product")}"><p class="label">${t("footer.product")}</p><ul>
@@ -597,10 +597,10 @@ export function rootPage(ctx, dictionaries) {
   const en = dictionaries.en;
   return `<!doctype html>
 <html lang="en" data-base="${base}" data-geo="${esc(site.geo)}" data-instance-lang="${esc(site.instanceLang)}">
-  ${head({ ...ctx, lang: null }, { title: "ILL Watch", description: en.meta.description, path: "" })}
+  ${head({ ...ctx, lang: null }, { title: "ILLWATCH", description: en.meta.description, path: "" })}
   <body class="root">
   <main class="root__inner">
-    <img src="${asset("img/illwatch-logo-endorsed-dark.svg")}" alt="ILL Watch" width="258" height="80">
+    <img src="${asset("img/illwatch-logo-endorsed-dark.svg")}" alt="ILLWATCH" width="258" height="80">
     <ul class="root__langs">${items}</ul>
   </main>
   <script type="module" src="${asset("js/root.js")}"></script>
@@ -620,7 +620,7 @@ export function notFoundPage(ctx, dictionaries) {
     .join("");
   return `<!doctype html>
 <html lang="en">
-  ${head({ ...ctx, lang: null }, { title: "404 — ILL Watch", description: dictionaries.en.notfound.text, path: "", alternates: false, noindex: true })}
+  ${head({ ...ctx, lang: null }, { title: "404 — ILLWATCH", description: dictionaries.en.notfound.text, path: "", alternates: false, noindex: true })}
   <body class="root">
   <main class="root__inner root__inner--404">
     <img src="${asset("img/illwatch-mark.svg")}" alt="" width="64" height="64">

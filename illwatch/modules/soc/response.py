@@ -4,7 +4,7 @@
   d'autres observables relevés pendant l'investigation), avec l'inventaire d'actifs pour
   RULE-05 ; la session est rattachée à l'incident et résumée dans sa chronologie.
 - `recommend` : recommandations de réponse déduites de ce que contient l'incident (types
-  d'IOC, CVE KEV ou à exploit, campagne de rançongiciel) et de sa phase NIST. ILL Watch
+  d'IOC, CVE KEV ou à exploit, campagne de rançongiciel) et de sa phase NIST. ILLWATCH
   recommande ; il n'exécute rien : l'analyste déclare ensuite l'action menée.
 """
 

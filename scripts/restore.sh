@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILL Watch — Restauration d'une sauvegarde (M7 Production Hardening)
+# ILLWATCH — Restauration d'une sauvegarde (M7 Production Hardening)
 #
 #   scripts/restore.sh backups/illwatch-20261003T020000Z.dump
 #   PGURL=postgresql://user:mdp@hote:5432/illwatch scripts/restore.sh FICHIER

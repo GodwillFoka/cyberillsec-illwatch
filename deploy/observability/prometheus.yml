@@ -1,4 +1,4 @@
-# Prometheus — ILL Watch (M11, ADR-026)
+# Prometheus — ILLWATCH (M11, ADR-026)
 global:
   scrape_interval: 30s
   evaluation_interval: 30s

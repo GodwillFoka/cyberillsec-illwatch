@@ -1,6 +1,6 @@
 // Page d'un incident (investigation) : cycle de vie, chronologie immuable, transitions,
 // notes, assignation, éléments associés. Une « action menée » est une déclaration de
-// l'analyste : ILL Watch l'enregistre, il ne l'exécute pas (et le dit).
+// l'analyste : ILLWATCH l'enregistre, il ne l'exécute pas (et le dit).
 import { ArrowLeft } from "lucide-react";
 import { useState, type FormEvent } from "react";
 

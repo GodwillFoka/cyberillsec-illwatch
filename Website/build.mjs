@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Construction du site de présentation ILL Watch (ADR-027) : Node seul, aucune dépendance.
+// Construction du site de présentation ILLWATCH (ADR-027) : Node seul, aucune dépendance.
 //   node Website/build.mjs            → Website/dist/
 // Variables : ILLWATCH_SITE_URL, ILLWATCH_SITE_BASE, ILLWATCH_SITE_GEO_ENDPOINT,
 // ILLWATCH_SITE_COUNTRY, ILLWATCH_SITE_DEFAULT_LANG (src/config.mjs).
