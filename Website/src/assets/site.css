@@ -693,5 +693,8 @@ progress::-moz-progress-bar { background: var(--signal); border-radius: 999px; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .marquee { overflow-x: auto; }
+  /* Sans défilement continu : les standards s'affichent sur plusieurs lignes, une seule fois. */
+  .marquee { mask-image: none; justify-content: center; padding-inline: 16px; }
+  .marquee__track { flex: 1 1 auto; flex-wrap: wrap; justify-content: center; gap: 12px 32px; padding: 0; }
+  .marquee__track[aria-hidden] { display: none; }
 }
