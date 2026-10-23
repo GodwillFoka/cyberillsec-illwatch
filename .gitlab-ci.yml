@@ -278,7 +278,8 @@ pages:
     - node Website/build.mjs
     - rm -rf public && cp -r Website/dist public
     - /tmp/venv/bin/python scripts/docs_prepare.py
-    - sed -i "s#^site_url:.*#site_url: ${CI_PAGES_URL%/}/docs/#" mkdocs.yml
+    # Ligne entre apostrophes : « : » suivi d'un espace ferait d'elle une clé YAML.
+    - 'sed -i "s#^site_url:.*#site_url: ${CI_PAGES_URL%/}/docs/#" mkdocs.yml'
     - /tmp/venv/bin/mkdocs build --site-dir public/docs
   artifacts:
     paths:
