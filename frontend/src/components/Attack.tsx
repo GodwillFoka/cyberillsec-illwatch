@@ -3,8 +3,10 @@
 // ouvrent attack.mitre.org dans un nouvel onglet, sans transmettre l'adresse d'ILL Watch.
 import type { AttackContext, TechniqueRef } from "../api/types";
 import { Link } from "../lib/router";
+import { ui } from "./components.i18n";
 
-export const ATTACK_ATTRIBUTION = "ATT&CK® © The MITRE Corporation, reproduit avec son autorisation.";
+/** Mention exigée par MITRE, dans la langue courante. */
+export const attackAttribution = () => ui("attackAttribution");
 
 export function TechniqueChip({ technique }: { technique: TechniqueRef }) {
   return (
@@ -26,7 +28,7 @@ export function TechniqueChips({ context }: { context: AttackContext | null | un
   return (
     <span className="attack-chips">
       {context.campaigns.map((c) => (
-        <Link key={c.id} className="badge attack campaign" to={`/campagnes?campagne=${c.id}`} title="Campagne">
+        <Link key={c.id} className="badge attack campaign" to={`/campagnes?campagne=${c.id}`} title={ui("campaign")}>
           {c.name}
         </Link>
       ))}
@@ -59,13 +61,13 @@ export function AttackSection({ context }: { context: AttackContext | null | und
       <h3>MITRE ATT&amp;CK</h3>
       {empty ? (
         <p className="muted small">
-          Aucune technique attribuable à cette détection, aucun acteur connu cité dans le renseignement.
+          {ui("attackEmpty")}
         </p>
       ) : (
         <dl className="facts">
           {context.techniques.length > 0 && (
             <>
-              <dt>Technique</dt>
+              <dt>{ui("technique")}</dt>
               <dd>
                 {context.techniques.map((t) => (
                   <span key={t.id} className="attack-line">
@@ -77,7 +79,7 @@ export function AttackSection({ context }: { context: AttackContext | null | und
           )}
           {context.campaigns.length > 0 && (
             <>
-              <dt>Campagne</dt>
+              <dt>{ui("campaign")}</dt>
               <dd>
                 {context.campaigns.map((c) => (
                   <span key={c.id} className="attack-line">
@@ -90,13 +92,13 @@ export function AttackSection({ context }: { context: AttackContext | null | und
           )}
           {context.actors.map((a) => (
             <div key={a.id} className="attack-actor">
-              <dt>{a.kind === "group" ? "Groupe" : "Logiciel"}</dt>
+              <dt>{a.kind === "group" ? ui("group") : ui("software")}</dt>
               <dd>
                 <a href={a.url} target="_blank" rel="noopener noreferrer">
                   {a.name}
                 </a>{" "}
                 <span className="mono muted">{a.id}</span>
-                <span className="cell-sub"> · cité : « {a.matched} »</span>
+                <span className="cell-sub">{ui("cited", { text: a.matched })}</span>
                 {a.techniques.length > 0 && (
                   <span className="attack-chips">
                     {a.techniques.map((t) => (
@@ -109,7 +111,7 @@ export function AttackSection({ context }: { context: AttackContext | null | und
           ))}
         </dl>
       )}
-      <p className="muted small">{ATTACK_ATTRIBUTION}</p>
+      <p className="muted small">{attackAttribution()}</p>
     </section>
   );
 }

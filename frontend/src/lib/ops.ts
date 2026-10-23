@@ -1,36 +1,39 @@
 // Règles d'affichage des écrans Sources CTI et Administration (sans JSX : testées par Node).
+// Unités et libellés dans la langue courante (ADR-027).
+import { formatDecimal } from "./format.js";
+import { labels } from "./labels.i18n.js";
 
 /** Durée lisible : 45 → « 45 s », 900 → « 15 min », 3600 → « 1 h », 90000 → « 1 j 1 h ». */
 export function formatDuration(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return "—";
-  if (seconds < 60) return `${Math.round(seconds)} s`;
+  if (seconds < 60) return labels("unit.s", { n: Math.round(seconds) });
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 60) return labels("unit.min_plain", { n: minutes });
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  if (hours < 24) return rest ? `${hours} h ${rest} min` : `${hours} h`;
+  if (hours < 24) return rest ? labels("unit.h_min", { h: hours, m: rest }) : labels("unit.h_plain", { n: hours });
   const days = Math.floor(hours / 24);
   const h = hours % 24;
-  return h ? `${days} j ${h} h` : `${days} j`;
+  return h ? labels("unit.d_h", { d: days, h }) : labels("unit.d_plain", { n: days });
 }
 
 /** Millisecondes : 840 → « 840 ms », 12_400 → « 12,4 s ». */
 export function formatMs(ms: number): string {
-  if (ms < 1000) return `${ms} ms`;
-  return `${(ms / 1000).toFixed(1).replace(".", ",")} s`;
+  if (ms < 1000) return labels("unit.ms", { n: ms });
+  return labels("unit.s", { n: formatDecimal(ms / 1000) });
 }
 
-/** Octets en unités binaires françaises : 20_971_520 → « 20 Mio ». */
+/** Octets en unités binaires : 20_971_520 → « 20 Mio » (« 20 MiB » en anglais). */
 export function formatBytes(bytes: number): string {
-  const units = ["o", "Kio", "Mio", "Gio"];
+  const units = ["unit.bytes", "unit.kib", "unit.mib", "unit.gib"] as const;
   let value = bytes;
   let unit = 0;
   while (value >= 1024 && unit < units.length - 1) {
     value /= 1024;
     unit += 1;
   }
-  const text = Number.isInteger(value) ? String(value) : value.toFixed(1).replace(".", ",");
-  return `${text} ${units[unit]}`;
+  const text = Number.isInteger(value) ? String(value) : formatDecimal(value);
+  return `${text} ${labels(units[unit])}`;
 }
 
 /** Taux de réussite des collectes, en pourcentage entier ; `null` sans collecte. */
@@ -66,35 +69,35 @@ export function generatePassword(length = 20): string {
   return out;
 }
 
-/** Libellés français des actions du journal d'audit (le résultat SUCCESS / FAILURE / DENIED
- * est affiché à part) ; l'action brute sinon. */
-const AUDIT_LABELS: Record<string, string> = {
-  "auth.login": "Connexion",
-  "auth.logout": "Déconnexion",
-  "auth.refresh": "Renouvellement de session",
-  "authz.denied": "Accès refusé (rôle)",
-  "user.create": "Compte créé",
-  "user.role": "Rôle modifié",
-  "user.disable": "Compte désactivé",
-  "user.enable": "Compte réactivé",
-  "user.password_reset": "Mot de passe réinitialisé",
-  "user.revoke_sessions": "Sessions révoquées",
-  "feed.create": "Source ajoutée",
-  "feed.update": "Source modifiée",
-  "feed.delete": "Source supprimée",
-  "indicator.submit": "Indicateurs soumis",
-  "alert.ack": "Alerte acquittée",
-  "data.export": "Export de données",
-  "hunt.run": "Chasse lancée",
-  "enrichment.import": "Base d'enrichissement importée",
-  "asset.create": "Actif déclaré",
-  "asset.update": "Actif modifié",
-  "asset.delete": "Actif supprimé",
-  "asset.import": "Inventaire importé",
-  "correlation.run": "Corrélation lancée",
-  "correlation.ack": "Corrélation acquittée",
-};
+/** Libellés des actions du journal d'audit (le résultat SUCCESS / FAILURE / DENIED est
+ * affiché à part) ; l'action brute sinon. */
+const AUDIT_ACTIONS = new Set([
+  "auth.login",
+  "auth.logout",
+  "auth.refresh",
+  "authz.denied",
+  "user.create",
+  "user.role",
+  "user.disable",
+  "user.enable",
+  "user.password_reset",
+  "user.revoke_sessions",
+  "feed.create",
+  "feed.update",
+  "feed.delete",
+  "indicator.submit",
+  "alert.ack",
+  "data.export",
+  "hunt.run",
+  "enrichment.import",
+  "asset.create",
+  "asset.update",
+  "asset.delete",
+  "asset.import",
+  "correlation.run",
+  "correlation.ack",
+]);
 
 export function auditLabel(action: string): string {
-  return AUDIT_LABELS[action] ?? action;
+  return AUDIT_ACTIONS.has(action) ? labels(`audit.${action}` as Parameters<typeof labels>[0]) : action;
 }

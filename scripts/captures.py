@@ -56,6 +56,10 @@ MOBILE = {name for name, _ in SCREENS}
 problems: list[str] = []
 
 
+# « Chargement… » dans les cinq langues de l'interface (ADR-027).
+LOADING = ("Chargement…", "Loading…", "Wird geladen…", "Cargando…", "加载中…")
+
+
 def settle(page: Page) -> None:
     # Pas de « networkidle » : le flux temps réel (SSE) garde une connexion ouverte en permanence.
     page.wait_for_load_state("load")
@@ -63,7 +67,8 @@ def settle(page: Page) -> None:
     # Attente côté Python : la CSP de l'interface (script-src 'self') refuse, à juste titre,
     # le JavaScript passé en chaîne par wait_for_function.
     for _ in range(60):
-        if "Chargement…" not in page.inner_text("body"):
+        body = page.inner_text("body")
+        if not any(text in body for text in LOADING):
             break
         page.wait_for_timeout(250)
     page.wait_for_timeout(900)
@@ -147,7 +152,15 @@ def shoot(page: Page, path: Path) -> None:
 
 def check(page: Page, name: str) -> None:
     text = page.inner_text("body")
-    for marker in ("Données indisponibles", "Page introuvable", "Something went wrong"):
+    for marker in (
+        "Données indisponibles",
+        "Data unavailable",
+        "Daten nicht verfügbar",
+        "Datos no disponibles",
+        "数据不可用",
+        "Page introuvable",
+        "Something went wrong",
+    ):
         if marker in text:
             problems.append(f"{name} : « {marker} » affiché")
     # Mise en page : aucun élément ne doit dépasser la largeur de l'écran (hors zones qui
@@ -204,6 +217,20 @@ def main() -> int:
             shoot(page, OUT / "04-incident.png")
         else:
             problems.append("aucun incident à ouvrir")
+
+        # Interface multilingue (ADR-027) : la vue d'ensemble et le triage dans les quatre autres
+        # langues, choix mémorisé comme le ferait le sélecteur ; erreurs de console contrôlées.
+        for lang in ("en", "de", "es", "zh"):
+            page.evaluate("lang => localStorage.setItem('illwatch.lang', lang)", lang)
+            for name, path in (("01-vue-ensemble", "/"), ("02-triage", "/triage")):
+                page.goto(f"{BASE}{path}")
+                settle(page)
+                html_lang = page.evaluate("document.documentElement.lang")
+                if not html_lang.startswith(lang):
+                    problems.append(f"{name}-{lang} : langue du document « {html_lang} »")
+                check(page, f"{name}-{lang}")
+                shoot(page, OUT / f"{name}-{lang}.png")
+        page.evaluate("localStorage.setItem('illwatch.lang', 'fr')")
 
         page.set_viewport_size({"width": 390, "height": 844})
         for name, path in SCREENS:

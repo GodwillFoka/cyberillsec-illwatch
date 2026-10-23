@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { messages } from "../i18n/common.i18n";
 import { formatNumber } from "../lib/format";
 
 /** Pagination « précédents / suivants » d'une liste longue (IOC, CVE). */
@@ -22,8 +23,12 @@ export function Pager({
   return (
     <div className="pager">
       <span className="muted">
-        {formatNumber(offset + 1)}–{formatNumber(offset + shown)} sur {formatNumber(total)}
-        {busy ? " · lecture…" : ""}
+        {messages("pagerRange", {
+          from: formatNumber(offset + 1),
+          to: formatNumber(offset + shown),
+          total: formatNumber(total),
+        })}
+        {busy ? messages("pagerReading") : ""}
       </span>
       <div className="row">
         <button
@@ -33,7 +38,7 @@ export function Pager({
           onClick={() => onOffset(Math.max(0, offset - pageSize))}
         >
           <ChevronLeft size={16} aria-hidden="true" />
-          Précédents
+          {messages("previous")}
         </button>
         <button
           className="btn"
@@ -41,7 +46,7 @@ export function Pager({
           disabled={offset + shown >= total || busy}
           onClick={() => onOffset(offset + pageSize)}
         >
-          Suivants
+          {messages("next")}
           <ChevronRight size={16} aria-hidden="true" />
         </button>
       </div>

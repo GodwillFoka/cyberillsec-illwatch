@@ -20,39 +20,43 @@ import { useAuth } from "../auth/AuthProvider";
 import { AttackSection } from "../components/Attack";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
+import { currentLang } from "../i18n/core";
 import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { splitBatch } from "../lib/iocs";
 import { INCIDENT_STATUS, PHASE_LABEL, TIER_LABEL } from "../lib/levels";
 import { Link } from "../lib/router";
 import { useTimeZone } from "../lib/time";
+import { t } from "./IncidentPage.i18n";
 import { RESPONDER_ROLES } from "./Incidents";
 
 const LIFECYCLE = ["NOUVEAU", "ANALYSE", "CONFINEMENT", "ERADICATION", "RECUPERATION", "CLOTURE"];
 
-const EVENT_LABEL: Record<string, string> = {
-  CREATED: "Ouverture",
-  STATUS_CHANGE: "Changement de statut",
-  ASSIGNED: "Assignation",
-  COMMENT: "Commentaire",
-  IOC_ATTACHED: "Indicateur associé",
-  CVE_ATTACHED: "CVE associée",
-  ACTION_TAKEN: "Action déclarée par l'analyste",
-  ESCALATED: "Escalade",
-  HUNT_RUN: "Chasse lancée depuis l'incident",
-  IOC_EXCLUDED: "Faux positif écarté",
-};
+type Key = Parameters<typeof t>[0];
+const EVENTS = new Set([
+  "CREATED",
+  "STATUS_CHANGE",
+  "ASSIGNED",
+  "COMMENT",
+  "IOC_ATTACHED",
+  "CVE_ATTACHED",
+  "ACTION_TAKEN",
+  "ESCALATED",
+  "HUNT_RUN",
+  "IOC_EXCLUDED",
+]);
+const HUNT_STATUSES = new Set(["EN_COURS", "TERMINEE", "PARTIELLE", "ECHEC"]);
+const eventLabel = (type: string) => (EVENTS.has(type) ? t(`event.${type}` as Key) : type);
+const huntStatus = (status: string) => (HUNT_STATUSES.has(status) ? t(`hunt.${status}` as Key) : status);
 
-const HUNT_STATUS: Record<string, string> = {
-  EN_COURS: "en cours",
-  TERMINEE: "terminée",
-  PARTIELLE: "partielle",
-  ECHEC: "en échec",
-};
+/** Statut dans une phrase : minuscule en français et en espagnol (« Passer en confinement »). */
+function inSentence(label: string): string {
+  return currentLang() === "fr" || currentLang() === "es" ? label.toLowerCase() : label;
+}
 
 function Lifecycle({ status }: { status: string }) {
   const current = LIFECYCLE.indexOf(status);
   return (
-    <ol className="stepper" aria-label="Cycle de vie de l'incident">
+    <ol className="stepper" aria-label={t("lifecycle")}>
       {LIFECYCLE.map((step, index) => (
         <li
           key={step}
@@ -68,8 +72,8 @@ function Lifecycle({ status }: { status: string }) {
 
 function Author({ id }: { id: string | null }) {
   const { user } = useAuth();
-  if (!id) return <span className="muted">système</span>;
-  return <span className="muted">{id === user?.id ? "vous" : "un analyste"}</span>;
+  if (!id) return <span className="muted">{t("system")}</span>;
+  return <span className="muted">{id === user?.id ? t("you") : t("anAnalyst")}</span>;
 }
 
 function Timeline({ events }: { events: IncidentEvent[] }) {
@@ -83,7 +87,7 @@ function Timeline({ events }: { events: IncidentEvent[] }) {
             <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
             <div>
               <span className="kind">
-                {EVENT_LABEL[event.event_type] ?? event.event_type} · <Author id={event.author_id} />
+                {eventLabel(event.event_type)} · <Author id={event.author_id} />
               </span>
               <span style={{ whiteSpace: "pre-wrap" }}>{event.message}</span>
             </div>
@@ -101,7 +105,7 @@ function Transitions({ incident }: { incident: IncidentDetail }) {
   const [summary, setSummary] = useState("");
 
   if (incident.next_states.length === 0) {
-    return <p className="muted">Incident clôturé : seuls les commentaires restent possibles.</p>;
+    return <p className="muted">{t("closedOnlyComments")}</p>;
   }
   const forward = incident.next_states.filter((s) => s !== "ANALYSE" || incident.status === "NOUVEAU");
   const back = incident.next_states.includes("ANALYSE") && incident.status !== "NOUVEAU";
@@ -136,7 +140,7 @@ function Transitions({ incident }: { incident: IncidentDetail }) {
             aria-pressed={target === state}
             onClick={() => setTarget(state)}
           >
-            Passer en {INCIDENT_STATUS[state]?.toLowerCase() ?? state}
+            {t("moveTo", { status: INCIDENT_STATUS[state] ? inSentence(INCIDENT_STATUS[state]) : state })}
           </button>
         ))}
         {back && (
@@ -146,7 +150,7 @@ function Transitions({ incident }: { incident: IncidentDetail }) {
             aria-pressed={target === "ANALYSE"}
             onClick={() => setTarget("ANALYSE")}
           >
-            Revenir en analyse
+            {t("backToAnalysis")}
           </button>
         )}
       </div>
@@ -154,12 +158,12 @@ function Transitions({ incident }: { incident: IncidentDetail }) {
         <>
           {target === "CLOTURE" && (
             <label className="field">
-              Résumé de clôture (obligatoire : cause, mesures, enseignements)
+              {t("closureSummary")}
               <textarea required value={summary} onChange={(e) => setSummary(e.target.value)} />
             </label>
           )}
           <label className="field">
-            Note jointe au changement (facultative)
+            {t("changeNote")}
             <input value={note} maxLength={5000} onChange={(e) => setNote(e.target.value)} />
           </label>
           {transition.error && (
@@ -169,10 +173,10 @@ function Transitions({ incident }: { incident: IncidentDetail }) {
           )}
           <div className="actions">
             <button className="btn quiet" type="button" onClick={() => setTarget(null)}>
-              Annuler
+              {t("cancel")}
             </button>
             <button className="btn primary" type="submit" disabled={transition.isPending}>
-              {transition.isPending ? "Enregistrement…" : `Confirmer : ${INCIDENT_STATUS[target]}`}
+              {transition.isPending ? t("saving") : t("confirm", { status: INCIDENT_STATUS[target] ?? target })}
             </button>
           </div>
         </>
@@ -194,9 +198,9 @@ function NoteForm({ incident }: { incident: IncidentDetail }) {
 
   return (
     <form className="form" onSubmit={submit}>
-      <div className="seg" role="group" aria-label="Type de note">
+      <div className="seg" role="group" aria-label={t("noteType")}>
         <button type="button" aria-pressed={kind === "COMMENT"} onClick={() => setKind("COMMENT")}>
-          Commentaire
+          {t("comment")}
         </button>
         <button
           type="button"
@@ -204,13 +208,13 @@ function NoteForm({ incident }: { incident: IncidentDetail }) {
           disabled={closed}
           onClick={() => setKind("ACTION_TAKEN")}
         >
-          Action menée
+          {t("actionTaken")}
         </button>
       </div>
       <label className="field">
         {kind === "ACTION_TAKEN"
-          ? "Action menée (déclarée par vous, enregistrée telle quelle : ILL Watch ne l'exécute pas)"
-          : "Commentaire"}
+          ? t("actionTakenField")
+          : t("comment")}
         <textarea required value={message} maxLength={20000} onChange={(e) => setMessage(e.target.value)} />
       </label>
       {add.error && (
@@ -220,7 +224,7 @@ function NoteForm({ incident }: { incident: IncidentDetail }) {
       )}
       <div className="actions">
         <button className="btn primary" type="submit" disabled={add.isPending || !message.trim()}>
-          {add.isPending ? "Ajout…" : "Ajouter à la chronologie"}
+          {add.isPending ? t("adding") : t("addToTimeline")}
         </button>
       </div>
     </form>
@@ -232,7 +236,7 @@ function IndicatorItem({ id, incidentId, canAct }: { id: string; incidentId: str
   const exclude = useCreateExclusion();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
-  if (!query.data) return <li className="mono muted">{query.isError ? "IOC illisible" : "…"}</li>;
+  if (!query.data) return <li className="mono muted">{query.isError ? t("iocUnreadable") : "…"}</li>;
   const ioc = query.data;
   return (
     <li className="ioc-item">
@@ -243,13 +247,13 @@ function IndicatorItem({ id, incidentId, canAct }: { id: string; incidentId: str
         </Link>
         {ioc.exclusion ? (
           <span className="badge tag" title={ioc.exclusion.reason}>
-            faux positif
+            {t("falsePositiveTag")}
           </span>
         ) : (
           canAct &&
           !open && (
             <button className="btn quiet small" type="button" onClick={() => setOpen(true)}>
-              Faux positif
+              {t("falsePositive")}
             </button>
           )
         )}
@@ -266,7 +270,7 @@ function IndicatorItem({ id, incidentId, canAct }: { id: string; incidentId: str
           }}
         >
           <label className="field">
-            Pourquoi est-ce sûr ? (l'IOC passe en liste d'exclusion : il n'est plus actif)
+            {t("whySafe")}
             <input required minLength={5} maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} />
           </label>
           {exclude.error && (
@@ -276,10 +280,10 @@ function IndicatorItem({ id, incidentId, canAct }: { id: string; incidentId: str
           )}
           <div className="actions">
             <button className="btn quiet" type="button" onClick={() => setOpen(false)}>
-              Annuler
+              {t("cancel")}
             </button>
             <button className="btn primary" type="submit" disabled={exclude.isPending || reason.trim().length < 5}>
-              {exclude.isPending ? "Exclusion…" : "Exclure (faux positif)"}
+              {exclude.isPending ? t("excluding") : t("exclude")}
             </button>
           </div>
         </form>
@@ -307,12 +311,12 @@ function Escalation({ incident, canAct }: { incident: IncidentDetail; canAct: bo
           }}
         >
           <label className="field">
-            Motif de l'escalade vers {TIER_LABEL[next]}
+            {t("escalationReason", { tier: TIER_LABEL[next] ?? next })}
             <input
               required
               minLength={5}
               maxLength={2000}
-              placeholder={next === "L2" ? "Hôte métier touché, IOC confirmé…" : "Règle à écrire, réponse avancée…"}
+              placeholder={next === "L2" ? t("escalationHintL2") : t("escalationHintL3")}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
@@ -324,12 +328,12 @@ function Escalation({ incident, canAct }: { incident: IncidentDetail; canAct: bo
           )}
           <div className="actions">
             <button className="btn" type="submit" disabled={escalate.isPending || reason.trim().length < 5}>
-              {escalate.isPending ? "Escalade…" : `Escalader en ${next}`}
+              {escalate.isPending ? t("escalating") : t("escalateTo", { tier: next })}
             </button>
           </div>
         </form>
       )}
-      {!next && <p className="muted small">Niveau le plus élevé : l'incident y reste jusqu'à sa clôture.</p>}
+      {!next && <p className="muted small">{t("highestTier")}</p>}
     </>
   );
 }
@@ -351,11 +355,10 @@ function IncidentHunting({ incident, canAct }: { incident: IncidentDetail; canAc
           }}
         >
           <p className="muted small" style={{ margin: 0 }}>
-            Les {formatNumber(incident.indicator_ids.length)} IOC associés, l'inventaire d'actifs et, si besoin,
-            les observables relevés pendant l'investigation.
+            {t("huntScope", { count: incident.indicator_ids.length })}
           </p>
           <label className="field">
-            Observables supplémentaires (facultatif : IP, domaines, URL, empreintes)
+            {t("extraObservables")}
             <textarea className="mono" rows={3} value={extra} onChange={(e) => setExtra(e.target.value)} />
           </label>
           {hunt.error && (
@@ -365,13 +368,12 @@ function IncidentHunting({ incident, canAct }: { incident: IncidentDetail; canAc
           )}
           {hunt.data && (
             <p className="notice ok" role="status">
-              {formatNumber(hunt.data.matches_count)} correspondance(s) sur {formatNumber(hunt.data.observables_count)}{" "}
-              observable(s) : détail dans la chronologie et l'écran Chasse.
+              {t("huntResult", { matches: hunt.data.matches_count, observables: hunt.data.observables_count })}
             </p>
           )}
           <div className="actions">
             <button className="btn" type="submit" disabled={hunt.isPending}>
-              {hunt.isPending ? "Chasse en cours…" : "Chasser depuis l'incident"}
+              {hunt.isPending ? t("hunting") : t("huntFromIncident")}
             </button>
           </div>
         </form>
@@ -386,7 +388,7 @@ function IncidentHunting({ incident, canAct }: { incident: IncidentDetail; canAc
                   {at ? formatDateTime(at, utc) : "—"}
                 </Link>{" "}
                 <span className="muted">
-                  · {formatNumber(h.matches_count)} correspondance(s) · {HUNT_STATUS[h.status] ?? h.status}
+                  {t("huntLine", { matches: formatNumber(h.matches_count), status: huntStatus(h.status) })}
                 </span>
               </li>
             );
@@ -401,10 +403,9 @@ function Recommendations({ incident }: { incident: IncidentDetail }) {
   if (incident.recommendations.length === 0) return null;
   return (
     <section className="card">
-      <h2>Recommandations de réponse</h2>
+      <h2>{t("recommendations")}</h2>
       <p className="muted" style={{ marginTop: 0 }}>
-        Déduites des IOC, des CVE et de la phase en cours. ILL Watch recommande, il n'exécute rien : déclarez
-        ensuite l'action menée dans la chronologie.
+        {t("recommendationsIntro")}
       </p>
       <ol className="recommendations">
         {incident.recommendations.map((r, index) => (
@@ -412,7 +413,7 @@ function Recommendations({ incident }: { incident: IncidentDetail }) {
             <span className="badge tag">{PHASE_LABEL[r.phase] ?? r.phase}</span>
             <div>
               <strong>{r.title}</strong>
-              {r.current && <span className="muted small"> · phase en cours</span>}
+              {r.current && <span className="muted small">{t("currentPhase")}</span>}
               <p>{r.detail}</p>
             </div>
           </li>
@@ -431,9 +432,9 @@ function Links({ incident, canAct }: { incident: IncidentDetail; canAct: boolean
 
   return (
     <>
-      <h3>CVE ({incident.cve_ids.length})</h3>
+      <h3>{t("cveCount", { count: incident.cve_ids.length })}</h3>
       {incident.cve_ids.length === 0 ? (
-        <p className="muted">Aucune.</p>
+        <p className="muted">{t("noneF")}</p>
       ) : (
         <ul className="list">
           {incident.cve_ids.map((id) => (
@@ -443,9 +444,9 @@ function Links({ incident, canAct }: { incident: IncidentDetail; canAct: boolean
           ))}
         </ul>
       )}
-      <h3 style={{ marginTop: 16 }}>Indicateurs ({incident.indicator_ids.length})</h3>
+      <h3 style={{ marginTop: 16 }}>{t("iocCount", { count: incident.indicator_ids.length })}</h3>
       {incident.indicator_ids.length === 0 ? (
-        <p className="muted">Aucun.</p>
+        <p className="muted">{t("noneM")}</p>
       ) : (
         <ul className="list">
           {incident.indicator_ids.slice(0, 20).map((id) => (
@@ -454,7 +455,7 @@ function Links({ incident, canAct }: { incident: IncidentDetail; canAct: boolean
         </ul>
       )}
       {incident.indicator_ids.length > 20 && (
-        <p className="muted">… et {incident.indicator_ids.length - 20} autres.</p>
+        <p className="muted">{t("andOthers", { count: incident.indicator_ids.length - 20 })}</p>
       )}
       {canAct && (
         <div className="form" style={{ marginTop: 16 }}>
@@ -466,7 +467,7 @@ function Links({ incident, canAct }: { incident: IncidentDetail; canAct: boolean
             }}
           >
             <label className="field" style={{ flex: 1 }}>
-              Associer une CVE
+              {t("linkCve")}
               <input
                 className="mono"
                 placeholder="CVE-2026-12345"
@@ -476,7 +477,7 @@ function Links({ incident, canAct }: { incident: IncidentDetail; canAct: boolean
               />
             </label>
             <button className="btn" type="submit" disabled={!cve.trim() || linkCve.isPending}>
-              Associer
+              {t("link")}
             </button>
           </form>
           <form
@@ -487,11 +488,11 @@ function Links({ incident, canAct }: { incident: IncidentDetail; canAct: boolean
             }}
           >
             <label className="field" style={{ flex: 1 }}>
-              Associer un IOC déjà connu (IP, domaine, URL, empreinte)
+              {t("linkIoc")}
               <input className="mono" value={ioc} maxLength={2048} onChange={(e) => setIoc(e.target.value)} />
             </label>
             <button className="btn" type="submit" disabled={!ioc.trim() || linkIoc.isPending}>
-              Associer
+              {t("link")}
             </button>
           </form>
           {error && (
@@ -512,16 +513,16 @@ function Assignment({ incident, canAct }: { incident: IncidentDetail; canAct: bo
   return (
     <div className="row">
       <span>
-        {incident.assigned_to ? (mine ? "Assigné à vous" : "Assigné à un analyste") : "Non assigné"}
+        {incident.assigned_to ? (mine ? t("assignedYou") : t("assignedOther")) : t("unassigned")}
       </span>
       {canAct && !mine && user && (
         <button className="btn" type="button" disabled={assign.isPending} onClick={() => assign.mutate(user.id)}>
-          M'assigner
+          {t("assignMe")}
         </button>
       )}
       {canAct && incident.assigned_to && (
         <button className="btn quiet" type="button" disabled={assign.isPending} onClick={() => assign.mutate(null)}>
-          Retirer l'assignation
+          {t("unassign")}
         </button>
       )}
       {assign.error && <span className="notice error">{assign.error.message}</span>}
@@ -540,7 +541,7 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
       <p style={{ margin: "0 0 12px" }}>
         <Link to="/incidents" className="back-link">
           <ArrowLeft size={14} aria-hidden="true" />
-          Tous les incidents
+          {t("allIncidents")}
         </Link>
       </p>
       <QueryState query={query}>
@@ -556,11 +557,11 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                     {incident.title}
                   </h1>
                   <p>
-                    {INCIDENT_STATUS[incident.status]} · {TIER_LABEL[incident.tier] ?? incident.tier} · ouvert{" "}
-                    {opened ? formatAgo(opened) : "—"}
+                    {INCIDENT_STATUS[incident.status]} · {TIER_LABEL[incident.tier] ?? incident.tier}
+                    {t("opened", { ago: opened ? formatAgo(opened) : "—" })}
                     {opened ? ` (${formatDateTime(opened, utc)})` : ""}
-                    {closed ? ` · clôturé ${formatDateTime(closed, utc)}` : ""}
-                    {incident.source_alert_id ? " · issu d'une alerte CVE" : ""}
+                    {closed ? t("closedAt", { at: formatDateTime(closed, utc) }) : ""}
+                    {incident.source_alert_id ? t("fromAlert") : ""}
                   </p>
                 </div>
               </div>
@@ -572,20 +573,20 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
               <div className="page-grid">
                 <div className="grid">
                   <section className="card">
-                    <h2>Description</h2>
+                    <h2>{t("description")}</h2>
                     <p style={{ whiteSpace: "pre-wrap" }}>{incident.description}</p>
                     {incident.closure_summary && (
                       <>
-                        <h2>Résumé de clôture</h2>
+                        <h2>{t("closure")}</h2>
                         <p style={{ whiteSpace: "pre-wrap" }}>{incident.closure_summary}</p>
                       </>
                     )}
                   </section>
                   <Recommendations incident={incident} />
                   <section className="card">
-                    <h2>Chronologie</h2>
+                    <h2>{t("timeline")}</h2>
                     <p className="muted" style={{ marginTop: 0 }}>
-                      Immuable : chaque étape est conservée, rien n'est modifié ni effacé.
+                      {t("timelineNote")}
                     </p>
                     <Timeline events={incident.timeline} />
                   </section>
@@ -594,26 +595,26 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                 <aside className="grid">
                   <section className="card detail">
                     <section>
-                      <h3>Statut</h3>
+                      <h3>{t("status")}</h3>
                       {canAct ? (
                         <Transitions incident={incident} />
                       ) : (
                         <p className="reason" style={{ textAlign: "left" }}>
-                          Changements de statut réservés aux rôles analyste et administrateur.
+                          {t("statusRolesOnly")}
                         </p>
                       )}
                     </section>
                     <section>
-                      <h3>Niveau SOC</h3>
+                      <h3>{t("tier")}</h3>
                       <Escalation incident={incident} canAct={canAct} />
                     </section>
                     <section>
-                      <h3>Assignation</h3>
+                      <h3>{t("assignment")}</h3>
                       <Assignment incident={incident} canAct={canAct} />
                     </section>
                     {canAct && (
                       <section>
-                        <h3>Ajouter à la chronologie</h3>
+                        <h3>{t("addToTimeline")}</h3>
                         <NoteForm incident={incident} />
                       </section>
                     )}
@@ -623,7 +624,7 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                   </section>
                   <section className="card detail">
                     <section>
-                      <h3>Chasse depuis l'incident</h3>
+                      <h3>{t("huntSection")}</h3>
                       <IncidentHunting incident={incident} canAct={canAct} />
                     </section>
                   </section>

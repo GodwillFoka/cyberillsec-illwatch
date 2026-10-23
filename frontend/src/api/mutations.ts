@@ -2,6 +2,8 @@
 // réel préviendra aussi les autres analystes connectés).
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { ui } from "../components/components.i18n";
+
 import { apiDelete, apiPost, apiSend } from "./http";
 import type {
   Account,
@@ -141,7 +143,7 @@ export function useOpenIncidentForCve() {
   return useMutation({
     mutationFn: ({ cveId, severity, description }: { cveId: string; severity: string; description: string }) =>
       apiPost<IncidentDetail>("/incidents", {
-        title: `Remédiation ${cveId}`,
+        title: ui("remediationTitle", { cve: cveId }),
         description,
         severity,
         cve_ids: [cveId],

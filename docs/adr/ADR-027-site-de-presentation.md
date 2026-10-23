@@ -70,6 +70,15 @@ solution, sur le même serveur.
     tiers ; mentions légales (Impressum) et déclaration de protection des données obligatoires
     avant la mise en ligne publique.
 
+11. **L'application elle-même est multilingue** (décision du 23/10/2026), dans les mêmes cinq
+    langues et selon le même ordre de choix (choix mémorisé, puis `GET /api/v1/locale`, puis
+    navigateur, puis anglais). Sélecteur sur l'écran de connexion et dans la barre supérieure.
+    Les textes de chaque écran sont déclarés à côté de lui dans les cinq langues ; une
+    traduction manquante est une erreur de compilation, pas un texte vide découvert en
+    production. Les contenus écrits par le serveur ou par les analystes (incidents, règles,
+    recommandations) ne sont pas traduits. La préproduction capture la vue d'ensemble et le
+    triage dans chaque langue et échoue sur toute erreur de console.
+
 ## Conséquences
 
 - Positif : site rapide partout dans le monde, sans surface d'attaque côté dépendances,

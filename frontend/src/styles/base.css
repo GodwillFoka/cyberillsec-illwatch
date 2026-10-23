@@ -1963,3 +1963,57 @@ textarea {
   color: var(--text);
   font-family: inherit;
 }
+
+/* --- Langue de l'interface (ADR-027) ------------------------------------------------------- */
+/* Liste native : clavier, lecteurs d'écran et sélecteurs mobiles fonctionnent sans script. */
+.lang-select {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  color: var(--muted);
+}
+
+.lang-select select {
+  min-height: 36px;
+  padding: 0 var(--s3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  background: var(--panel-head);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.lang-select select:hover {
+  border-color: var(--line-strong);
+}
+
+.lang-select select:focus-visible {
+  border-color: var(--signal);
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.lang-select.compact select {
+  min-height: 32px;
+  padding: 0 var(--s2);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.login-panel {
+  position: relative;
+}
+
+.login-lang {
+  position: absolute;
+  top: var(--s5);
+  right: var(--s5);
+}
+
+@media (max-width: 720px) {
+  .lang-select.compact svg {
+    display: none;
+  }
+}

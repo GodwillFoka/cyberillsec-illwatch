@@ -6,6 +6,7 @@ import {
   getRefreshToken,
   storeTokens,
 } from "../auth/tokens";
+import { messages } from "../i18n/common.i18n";
 import { filenameFrom } from "../lib/iocs";
 import type { TokenResponse } from "./types";
 
@@ -22,7 +23,7 @@ export class ApiError extends Error {
 }
 
 async function errorFrom(response: Response): Promise<ApiError> {
-  let message = `Erreur ${response.status}`;
+  let message = messages("httpError", { status: String(response.status) });
   try {
     const body: unknown = await response.json();
     if (body && typeof body === "object" && "detail" in body) {
@@ -100,7 +101,7 @@ export async function login(username: string, password: string): Promise<void> {
   });
   if (!response.ok) {
     if (response.status === 401) {
-      throw new ApiError(401, "Identifiant ou mot de passe incorrect.");
+      throw new ApiError(401, messages("badCredentials"));
     }
     throw await errorFrom(response);
   }

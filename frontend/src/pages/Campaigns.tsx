@@ -8,12 +8,14 @@ import { useAttachToCampaign, useCreateCampaign, useDeleteCampaign } from "../ap
 import { useCampaign, useCampaigns } from "../api/queries";
 import type { Campaign } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
-import { ATTACK_ATTRIBUTION } from "../components/Attack";
+import { attackAttribution } from "../components/Attack";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
+import { messages } from "../i18n/common.i18n";
 import { formatAgo, formatNumber, parseDate } from "../lib/format";
 import { iocTypeLabel, splitBatch } from "../lib/iocs";
 import { asUuid, Link, useLocation } from "../lib/router";
+import { t } from "./Campaigns.i18n";
 
 const EDITORS = new Set(["ADMIN", "ANALYST"]);
 // Au-delà, la liste se replie : une campagne réelle compte souvent des centaines d'IOC.
@@ -34,13 +36,13 @@ function NewCampaign({ onCreated }: { onCreated: (c: Campaign) => void }) {
   return (
     <form className="card detail form" onSubmit={submit} aria-labelledby="nouvelle-campagne">
       <section className="form">
-        <h3 id="nouvelle-campagne">Nouvelle campagne</h3>
+        <h3 id="nouvelle-campagne">{t("newCampaign")}</h3>
         <label className="field">
-          Nom
+          {t("name")}
           <input required minLength={3} maxLength={160} value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <label className="field">
-          Acteur ATT&amp;CK (facultatif : groupe G…, logiciel S…)
+          {t("actorField")}
           <input
             className="mono"
             maxLength={16}
@@ -50,7 +52,7 @@ function NewCampaign({ onCreated }: { onCreated: (c: Campaign) => void }) {
           />
         </label>
         <label className="field">
-          Description (source, période, cible)
+          {t("description")}
           <textarea maxLength={4000} value={description} onChange={(e) => setDescription(e.target.value)} />
         </label>
         {create.error && (
@@ -60,7 +62,7 @@ function NewCampaign({ onCreated }: { onCreated: (c: Campaign) => void }) {
         )}
         <div className="actions">
           <button className="btn primary" type="submit" disabled={create.isPending}>
-            {create.isPending ? "Création…" : "Créer la campagne"}
+            {create.isPending ? t("creating") : t("create")}
           </button>
         </div>
       </section>
@@ -92,13 +94,13 @@ function Attach({ campaignId }: { campaignId: string }) {
   }
   return (
     <form className="form" onSubmit={submit}>
-      <h3>Rattacher de l'infrastructure</h3>
+      <h3>{t("attachTitle")}</h3>
       <label className="field">
-        IOC dont la description contient (nom d'un pulse OTX, d'un rapport…)
+        {t("contains")}
         <input minLength={4} maxLength={200} value={contains} onChange={(e) => setContains(e.target.value)} />
       </label>
       <label className="field">
-        Ou des valeurs déjà connues (une par ligne)
+        {t("knownValues")}
         <textarea className="mono" rows={3} value={values} onChange={(e) => setValues(e.target.value)} />
       </label>
       {attach.error && (
@@ -108,8 +110,8 @@ function Attach({ campaignId }: { campaignId: string }) {
       )}
       {attach.data && (
         <p className="notice ok" role="status">
-          {formatNumber(attach.data.attached)} IOC rattaché(s)
-          {attach.data.unknown ? ` · ${formatNumber(attach.data.unknown)} valeur(s) inconnue(s) de la base` : ""}.
+          {t("attached", { count: attach.data.attached })}
+          {attach.data.unknown ? t("unknownValues", { count: attach.data.unknown }) : ""}.
         </p>
       )}
       <div className="actions">
@@ -118,7 +120,7 @@ function Attach({ campaignId }: { campaignId: string }) {
           type="submit"
           disabled={attach.isPending || (contains.trim().length < 4 && !values.trim())}
         >
-          {attach.isPending ? "Rattachement…" : "Rattacher"}
+          {attach.isPending ? t("attaching") : t("attach")}
         </button>
       </div>
     </form>
@@ -137,7 +139,7 @@ function CampaignPanel({ campaignId, onDeleted }: { campaignId: string; onDelete
     setExpanded(false);
   }, [campaignId]);
   return (
-    <aside className="card detail" aria-label="Détail de la campagne">
+    <aside className="card detail" aria-label={t("panelLabel")}>
       <QueryState query={query}>
         {(c) => (
           <>
@@ -148,24 +150,24 @@ function CampaignPanel({ campaignId, onDeleted }: { campaignId: string; onDelete
               {c.description && <p className="description">{c.description}</p>}
             </section>
             <section>
-              <h3>Acteur</h3>
+              <h3>{t("actor")}</h3>
               {c.actor ? (
                 <p>
                   <a href={c.actor.url} target="_blank" rel="noopener noreferrer">
                     {c.actor.name}
                   </a>{" "}
                   <span className="mono muted">{c.actor.id}</span>{" "}
-                  <span className="cell-sub">{c.actor.kind === "group" ? "groupe" : "logiciel"}</span>
+                  <span className="cell-sub">{c.actor.kind === "group" ? t("group") : t("software")}</span>
                 </p>
               ) : (
-                <p className="muted">{c.actor_id ? `${c.actor_id} (référentiel ATT&CK non importé)` : "Non attribuée."}</p>
+                <p className="muted">{c.actor_id ? t("notImported", { id: c.actor_id }) : t("unattributed")}</p>
               )}
-              <p className="muted small">{ATTACK_ATTRIBUTION}</p>
+              <p className="muted small">{attackAttribution()}</p>
             </section>
             <section>
-              <h3>Infrastructure ({formatNumber(c.indicators)})</h3>
+              <h3>{t("infrastructure", { count: c.indicators })}</h3>
               {c.infrastructure.length === 0 ? (
-                <p className="empty">Aucun IOC rattaché.</p>
+                <p className="empty">{t("noIoc")}</p>
               ) : (
                 <ul className="list">
                   {(expanded ? c.infrastructure : c.infrastructure.slice(0, PREVIEW)).map((i) => {
@@ -180,7 +182,7 @@ function CampaignPanel({ campaignId, onDeleted }: { campaignId: string; onDelete
                           <span className="cell-sub">
                             {" "}
                             · {iocTypeLabel(i.type)}
-                            {seen ? ` · vu ${formatAgo(seen)}` : ""}
+                            {seen ? t("seen", { ago: formatAgo(seen) }) : ""}
                           </span>
                         </span>
                       </li>
@@ -192,8 +194,8 @@ function CampaignPanel({ campaignId, onDeleted }: { campaignId: string; onDelete
                 <div className="actions">
                   <button className="btn quiet small" type="button" onClick={() => setExpanded(!expanded)}>
                     {expanded
-                      ? "Replier la liste"
-                      : `Afficher les ${formatNumber(c.infrastructure.length)} IOC listés`}
+                      ? t("collapse")
+                      : t("showAll", { count: c.infrastructure.length })}
                   </button>
                 </div>
               )}
@@ -212,10 +214,10 @@ function CampaignPanel({ campaignId, onDeleted }: { campaignId: string; onDelete
                     disabled={remove.isPending}
                     onClick={() => (confirming ? remove.mutate(c.id, { onSuccess: onDeleted }) : setConfirming(true))}
                   >
-                    {confirming ? "Confirmer la suppression" : "Supprimer la campagne"}
+                    {confirming ? t("confirmDelete") : t("delete")}
                   </button>
                 </div>
-                {confirming && <p className="reason">Les IOC restent en base ; seul le regroupement disparaît.</p>}
+                {confirming && <p className="reason">{t("deleteNote")}</p>}
               </section>
             )}
           </>
@@ -241,13 +243,13 @@ export function Campaigns() {
     <>
       <div className="page-head">
         <div>
-          <h1>Campagnes</h1>
-          <p>L'infrastructure d'une opération adverse et l'acteur qui la mène (MITRE ATT&amp;CK)</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         {canEdit && (
           <button className="btn primary" type="button" onClick={() => navigate("/campagnes?nouvelle=1", { replace: true })}>
             <Plus size={20} strokeWidth={1.5} aria-hidden="true" />
-            Nouvelle campagne
+            {t("newCampaign")}
           </button>
         )}
       </div>
@@ -257,17 +259,16 @@ export function Campaigns() {
             {() =>
               campaigns.length === 0 ? (
                 <p className="empty">
-                  Aucune campagne. Créez-en une, puis rattachez-lui les IOC d'une même opération (par exemple tous ceux
-                  d'un pulse OTX) : les détections qui les touchent afficheront la campagne et son acteur.
+                  {t("empty")}
                 </p>
               ) : (
-                <table className="table selectable" aria-label="Campagnes">
+                <table className="table selectable" aria-label={t("tableLabel")}>
                   <thead>
                     <tr>
-                      <th>Campagne</th>
-                      <th>Acteur</th>
-                      <th className="num">IOC</th>
-                      <th className="hide-narrow">Dernière activité</th>
+                      <th>{t("colCampaign")}</th>
+                      <th>{t("colActor")}</th>
+                      <th className="num">{t("colIoc")}</th>
+                      <th className="hide-narrow">{t("colActivity")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -305,7 +306,7 @@ export function Campaigns() {
           <CampaignPanel campaignId={selected} onDeleted={() => navigate("/campagnes", { replace: true })} />
         ) : (
           <aside className="card detail">
-            <p className="empty">{query.isPending ? "Chargement…" : "Aucune campagne sélectionnée."}</p>
+            <p className="empty">{query.isPending ? messages("loading") : t("noneSelected")}</p>
           </aside>
         )}
       </div>

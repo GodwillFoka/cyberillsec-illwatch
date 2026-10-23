@@ -5,6 +5,9 @@ import { useState, type FormEvent } from "react";
 
 import { ApiError } from "../api/http";
 import { BrandLogo } from "../components/Logo";
+import { messages } from "../i18n/common.i18n";
+import { LanguageSelect } from "../i18n/LanguageSelect";
+import { shell } from "../layout/shell.i18n";
 import { useAuth } from "./AuthProvider";
 
 export function LoginPage() {
@@ -21,7 +24,7 @@ export function LoginPage() {
     try {
       await signIn(username.trim(), password);
     } catch (exc) {
-      setError(exc instanceof ApiError ? exc.message : "Serveur injoignable. Vérifiez qu'ILL Watch tourne, puis réessayez.");
+      setError(exc instanceof ApiError ? exc.message : messages("serverDown"));
       setPassword("");
     } finally {
       setBusy(false);
@@ -34,23 +37,23 @@ export function LoginPage() {
         <div className="radar" />
         <div className="login-identity">
           <BrandLogo />
-          <p className="brand-signature">Voir la menace avant qu’elle ne vous voie.</p>
-          <p className="tagline">
-            Renseignement sur les menaces, priorisation des vulnérabilités et réponse aux
-            incidents, sur un seul poste de veille.
-          </p>
+          <p className="brand-signature">{shell("signature")}</p>
+          <p className="tagline">{shell("tagline")}</p>
         </div>
-        <p className="login-owner">Veille CTI · triage · réponse aux incidents</p>
+        <p className="login-owner">{shell("owner")}</p>
       </section>
       <section className="login-panel">
+        <div className="login-lang">
+          <LanguageSelect />
+        </div>
         <form className="login-form" onSubmit={submit} aria-labelledby="login-title">
           <div className="login-mobile-brand">
             <BrandLogo />
           </div>
-          <h1 id="login-title">Connexion</h1>
-          <p className="muted">Accès réservé aux analystes autorisés. Chaque connexion est journalisée.</p>
+          <h1 id="login-title">{shell("loginTitle")}</h1>
+          <p className="muted">{shell("loginNotice")}</p>
           <label className="field">
-            Identifiant
+            {shell("username")}
             <input
               autoComplete="username"
               autoFocus
@@ -60,7 +63,7 @@ export function LoginPage() {
             />
           </label>
           <label className="field">
-            Mot de passe
+            {shell("password")}
             <input
               type="password"
               autoComplete="current-password"
@@ -75,7 +78,7 @@ export function LoginPage() {
             </p>
           )}
           <button className="btn primary wide" type="submit" disabled={busy}>
-            {busy ? "Connexion…" : "Se connecter"}
+            {busy ? shell("signingIn") : shell("signIn")}
           </button>
         </form>
       </section>

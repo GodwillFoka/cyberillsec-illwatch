@@ -8,6 +8,22 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Langue selon le pays, interface multilingue (ADR-027, 23/10)
+- `GET /api/v1/locale` (public) : langue du visiteur d'après le **pays** de son adresse IP
+  (base DB-IP Lite locale, aucun service tiers), ou d'après `INSTANCE_COUNTRY` sur un réseau
+  interne ; le navigateur départage les pays bilingues (Suisse, Belgique, Canada, Cameroun…) ;
+  puis `Accept-Language`, `DEFAULT_LANGUAGE`, anglais. Adresse ni renvoyée, ni journalisée, ni
+  conservée ; `Accept-Language` borné et validé ; recherches simultanées plafonnées.
+- Interface web en **cinq langues** (français, anglais, allemand, espagnol, chinois simplifié) :
+  sélecteur sur l'écran de connexion et dans la barre supérieure, textes de chaque écran
+  vérifiés à la compilation, nombres, dates, durées et pays selon la langue.
+- Site de présentation : même ordre de décision (pays d'abord) et même table pays → langues
+  que l'API, vérifiée par test.
+
+### Corrigé
+- CI : `certifi` 2026.10.19 (PYSEC-2026-4320) et `opentelemetry-api` 1.45.1 (CVE-2026-114603) ;
+  pip-audit annote désormais chaque vulnérabilité ; données du site exclues par erreur de Git.
+
 ### Ajouté — Site de présentation, lot S1 (ADR-027)
 - Dossier `Website/` : site de présentation international, distinct de la documentation et de
   l'application, en **cinq langues** (français, anglais, allemand, espagnol, chinois simplifié).

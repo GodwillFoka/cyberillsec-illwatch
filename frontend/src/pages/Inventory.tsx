@@ -10,14 +10,15 @@ import type { Asset, AssetWrite } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
-import { formatNumber } from "../lib/format";
+import { messages } from "../i18n/common.i18n";
 import { asUuid, Link, useLocation } from "../lib/router";
+import { t } from "./Inventory.i18n";
 
-const CRITICALITIES: [AssetWrite["criticality"], string][] = [
-  ["CRITICAL", "Critique — arrêt de l'activité"],
-  ["HIGH", "Élevée — service exposé ou sensible"],
-  ["MEDIUM", "Moyenne"],
-  ["LOW", "Faible — poste ou service secondaire"],
+const criticalities = (): [AssetWrite["criticality"], string][] => [
+  ["CRITICAL", t("crit.CRITICAL")],
+  ["HIGH", t("crit.HIGH")],
+  ["MEDIUM", t("crit.MEDIUM")],
+  ["LOW", t("crit.LOW")],
 ];
 
 const EDITOR_ROLES = new Set(["ADMIN", "ANALYST"]);
@@ -89,27 +90,27 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
       <section>
         <div className="title" id="actif-titre">
           {asset ? <LevelBadge level={asset.criticality} /> : null}
-          <span>{asset ? asset.name : "Nouvel actif"}</span>
+          <span>{asset ? asset.name : t("newAsset")}</span>
         </div>
         {asset && (
           <p className="small">
-            <Link to={`/correlations?actif=${encodeURIComponent(asset.id)}`}>Voir ses corrélations</Link>
+            <Link to={`/correlations?actif=${encodeURIComponent(asset.id)}`}>{t("seeCorrelations")}</Link>
           </p>
         )}
       </section>
       <section className="form">
-        <h3>Identité</h3>
+        <h3>{t("identity")}</h3>
         <label className="field">
-          Nom
+          {t("name")}
           <input required maxLength={120} value={name} disabled={!canEdit} onChange={(e) => setName(e.target.value)} />
         </label>
         <label className="field">
-          Produit (tel que nommé dans les avis de sécurité)
+          {t("product")}
           <input
             required
             minLength={3}
             maxLength={120}
-            placeholder="FortiOS, Exchange Server, Confluence…"
+            placeholder={t("productPlaceholder")}
             value={product}
             disabled={!canEdit}
             onChange={(e) => setProduct(e.target.value)}
@@ -117,32 +118,32 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
         </label>
         <div className="row">
           <label className="field grow">
-            Éditeur
+            {t("vendor")}
             <input maxLength={120} value={vendor} disabled={!canEdit} onChange={(e) => setVendor(e.target.value)} />
           </label>
           <label className="field grow">
-            Version
+            {t("version")}
             <input maxLength={60} value={version} disabled={!canEdit} onChange={(e) => setVersion(e.target.value)} />
           </label>
         </div>
         <label className="field">
-          Plateforme (système hôte : tranche les CVE propres à une distribution)
+          {t("platform")}
           <input
             maxLength={80}
-            placeholder="Debian 12, Ubuntu 22.04, Windows Server 2022…"
+            placeholder={t("platformPlaceholder")}
             value={platform}
             disabled={!canEdit}
             onChange={(e) => setPlatform(e.target.value)}
           />
         </label>
         <label className="field">
-          Criticité
+          {t("criticality")}
           <select
             value={criticality}
             disabled={!canEdit}
             onChange={(e) => setCriticality(e.target.value as AssetWrite["criticality"])}
           >
-            {CRITICALITIES.map(([value, label]) => (
+            {criticalities().map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
@@ -151,28 +152,28 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
         </label>
       </section>
       <section className="form">
-        <h3>Exposition</h3>
+        <h3>{t("exposure")}</h3>
         <label className="field">
-          Adresses IP publiques (une par ligne)
+          {t("addresses")}
           <textarea className="mono" value={addresses} disabled={!canEdit} onChange={(e) => setAddresses(e.target.value)} />
         </label>
         <label className="field">
-          Domaines (une par ligne ; les sous-domaines sont couverts)
+          {t("domains")}
           <textarea className="mono" value={domains} disabled={!canEdit} onChange={(e) => setDomains(e.target.value)} />
         </label>
         <label className="field">
-          Notes
+          {t("notes")}
           <textarea maxLength={2000} value={notes} disabled={!canEdit} onChange={(e) => setNotes(e.target.value)} />
         </label>
         <label className="check">
           <input type="checkbox" checked={active} disabled={!canEdit} onChange={(e) => setActive(e.target.checked)} />
-          Actif en service (un actif retiré n'est plus corrélé)
+          {t("inService")}
         </label>
       </section>
       <section>
         {error && (
           <p className="notice error" role="alert">
-            Refusé : {error.message}
+            {t("refused", { message: error.message })}
           </p>
         )}
         <div className="actions">
@@ -186,17 +187,17 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
               }
             >
               <Trash2 size={20} strokeWidth={1.5} aria-hidden="true" />
-              {confirming ? "Confirmer la suppression" : "Supprimer"}
+              {confirming ? t("confirmDelete") : t("delete")}
             </button>
           )}
           <button className="btn primary" type="submit" disabled={!canEdit || save.isPending}>
-            {save.isPending ? "Enregistrement…" : asset ? "Enregistrer" : "Déclarer l'actif"}
+            {save.isPending ? t("saving") : asset ? t("save") : t("declare")}
           </button>
         </div>
         {confirming && (
-          <p className="reason">Ses évènements corrélés seront supprimés ; les incidents restent.</p>
+          <p className="reason">{t("deleteNote")}</p>
         )}
-        {!canEdit && <p className="reason">Modification réservée aux rôles analyste et administrateur.</p>}
+        {!canEdit && <p className="reason">{t("rolesOnly")}</p>}
       </section>
     </form>
   );
@@ -223,13 +224,13 @@ export function Inventory() {
     <>
       <div className="page-head">
         <div>
-          <h1>Inventaire</h1>
-          <p>Produits, adresses et domaines de l'organisation : la base de la corrélation</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         {canEdit && (
           <button className="btn primary" type="button" onClick={() => navigate("/inventaire?nouveau=1", { replace: true })}>
             <Plus size={20} strokeWidth={1.5} aria-hidden="true" />
-            Nouvel actif
+            {t("newAsset")}
           </button>
         )}
       </div>
@@ -242,24 +243,23 @@ export function Inventory() {
       <div className="split">
         <section className="card">
           <div className="toolbar">
-            <span className="muted">{query.data ? `${formatNumber(assets.length)} actif${assets.length > 1 ? "s" : ""}` : " "}</span>
+            <span className="muted">{query.data ? t.plural("count", assets.length) : " "}</span>
           </div>
           <QueryState query={query}>
             {() =>
               assets.length === 0 ? (
                 <p className="empty">
-                  Inventaire vide. Déclarez vos produits exposés (pare-feu, messagerie, VPN…) : ILL Watch vous
-                  signalera les CVE exploitées qui les touchent et vos adresses présentes dans les IOC.
+                  {t("empty")}
                 </p>
               ) : (
-                <table className="table selectable" aria-label="Actifs">
+                <table className="table selectable" aria-label={t("tableLabel")}>
                   <thead>
                     <tr>
-                      <th>Criticité</th>
-                      <th>Actif</th>
-                      <th>Produit</th>
-                      <th className="num">Exposition</th>
-                      <th>État</th>
+                      <th>{t("colCriticality")}</th>
+                      <th>{t("colAsset")}</th>
+                      <th>{t("colProduct")}</th>
+                      <th className="num">{t("colExposure")}</th>
+                      <th>{t("colState")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -286,7 +286,7 @@ export function Inventory() {
                           {asset.vendor ? <span className="cell-sub"> · {asset.vendor}</span> : null}
                         </td>
                         <td className="num mono">{asset.addresses.length + asset.domains.length}</td>
-                        <td className="muted">{asset.is_active ? "en service" : "retiré"}</td>
+                        <td className="muted">{asset.is_active ? t("active") : t("retired")}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -301,16 +301,16 @@ export function Inventory() {
             asset={selected}
             onSaved={(saved) => {
               select(saved.id);
-              setFlash(`« ${saved.name} » enregistré : la prochaine passe de corrélation en tiendra compte.`);
+              setFlash(t("saved", { name: saved.name }));
             }}
             onDeleted={() => {
               navigate("/inventaire", { replace: true });
-              setFlash("Actif supprimé, avec ses évènements corrélés.");
+              setFlash(t("deleted"));
             }}
           />
         ) : (
           <aside className="card detail">
-            <p className="empty">{query.isPending ? "Chargement…" : "Aucun actif déclaré."}</p>
+            <p className="empty">{query.isPending ? messages("loading") : t("noAsset")}</p>
           </aside>
         )}
       </div>

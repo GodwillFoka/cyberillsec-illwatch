@@ -5,6 +5,7 @@
 // vectorisé du kit (BrandLogo) ; le menu suit la spécification « nav-brand » du kit.
 import { useId } from "react";
 
+import { shell } from "../layout/shell.i18n";
 import endorsedDark from "../assets/brand/illwatch-logo-endorsed-dark.svg";
 import logoDark from "../assets/brand/illwatch-logo-dark.svg";
 
@@ -58,7 +59,7 @@ export function Lockup({ size = 32 }: { size?: number }) {
       <Logo size={size} />
       <span className="lockup-text">
         <strong>ILL Watch</strong>
-        <small>par CYBERILL</small>
+        <small>{shell("endorsement")}</small>
       </span>
     </span>
   );
@@ -70,7 +71,7 @@ export function BrandLogo({ endorsed = true, className = "brand-logo" }: { endor
     <img
       className={className}
       src={endorsed ? endorsedDark : logoDark}
-      alt="ILL Watch par CYBERILL"
+      alt={shell("logoAlt")}
       width={endorsed ? 387 : 424}
       height={120}
     />

@@ -21,10 +21,12 @@ import { LevelBadge } from "../components/Badge";
 import { Breakdown, formatEpss, formatScore } from "../components/CveScore";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
+import { messages } from "../i18n/common.i18n";
 import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { ALERT_REASON, INCIDENT_STATUS, PRIORITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
+import { t } from "./Cves.i18n";
 import { RESPONDER_ROLES } from "./Incidents";
 
 const CVE_ID = /^CVE-\d{4}-\d{4,}$/i;
@@ -45,17 +47,13 @@ function urlFor(params: { cve?: string; q?: string }): string {
   return text ? `/cve?${text}` : "/cve";
 }
 
-const SIGNAL_TITLE: Record<string, string> = {
-  KEV: "Exploitée selon le catalogue KEV de la CISA",
-  Exploit: "Exploit public disponible",
-  "Rançon": "Utilisée dans des campagnes de rançongiciel",
-};
+type Signal = "KEV" | "EXPLOIT" | "RANSOM";
 
 function Signals({ cve }: { cve: Cve }) {
-  const tags: string[] = [];
+  const tags: Signal[] = [];
   if (cve.is_kev) tags.push("KEV");
-  if (cve.has_public_exploit) tags.push("Exploit");
-  if (cve.has_ransomware_campaign) tags.push("Rançon");
+  if (cve.has_public_exploit) tags.push("EXPLOIT");
+  if (cve.has_ransomware_campaign) tags.push("RANSOM");
   if (tags.length === 0) return <span className="muted">—</span>;
   return (
     <span className="row tight">
@@ -63,9 +61,9 @@ function Signals({ cve }: { cve: Cve }) {
         <span
           key={tag}
           className={`badge tag ${tag === "KEV" ? "p0" : "p1"}`}
-          title={SIGNAL_TITLE[tag]}
+          title={t(`signalTitle.${tag}`)}
         >
-          {tag}
+          {t(`signal.${tag}`)}
         </span>
       ))}
     </span>
@@ -86,19 +84,19 @@ function SearchForm({ initial, onSearch }: { initial: string; onSearch: (value: 
   return (
     <form className="row grow" role="search" onSubmit={submit}>
       <label className="sr-only" htmlFor="recherche-cve">
-        Identifiant ou texte
+        {t("searchLabel")}
       </label>
       <input
         id="recherche-cve"
         className="compact grow"
         type="search"
         maxLength={100}
-        placeholder="CVE-2024-3400, ou un produit : « fortios », « log4j »…"
+        placeholder={t("searchPlaceholder")}
         value={text}
         onChange={(e) => setText(e.target.value)}
       />
       <button className="btn" type="submit">
-        Rechercher
+        {t("search")}
       </button>
       {initial && (
         <button
@@ -109,7 +107,7 @@ function SearchForm({ initial, onSearch }: { initial: string; onSearch: (value: 
             onSearch("");
           }}
         >
-          Effacer
+          {t("clear")}
         </button>
       )}
     </form>
@@ -126,13 +124,13 @@ function PriorityFilter({
   const counts = useSummary().data?.cves;
   return (
     <div className="row">
-      <div className="seg" role="group" aria-label="Priorité">
+      <div className="seg" role="group" aria-label={t("priority")}>
         <button
           type="button"
           aria-pressed={!filters.priority}
           onClick={() => onChange({ ...filters, priority: undefined })}
         >
-          Toutes
+          {t("all")}
         </button>
         {PRIORITY_ORDER.map((priority) => {
           const count = counts?.by_priority[priority];
@@ -155,7 +153,8 @@ function PriorityFilter({
           checked={filters.kevOnly}
           onChange={(e) => onChange({ ...filters, kevOnly: e.target.checked })}
         />
-        Exploitées (KEV){counts ? ` · ${formatNumber(counts.kev)}` : ""}
+        {t("kevOnly")}
+        {counts ? ` · ${formatNumber(counts.kev)}` : ""}
       </label>
     </div>
   );
@@ -187,16 +186,16 @@ function CveTable({
   }
 
   return (
-    <table className="table selectable" aria-label="Vulnérabilités">
+    <table className="table selectable" aria-label={t("tableLabel")}>
       <thead>
         <tr>
-          <th>Priorité</th>
+          <th>{t("colPriority")}</th>
           <th>CVE</th>
-          <th className="num">Score</th>
+          <th className="num">{t("colScore")}</th>
           <th className="num">CVSS</th>
           <th className="num">EPSS</th>
-          <th>Signaux</th>
-          <th>Modifiée</th>
+          <th>{t("colSignals")}</th>
+          <th>{t("colModified")}</th>
         </tr>
       </thead>
       <tbody>
@@ -239,12 +238,12 @@ function OpenIncident({ cve }: { cve: CveDetail }) {
     <>
       {created && (
         <p className="notice ok" role="status">
-          Incident ouvert : <Link to={`/incidents/${created.id}`}>{created.title}</Link>
+          {t("incidentOpened")}<Link to={`/incidents/${created.id}`}>{created.title}</Link>
         </p>
       )}
       {open.error && (
         <p className="notice error" role="alert">
-          Ouverture refusée : {open.error.message}
+          {t("openRefused", { message: open.error.message })}
         </p>
       )}
       <div className="actions">
@@ -257,15 +256,18 @@ function OpenIncident({ cve }: { cve: CveDetail }) {
               {
                 cveId: cve.id,
                 severity: SEVERITY_FOR[cve.priority] ?? "MEDIUM",
-                description:
-                  `Remédiation de ${cve.id} (priorité ${levelLabel(cve.priority)}, score ` +
-                  `${formatScore(cve.composite_risk_score)}/100, délai ${cve.sla_hours} h).\n\n${cve.description}`,
+                description: `${t("incidentDescription", {
+                  cve: cve.id,
+                  priority: levelLabel(cve.priority),
+                  score: formatScore(cve.composite_risk_score),
+                  hours: cve.sla_hours,
+                })}\n\n${cve.description}`,
               },
               { onSuccess: setCreated },
             )
           }
         >
-          {open.isPending ? "Ouverture…" : "Ouvrir un incident pour cette CVE"}
+          {open.isPending ? t("opening") : t("openIncident")}
         </button>
       </div>
     </>
@@ -279,7 +281,7 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
   const linked = useLinkedIncidents({ cveId });
 
   return (
-    <aside className="card detail" aria-label={`Fiche ${cveId}`}>
+    <aside className="card detail" aria-label={t("panelLabel", { cve: cveId })}>
       <QueryState query={query}>
         {(cve) => {
           const published = parseDate(cve.published_date);
@@ -293,14 +295,16 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                   <span className="mono">{cve.id}</span>
                 </div>
                 <p className="muted" style={{ margin: "4px 0 0" }}>
-                  Score {formatScore(cve.composite_risk_score)}/100 · remédiation sous{" "}
-                  {formatNumber(cve.sla_hours)} h ·{" "}
+                  {t("scoreLine", {
+                    score: formatScore(cve.composite_risk_score),
+                    hours: formatNumber(cve.sla_hours),
+                  })}
                   <a
                     href={`https://nvd.nist.gov/vuln/detail/${encodeURIComponent(cve.id)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    fiche NVD
+                    {t("nvd")}
                     <ExternalLink className="inline-icon" size={13} aria-hidden="true" />
                   </a>
                 </p>
@@ -309,7 +313,7 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
 
               {/* 2. Signaux */}
               <section>
-                <h3>Signaux</h3>
+                <h3>{t("signals")}</h3>
                 <dl className="facts">
                   <dt>CVSS</dt>
                   <dd className="mono">
@@ -320,40 +324,40 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                   <dd className="mono">
                     {formatEpss(cve.epss_score)}
                     {cve.epss_percentile !== null
-                      ? ` (centile ${formatEpss(cve.epss_percentile)})`
+                      ? t("percentile", { value: formatEpss(cve.epss_percentile) })
                       : ""}
                   </dd>
-                  <dt>Catalogue KEV</dt>
+                  <dt>{t("kevCatalog")}</dt>
                   <dd>
                     {cve.is_kev
-                      ? `oui, depuis le ${cve.kev_date_added ?? "?"}${cve.kev_due_date ? ` · échéance CISA ${cve.kev_due_date}` : ""}`
-                      : "non"}
+                      ? `${t("kevSince", { date: cve.kev_date_added ?? "?" })}${cve.kev_due_date ? t("kevDue", { date: cve.kev_due_date }) : ""}`
+                      : t("no")}
                   </dd>
-                  <dt>Exploit public</dt>
-                  <dd>{cve.has_public_exploit ? "oui" : "non connu"}</dd>
-                  <dt>Rançongiciels</dt>
-                  <dd>{cve.has_ransomware_campaign ? "campagnes connues" : "aucune connue"}</dd>
-                  <dt>Publiée</dt>
+                  <dt>{t("publicExploit")}</dt>
+                  <dd>{cve.has_public_exploit ? t("yes") : t("notKnown")}</dd>
+                  <dt>{t("ransomware")}</dt>
+                  <dd>{cve.has_ransomware_campaign ? t("knownCampaigns") : t("noneKnown")}</dd>
+                  <dt>{t("published")}</dt>
                   <dd>{published ? formatDateTime(published, utc) : "—"}</dd>
-                  <dt>Modifiée</dt>
+                  <dt>{t("modified")}</dt>
                   <dd>{modified ? `${formatDateTime(modified, utc)} · ${formatAgo(modified)}` : "—"}</dd>
                 </dl>
                 {cve.kev_required_action && (
-                  <p className="muted">Action requise (CISA) : {cve.kev_required_action}</p>
+                  <p className="muted">{t("requiredAction", { action: cve.kev_required_action })}</p>
                 )}
               </section>
 
               {/* 3. Score justifié */}
               <section>
-                <h3>Décomposition du score</h3>
+                <h3>{t("breakdown")}</h3>
                 <Breakdown cve={cve} />
               </section>
 
               {/* 4. Historique, alertes, incidents */}
               <section>
-                <h3>Historique de priorité</h3>
+                <h3>{t("history")}</h3>
                 {cve.history.length === 0 ? (
-                  <p className="muted">Aucun changement enregistré.</p>
+                  <p className="muted">{t("noHistory")}</p>
                 ) : (
                   <ul className="list">
                     {[...cve.history].reverse().slice(0, 8).map((change) => {
@@ -362,7 +366,7 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                         <li key={`${change.changed_at}-${change.new_priority}`}>
                           <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
                           <span>
-                            {change.old_priority ? levelLabel(change.old_priority) : "nouvelle"} →{" "}
+                            {change.old_priority ? levelLabel(change.old_priority) : t("newPriority")} →{" "}
                             {levelLabel(change.new_priority)} ({formatScore(change.new_score)}, {change.reason})
                           </span>
                         </li>
@@ -371,11 +375,11 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                   </ul>
                 )}
 
-                <h3 style={{ marginTop: 16 }}>Alertes</h3>
+                <h3 style={{ marginTop: 16 }}>{t("alerts")}</h3>
                 <QueryState query={alerts}>
                   {(page) =>
                     page.items.length === 0 ? (
-                      <p className="muted">Aucune alerte émise.</p>
+                      <p className="muted">{t("noAlert")}</p>
                     ) : (
                       <ul className="list">
                         {page.items.map((alert) => {
@@ -386,7 +390,7 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                               <Link to={`/triage?alerte=${alert.id}`}>
                                 {ALERT_REASON[alert.reason] ?? alert.reason}
                               </Link>
-                              <span className="muted">{alert.acknowledged_at ? "acquittée" : "à traiter"}</span>
+                              <span className="muted">{alert.acknowledged_at ? t("acknowledged") : t("toHandle")}</span>
                             </li>
                           );
                         })}
@@ -395,11 +399,11 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                   }
                 </QueryState>
 
-                <h3 style={{ marginTop: 16 }}>Incidents associés</h3>
+                <h3 style={{ marginTop: 16 }}>{t("linkedIncidents")}</h3>
                 <QueryState query={linked}>
                   {(page) =>
                     page.items.length === 0 ? (
-                      <p className="muted">Aucun.</p>
+                      <p className="muted">{t("none")}</p>
                     ) : (
                       <ul className="list">
                         {page.items.map((incident) => (
@@ -412,7 +416,7 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                           </li>
                         ))}
                         {page.total > page.items.length && (
-                          <li className="muted">… et {formatNumber(page.total - page.items.length)} autres.</li>
+                          <li className="muted">{t("andOthers", { count: page.total - page.items.length })}</li>
                         )}
                       </ul>
                     )
@@ -424,11 +428,11 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
               <section>
                 {canAct ? (
                   <>
-                    <AttachToIncident target={{ cveId: cve.id }} label="cette CVE" />
+                    <AttachToIncident target={{ cveId: cve.id }} label={t("thisCve")} />
                     <OpenIncident cve={cve} />
                   </>
                 ) : (
-                  <p className="reason">Actions réservées aux rôles analyste et administrateur.</p>
+                  <p className="reason">{t("rolesOnly")}</p>
                 )}
               </section>
             </>
@@ -481,8 +485,8 @@ export function Cves() {
     <>
       <div className="page-head">
         <div>
-          <h1>CVE et priorités</h1>
-          <p>Vulnérabilités classées par risque réel : gravité, probabilité et exploitation avérée</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
       </div>
 
@@ -495,7 +499,9 @@ export function Cves() {
             <span className="muted">
               {total === undefined
                 ? " "
-                : `${formatNumber(total)} CVE${searched ? ` pour « ${searched} »` : ""}`}
+                : searched
+                  ? t("countFor", { count: total, q: searched })
+                  : t("count", { count: total })}
             </span>
             <PriorityFilter filters={filters} onChange={changeFilters} />
           </div>
@@ -521,7 +527,7 @@ export function Cves() {
         ) : (
           <aside className="card detail">
             <p className="empty">
-              {query.isPending ? "Chargement…" : "Aucune CVE ne correspond à ces critères."}
+              {query.isPending ? messages("loading") : t("noMatch")}
             </p>
           </aside>
         )}

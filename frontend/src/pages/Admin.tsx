@@ -11,23 +11,25 @@ import { useAuth } from "../auth/AuthProvider";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
 import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
-import { levelLabel } from "../lib/levels";
+import { ROLE_LABEL, levelLabel } from "../lib/levels";
 import { auditLabel, formatBytes, formatDuration, generatePassword } from "../lib/ops";
 import { useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
+import { t } from "./Admin.i18n";
 
-const ROLES: [string, string, string][] = [
-  ["ADMIN", "Administrateur", "Tout, y compris les comptes et les sources"],
-  ["ANALYST", "Analyste", "Trie, enquête, ouvre des incidents, lance des chasses"],
-  ["VIEWER", "Lecteur", "Consulte, sans rien modifier"],
-];
-const ROLE_LABEL = Object.fromEntries(ROLES.map(([value, label]) => [value, label]));
+type Key = Parameters<typeof t>[0];
+
+const ROLE_CODES = ["ADMIN", "ANALYST", "VIEWER"];
+/** [code, libellé, aide] dans la langue courante. */
+const roles = (): [string, string, string][] =>
+  ROLE_CODES.map((code) => [code, ROLE_LABEL[code] ?? code, t(`roleHelp.${code}` as Key)]);
 
 type Tab = "comptes" | "audit" | "parametres";
-const TABS: [Tab, string][] = [
-  ["comptes", "Comptes"],
-  ["audit", "Journal d'audit"],
-  ["parametres", "Paramètres"],
+const TAB_CODES: Tab[] = ["comptes", "audit", "parametres"];
+const tabs = (): [Tab, string][] => [
+  ["comptes", t("tabAccounts")],
+  ["audit", t("tabAudit")],
+  ["parametres", t("tabSettings")],
 ];
 
 // --- Comptes -------------------------------------------------------------------------------
@@ -35,7 +37,7 @@ const TABS: [Tab, string][] = [
 function PasswordField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="field">
-      <label htmlFor="mdp">Mot de passe (12 caractères au moins)</label>
+      <label htmlFor="mdp">{t("password")}</label>
       <div className="row">
         <input
           id="mdp"
@@ -49,7 +51,7 @@ function PasswordField({ value, onChange }: { value: string; onChange: (v: strin
         />
         <button className="btn" type="button" onClick={() => onChange(generatePassword())}>
           <RefreshCw size={16} aria-hidden="true" />
-          Générer
+          {t("generate")}
         </button>
       </div>
     </div>
@@ -75,15 +77,14 @@ function NewAccount({ onClose }: { onClose: () => void }) {
   if (created) {
     return (
       <section className="card form" aria-labelledby="compte-cree">
-        <h2 id="compte-cree">Compte « {created.name} » créé</h2>
+        <h2 id="compte-cree">{t("accountCreated", { name: created.name })}</h2>
         <p className="muted">
-          Transmettez ce mot de passe par un canal sûr (pas par le même canal que l'identifiant).
-          Il ne sera plus affiché.
+          {t("passwordNote")}
         </p>
         <p className="value-box mono">{created.password}</p>
         <div className="actions">
           <button className="btn primary" type="button" onClick={onClose}>
-            Terminé
+            {t("done")}
           </button>
         </div>
       </section>
@@ -92,28 +93,28 @@ function NewAccount({ onClose }: { onClose: () => void }) {
 
   return (
     <form className="card form" onSubmit={submit} aria-labelledby="nouveau-compte">
-      <h2 id="nouveau-compte">Nouveau compte</h2>
+      <h2 id="nouveau-compte">{t("newAccount")}</h2>
       <div className="row">
         <label className="field grow">
-          Identifiant
+          {t("username")}
           <input
             required
             minLength={3}
             maxLength={50}
             pattern="[A-Za-z0-9._\-]+"
-            title="Lettres, chiffres, point, tiret, tiret bas"
+            title={t("usernameRule")}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
         </label>
         <label className="field grow">
-          E-mail
+          {t("email")}
           <input required type="email" maxLength={255} value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
       </div>
       <fieldset className="rules">
-        <legend>Rôle</legend>
-        {ROLES.map(([value, label, help]) => (
+        <legend>{t("role")}</legend>
+        {roles().map(([value, label, help]) => (
           <label key={value} className="check rule">
             <input type="radio" name="role" checked={role === value} onChange={() => setRole(value)} />
             <span>
@@ -127,15 +128,15 @@ function NewAccount({ onClose }: { onClose: () => void }) {
       <PasswordField value={password} onChange={setPassword} />
       {create.error && (
         <p className="notice error" role="alert">
-          Création refusée : {create.error.message}
+          {t("createRefused", { message: create.error.message })}
         </p>
       )}
       <div className="actions">
         <button className="btn quiet" type="button" onClick={onClose}>
-          Annuler
+          {t("cancel")}
         </button>
         <button className="btn primary" type="submit" disabled={create.isPending}>
-          {create.isPending ? "Création…" : "Créer le compte"}
+          {create.isPending ? t("creating") : t("create")}
         </button>
       </div>
     </form>
@@ -153,29 +154,29 @@ function AccountPanel({ account, isSelf }: { account: Account; isSelf: boolean }
   const error = update.error ?? reset.error ?? revoke.error;
 
   return (
-    <aside className="card detail" aria-label={`Compte ${account.username}`}>
+    <aside className="card detail" aria-label={t("accountLabel", { name: account.username })}>
       <section>
         <div className="title">
           <span className="avatar" aria-hidden="true">
             {account.username.slice(0, 2).toUpperCase()}
           </span>
           <span className="ellipsis">{account.username}</span>
-          {account.is_active ? null : <span className="badge p3">Désactivé</span>}
+          {account.is_active ? null : <span className="badge p3">{t("disabled")}</span>}
         </div>
         <dl className="facts" style={{ marginTop: 12 }}>
-          <dt>E-mail</dt>
+          <dt>{t("email")}</dt>
           <dd>{account.email}</dd>
-          <dt>Créé</dt>
+          <dt>{t("created")}</dt>
           <dd>{created ? formatDateTime(created, utc) : "—"}</dd>
-          <dt>Sessions ouvertes</dt>
+          <dt>{t("sessions")}</dt>
           <dd>{formatNumber(account.active_sessions)}</dd>
         </dl>
       </section>
 
       <section>
-        <h3>Rôle</h3>
-        <div className="seg" role="group" aria-label="Rôle">
-          {ROLES.map(([value, label]) => (
+        <h3>{t("role")}</h3>
+        <div className="seg" role="group" aria-label={t("role")}>
+          {roles().map(([value, label]) => (
             <button
               key={value}
               type="button"
@@ -183,21 +184,21 @@ function AccountPanel({ account, isSelf }: { account: Account; isSelf: boolean }
               disabled={update.isPending || (isSelf && value !== "ADMIN")}
               onClick={() =>
                 value !== account.role &&
-                update.mutate({ role: value }, { onSuccess: () => setNotice(`Rôle : ${label}. Sessions ouvertes révoquées.`) })
+                update.mutate({ role: value }, { onSuccess: () => setNotice(t("roleChanged", { role: label })) })
               }
             >
               {label}
             </button>
           ))}
         </div>
-        {isSelf && <p className="reason">Votre propre rôle ne se modifie pas ici (garde-fou).</p>}
+        {isSelf && <p className="reason">{t("ownRole")}</p>}
       </section>
 
       <section>
-        <h3>Accès</h3>
+        <h3>{t("access")}</h3>
         {password && (
           <>
-            <p className="muted">Nouveau mot de passe, à transmettre par un canal sûr :</p>
+            <p className="muted">{t("newPassword")}</p>
             <p className="value-box mono">{password}</p>
           </>
         )}
@@ -208,7 +209,7 @@ function AccountPanel({ account, isSelf }: { account: Account; isSelf: boolean }
         )}
         {error && (
           <p className="notice error" role="alert">
-            Refusé : {error.message}
+            {t("refused", { message: error.message })}
           </p>
         )}
         <div className="actions">
@@ -218,12 +219,12 @@ function AccountPanel({ account, isSelf }: { account: Account; isSelf: boolean }
             disabled={revoke.isPending}
             onClick={() =>
               revoke.mutate(undefined, {
-                onSuccess: (r) => setNotice(`${formatNumber(r.revoked)} session(s) révoquée(s).`),
+                onSuccess: (r) => setNotice(t("revoked", { count: r.revoked })),
               })
             }
           >
             <LogOut size={16} aria-hidden="true" />
-            Révoquer les sessions
+            {t("revokeSessions")}
           </button>
           <button
             className="btn"
@@ -234,13 +235,13 @@ function AccountPanel({ account, isSelf }: { account: Account; isSelf: boolean }
               reset.mutate(next, {
                 onSuccess: (r) => {
                   setPassword(next);
-                  setNotice(`Mot de passe réinitialisé, ${formatNumber(r.revoked)} session(s) révoquée(s).`);
+                  setNotice(t("passwordReset", { count: r.revoked }));
                 },
               });
             }}
           >
             <KeyRound size={16} aria-hidden="true" />
-            Réinitialiser le mot de passe
+            {t("resetPassword")}
           </button>
           {!isSelf && (
             <button
@@ -250,11 +251,11 @@ function AccountPanel({ account, isSelf }: { account: Account; isSelf: boolean }
               onClick={() =>
                 update.mutate(
                   { is_active: !account.is_active },
-                  { onSuccess: (a) => setNotice(a.is_active ? "Compte réactivé." : "Compte désactivé, sessions révoquées.") },
+                  { onSuccess: (a) => setNotice(a.is_active ? t("reactivated") : t("deactivated")) },
                 )
               }
             >
-              {account.is_active ? "Désactiver le compte" : "Réactiver le compte"}
+              {account.is_active ? t("disable") : t("enable")}
             </button>
           )}
         </div>
@@ -289,12 +290,12 @@ function Accounts() {
     <>
       <div className="toolbar">
         <span className="muted">
-          {query.data ? `${formatNumber(accounts.length)} compte${accounts.length > 1 ? "s" : ""}` : " "}
+          {query.data ? t.plural("count", accounts.length) : " "}
         </span>
         {!creating && (
           <button className="btn primary" type="button" onClick={() => setCreating(true)}>
             <UserPlus size={16} aria-hidden="true" />
-            Nouveau compte
+            {t("newAccount")}
           </button>
         )}
       </div>
@@ -307,13 +308,13 @@ function Accounts() {
         <section className="card flush">
           <QueryState query={query} empty={(items) => items.length === 0}>
             {() => (
-              <table className="table selectable" aria-label="Comptes">
+              <table className="table selectable" aria-label={t("accountsTable")}>
                 <thead>
                   <tr>
-                    <th>Compte</th>
-                    <th>Rôle</th>
-                    <th>État</th>
-                    <th className="num">Sessions</th>
+                    <th>{t("colAccount")}</th>
+                    <th>{t("colRole")}</th>
+                    <th>{t("colState")}</th>
+                    <th className="num">{t("colSessions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -330,13 +331,13 @@ function Accounts() {
                       <td>
                         <div className="cell-title">
                           {account.username}
-                          {account.id === user?.id ? <span className="muted"> (vous)</span> : null}
+                          {account.id === user?.id ? <span className="muted">{t("you")}</span> : null}
                         </div>
                         <div className="cell-sub">{account.email}</div>
                       </td>
                       <td>{ROLE_LABEL[account.role] ?? account.role}</td>
                       <td>
-                        {account.is_active ? <span className="badge ok">Actif</span> : <span className="badge p3">Désactivé</span>}
+                        {account.is_active ? <span className="badge ok">{t("active")}</span> : <span className="badge p3">{t("disabled")}</span>}
                       </td>
                       <td className="num mono">{formatNumber(account.active_sessions)}</td>
                     </tr>
@@ -354,28 +355,24 @@ function Accounts() {
 
 // --- Journal d'audit -----------------------------------------------------------------------
 
-const AUDIT_FAMILIES: [string, string][] = [
-  ["", "Toutes les actions"],
-  ["auth.", "Connexions"],
-  ["authz.", "Accès refusés"],
-  ["user.", "Comptes"],
-  ["feed.", "Sources"],
-  ["data.export", "Exports"],
-  ["indicator.", "Indicateurs soumis"],
-  ["alert.", "Alertes"],
-  ["hunt.", "Chasses"],
-  ["enrichment.", "Enrichissement"],
-  ["asset.", "Inventaire"],
-  ["correlation.", "Corrélations"],
-  ["incident.", "Incidents"],
-  ["exclusion.", "Faux positifs"],
+const auditFamilies = (): [string, string][] => [
+  ["", t("family.all")],
+  ["auth.", t("family.auth")],
+  ["authz.", t("family.authz")],
+  ["user.", t("family.user")],
+  ["feed.", t("family.feed")],
+  ["data.export", t("family.export")],
+  ["indicator.", t("family.indicator")],
+  ["alert.", t("family.alert")],
+  ["hunt.", t("family.hunt")],
+  ["enrichment.", t("family.enrichment")],
+  ["asset.", t("family.asset")],
+  ["correlation.", t("family.correlation")],
+  ["incident.", t("family.incident")],
+  ["exclusion.", t("family.exclusion")],
 ];
 
-const OUTCOME: Record<string, [string, string]> = {
-  SUCCESS: ["Réussi", "ok"],
-  FAILURE: ["Échec", "p1"],
-  DENIED: ["Refusé", "p0"],
-};
+const OUTCOME_TONE: Record<string, string> = { SUCCESS: "ok", FAILURE: "p1", DENIED: "p0" };
 
 function detailText(event: AuditEvent): string {
   if (!event.detail) return "";
@@ -399,23 +396,28 @@ function AuditLog() {
     <section className="card">
       <div className="toolbar">
         <span className="muted">
-          {query.data ? `${formatNumber(query.data.total)} événement${query.data.total > 1 ? "s" : ""}` : " "}
+          {query.data ? t.plural("events", query.data.total) : " "}
         </span>
         <div className="row">
           <select
             className="compact"
-            aria-label="Famille d'actions"
+            aria-label={t("family")}
             value={filters.action ?? ""}
             onChange={(e) => change({ ...filters, action: e.target.value || undefined })}
           >
-            {AUDIT_FAMILIES.map(([value, label]) => (
+            {auditFamilies().map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
             ))}
           </select>
-          <div className="seg" role="group" aria-label="Résultat">
-            {[["", "Tous"], ["SUCCESS", "Réussis"], ["FAILURE", "Échecs"], ["DENIED", "Refus"]].map(([value, label]) => (
+          <div className="seg" role="group" aria-label={t("result")}>
+            {[
+              ["", t("filterAll")],
+              ["SUCCESS", t("filterSuccess")],
+              ["FAILURE", t("filterFailure")],
+              ["DENIED", t("filterDenied")],
+            ].map(([value, label]) => (
               <button
                 key={value}
                 type="button"
@@ -431,21 +433,22 @@ function AuditLog() {
       <QueryState query={query} empty={(page) => page.items.length === 0}>
         {(page) => (
           <>
-            <table className="table" aria-label="Journal d'audit">
+            <table className="table" aria-label={t("auditTable")}>
               <thead>
                 <tr>
-                  <th>Quand</th>
-                  <th>Action</th>
-                  <th>Résultat</th>
-                  <th>Par</th>
-                  <th>Détail</th>
-                  <th>Adresse</th>
+                  <th>{t("colWhen")}</th>
+                  <th>{t("colAction")}</th>
+                  <th>{t("colResult")}</th>
+                  <th>{t("colBy")}</th>
+                  <th>{t("colDetail")}</th>
+                  <th>{t("colAddress")}</th>
                 </tr>
               </thead>
               <tbody>
                 {page.items.map((event) => {
                   const at = parseDate(event.occurred_at);
-                  const [label, tone] = OUTCOME[event.outcome] ?? [event.outcome, "p3"];
+                  const tone = OUTCOME_TONE[event.outcome] ?? "p3";
+                  const label = event.outcome in OUTCOME_TONE ? t(`outcome.${event.outcome}` as Key) : event.outcome;
                   const detail = detailText(event);
                   return (
                     <tr key={event.id}>
@@ -483,13 +486,8 @@ function AuditLog() {
 
 // --- Paramètres ----------------------------------------------------------------------------
 
-const SECRET_LABELS: Record<string, string> = {
-  nvd_api_key: "Clé API NVD (débit CVE ×10)",
-  otx_api_key: "Clé AlienVault OTX",
-  abusech_auth_key: "Clé abuse.ch",
-  alert_webhook_url: "Webhook des alertes",
-  secret_key_previous: "Clé de signature précédente (rotation)",
-};
+const SECRETS = new Set(["nvd_api_key", "otx_api_key", "abusech_auth_key", "alert_webhook_url", "secret_key_previous"]);
+const secretLabel = (key: string) => (SECRETS.has(key) ? t(`secret.${key}` as Key) : key);
 
 function SettingsView() {
   const query = useSettingsInfo();
@@ -498,47 +496,45 @@ function SettingsView() {
       {(s) => (
         <div className="grid three">
           <section className="card">
-            <h2>Sécurité des sessions</h2>
+            <h2>{t("sessionSecurity")}</h2>
             <dl className="facts settings">
-              <dt>Environnement</dt>
+              <dt>{t("environment")}</dt>
               <dd>{s.environment}</dd>
-              <dt>Version</dt>
+              <dt>{t("version")}</dt>
               <dd className="mono">{s.version}</dd>
-              <dt>Jeton d'accès</dt>
+              <dt>{t("accessToken")}</dt>
               <dd>{formatDuration(s.access_token_minutes * 60)}</dd>
-              <dt>Session (rafraîchissement)</dt>
+              <dt>{t("refresh")}</dt>
               <dd>{formatDuration(s.refresh_token_days * 86_400)}</dd>
-              <dt>Verrouillage</dt>
-              <dd>
-                {s.login_max_failures} échecs en {formatDuration(s.login_window_seconds)}
-              </dd>
+              <dt>{t("lockout")}</dt>
+              <dd>{t("lockoutValue", { failures: s.login_max_failures, window: formatDuration(s.login_window_seconds) })}</dd>
               <dt>HSTS</dt>
-              <dd>{s.hsts_enabled ? "envoyé" : "non envoyé"}</dd>
-              <dt>Documentation de l'API</dt>
-              <dd>{s.docs_enabled ? "exposée" : "masquée"}</dd>
+              <dd>{s.hsts_enabled ? t("hstsSent") : t("hstsNotSent")}</dd>
+              <dt>{t("apiDocs")}</dt>
+              <dd>{s.docs_enabled ? t("exposed") : t("hidden")}</dd>
             </dl>
           </section>
           <section className="card">
-            <h2>Collecte et analyse</h2>
+            <h2>{t("collection")}</h2>
             <dl className="facts settings">
-              <dt>Fréquence par défaut</dt>
+              <dt>{t("defaultFrequency")}</dt>
               <dd>{formatDuration(s.default_polling_interval)}</dd>
-              <dt>Cycle du worker</dt>
+              <dt>{t("workerCycle")}</dt>
               <dd>{formatDuration(s.worker_tick_seconds)}</dd>
-              <dt>Synchronisation CVE</dt>
+              <dt>{t("cveSync")}</dt>
               <dd>{formatDuration(s.cve_sync_interval_seconds)}</dd>
-              <dt>Chasse planifiée</dt>
-              <dd>{s.hunt_interval_seconds ? `toutes les ${formatDuration(s.hunt_interval_seconds)}` : "désactivée"}</dd>
-              <dt>Délai réseau</dt>
+              <dt>{t("scheduledHunt")}</dt>
+              <dd>{s.hunt_interval_seconds ? t("every", { duration: formatDuration(s.hunt_interval_seconds) }) : t("off")}</dd>
+              <dt>{t("networkTimeout")}</dt>
               <dd>{formatDuration(s.http_timeout_seconds)}</dd>
-              <dt>Taille maximale d'un flux</dt>
+              <dt>{t("maxFeed")}</dt>
               <dd>{formatBytes(s.feed_max_bytes)}</dd>
-              <dt>Seuil d'alerte CVE</dt>
+              <dt>{t("alertThreshold")}</dt>
               <dd>{s.risk_alert_threshold} / 100</dd>
             </dl>
           </section>
           <section className="card">
-            <h2>Délais de remédiation</h2>
+            <h2>{t("remediation")}</h2>
             <dl className="facts settings">
               {Object.entries(s.remediation_sla_hours).map(([priority, hours]) => (
                 <div key={priority} className="contents">
@@ -549,23 +545,24 @@ function SettingsView() {
                 </div>
               ))}
             </dl>
-            <h2 className="spaced">Secrets configurés</h2>
+            <h2 className="spaced">{t("secrets")}</h2>
             <ul className="list">
               {Object.entries(s.secrets_configured).map(([key, present]) => (
                 <li key={key}>
-                  <span className="grow">{SECRET_LABELS[key] ?? key}</span>
-                  {present ? <span className="badge ok">Oui</span> : <span className="badge p3">Non</span>}
+                  <span className="grow">{secretLabel(key)}</span>
+                  {present ? <span className="badge ok">{t("yes")}</span> : <span className="badge p3">{t("no")}</span>}
                 </li>
               ))}
             </ul>
-            <p className="muted small">Valeurs jamais affichées : seule leur présence est vérifiée. Modification dans .env, puis redémarrage.</p>
+            <p className="muted small">{t("secretsNote")}</p>
           </section>
           <section className="card">
-            <h2>Enrichissement des IP</h2>
+            <h2>{t("ipEnrichment")}</h2>
             {s.enrichment.length === 0 ? (
               <p className="muted">
-                Aucune base importée : pays et opérateur des IP restent inconnus. Sur le serveur :{" "}
-                <span className="mono">illwatch enrich update</span> (une fois par mois).
+                {t("noDataset")}
+                <span className="mono">illwatch enrich update</span>
+                {t("monthly")}
               </p>
             ) : (
               <dl className="facts settings">
@@ -573,9 +570,9 @@ function SettingsView() {
                   const at = parseDate(d.imported_at);
                   return (
                     <div key={d.dataset} className="contents">
-                      <dt>{d.dataset === "country" ? "Pays" : "Systèmes autonomes"}</dt>
+                      <dt>{d.dataset === "country" ? t("countries") : t("asns")}</dt>
                       <dd>
-                        {formatNumber(d.ranges)} plages · {at ? formatAgo(at) : "—"}
+                        {t("ranges", { count: d.ranges, ago: at ? formatAgo(at) : "—" })}
                         <span className="cell-sub mono">{d.source}</span>
                       </dd>
                     </div>
@@ -584,7 +581,7 @@ function SettingsView() {
               </dl>
             )}
             <p className="muted small">
-              Base locale DB-IP Lite (licence CC BY 4.0), consultée sans requête sortante.{" "}
+              {t("dbipNote")}
               <a href="https://db-ip.com" target="_blank" rel="noopener noreferrer">
                 IP Geolocation by DB-IP
               </a>
@@ -602,12 +599,12 @@ export function Admin() {
   const { user } = useAuth();
   const { search, navigate } = useLocation();
   const requested = new URLSearchParams(search).get("onglet");
-  const tab: Tab = TABS.some(([t]) => t === requested) ? (requested as Tab) : "comptes";
+  const tab: Tab = TAB_CODES.some((code) => code === requested) ? (requested as Tab) : "comptes";
   const open = (value: Tab) => navigate(`/administration?onglet=${value}`, { replace: true });
 
   // Onglets au clavier (motif ARIA « tabs ») : flèches gauche/droite, Début, Fin.
   function onTabKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
-    const last = TABS.length - 1;
+    const last = TAB_CODES.length - 1;
     const target =
       event.key === "ArrowRight" ? (index === last ? 0 : index + 1)
       : event.key === "ArrowLeft" ? (index === 0 ? last : index - 1)
@@ -616,14 +613,14 @@ export function Admin() {
       : null;
     if (target === null) return;
     event.preventDefault();
-    open(TABS[target][0]);
-    document.getElementById(`onglet-${TABS[target][0]}`)?.focus();
+    open(TAB_CODES[target]);
+    document.getElementById(`onglet-${TAB_CODES[target]}`)?.focus();
   }
 
   if (user?.role !== "ADMIN") {
     return (
       <div className="card">
-        <p className="empty">L'administration est réservée aux administrateurs.</p>
+        <p className="empty">{t("adminOnly")}</p>
       </div>
     );
   }
@@ -632,12 +629,12 @@ export function Admin() {
     <>
       <div className="page-head">
         <div>
-          <h1>Administration</h1>
-          <p>Comptes et accès, journal d'audit de sécurité, paramètres en vigueur</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
       </div>
-      <div className="tabs" role="tablist" aria-label="Rubriques">
-        {TABS.map(([value, label], index) => (
+      <div className="tabs" role="tablist" aria-label={t("sections")}>
+        {tabs().map(([value, label], index) => (
           <button
             key={value}
             id={`onglet-${value}`}

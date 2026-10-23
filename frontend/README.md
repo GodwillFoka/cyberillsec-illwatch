@@ -31,6 +31,31 @@ L'image Docker compile l'interface (étape Node) et la copie dans `/app/web` ; F
 `WEB_DIR=/chemin`). Il régénère d'abord le schéma OpenAPI et les types : `npm run build` seul,
 après un changement de l'API, compile avec l'ancien schéma et échoue (`TS2339`).
 
+## Langues (ADR-027)
+
+L'interface parle **français, anglais, allemand, espagnol et chinois simplifié**. À l'ouverture,
+la langue est celle choisie dans ce navigateur (sélecteur de l'écran de connexion et de la
+barre supérieure) ; sinon celle que décide l'API (`GET /api/v1/locale` : pays de l'adresse IP,
+ou pays de l'instance `INSTANCE_COUNTRY` sur un réseau interne, le navigateur départageant
+les pays bilingues) ; sinon la langue du navigateur ; sinon l'anglais.
+
+- Chaque écran déclare ses textes dans un fichier voisin `*.i18n.ts`, les cinq langues côte
+  à côte (`defineMessages`, `src/i18n/core.ts`). **Une clé absente ou en trop dans une langue
+  est une erreur de compilation.** Les textes partagés sont dans `src/i18n/common.i18n.ts`,
+  `src/lib/labels.i18n.ts` (niveaux, statuts, unités, journal d'audit) et
+  `src/components/components.i18n.ts`.
+- Pluriels : clés `x_one` / `x_other` et `t.plural("x", n)` (règles `Intl.PluralRules` : le
+  français met 0 au singulier). Variables `{nom}` ; un nombre est formaté selon la langue.
+- Nombres, dates courtes, durées et pays suivent la langue (`Intl`) ; l'heure reste sur 24 h.
+- Changer de langue remonte l'application sous la session : on reste connecté, le cache des
+  requêtes est conservé.
+- Les contenus produits par le serveur (titres d'incident, descriptions de règles,
+  recommandations, messages d'erreur détaillés de l'API) restent dans la langue où ils ont été
+  écrits.
+
+Ajouter une langue : l'ajouter à `LANGS` (`src/i18n/core.ts`), puis compiler : TypeScript
+liste chaque fichier `*.i18n.ts` à compléter.
+
 ## Organisation
 
 | Dossier | Rôle |

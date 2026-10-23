@@ -1,3 +1,4 @@
+import { messages } from "../i18n/common.i18n";
 import { Link } from "../lib/router";
 
 export function NotFound() {
@@ -5,12 +6,12 @@ export function NotFound() {
     <>
       <div className="page-head">
         <div>
-          <h1>Page introuvable</h1>
-          <p>Cette adresse ne correspond à aucun écran d'ILL Watch.</p>
+          <h1>{messages("notFoundTitle")}</h1>
+          <p>{messages("notFoundText")}</p>
         </div>
       </div>
       <Link className="btn" to="/">
-        Retour à la vue d'ensemble
+        {messages("notFoundBack")}
       </Link>
     </>
   );
