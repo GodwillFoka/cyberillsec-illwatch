@@ -18,34 +18,37 @@ import { TechniqueChips } from "../components/Attack";
 import { LevelBadge } from "../components/Badge";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
+import { messages } from "../i18n/common.i18n";
 import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { MAX_HUNT_OBSERVABLES, splitAssets, splitBatch } from "../lib/iocs";
+import { formatMs } from "../lib/ops";
 import { SEVERITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, asUuid, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
 import { useFresh } from "../lib/useFresh";
+import { t } from "./Hunting.i18n";
 import { RESPONDER_ROLES } from "./Incidents";
 
-const STATUS: Record<string, [string, string]> = {
-  EN_COURS: ["En cours", "new"],
-  TERMINEE: ["Terminée", "ok"],
-  PARTIELLE: ["Partielle", "p1"],
-  ECHEC: ["Échec", "p0"],
+type Key = Parameters<typeof t>[0];
+
+const STATUS_TONE: Record<string, string> = {
+  EN_COURS: "new",
+  TERMINEE: "ok",
+  PARTIELLE: "p1",
+  ECHEC: "p0",
 };
 
 /** Règles qui n'examinent que l'inventaire (ASSET_ONLY_RULES côté serveur). */
 const ASSET_ONLY_RULES = new Set(["RULE-05"]);
 
-const TRIGGER: Record<string, string> = {
-  MANUAL: "Manuelle",
-  SCHEDULED: "Planifiée",
-  INCIDENT: "Depuis un incident",
-};
-
-const plural = (n: number, word: string) => `${formatNumber(n)} ${word}${n > 1 ? "s" : ""}`;
+const TRIGGERS = new Set(["MANUAL", "SCHEDULED", "INCIDENT"]);
+const triggerLabel = (trigger: string) => (TRIGGERS.has(trigger) ? t(`trigger.${trigger}` as Key) : trigger);
+const huntTitle = (trigger: string) =>
+  TRIGGERS.has(trigger) ? t(`huntTitle.${trigger}` as Key) : t("huntTitle", { trigger });
 
 function StatusBadge({ status }: { status: string }) {
-  const [label, tone] = STATUS[status] ?? [status, "p3"];
+  const tone = STATUS_TONE[status] ?? "p3";
+  const label = status in STATUS_TONE ? t(`status.${status}` as Key) : status;
   return <span className={`badge ${tone}`}>{label}</span>;
 }
 
@@ -53,8 +56,7 @@ function durationOf(hunt: Hunt): string {
   const start = parseDate(hunt.started_at);
   const end = parseDate(hunt.finished_at);
   if (!start || !end) return "—";
-  const ms = end.getTime() - start.getTime();
-  return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1).replace(".", ",")} s`;
+  return formatMs(end.getTime() - start.getTime());
 }
 
 // --- Nouvelle session -----------------------------------------------------------------------
@@ -106,10 +108,9 @@ function NewHunt({
 
   return (
     <form className="card form" onSubmit={submit} aria-labelledby="nouvelle-chasse">
-      <h2 id="nouvelle-chasse">Nouvelle chasse</h2>
+      <h2 id="nouvelle-chasse">{t("newHunt")}</h2>
       <label className="field">
-        Observables : journaux, export pare-feu, liste d'un bulletin (une valeur par ligne ou séparées
-        par des espaces)
+        {t("observablesField")}
         <textarea
           className="mono"
           rows={7}
@@ -120,17 +121,15 @@ function NewHunt({
       </label>
       <p className="muted" aria-live="polite">
         {batch.values.length > 0
-          ? `${plural(batch.values.length, "observable")}`
+          ? t.plural("observables", batch.values.length)
           : assetOnly
-            ? "Inventaire seul : la base d'IOC n'est pas lue."
-            : "Aucun observable : la chasse portera sur toute la base d'IOC actifs."}
-        {batch.duplicates > 0 ? ` · ${plural(batch.duplicates, "doublon")} retiré${batch.duplicates > 1 ? "s" : ""}` : ""}
-        {batch.overflow > 0
-          ? ` · ${formatNumber(batch.overflow)} au-delà de ${formatNumber(MAX_HUNT_OBSERVABLES)} non envoyés`
-          : ""}
+            ? t("assetOnly")
+            : t("wholeBase")}
+        {batch.duplicates > 0 ? t.plural("duplicates", batch.duplicates) : ""}
+        {batch.overflow > 0 ? t("overflow", { count: batch.overflow, max: MAX_HUNT_OBSERVABLES }) : ""}
       </p>
       <label className="field">
-        Inventaire d'actifs, pour la règle des CVE exploitables (séparés par des virgules)
+        {t("assetsField")}
         <input
           value={assetsText}
           onChange={(e) => setAssetsText(e.target.value)}
@@ -139,7 +138,7 @@ function NewHunt({
         />
       </label>
       <fieldset className="rules">
-        <legend>Règles</legend>
+        <legend>{t("rules")}</legend>
         {rules.map((rule) => (
           <label key={rule.id} className="check rule">
             <input type="checkbox" checked={selected.has(rule.id)} onChange={() => toggle(rule.id)} />
@@ -159,26 +158,25 @@ function NewHunt({
       {wholeBase && (
         <label className="check">
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
-          Chasse confirmée sur toute la base (des centaines de milliers d'IOC : plusieurs
-          minutes, comme la chasse planifiée du worker)
+          {t("confirmWhole")}
         </label>
       )}
       {missingAssets && (
         <p className="reason" style={{ textAlign: "left" }}>
-          La règle des CVE exploitables a besoin d'un inventaire d'actifs.
+          {t("missingAssets")}
         </p>
       )}
       {run.error && (
         <p className="notice error" role="alert">
-          Chasse refusée : {run.error.message}
+          {t("refused", { message: run.error.message })}
         </p>
       )}
       <div className="actions">
         <button className="btn quiet" type="button" onClick={onClose}>
-          Fermer
+          {t("close")}
         </button>
         <button className="btn primary" type="submit" disabled={!ready || run.isPending}>
-          {run.isPending ? "Chasse en cours…" : wholeBase ? "Chasser sur toute la base" : "Lancer la chasse"}
+          {run.isPending ? t("running") : wholeBase ? t("huntWhole") : t("start")}
         </button>
       </div>
     </form>
@@ -213,14 +211,14 @@ function HuntTable({
   }
 
   return (
-    <table className="table selectable" aria-label="Sessions de chasse">
+    <table className="table selectable" aria-label={t("tableLabel")}>
       <thead>
         <tr>
-          <th>Lancée</th>
-          <th>Origine</th>
-          <th>État</th>
-          <th className="num">Observables</th>
-          <th className="num">Correspondances</th>
+          <th>{t("colStarted")}</th>
+          <th>{t("colOrigin")}</th>
+          <th>{t("colState")}</th>
+          <th className="num">{t("colObservables")}</th>
+          <th className="num">{t("colMatches")}</th>
         </tr>
       </thead>
       <tbody>
@@ -237,7 +235,7 @@ function HuntTable({
               onKeyDown={(event) => onKey(event, index)}
             >
               <td className="muted">{started ? `${formatAgo(started)}` : "—"}</td>
-              <td>{TRIGGER[hunt.trigger] ?? hunt.trigger}</td>
+              <td>{triggerLabel(hunt.trigger)}</td>
               <td>
                 <StatusBadge status={hunt.status} />
               </td>
@@ -272,11 +270,11 @@ function Matches({ huntId, rules }: { huntId: string; rules: HuntRule[] }) {
       <div className="row" style={{ marginBottom: 8 }}>
         <select
           className="compact"
-          aria-label="Règle"
+          aria-label={t("rule")}
           value={filters.ruleId ?? ""}
           onChange={(e) => change({ ...filters, ruleId: e.target.value || undefined })}
         >
-          <option value="">Toutes les règles</option>
+          <option value="">{t("allRules")}</option>
           {rules.map((rule) => (
             <option key={rule.id} value={rule.id}>
               {rule.id} · {rule.name} ({formatNumber(byRule[rule.id] ?? 0)})
@@ -285,11 +283,11 @@ function Matches({ huntId, rules }: { huntId: string; rules: HuntRule[] }) {
         </select>
         <select
           className="compact"
-          aria-label="Sévérité"
+          aria-label={t("severity")}
           value={filters.severity ?? ""}
           onChange={(e) => change({ ...filters, severity: e.target.value || undefined })}
         >
-          <option value="">Toutes sévérités</option>
+          <option value="">{t("allSeverities")}</option>
           {SEVERITY_ORDER.map((level) => (
             <option key={level} value={level}>
               {levelLabel(level)}
@@ -348,11 +346,11 @@ function HuntPanel({ hunt, rules }: { hunt: Hunt; rules: HuntRule[] }) {
   const names = new Map(rules.map((r) => [r.id, r.name]));
 
   return (
-    <aside className="card detail" aria-label="Résultats de la session">
+    <aside className="card detail" aria-label={t("panelLabel")}>
       <section>
         <div className="title">
           <StatusBadge status={hunt.status} />
-          <span>Chasse {(TRIGGER[hunt.trigger] ?? hunt.trigger).toLowerCase()}</span>
+          <span>{huntTitle(hunt.trigger)}</span>
         </div>
         <p className="muted" style={{ margin: "4px 0 0" }}>
           {started ? `${formatDateTime(started, utc)} · ${durationOf(hunt)}` : "—"}
@@ -360,18 +358,18 @@ function HuntPanel({ hunt, rules }: { hunt: Hunt; rules: HuntRule[] }) {
       </section>
 
       <section>
-        <h3>Périmètre</h3>
+        <h3>{t("scope")}</h3>
         <dl className="facts">
-          <dt>Observables</dt>
+          <dt>{t("observablesLabel")}</dt>
           <dd>
             {formatNumber(hunt.observables_count)}
-            {hunt.rejected_count > 0 ? ` (${formatNumber(hunt.rejected_count)} rejetés : format invalide)` : ""}
+            {hunt.rejected_count > 0 ? t("rejected", { count: hunt.rejected_count }) : ""}
           </dd>
-          <dt>Actifs</dt>
+          <dt>{t("assets")}</dt>
           <dd>{hunt.assets || "—"}</dd>
-          <dt>Règles</dt>
+          <dt>{t("rulesLabel")}</dt>
           <dd>{ruleIds.map((id) => names.get(id) ?? id).join(", ")}</dd>
-          <dt>Correspondances</dt>
+          <dt>{t("matches")}</dt>
           <dd className="mono">{formatNumber(hunt.matches_count)}</dd>
         </dl>
         {hunt.errors && (
@@ -382,9 +380,9 @@ function HuntPanel({ hunt, rules }: { hunt: Hunt; rules: HuntRule[] }) {
       </section>
 
       <section>
-        <h3>Correspondances</h3>
+        <h3>{t("matches")}</h3>
         {hunt.matches_count === 0 ? (
-          <p className="muted">Aucune : rien de connu ni de suspect dans ce périmètre.</p>
+          <p className="muted">{t("noMatch")}</p>
         ) : (
           <Matches key={hunt.id} huntId={hunt.id} rules={rules} />
         )}
@@ -416,12 +414,12 @@ export function Hunting() {
     <>
       <div className="page-head">
         <div>
-          <h1>Chasse</h1>
-          <p>Confronter des observables, un inventaire ou toute la base aux règles de détection</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         {canAct && !creating && (
           <button className="btn primary" type="button" onClick={() => setCreating(true)}>
-            Nouvelle chasse
+            {t("newHunt")}
           </button>
         )}
       </div>
@@ -443,7 +441,7 @@ export function Hunting() {
         <section className="card">
           <div className="toolbar">
             <span className="muted">
-              {hunts.data ? `${plural(list.length, "session")}${list.length >= 50 ? " (50 dernières)" : ""}` : " "}
+              {hunts.data ? `${t.plural("sessions", list.length)}${list.length >= 50 ? t("last50") : ""}` : " "}
             </span>
           </div>
           <QueryState query={hunts} empty={(data) => data.length === 0}>
@@ -457,10 +455,10 @@ export function Hunting() {
           <aside className="card detail">
             <p className="empty">
               {hunts.isPending || single.isFetching
-                ? "Chargement…"
+                ? messages("loading")
                 : single.isError
-                  ? `Session introuvable : ${single.error.message}`
-                  : "Aucune session. Lancez une chasse, ou attendez la chasse planifiée du worker."}
+                  ? t("notFound", { message: single.error.message })
+                  : t("noSession")}
             </p>
           </aside>
         )}

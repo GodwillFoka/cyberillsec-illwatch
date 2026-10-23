@@ -1,0 +1,13 @@
+{
+  "_comment": "Chiffres affichés par le site : uniquement des valeurs constatées, chacune avec sa date et sa source (ADR-027, décision 8). Mettre à jour la source avant de changer une valeur.",
+  "ioc": { "value": 528453, "date": "2026-10-08", "source": "Rapport/ETAT_AVANCEMENT.md § 5 — poste de test Kali" },
+  "cves": { "value": 26416, "date": "2026-10-07", "source": "Rapport/ETAT_AVANCEMENT.md § 5 — poste de test Kali" },
+  "kev": { "value": 1734, "date": "2026-10-07", "source": "Rapport/ETAT_AVANCEMENT.md § 5 — toutes classées au moins P1 (ADR-014)" },
+  "sources": { "value": 9, "date": "2026-10-06", "source": "Rapport/03b_06-10-2026.md § 3" },
+  "scenario": { "value": "48/48", "date": "2026-10-08", "source": "Rapport/ETAT_AVANCEMENT.md § 5 — scénario SOC d'acceptation" },
+  "tests": { "value": 510, "date": "2026-10-15", "source": "README.md — « plus de 510 tests » sur PostgreSQL réel" },
+  "coverage": { "value": 94, "date": "2026-10-07", "source": "Rapport/ETAT_AVANCEMENT.md § 5" },
+  "memory_mb": { "value": 256, "date": "2026-10-15", "source": "README.md — « moins de 256 Mo de mémoire »" },
+  "dashboard_s": { "value": 0.63, "date": "2026-10-08", "source": "Rapport/ETAT_AVANCEMENT.md § 6 — 528 453 IOC" },
+  "export_s": { "value": 12, "date": "2026-10-08", "source": "Rapport/ETAT_AVANCEMENT.md § 6 — export de 528 453 IOC" }
+}

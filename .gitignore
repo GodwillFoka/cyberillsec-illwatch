@@ -65,3 +65,7 @@ gl-sbom-*.json
 backups/
 *.dump
 *.dump.sha256
+
+# Site de présentation (ADR-027)
+Website/captures/
+!Website/src/data/

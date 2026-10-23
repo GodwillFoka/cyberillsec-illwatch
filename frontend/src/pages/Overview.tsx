@@ -16,6 +16,8 @@ import { LevelBadge } from "../components/Badge";
 import { Kpi } from "../components/Kpi";
 import { QueryState } from "../components/QueryState";
 import { SeriesChart } from "../components/SeriesChart";
+import { formatScore } from "../components/CveScore";
+import { messages } from "../i18n/common.i18n";
 import { formatAge, formatAgo, formatDateTime, formatNumber, formatTime, parseDate } from "../lib/format";
 import { ALERT_REASON, CHART, INCIDENT_STATUS, PRIORITY_ORDER, rankOf, TONE_COLORS, toneOf } from "../lib/levels";
 import { iocTypeLabel } from "../lib/iocs";
@@ -23,6 +25,7 @@ import { useTimeZone } from "../lib/time";
 import { Link } from "../lib/router";
 import { useFresh } from "../lib/useFresh";
 import { useRealtime } from "../realtime/RealtimeProvider";
+import { t } from "./Overview.i18n";
 
 const STALE_MS = 5 * 60_000;
 
@@ -34,9 +37,9 @@ function Freshness({ summary }: { summary: Summary | undefined }) {
   const stale = Date.now() - at.getTime() > STALE_MS;
   return (
     <span className="muted">
-      Chiffres arrêtés à <span className="mono">{formatTime(at, utc, true)}</span>
+      {t("frozenAt")}<span className="mono">{formatTime(at, utc, true)}</span>
       {utc ? " UTC" : ""}
-      {stale && (status !== "live" || paused) ? " · données datées" : ""}
+      {stale && (status !== "live" || paused) ? t("stale") : ""}
     </span>
   );
 }
@@ -54,15 +57,15 @@ function AlertQueue() {
     <section className="card">
       <div className="card-head">
         <div>
-          <h2>File prioritaire</h2>
+          <h2>{t("queueTitle")}</h2>
           <span className="muted">
             {query.data
-              ? `${formatNumber(query.data.total)} alerte${query.data.total > 1 ? "s" : ""} non traitée${query.data.total > 1 ? "s" : ""} · triées par priorité puis ancienneté`
-              : "Alertes CVE non acquittées"}
+              ? t.plural("queueCount", query.data.total)
+              : t("queueEmpty")}
           </span>
         </div>
         <Link className="btn primary" to="/triage">
-          Ouvrir le triage
+          {t("openTriage")}
         </Link>
       </div>
       <QueryState query={query} empty={(page) => page.items.length === 0}>
@@ -70,12 +73,12 @@ function AlertQueue() {
           <table className="table">
             <thead>
               <tr>
-                <th>Priorité</th>
-                <th>Alerte</th>
-                <th>Origine</th>
-                <th>Âge</th>
+                <th>{t("colPriority")}</th>
+                <th>{t("colAlert")}</th>
+                <th>{t("colOrigin")}</th>
+                <th>{t("colAge")}</th>
                 <th>
-                  <span className="sr-only">Action</span>
+                  <span className="sr-only">{t("colAction")}</span>
                 </th>
               </tr>
             </thead>
@@ -89,13 +92,13 @@ function AlertQueue() {
                       <LevelBadge level={alert.priority} />
                     </td>
                     <td className="ellipsis">
-                      <span className="mono">{alert.cve_id}</span> · seuil de risque franchi (score{" "}
-                      {alert.score.toFixed(1).replace(".", ",")})
+                      <span className="mono">{alert.cve_id}</span>
+                      {t("crossed", { score: formatScore(alert.score) })}
                     </td>
                     <td className="muted">{ALERT_REASON[alert.reason] ?? alert.reason}</td>
                     <td className="muted">{formatAge(parseDate(alert.created_at) ?? new Date())}</td>
                     <td>
-                      <Link to={`/triage?alerte=${alert.id}`}>Examiner</Link>
+                      <Link to={`/triage?alerte=${alert.id}`}>{t("examine")}</Link>
                     </td>
                   </tr>
                 ))}
@@ -111,8 +114,8 @@ function TopIncident({ incident }: { incident: Incident | undefined }) {
   if (!incident) {
     return (
       <section className="card">
-        <h2>Incident le plus grave</h2>
-        <p className="empty">Aucun incident ouvert.</p>
+        <h2>{t("topIncident")}</h2>
+        <p className="empty">{t("noIncident")}</p>
       </section>
     );
   }
@@ -120,17 +123,17 @@ function TopIncident({ incident }: { incident: Incident | undefined }) {
   return (
     <section className="card">
       <div className="card-head">
-        <h2>Incident le plus grave</h2>
+        <h2>{t("topIncident")}</h2>
         <LevelBadge level={incident.severity} />
       </div>
       <p className="ellipsis" title={incident.title}>
         {incident.title}
       </p>
       <p className="muted">
-        Phase : {INCIDENT_STATUS[incident.status] ?? incident.status}
-        {opened ? ` · ouvert ${formatAgo(opened)}` : ""}
+        {t("phase", { phase: INCIDENT_STATUS[incident.status] ?? incident.status })}
+        {opened ? t("openedAgo", { ago: formatAgo(opened) }) : ""}
       </p>
-      <Link to={`/incidents/${incident.id}`}>Ouvrir l'investigation</Link>
+      <Link to={`/incidents/${incident.id}`}>{t("openInvestigation")}</Link>
     </section>
   );
 }
@@ -146,11 +149,11 @@ function ToHandle({ summary }: { summary: Summary | undefined }) {
       <div className="grid">
         <TopIncident incident={incidents.data?.items[0]} />
         <Kpi
-          label="Incidents ouverts"
+          label={t("openIncidents")}
           value={formatNumber(open?.open)}
           context={
             open
-              ? `${formatNumber(critical)} critique(s) ou élevé(s) · ${formatNumber(open.opened_24h)} ouvert(s) en 24 h`
+              ? t("openContext", { critical, opened: open.opened_24h })
               : undefined
           }
         />
@@ -168,41 +171,41 @@ function Situation({ summary }: { summary: Summary | undefined }) {
   return (
     <div className="grid kpis">
       <Kpi
-        label="Indicateurs (IOC) actifs"
+        label={t("activeIocs")}
         value={formatNumber(summary?.iocs.active)}
         context={
           summary
-            ? `+${formatNumber(summary.iocs.new_24h)} en 24 h · ${formatNumber(summary.iocs.multi_source)} multi-sources`
+            ? t("iocContext", { new: summary.iocs.new_24h, multi: summary.iocs.multi_source })
             : undefined
         }
       />
       <Kpi
-        label="CVE prioritaires"
+        label={t("priorityCves")}
         value={formatNumber(cves.P0_CRITIQUE)}
         unit="P0"
         context={
           summary
-            ? `${formatNumber(cves.P1_ELEVE)} en P1 · ${formatNumber(summary.cves.kev)} au catalogue KEV`
+            ? t("cveContext", { p1: formatNumber(cves.P1_ELEVE), kev: summary.cves.kev })
             : undefined
         }
       />
       <Kpi
-        label="Alertes CVE"
+        label={t("cveAlerts")}
         value={formatNumber(summary?.alerts.unacknowledged)}
-        unit="à traiter"
+        unit={t("toHandle")}
         alert={(summary?.alerts.unacknowledged ?? 0) > 0}
-        context={summary ? `${formatNumber(summary.alerts.last_24h)} émise(s) en 24 h` : undefined}
+        context={summary ? t("alertsContext", { count: summary.alerts.last_24h }) : undefined}
       />
       <Kpi
-        label="Sources CTI"
+        label={t("sources")}
         value={formatNumber(healthy)}
-        unit={summary ? `/ ${formatNumber(summary.feeds.total)} saines` : undefined}
+        unit={summary ? t("healthyOf", { total: summary.feeds.total }) : undefined}
         alert={degraded.length > 0}
         context={
           summary
             ? degraded.length > 0
-              ? `Dégradée(s) : ${degraded.join(", ")}`
-              : "Toutes les sources répondent"
+              ? t("degradedList", { list: degraded.join(", ") })
+              : t("allHealthy")
             : undefined
         }
       />
@@ -212,15 +215,15 @@ function Situation({ summary }: { summary: Summary | undefined }) {
 
 // --- Évolution ------------------------------------------------------------------------------
 
-const METRICS: [Metric, string][] = [
-  ["iocs", "Nouveaux IOC"],
-  ["alerts", "Alertes"],
-  ["incidents", "Incidents"],
+const metrics = (): [Metric, string][] => [
+  ["iocs", t("metricIocs")],
+  ["alerts", t("metricAlerts")],
+  ["incidents", t("metricIncidents")],
 ];
-const WINDOWS: [SeriesWindow, string][] = [
-  ["24h", "24 h"],
-  ["7d", "7 j"],
-  ["30d", "30 j"],
+const windows = (): [SeriesWindow, string][] => [
+  ["24h", t("window24h")],
+  ["7d", t("window7d")],
+  ["30d", t("window30d")],
 ];
 
 function Segmented<T extends string>({
@@ -254,16 +257,19 @@ function Evolution() {
     <section className="card">
       <div className="card-head">
         <div>
-          <h2>Évolution de la menace</h2>
+          <h2>{t("evolution")}</h2>
           <span className="muted">
             {query.data
-              ? `${formatNumber(query.data.total)} sur la période · par ${query.data.bucket === "hour" ? "heure" : "jour"}, ${utc ? "UTC" : "heure locale"}`
+              ? t(query.data.bucket === "hour" ? "perHour" : "perDay", {
+                  total: query.data.total,
+                  zone: utc ? "UTC" : t("localTime"),
+                })
               : " "}
           </span>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Segmented label="Mesure" options={METRICS} value={metric} onChange={setMetric} />
-          <Segmented label="Période" options={WINDOWS} value={period} onChange={setPeriod} />
+          <Segmented label={t("measure")} options={metrics()} value={metric} onChange={setMetric} />
+          <Segmented label={t("period")} options={windows()} value={period} onChange={setPeriod} />
         </div>
       </div>
       <QueryState query={query}>{(series) => <SeriesChart series={series} utc={utc} />}</QueryState>
@@ -277,7 +283,7 @@ function CvePriorities({ summary }: { summary: Summary | undefined }) {
   const scale = Math.max(1, ...PRIORITY_ORDER.slice(0, 3).map((p) => counts[p] ?? 0));
   return (
     <section className="card">
-      <h2>CVE par priorité</h2>
+      <h2>{t("cveByPriority")}</h2>
       {PRIORITY_ORDER.map((priority) => {
         const count = counts[priority] ?? 0;
         return (
@@ -296,19 +302,15 @@ function CvePriorities({ summary }: { summary: Summary | undefined }) {
           </div>
         );
       })}
-      <p className="muted">Échelle commune à P0–P2 ; P3 dépasse l'échelle.</p>
+      <p className="muted">{t("scaleNote")}</p>
     </section>
   );
 }
 
 // --- Contexte -------------------------------------------------------------------------------
 
-const KIND_LABEL: Record<string, string> = {
-  ioc: "IOC",
-  cve: "CVE",
-  alert: "Alerte",
-  incident: "Incident",
-};
+const kindLabel = (kind: string): string =>
+  ({ ioc: "IOC", cve: "CVE", alert: t("kindAlert"), incident: t("kindIncident") })[kind] ?? kind;
 
 function RecentActivity() {
   const query = useRecentActivity(24);
@@ -318,7 +320,7 @@ function RecentActivity() {
   const fresh = useFresh(items?.map(key));
   return (
     <section className="card">
-      <h2>Activité récente</h2>
+      <h2>{t("recent")}</h2>
       <QueryState query={query} empty={(list) => list.length === 0}>
         {() => (
           <ul className="list">
@@ -327,7 +329,7 @@ function RecentActivity() {
               return (
                 <li key={key(item)} className={fresh.has(key(item)) ? "fresh" : undefined}>
                   <span className="mono muted">{at ? formatTime(at, utc) : "—"}</span>
-                  <span className={`badge ${toneOf(item.level)}`}>{KIND_LABEL[item.kind] ?? item.kind}</span>
+                  <span className={`badge ${toneOf(item.level)}`}>{kindLabel(item.kind)}</span>
                   <span className="ellipsis" title={item.label}>
                     {item.label}
                   </span>
@@ -342,10 +344,10 @@ function RecentActivity() {
 }
 
 function FeedState({ feed }: { feed: FeedHealth }) {
-  if (!feed.is_active) return <span className="badge p3">Suspendue</span>;
-  if (feed.status === "HEALTHY") return <span className="badge ok">Saine</span>;
-  if (feed.status === "DEGRADED") return <span className="badge p0">Dégradée</span>;
-  return <span className="badge p3">En attente</span>;
+  if (!feed.is_active) return <span className="badge p3">{t("suspended")}</span>;
+  if (feed.status === "HEALTHY") return <span className="badge ok">{t("healthy")}</span>;
+  if (feed.status === "DEGRADED") return <span className="badge p0">{t("degraded")}</span>;
+  return <span className="badge p3">{t("waiting")}</span>;
 }
 
 function SourcesHealth() {
@@ -355,18 +357,18 @@ function SourcesHealth() {
   return (
     <section className="card">
       <div className="card-head">
-        <h2>Santé des sources</h2>
-        <Link to="/sources">Détail</Link>
+        <h2>{t("sourcesHealth")}</h2>
+        <Link to="/sources">{t("detail")}</Link>
       </div>
       <QueryState query={query} empty={(list) => list.length === 0}>
         {(feeds) => (
           <table className="table">
             <thead>
               <tr>
-                <th>Source</th>
-                <th>État</th>
-                <th>Dernier essai</th>
-                <th className="num">Échecs 7 j</th>
+                <th>{t("colSource")}</th>
+                <th>{t("colState")}</th>
+                <th>{t("colLastTry")}</th>
+                <th className="num">{t("colFailures")}</th>
               </tr>
             </thead>
             <tbody>
@@ -382,7 +384,7 @@ function SourcesHealth() {
                       <FeedState feed={feed} />
                     </td>
                     <td className="muted" title={attempt ? formatDateTime(attempt, utc) : undefined}>
-                      {attempt ? `${formatAgo(attempt)}` : "jamais"}
+                      {attempt ? formatAgo(attempt) : t("never")}
                     </td>
                     <td className="num">
                       {feed.errors_7d > 0 ? `${feed.errors_7d} / ${feed.runs_7d}` : "0"}
@@ -402,16 +404,17 @@ function IocTypes({ summary }: { summary: Summary | undefined }) {
   const entries = Object.entries(summary?.iocs.active_by_type ?? {}).sort((a, b) => b[1] - a[1]);
   const top = entries.slice(0, 5);
   const others = entries.slice(5).reduce((sum, [, n]) => sum + n, 0);
-  const rows = others > 0 ? [...top, ["Autres", others] as [string, number]] : top;
+  const OTHERS = "__autres__";
+  const rows = others > 0 ? [...top, [OTHERS, others] as [string, number]] : top;
   const max = Math.max(1, ...rows.map(([, n]) => n));
   return (
     <section className="card">
-      <h2>Indicateurs actifs par type</h2>
-      {rows.length === 0 && <p className="empty">{summary ? "Aucun indicateur actif." : "Chargement…"}</p>}
+      <h2>{t("iocByType")}</h2>
+      {rows.length === 0 && <p className="empty">{summary ? t("noActiveIoc") : messages("loading")}</p>}
       {rows.map(([type, count]) => (
         <div className="bar-row" key={type}>
-          <span className="muted ellipsis" title={type}>
-            {type === "Autres" ? type : iocTypeLabel(type)}
+          <span className="muted ellipsis" title={type === OTHERS ? t("others") : type}>
+            {type === OTHERS ? t("others") : iocTypeLabel(type)}
           </span>
           <div className="bar-track">
             <div className="bar-fill" style={{ width: `${(count / max) * 100}%`, background: CHART.accent }} />
@@ -432,28 +435,28 @@ export function Overview() {
     <>
       <div className="page-head">
         <div>
-          <h1>Vue d'ensemble</h1>
-          <p>Ce qui demande votre attention, puis l'état de la plateforme</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         <Freshness summary={summary} />
       </div>
       {summaryQuery.isError && (
         <p className="notice error" role="alert">
-          Synthèse indisponible : {summaryQuery.error.message}
+          {t("summaryError", { message: summaryQuery.error.message })}
         </p>
       )}
 
-      <h2 className="section-label">À traiter maintenant</h2>
+      <h2 className="section-label">{t("secNow")}</h2>
       <ToHandle summary={summary} />
 
-      <h2 className="section-label">Situation</h2>
+      <h2 className="section-label">{t("secSituation")}</h2>
       <Situation summary={summary} />
       <div className="grid two" style={{ marginTop: 16 }}>
         <Evolution />
         <CvePriorities summary={summary} />
       </div>
 
-      <h2 className="section-label">Contexte</h2>
+      <h2 className="section-label">{t("secContext")}</h2>
       <div className="grid three">
         <RecentActivity />
         <SourcesHealth />

@@ -10,11 +10,13 @@ import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { Breakdown, formatEpss, formatScore } from "../components/CveScore";
 import { QueryState } from "../components/QueryState";
+import { messages } from "../i18n/common.i18n";
 import { formatAge, formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
 import { ALERT_REASON, levelLabel, rankOf } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
 import { useFresh } from "../lib/useFresh";
+import { t } from "./Triage.i18n";
 
 type Scope = "pending" | "all";
 
@@ -55,15 +57,15 @@ function AlertTable({
   }
 
   return (
-    <table className="table selectable" aria-label="Alertes CVE">
+    <table className="table selectable" aria-label={t("tableLabel")}>
       <thead>
         <tr>
-          <th>Priorité</th>
+          <th>{t("colPriority")}</th>
           <th>CVE</th>
-          <th className="num">Score</th>
-          <th>Origine</th>
-          <th>Âge</th>
-          <th>État</th>
+          <th className="num">{t("colScore")}</th>
+          <th>{t("colOrigin")}</th>
+          <th>{t("colAge")}</th>
+          <th>{t("colState")}</th>
         </tr>
       </thead>
       <tbody>
@@ -91,9 +93,9 @@ function AlertTable({
               <td className="muted">{created ? formatAge(created) : "—"}</td>
               <td>
                 {alert.acknowledged_at ? (
-                  <span className="badge p3">Acquittée</span>
+                  <span className="badge p3">{t("acknowledged")}</span>
                 ) : (
-                  <span className="badge new">Nouvelle</span>
+                  <span className="badge new">{t("fresh")}</span>
                 )}
               </td>
             </tr>
@@ -136,7 +138,7 @@ function AlertDetail({
   const error = ack.error ?? toIncident.error;
 
   return (
-    <aside className="card detail" aria-label={`Détail de l'alerte ${alert.cve_id}`}>
+    <aside className="card detail" aria-label={t("detailLabel", { cve: alert.cve_id })}>
       {/* 1. Identifiant et priorité */}
       <section>
         <div className="title">
@@ -146,44 +148,44 @@ function AlertDetail({
           </Link>
         </div>
         <p className="muted" style={{ margin: "4px 0 0" }}>
-          Seuil de risque franchi · {ALERT_REASON[alert.reason] ?? alert.reason}
+          {t("crossed", { reason: ALERT_REASON[alert.reason] ?? alert.reason })}
         </p>
       </section>
 
       {/* 2. Statut et essentiel */}
       <section>
-        <h3>Statut</h3>
+        <h3>{t("status")}</h3>
         <dl className="facts">
-          <dt>Score</dt>
+          <dt>{t("score")}</dt>
           <dd className="mono">
             {score(alert.score)}
-            {alert.previous_score !== null ? ` (avant : ${score(alert.previous_score)})` : ""}
+            {alert.previous_score !== null ? t("before", { score: score(alert.previous_score) }) : ""}
           </dd>
-          <dt>Émise</dt>
+          <dt>{t("raised")}</dt>
           <dd>{created ? `${formatDateTime(created, utc)} · ${formatAgo(created)}` : "—"}</dd>
-          <dt>Acquittement</dt>
-          <dd>{acknowledged ? formatDateTime(acknowledged, utc) : "non acquittée"}</dd>
-          <dt>Notification</dt>
+          <dt>{t("acknowledgement")}</dt>
+          <dd>{acknowledged ? formatDateTime(acknowledged, utc) : t("notAcknowledged")}</dd>
+          <dt>{t("notification")}</dt>
           <dd>
             {delivered
-              ? `envoyée ${formatDateTime(delivered, utc)}`
+              ? t("sentAt", { at: formatDateTime(delivered, utc) })
               : alert.delivery_attempts > 0
-                ? `en échec (${alert.delivery_attempts} essai${alert.delivery_attempts > 1 ? "s" : ""})`
-                : "non envoyée"}
+                ? t.plural("failed", alert.delivery_attempts)
+                : t("notSent")}
           </dd>
         </dl>
       </section>
 
       {/* 3. Éléments associés : la CVE */}
       <section>
-        <h3>Vulnérabilité</h3>
+        <h3>{t("vulnerability")}</h3>
         <QueryState query={cve}>
           {(detail) => (
             <>
               <dl className="facts">
-                <dt>Priorité SOC</dt>
+                <dt>{t("socPriority")}</dt>
                 <dd>
-                  {levelLabel(detail.priority)} · remédiation sous {formatNumber(detail.sla_hours)} h
+                  {t("remediation", { priority: levelLabel(detail.priority), hours: formatNumber(detail.sla_hours) })}
                 </dd>
                 <dt>CVSS</dt>
                 <dd className="mono">{score(detail.cvss_score)}</dd>
@@ -191,18 +193,20 @@ function AlertDetail({
                 <dd className="mono">
                   {formatEpss(detail.epss_score)}
                 </dd>
-                <dt>Catalogue KEV</dt>
+                <dt>{t("kevCatalog")}</dt>
                 <dd>
                   {detail.is_kev
-                    ? `oui${detail.kev_due_date ? `, échéance CISA ${detail.kev_due_date}` : ""}`
-                    : "non"}
+                    ? detail.kev_due_date
+                      ? t("yesDue", { date: detail.kev_due_date })
+                      : t("yes")
+                    : t("no")}
                 </dd>
               </dl>
               <p className="description">{detail.description}</p>
               {detail.kev_required_action && (
-                <p className="muted">Action requise (CISA) : {detail.kev_required_action}</p>
+                <p className="muted">{t("requiredAction", { action: detail.kev_required_action })}</p>
               )}
-              <h3 style={{ marginTop: 16 }}>Décomposition du score</h3>
+              <h3 style={{ marginTop: 16 }}>{t("breakdown")}</h3>
               <Breakdown cve={detail} />
             </>
           )}
@@ -211,7 +215,7 @@ function AlertDetail({
 
       {/* 4. Historique */}
       <section>
-        <h3>Historique de priorité</h3>
+        <h3>{t("history")}</h3>
         {cve.data && cve.data.history.length > 0 ? (
           <ul className="list">
             {[...cve.data.history].reverse().slice(0, 6).map((change) => {
@@ -220,7 +224,7 @@ function AlertDetail({
                 <li key={`${change.changed_at}-${change.new_priority}`}>
                   <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
                   <span>
-                    {change.old_priority ? levelLabel(change.old_priority) : "nouvelle"} →{" "}
+                    {change.old_priority ? levelLabel(change.old_priority) : t("newPriority")} →{" "}
                     {levelLabel(change.new_priority)} ({score(change.new_score)}, {change.reason})
                   </span>
                 </li>
@@ -228,7 +232,7 @@ function AlertDetail({
             })}
           </ul>
         ) : (
-          <p className="muted">{cve.isPending ? "Chargement…" : "Aucun changement enregistré."}</p>
+          <p className="muted">{cve.isPending ? messages("loading") : t("noHistory")}</p>
         )}
       </section>
 
@@ -236,12 +240,12 @@ function AlertDetail({
       <section>
         {opened && (
           <p className="notice ok" role="status">
-            Incident ouvert : <Link to={`/incidents/${opened.id}`}>{opened.title}</Link>
+            {t("incidentOpened")}<Link to={`/incidents/${opened.id}`}>{opened.title}</Link>
           </p>
         )}
         {error && (
           <p className="notice error" role="alert">
-            Action refusée : {error.message}
+            {t("refused", { message: error.message })}
           </p>
         )}
         <div className="actions">
@@ -251,7 +255,7 @@ function AlertDetail({
             disabled={!canAct || Boolean(alert.acknowledged_at) || ack.isPending}
             onClick={() => ack.mutate(alert.id, { onSuccess: () => onAcknowledged(alert) })}
           >
-            {ack.isPending ? "Acquittement…" : "Acquitter"}
+            {ack.isPending ? t("acknowledging") : t("acknowledge")}
           </button>
           <button
             className="btn primary"
@@ -265,21 +269,19 @@ function AlertDetail({
               })
             }
           >
-            {toIncident.isPending ? "Ouverture…" : "Ouvrir l'incident"}
+            {toIncident.isPending ? t("opening") : t("openIncident")}
           </button>
         </div>
         {!canAct && (
-          <p className="reason">Actions réservées aux rôles analyste et administrateur.</p>
+          <p className="reason">{t("rolesOnly")}</p>
         )}
         {canAct && alert.acknowledged_at && !opened && (
-          <p className="reason">
-            Déjà acquittée. Ouvrir l'incident reste possible (l'incident existant est retrouvé).
-          </p>
+          <p className="reason">{t("alreadyAck")}</p>
         )}
         {opened && (
           <div className="actions" style={{ marginTop: 8 }}>
             <button className="btn quiet" type="button" onClick={() => navigate(`/incidents/${opened.id}`)}>
-              Aller à l'incident
+              {t("goToIncident")}
             </button>
           </div>
         )}
@@ -313,15 +315,15 @@ export function Triage() {
     const next = scope === "pending" ? (ordered[at + 1] ?? ordered[at - 1]) : undefined;
     if (next) select(next.id);
     else if (scope === "pending") navigate("/triage", { replace: true }); // file vidée
-    setFlash(`${done.cve_id} acquittée.`);
+    setFlash(t("acknowledgedFlash", { cve: done.cve_id }));
   };
 
   return (
     <>
       <div className="page-head">
         <div>
-          <h1>Triage</h1>
-          <p>Alertes CVE à qualifier : acquitter, ou ouvrir l'incident de réponse</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
       </div>
 
@@ -330,15 +332,15 @@ export function Triage() {
           <div className="toolbar">
             <span className="muted">
               {query.data
-                ? `${formatNumber(query.data.total)} alerte${query.data.total > 1 ? "s" : ""}${scope === "pending" ? " à traiter" : ""}${query.data.total > alerts.length ? ` · ${alerts.length} affichées` : ""}`
+                ? `${t.plural("count", query.data.total)}${scope === "pending" ? t("pendingSuffix") : ""}${query.data.total > alerts.length ? t("shownSuffix", { shown: alerts.length }) : ""}`
                 : " "}
             </span>
-            <div className="seg" role="group" aria-label="Alertes affichées">
+            <div className="seg" role="group" aria-label={t("scopeLabel")}>
               <button type="button" aria-pressed={scope === "pending"} onClick={() => setScope("pending")}>
-                À traiter
+                {t("scopePending")}
               </button>
               <button type="button" aria-pressed={scope === "all"} onClick={() => setScope("all")}>
-                Toutes
+                {t("scopeAll")}
               </button>
             </div>
           </div>
@@ -358,10 +360,10 @@ export function Triage() {
           <aside className="card detail">
             <p className="empty">
               {query.isPending
-                ? "Chargement…"
+                ? messages("loading")
                 : requested
-                  ? "Cette alerte n'est pas dans la liste affichée (déjà traitée ?). Essayez « Toutes »."
-                  : "Aucune alerte à traiter. La file est vide."}
+                  ? t("notInList")
+                  : t("emptyQueue")}
             </p>
           </aside>
         )}

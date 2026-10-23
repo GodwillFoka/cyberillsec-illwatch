@@ -4,15 +4,12 @@ import { LogOut, Pause, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "../auth/AuthProvider";
+import { LanguageSelect } from "../i18n/LanguageSelect";
 import { formatTime } from "../lib/format";
 import { useTimeZone } from "../lib/time";
+import { ROLE_LABEL } from "../lib/levels";
 import { useRealtime } from "../realtime/RealtimeProvider";
-
-const ROLE_LABEL: Record<string, string> = {
-  ADMIN: "Administrateur",
-  ANALYST: "Analyste",
-  VIEWER: "Lecteur",
-};
+import { shell } from "./shell.i18n";
 
 function Clock({ utc }: { utc: boolean }) {
   const [now, setNow] = useState(() => new Date());
@@ -31,13 +28,13 @@ export function TopBar() {
   const state = paused ? "paused" : status;
   const label = paused
     ? pending > 0
-      ? `Direct en pause · ${pending} mise${pending > 1 ? "s" : ""} à jour en attente`
-      : "Direct en pause"
+      ? shell.plural("pausedPending", pending)
+      : shell("paused")
     : status === "live"
-      ? "Connecté · en direct"
+      ? shell("live")
       : status === "connecting"
-        ? "Connexion au direct…"
-        : "Direct interrompu · nouvel essai, données relues chaque minute";
+        ? shell("connecting")
+        : shell("interrupted");
 
   return (
     <header className="topbar">
@@ -49,29 +46,30 @@ export function TopBar() {
         className="btn quiet icon-btn"
         type="button"
         onClick={togglePause}
-        aria-label={paused ? "Reprendre le direct" : "Mettre en pause"}
-        title={paused ? "Reprendre le direct" : "Mettre en pause"}
+        aria-label={paused ? shell("resume") : shell("pause")}
+        title={paused ? shell("resume") : shell("pause")}
       >
         {paused ? (
           <Play size={20} strokeWidth={1.5} aria-hidden="true" />
         ) : (
           <Pause size={20} strokeWidth={1.5} aria-hidden="true" />
         )}
-        <span className="hide-narrow">{paused ? "Reprendre le direct" : "Mettre en pause"}</span>
+        <span className="hide-narrow">{paused ? shell("resume") : shell("pause")}</span>
       </button>
       <span className="grow" />
       <button
         className="btn quiet clock"
         type="button"
         onClick={toggle}
-        title="Basculer entre UTC et l'heure locale"
+        title={shell("clockToggle")}
       >
-        <span className="clock-zone">{utc ? "UTC" : "Local"}</span>
+        <span className="clock-zone">{utc ? "UTC" : shell("local")}</span>
         <span className="clock-sep" aria-hidden="true">
           ·
         </span>
         <Clock utc={utc} />
       </button>
+      <LanguageSelect compact />
       {user && (
         <span className="user-chip" title={user.email}>
           <span className="avatar" aria-hidden="true">
@@ -87,8 +85,8 @@ export function TopBar() {
         className="btn quiet icon-btn"
         type="button"
         onClick={() => void signOut()}
-        aria-label="Se déconnecter"
-        title="Se déconnecter"
+        aria-label={shell("signOut")}
+        title={shell("signOut")}
       >
         <LogOut size={20} strokeWidth={1.5} aria-hidden="true" />
       </button>

@@ -21,6 +21,7 @@ from illwatch.app.api.v1 import (
     hunting,
     incidents,
     indicators,
+    locale,
     settings,
     stix,
     stream,
@@ -31,6 +32,9 @@ api_router = APIRouter()
 
 # Phase 1 — MOD-01 : authentification
 api_router.include_router(auth.router)
+
+# ADR-027 — langue d'affichage du visiteur (publique : écran de connexion, site)
+api_router.include_router(locale.router)
 
 # Phase 2 — MOD-02 : sources de flux (T2.2) et indicateurs (RF-07, RF-08)
 api_router.include_router(feeds.router)

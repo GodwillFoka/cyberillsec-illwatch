@@ -14,13 +14,16 @@ import type { Correlation } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { AttackSection } from "../components/Attack";
 import { LevelBadge } from "../components/Badge";
+import { formatScore } from "../components/CveScore";
 import { QueryState } from "../components/QueryState";
-import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { messages } from "../i18n/common.i18n";
+import { formatAgo, formatDateTime, parseDate } from "../lib/format";
 import { countryName } from "../lib/iocs";
 import { levelLabel, rankOf } from "../lib/levels";
 import { asUuid, Link, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
 import { useFresh } from "../lib/useFresh";
+import { t } from "./Correlations.i18n";
 
 type Scope = "open" | "all";
 
@@ -30,23 +33,17 @@ const RESPONDER_ROLES = new Set(["ADMIN", "ANALYST"]);
 function stateLabel(acknowledgedAt: string | null | undefined, resolvedAt: string | null, utc: boolean): string {
   if (resolvedAt) {
     const when = parseDate(resolvedAt);
-    return `clos automatiquement${when ? ` le ${formatDateTime(when, utc)}` : ""} : ne correspond plus (version hors plage, autre produit, IOC expiré…)`;
+    return t("autoClosed", { when: when ? t("autoClosedWhen", { at: formatDateTime(when, utc) }) : "" });
   }
-  return acknowledgedAt ? "acquitté" : "à traiter";
+  return acknowledgedAt ? t("acknowledged") : t("toHandle");
 }
 
-export const RULE_LABEL: Record<string, string> = {
-  "CORR-01": "CVE exploitée (KEV)",
-  "CORR-02": "Exploit public",
-  "CORR-03": "Actif dans un IOC",
-};
+type Key = Parameters<typeof t>[0];
+const RULES = new Set(["CORR-01", "CORR-02", "CORR-03"]);
+const LEVELS = new Set(["CRITICAL", "HIGH", "MEDIUM", "LOW"]);
 
-const CRITICALITY: Record<string, string> = {
-  CRITICAL: "critique",
-  HIGH: "élevée",
-  MEDIUM: "moyenne",
-  LOW: "faible",
-};
+export const ruleLabel = (id: string) => (RULES.has(id) ? t(`rule.${id}` as Key) : id);
+const criticalityLabel = (level: string) => (LEVELS.has(level) ? t(`criticality.${level}` as Key) : level);
 
 function text(detail: Correlation["detail"], key: string): string | null {
   const value = detail[key];
@@ -59,7 +56,7 @@ function num(detail: Correlation["detail"], key: string): number | null {
 }
 
 function points(value: number): string {
-  return `+${value.toFixed(1).replace(".", ",")}`;
+  return `+${formatScore(value)}`;
 }
 
 function byGravity(a: Correlation, b: Correlation): number {
@@ -95,15 +92,15 @@ function EventTable({
   }
 
   return (
-    <table className="table selectable" aria-label="Évènements corrélés">
+    <table className="table selectable" aria-label={t("tableLabel")}>
       <thead>
         <tr>
-          <th>Priorité</th>
-          <th>Règle</th>
-          <th>Actif</th>
-          <th>Cible</th>
-          <th className="num">Score</th>
-          <th>Vu</th>
+          <th>{t("colPriority")}</th>
+          <th>{t("colRule")}</th>
+          <th>{t("colAsset")}</th>
+          <th>{t("colTarget")}</th>
+          <th className="num">{t("colScore")}</th>
+          <th>{t("colSeen")}</th>
         </tr>
       </thead>
       <tbody>
@@ -126,12 +123,12 @@ function EventTable({
               <td>
                 <LevelBadge level={event.priority} />
               </td>
-              <td className="muted">{RULE_LABEL[event.rule_id] ?? event.rule_id}</td>
+              <td className="muted">{ruleLabel(event.rule_id)}</td>
               <td className="cell-title">{event.asset_name}</td>
               <td className="mono ellipsis cell-target" title={target}>
                 {target}
               </td>
-              <td className="num mono">{event.score.toFixed(1).replace(".", ",")}</td>
+              <td className="num mono">{formatScore(event.score)}</td>
               <td className="muted">{seen ? formatAgo(seen) : "—"}</td>
             </tr>
           );
@@ -176,24 +173,24 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
   const criticality = text(detail, "asset_criticality");
 
   return (
-    <aside className="card detail" aria-label={`Détail : ${event.title}`}>
+    <aside className="card detail" aria-label={t("detailLabel", { title: event.title })}>
       {/* 1. Identité et priorité */}
       <section>
         <div className="title">
           <LevelBadge level={event.priority} />
-          <span>{RULE_LABEL[event.rule_id] ?? event.rule_id}</span>
+          <span>{ruleLabel(event.rule_id)}</span>
         </div>
         <p className="muted small">{event.title}</p>
       </section>
 
       {/* 2. Pourquoi : l'actif et ce qui le relie au renseignement */}
       <section>
-        <h3>Pourquoi</h3>
+        <h3>{t("why")}</h3>
         <dl className="facts">
-          <dt>Actif</dt>
+          <dt>{t("asset")}</dt>
           <dd>
             <Link to={`/inventaire?actif=${encodeURIComponent(event.asset_id)}`}>{event.asset_name}</Link>
-            {criticality ? ` · criticité ${CRITICALITY[criticality] ?? criticality}` : ""}
+            {criticality ? t("criticality", { level: criticalityLabel(criticality) }) : ""}
           </dd>
           {event.cve_id && (
             <>
@@ -204,24 +201,24 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
                 </Link>
                 {text(detail, "cve_priority") ? ` · ${levelLabel(text(detail, "cve_priority") ?? "")}` : ""}
               </dd>
-              <dt>Produit reconnu</dt>
+              <dt>{t("product")}</dt>
               <dd>{text(detail, "product") ?? "—"}</dd>
-              <dt>Version</dt>
+              <dt>{t("version")}</dt>
               <dd>
-                {text(detail, "version") ?? "non déclarée"}
-                {text(detail, "platform") ? ` sur ${text(detail, "platform")}` : ""}
+                {text(detail, "version") ?? t("notDeclared")}
+                {text(detail, "platform") ? t("onPlatform", { platform: text(detail, "platform") ?? "" }) : ""}
                 {text(detail, "version_label") ? (
                   <span className="cell-sub"> · {text(detail, "version_label")}</span>
                 ) : null}
                 {text(detail, "version_platforms") ? (
-                  <span className="cell-sub"> · plateformes : {text(detail, "version_platforms")}</span>
+                  <span className="cell-sub">{t("platforms", { list: text(detail, "version_platforms") ?? "" })}</span>
                 ) : null}
               </dd>
-              <dt>Signaux</dt>
+              <dt>{t("signals")}</dt>
               <dd>{signals.length ? signals.join(", ") : "—"}</dd>
               {text(detail, "kev_due_date") && (
                 <>
-                  <dt>Échéance CISA</dt>
+                  <dt>{t("cisaDue")}</dt>
                   <dd>{text(detail, "kev_due_date")}</dd>
                 </>
               )}
@@ -229,7 +226,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
           )}
           {value && (
             <>
-              <dt>Indicateur</dt>
+              <dt>{t("indicator")}</dt>
               <dd>
                 {event.indicator_id ? (
                   <Link className="mono" to={`/indicateurs?ioc=${encodeURIComponent(event.indicator_id)}`}>
@@ -239,13 +236,16 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
                   <span className="mono">{value}</span>
                 )}
               </dd>
-              <dt>Confiance</dt>
+              <dt>{t("confidence")}</dt>
               <dd>
-                {num(detail, "confidence") ?? "—"} / 100 · {num(detail, "sources") ?? 0} source(s)
+                {t("confidenceLine", {
+                  confidence: num(detail, "confidence") ?? "—",
+                  sources: num(detail, "sources") ?? 0,
+                })}
               </dd>
               {(text(detail, "country") || num(detail, "asn")) && (
                 <>
-                  <dt>Localisation</dt>
+                  <dt>{t("location")}</dt>
                   <dd>
                     {countryName(text(detail, "country"))}
                     {num(detail, "asn") ? ` · AS${num(detail, "asn")} ${text(detail, "as_org") ?? ""}` : ""}
@@ -254,7 +254,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
               )}
               {text(detail, "description") && (
                 <>
-                  <dt>Contexte</dt>
+                  <dt>{t("context")}</dt>
                   <dd>{text(detail, "description")}</dd>
                 </>
               )}
@@ -265,33 +265,33 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
 
       {/* 3. Score : chaque point justifié */}
       <section>
-        <h3>Score</h3>
+        <h3>{t("score")}</h3>
         <dl className="facts">
-          <dt>Base de la règle</dt>
+          <dt>{t("ruleBase")}</dt>
           <dd className="mono">{points(breakdown.base ?? 0)}</dd>
-          <dt>Criticité de l'actif</dt>
+          <dt>{t("assetCriticality")}</dt>
           <dd className="mono">{points(breakdown.criticality ?? 0)}</dd>
-          <dt>{event.cve_id ? "Risque de la CVE" : "Confiance de l'IOC"}</dt>
+          <dt>{event.cve_id ? t("cveRisk") : t("iocConfidence")}</dt>
           <dd className="mono">{points(breakdown.signal ?? 0)}</dd>
-          <dt>Total</dt>
+          <dt>{t("total")}</dt>
           <dd className="mono">
-            <strong>{event.score.toFixed(1).replace(".", ",")}</strong> / 100 · {levelLabel(event.priority)}
+            <strong>{formatScore(event.score)}</strong> / 100 · {levelLabel(event.priority)}
           </dd>
         </dl>
       </section>
 
       {/* 4. Historique */}
       <section>
-        <h3>Historique</h3>
+        <h3>{t("history")}</h3>
         <dl className="facts">
-          <dt>Première détection</dt>
+          <dt>{t("firstDetected")}</dt>
           <dd>{first ? formatDateTime(first, utc) : "—"}</dd>
-          <dt>Dernière confirmation</dt>
+          <dt>{t("lastConfirmed")}</dt>
           <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "—"}</dd>
-          <dt>État</dt>
+          <dt>{t("state")}</dt>
           <dd>
             {qualified
-              ? `faux positif (jamais rouvert) : ${qualified.reason ?? ""}`
+              ? t("falsePositiveState", { reason: qualified.reason ?? "" })
               : stateLabel(event.acknowledged_at, text(detail, "resolved_at"), utc)}
           </dd>
         </dl>
@@ -303,12 +303,13 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
       <section>
         {incidentId && (
           <p className="notice ok" role="status">
-            Incident de réponse : <Link to={`/incidents/${incidentId}`}>ouvrir l'investigation</Link>
+            {t("responseIncident")}
+            <Link to={`/incidents/${incidentId}`}>{t("openInvestigation")}</Link>
           </p>
         )}
         {error && (
           <p className="notice error" role="alert">
-            Action refusée : {error.message}
+            {t("refused", { message: error.message })}
           </p>
         )}
         <div className="actions">
@@ -318,11 +319,11 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
             disabled={!canAct || Boolean(event.acknowledged_at) || ack.isPending}
             onClick={() => ack.mutate(event.id, { onSuccess: () => onPinned(event.id) })}
           >
-            {ack.isPending ? "Acquittement…" : "Acquitter"}
+            {ack.isPending ? t("acknowledging") : t("acknowledge")}
           </button>
           {incidentId ? (
             <button className="btn primary" type="button" onClick={() => navigate(`/incidents/${incidentId}`)}>
-              Aller à l'incident
+              {t("goToIncident")}
             </button>
           ) : (
             <button
@@ -338,14 +339,14 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
                 })
               }
             >
-              {toIncident.isPending ? "Ouverture…" : "Ouvrir l'incident"}
+              {toIncident.isPending ? t("opening") : t("openIncident")}
             </button>
           )}
         </div>
         {canAct && !qualified && !qualifying && (
           <div className="actions">
             <button className="btn quiet" type="button" onClick={() => setQualifying(true)}>
-              Faux positif
+              {t("falsePositive")}
             </button>
           </div>
         )}
@@ -366,25 +367,25 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
             }}
           >
             <label className="field">
-              Pourquoi est-ce un faux positif ?{" "}
-              {event.indicator_id ? "(l'IOC en cause passe aussi en liste d'exclusion)" : "(l'évènement ne sera plus rouvert)"}
+              {t("whyFalsePositive")}
+              {event.indicator_id ? t("iocExcludedToo") : t("neverReopened")}
               <input required minLength={5} maxLength={2000} value={reason} onChange={(e) => setReason(e.target.value)} />
             </label>
             <div className="actions">
               <button className="btn quiet" type="button" onClick={() => setQualifying(false)}>
-                Annuler
+                {t("cancel")}
               </button>
               <button
                 className="btn primary"
                 type="submit"
                 disabled={falsePositive.isPending || reason.trim().length < 5}
               >
-                {falsePositive.isPending ? "Enregistrement…" : "Qualifier de faux positif"}
+                {falsePositive.isPending ? t("saving") : t("qualify")}
               </button>
             </div>
           </form>
         )}
-        {!canAct && <p className="reason">Actions réservées aux rôles analyste et administrateur.</p>}
+        {!canAct && <p className="reason">{t("rolesOnly")}</p>}
       </section>
     </aside>
   );
@@ -411,7 +412,7 @@ export function Correlations() {
   }, [found]);
   const selected = found ?? (kept && kept.id === requested ? kept : undefined);
   const canRun = user ? RESPONDER_ROLES.has(user.role) : false;
-  const assetName = assetId ? (events[0]?.asset_name ?? "cet actif") : null;
+  const assetName = assetId ? (events[0]?.asset_name ?? t("thisAsset")) : null;
 
   const select = (id: string) => {
     const filter = assetId ? `&actif=${encodeURIComponent(assetId)}` : "";
@@ -422,22 +423,21 @@ export function Correlations() {
     <>
       <div className="page-head">
         <div>
-          <h1>Corrélations</h1>
-          <p>Ce que le renseignement dit de vos actifs : CVE exploitées, exploits publics, adresses listées</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         <button className="btn" type="button" disabled={!canRun || run.isPending} onClick={() => run.mutate(undefined)}>
-          {run.isPending ? "Corrélation…" : "Corréler maintenant"}
+          {run.isPending ? t("correlating") : t("correlateNow")}
         </button>
       </div>
       {run.data && (
         <p className="notice ok gap-bottom" role="status">
-          Passe terminée : {run.data.assets} actif(s), {run.data.created} nouvel(s) évènement(s),{" "}
-          {run.data.updated} confirmé(s).
+          {t("passDone", { assets: run.data.assets, created: run.data.created, updated: run.data.updated })}
         </p>
       )}
       {run.error && (
         <p className="notice error gap-bottom" role="alert">
-          Corrélation impossible : {run.error.message}
+          {t("runFailed", { message: run.error.message })}
         </p>
       )}
 
@@ -446,21 +446,21 @@ export function Correlations() {
           <div className="toolbar">
             <span className="muted">
               {query.data
-                ? `${formatNumber(query.data.total)} évènement${query.data.total > 1 ? "s" : ""}${scope === "open" ? " à traiter" : ""}${query.data.total > events.length ? ` · ${events.length} plus graves affichés` : ""}`
+                ? `${t.plural("count", query.data.total)}${scope === "open" ? t("pendingSuffix") : ""}${query.data.total > events.length ? t("shownSuffix", { shown: events.length }) : ""}`
                 : " "}
               {assetName && (
                 <>
                   {" "}
-                  · {assetName} · <Link to="/correlations">tous les actifs</Link>
+                  · {assetName} · <Link to="/correlations">{t("allAssets")}</Link>
                 </>
               )}
             </span>
-            <div className="seg" role="group" aria-label="Évènements affichés">
+            <div className="seg" role="group" aria-label={t("scopeLabel")}>
               <button type="button" aria-pressed={scope === "open"} onClick={() => setScope("open")}>
-                À traiter
+                {t("scopePending")}
               </button>
               <button type="button" aria-pressed={scope === "all"} onClick={() => setScope("all")}>
-                Tous
+                {t("scopeAll")}
               </button>
             </div>
           </div>
@@ -468,8 +468,9 @@ export function Correlations() {
             {(page) =>
               page.items.length === 0 ? (
                 <p className="empty">
-                  Aucun évènement {scope === "open" ? "à traiter" : "corrélé"}. Déclarez vos produits, adresses et
-                  domaines dans <Link to="/inventaire">l'inventaire</Link> : la corrélation tourne chaque heure.
+                  {scope === "open" ? t("emptyPending") : t("emptyAll")}
+                  <Link to="/inventaire">{t("theInventory")}</Link>
+                  {t("emptyTail")}
                 </p>
               ) : (
                 <EventTable events={events} selectedId={selected?.id ?? null} onSelect={select} />
@@ -484,10 +485,10 @@ export function Correlations() {
           <aside className="card detail">
             <p className="empty">
               {query.isPending
-                ? "Chargement…"
+                ? messages("loading")
                 : requested
-                  ? "Cet évènement n'est pas dans la liste affichée (déjà traité ?). Essayez « Tous »."
-                  : "Rien à traiter pour le moment."}
+                  ? t("notInList")
+                  : t("nothing")}
             </p>
           </aside>
         )}

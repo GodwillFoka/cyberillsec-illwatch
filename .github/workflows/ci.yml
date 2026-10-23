@@ -310,7 +310,14 @@ jobs:
           python -m pip install --upgrade pip pip-audit bandit
           if [ -f constraints.txt ]; then pip install -c constraints.txt -e ".[dev]"; else pip install -e ".[dev]"; fi
       - name: pip-audit (vulnérabilités connues des dépendances installées)
-        run: pip-audit --skip-editable
+        run: |
+          pip-audit --skip-editable > audit.txt 2>&1 || {
+            cat audit.txt
+            # Une annotation par vulnérabilité : lisible sans ouvrir le journal complet.
+            grep -E "^[A-Za-z0-9_.-]+ +[0-9][^ ]* +[A-Z]+-" audit.txt | while read -r l; do echo "::error title=pip-audit::$l"; done
+            exit 1
+          }
+          cat audit.txt
       - name: bandit (sévérité moyenne et plus)
         run: bandit -q -r illwatch -ll
       # Détection de secrets sur tout l'historique (07/10). Exclusions justifiées dans

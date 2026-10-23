@@ -7,6 +7,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { useEffect, useRef } from "react";
 
 import type { Series } from "../api/types";
+import { messages } from "../i18n/common.i18n";
 import { formatDay, formatTime, parseDate } from "../lib/format";
 import { CHART, PRIORITY_ORDER, SEVERITY_ORDER, TONE_COLORS, levelLabel, toneOf } from "../lib/levels";
 
@@ -32,7 +33,7 @@ function tooltipHtml(raw: unknown, tones: string[]): string {
         `<div class="tt-row"><span class="tt-dot ${tones[item.seriesIndex ?? 0] ?? "p3"}"></span>` +
         `<span>${escapeHtml(String(item.seriesName ?? ""))}</span><b>${Number(item.value)}</b></div>`,
     );
-  return `<div class="tt-title">${title}</div>${rows.join("") || '<div class="tt-row">Aucun</div>'}`;
+  return `<div class="tt-title">${title}</div>${rows.join("") || `<div class="tt-row">${escapeHtml(messages("none"))}</div>`}`;
 }
 
 export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
@@ -127,7 +128,7 @@ export function SeriesChart({ series, utc }: { series: Series; utc: boolean }) {
       ref={host}
       className="chart"
       role="img"
-      aria-label={`Évolution sur ${series.window} : ${series.total} au total`}
+      aria-label={messages("chartLabel", { window: series.window, total: series.total })}
     />
   );
 }

@@ -3,6 +3,7 @@
 import { lazy, Suspense } from "react";
 
 import { useAuth } from "./auth/AuthProvider";
+import { messages } from "./i18n/common.i18n";
 import { LoginPage } from "./auth/LoginPage";
 import { Shell } from "./layout/Shell";
 import { isActive, Router, useLocation } from "./lib/router";
@@ -25,7 +26,7 @@ const IncidentPage = lazy(() => import("./pages/IncidentPage").then((m) => ({ de
 export function App() {
   const { status } = useAuth();
   if (status === "loading") {
-    return <p className="empty">Reprise de la session…</p>;
+    return <p className="empty">{messages("resuming")}</p>;
   }
   if (status === "anonymous") {
     return <LoginPage />;
@@ -33,7 +34,7 @@ export function App() {
   return (
     <Router>
       <Shell>
-        <Suspense fallback={<p className="empty">Chargement…</p>}>
+        <Suspense fallback={<p className="empty">{messages("loading")}</p>}>
           <Screen />
         </Suspense>
       </Shell>

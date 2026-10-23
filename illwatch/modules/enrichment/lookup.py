@@ -50,6 +50,18 @@ async def enrich_ip(session: AsyncSession, value: str) -> IpEnrichment:
     )
 
 
+async def country_of(session: AsyncSession, value: str) -> str | None:
+    """Pays (ISO alpha-2) d'une adresse publique, ou None : une seule requête indexée."""
+    if not is_public(value):
+        return None
+    try:
+        key = ip_key(value)
+    except ValueError:
+        return None
+    country = await _covering(session, EnrichmentDataset.COUNTRY, key)
+    return country.country if country else None
+
+
 async def datasets(session: AsyncSession) -> list[EnrichmentDatasetInfo]:
     """Bases importées (vide tant que `illwatch enrich update` n'a pas tourné)."""
     return list(

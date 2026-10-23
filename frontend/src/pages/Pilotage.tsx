@@ -10,29 +10,33 @@ import { formatDay, formatHours, formatNumber, formatShare, parseDate } from "..
 import { CHART, TIER_LABEL, TONE_COLORS, levelLabel } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
+import { t } from "./Pilotage.i18n";
 
 type Period = 7 | 30;
+
+/** Nature d'un dépassement, renvoyée en français par l'API. */
+const kindLabel = (kind: string) =>
+  kind === "prise en charge" ? t("kindAck") : kind === "résolution" ? t("kindResolve") : kind;
 
 function Severities({ metrics }: { metrics: SocMetrics }) {
   return (
     <section className="card">
-      <h2>Délais cibles par sévérité</h2>
+      <h2>{t("sla")}</h2>
       <p className="muted" style={{ marginTop: 0 }}>
-        Prise en charge : premier geste d'un analyste (assignation, statut, escalade, action, chasse). Résolution :
-        ouverture → clôture.
+        {t("slaNote")}
       </p>
-      <table className="table sla-table" aria-label="Délais par sévérité">
+      <table className="table sla-table" aria-label={t("slaTable")}>
         <thead>
           <tr>
-            <th>Sévérité</th>
-            <th className="num">Ouverts</th>
+            <th>{t("colSeverity")}</th>
+            <th className="num">{t("colOpened")}</th>
             <th className="num">MTTA</th>
-            <th className="num">Cible</th>
-            <th className="num">Dans le délai</th>
-            <th className="num">Clos</th>
+            <th className="num">{t("colTarget")}</th>
+            <th className="num">{t("colWithin")}</th>
+            <th className="num">{t("colClosed")}</th>
             <th className="num">MTTR</th>
-            <th className="num">Cible</th>
-            <th className="num">Dans le délai</th>
+            <th className="num">{t("colTarget")}</th>
+            <th className="num">{t("colWithin")}</th>
           </tr>
         </thead>
         <tbody>
@@ -66,9 +70,9 @@ function Severities({ metrics }: { metrics: SocMetrics }) {
 function Breaches({ metrics }: { metrics: SocMetrics }) {
   return (
     <section className="card">
-      <h2>En dépassement ({formatNumber(metrics.breaches.length)})</h2>
+      <h2>{t("breaches", { count: metrics.breaches.length })}</h2>
       {metrics.breaches.length === 0 ? (
-        <p className="empty">Aucun incident ouvert hors de ses délais cibles.</p>
+        <p className="empty">{t("noBreach")}</p>
       ) : (
         <ul className="list">
           {metrics.breaches.map((b) => (
@@ -78,8 +82,11 @@ function Breaches({ metrics }: { metrics: SocMetrics }) {
               <span className="grow">
                 <Link to={`/incidents/${b.incident_id}`}>{b.title}</Link>
                 <span className="cell-sub">
-                  {" "}
-                  · {b.kind} : {formatHours(b.age_hours)} pour une cible de {formatHours(b.target_hours)}
+                  {t("breachLine", {
+                    kind: kindLabel(b.kind),
+                    age: formatHours(b.age_hours),
+                    target: formatHours(b.target_hours),
+                  })}
                 </span>
               </span>
             </li>
@@ -95,7 +102,7 @@ function Tiers({ metrics }: { metrics: SocMetrics }) {
   const steps = Object.entries(metrics.escalations);
   return (
     <section className="card">
-      <h2>Niveaux SOC</h2>
+      <h2>{t("tiers")}</h2>
       {Object.entries(metrics.open_by_tier).map(([tier, count]) => (
         <div className="bar-row" key={tier}>
           <span className="muted ellipsis" title={TIER_LABEL[tier]}>
@@ -108,8 +115,9 @@ function Tiers({ metrics }: { metrics: SocMetrics }) {
         </div>
       ))}
       <p className="muted small">
-        Incidents en cours par niveau. Escalades sur la période :{" "}
-        {steps.length ? steps.map(([step, n]) => `${step} × ${n}`).join(" · ") : "aucune"}.
+        {t("tiersNote", {
+          list: steps.length ? steps.map(([step, n]) => `${step} × ${n}`).join(" · ") : t("noneF"),
+        })}
       </p>
     </section>
   );
@@ -118,16 +126,16 @@ function Tiers({ metrics }: { metrics: SocMetrics }) {
 function Workload({ metrics }: { metrics: SocMetrics }) {
   return (
     <section className="card">
-      <h2>Charge par analyste</h2>
+      <h2>{t("workload")}</h2>
       {metrics.workload.length === 0 ? (
-        <p className="empty">Aucun incident sur la période.</p>
+        <p className="empty">{t("noIncident")}</p>
       ) : (
-        <table className="table" aria-label="Charge par analyste">
+        <table className="table" aria-label={t("workload")}>
           <thead>
             <tr>
-              <th>Analyste</th>
-              <th className="num">En cours</th>
-              <th className="num">Clos sur la période</th>
+              <th>{t("colAnalyst")}</th>
+              <th className="num">{t("colInProgress")}</th>
+              <th className="num">{t("colClosedWindow")}</th>
             </tr>
           </thead>
           <tbody>
@@ -150,7 +158,7 @@ function Daily({ metrics }: { metrics: SocMetrics }) {
   const max = Math.max(1, ...metrics.daily.map((d) => Math.max(d.opened, d.closed)));
   return (
     <section className="card">
-      <h2>Ouverts et clos par jour</h2>
+      <h2>{t("daily")}</h2>
       {metrics.daily.map((d) => {
         const day = parseDate(`${d.day}T12:00:00Z`);
         return (
@@ -159,7 +167,7 @@ function Daily({ metrics }: { metrics: SocMetrics }) {
             <div className="bar-track">
               <div className="bar-fill" style={{ width: `${(d.opened / max) * 100}%`, background: TONE_COLORS.p1 }} />
             </div>
-            <span className="num mono" title="ouverts / clos">
+            <span className="num mono" title={t("openedClosed")}>
               {d.opened} / {d.closed}
             </span>
           </div>
@@ -180,13 +188,13 @@ export function Pilotage() {
     <>
       <div className="page-head">
         <div>
-          <h1>Pilotage SOC</h1>
-          <p>Délais de prise en charge et de résolution, délais cibles, niveaux et charge</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
-        <div className="seg" role="group" aria-label="Période">
+        <div className="seg" role="group" aria-label={t("period")}>
           {([7, 30] as const).map((value) => (
             <button key={value} type="button" aria-pressed={days === value} onClick={() => setDays(value)}>
-              {value} jours
+              {t("days", { count: value })}
             </button>
           ))}
         </div>
@@ -198,23 +206,23 @@ export function Pilotage() {
               <Kpi
                 label="MTTA"
                 value={formatHours(metrics.mtta_minutes === null ? null : metrics.mtta_minutes / 60)}
-                context="ouverture → prise en charge"
+                context={t("mttaContext")}
               />
               <Kpi
                 label="MTTR"
                 value={formatHours(metrics.mttr_hours)}
-                context={`médiane ${formatHours(metrics.median_ttr_hours)} · ${formatNumber(metrics.closed)} clos`}
+                context={t("mttrContext", { median: formatHours(metrics.median_ttr_hours), closed: metrics.closed })}
               />
               <Kpi
-                label="En cours"
+                label={t("inProgress")}
                 value={formatNumber(metrics.open_now)}
-                context={`${formatNumber(metrics.breaches.length)} en dépassement`}
+                context={t("breachCount", { count: metrics.breaches.length })}
                 alert={metrics.breaches.length > 0}
               />
               <Kpi
-                label="Faux positifs écartés"
+                label={t("falsePositives")}
                 value={formatNumber(metrics.exclusions + metrics.false_positive_events)}
-                context={`${formatNumber(metrics.exclusions)} IOC exclus · ${formatNumber(metrics.false_positive_events)} corrélations`}
+                context={t("fpContext", { iocs: metrics.exclusions, events: metrics.false_positive_events })}
               />
             </div>
             <div className="page-grid" style={{ marginTop: 16 }}>
@@ -229,8 +237,7 @@ export function Pilotage() {
               </aside>
             </div>
             <p className="muted small">
-              Sur {metrics.window_days} jours · {formatNumber(metrics.opened)} incident(s) ouvert(s) ·{" "}
-              {levelLabel("CRITICAL")} : prise en charge en 1 h, résolution en 24 h.
+              {t("footer", { days: metrics.window_days, opened: metrics.opened, critical: levelLabel("CRITICAL") })}
             </p>
           </>
         )}

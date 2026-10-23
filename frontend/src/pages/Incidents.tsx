@@ -6,10 +6,11 @@ import { useIncidents, type IncidentFilters } from "../api/queries";
 import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
-import { formatAgo, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, parseDate } from "../lib/format";
 import { INCIDENT_STATUS, SEVERITY_ORDER, SOC_TIERS, TIER_LABEL, levelLabel } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useFresh } from "../lib/useFresh";
+import { t } from "./Incidents.i18n";
 
 export const RESPONDER_ROLES = new Set(["ADMIN", "ANALYST"]);
 const STATUSES = ["NOUVEAU", "ANALYSE", "CONFINEMENT", "ERADICATION", "RECUPERATION", "CLOTURE"];
@@ -31,13 +32,13 @@ function NewIncidentForm({ onClose }: { onClose: () => void }) {
 
   return (
     <form className="card form" onSubmit={submit} aria-labelledby="nouvel-incident">
-      <h2 id="nouvel-incident">Ouvrir un incident</h2>
+      <h2 id="nouvel-incident">{t("formTitle")}</h2>
       <label className="field">
-        Titre
+        {t("fieldTitle")}
         <input required maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} />
       </label>
       <label className="field">
-        Description (constat initial, périmètre, source de l'information)
+        {t("fieldDescription")}
         <textarea
           required
           maxLength={20000}
@@ -46,7 +47,7 @@ function NewIncidentForm({ onClose }: { onClose: () => void }) {
         />
       </label>
       <label className="field">
-        Sévérité
+        {t("fieldSeverity")}
         <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
           {SEVERITY_ORDER.map((level) => (
             <option key={level} value={level}>
@@ -57,15 +58,15 @@ function NewIncidentForm({ onClose }: { onClose: () => void }) {
       </label>
       {create.error && (
         <p className="notice error" role="alert">
-          Création refusée : {create.error.message}
+          {t("createRefused", { message: create.error.message })}
         </p>
       )}
       <div className="actions">
         <button className="btn quiet" type="button" onClick={onClose}>
-          Annuler
+          {t("cancel")}
         </button>
         <button className="btn primary" type="submit" disabled={create.isPending}>
-          {create.isPending ? "Ouverture…" : "Ouvrir l'incident"}
+          {create.isPending ? t("opening") : t("open")}
         </button>
       </div>
     </form>
@@ -84,12 +85,12 @@ export function Incidents() {
     <>
       <div className="page-head">
         <div>
-          <h1>Incidents</h1>
-          <p>Du signalement à la clôture, selon le cycle NIST SP 800-61</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         {canAct && !creating && (
           <button className="btn primary" type="button" onClick={() => setCreating(true)}>
-            Nouvel incident
+            {t("newIncident")}
           </button>
         )}
       </div>
@@ -104,29 +105,31 @@ export function Incidents() {
         <div className="toolbar">
           <span className="muted">
             {query.data
-              ? `${formatNumber(query.data.total)} incident${query.data.total > 1 ? "s" : ""}${filters.openOnly ? " ouvert" + (query.data.total > 1 ? "s" : "") : ""}`
+              ? filters.openOnly
+                ? t.plural("countOpen", query.data.total)
+                : t.plural("count", query.data.total)
               : " "}
           </span>
           <div className="row">
-            <div className="seg" role="group" aria-label="Périmètre">
+            <div className="seg" role="group" aria-label={t("scope")}>
               <button
                 type="button"
                 aria-pressed={filters.openOnly}
                 onClick={() => setFilters((f) => ({ ...f, openOnly: true, status: undefined }))}
               >
-                Ouverts
+                {t("scopeOpen")}
               </button>
               <button
                 type="button"
                 aria-pressed={!filters.openOnly}
                 onClick={() => setFilters((f) => ({ ...f, openOnly: false }))}
               >
-                Tous
+                {t("scopeAll")}
               </button>
             </div>
             <select
               className="compact"
-              aria-label="Statut"
+              aria-label={t("status")}
               value={filters.status ?? ""}
               onChange={(e) =>
                 setFilters((f) => ({
@@ -136,7 +139,7 @@ export function Incidents() {
                 }))
               }
             >
-              <option value="">Tous les statuts</option>
+              <option value="">{t("allStatuses")}</option>
               {STATUSES.map((status) => (
                 <option key={status} value={status}>
                   {INCIDENT_STATUS[status]}
@@ -145,11 +148,11 @@ export function Incidents() {
             </select>
             <select
               className="compact"
-              aria-label="Sévérité"
+              aria-label={t("severity")}
               value={filters.severity ?? ""}
               onChange={(e) => setFilters((f) => ({ ...f, severity: e.target.value || undefined }))}
             >
-              <option value="">Toutes sévérités</option>
+              <option value="">{t("allSeverities")}</option>
               {SEVERITY_ORDER.map((level) => (
                 <option key={level} value={level}>
                   {levelLabel(level)}
@@ -158,11 +161,11 @@ export function Incidents() {
             </select>
             <select
               className="compact"
-              aria-label="Niveau SOC"
+              aria-label={t("tier")}
               value={filters.tier ?? ""}
               onChange={(e) => setFilters((f) => ({ ...f, tier: e.target.value || undefined }))}
             >
-              <option value="">Tous niveaux</option>
+              <option value="">{t("allTiers")}</option>
               {SOC_TIERS.map((tier) => (
                 <option key={tier} value={tier}>
                   {TIER_LABEL[tier]}
@@ -176,13 +179,13 @@ export function Incidents() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Sévérité</th>
-                  <th>Incident</th>
-                  <th>Statut</th>
-                  <th>Niveau</th>
-                  <th>Assigné</th>
-                  <th>Ouvert</th>
-                  <th>Dernière activité</th>
+                  <th>{t("colSeverity")}</th>
+                  <th>{t("colIncident")}</th>
+                  <th>{t("colStatus")}</th>
+                  <th>{t("colTier")}</th>
+                  <th>{t("colAssignee")}</th>
+                  <th>{t("colOpened")}</th>
+                  <th>{t("colActivity")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -209,9 +212,9 @@ export function Incidents() {
                       <td className="muted">
                         {incident.assigned_to
                           ? incident.assigned_to === user?.id
-                            ? "vous"
-                            : "un analyste"
-                          : "personne"}
+                            ? t("you")
+                            : t("anAnalyst")
+                          : t("nobody")}
                       </td>
                       <td className="muted">{opened ? `${formatAgo(opened)}` : "—"}</td>
                       <td className="muted">{updated ? `${formatAgo(updated)}` : "—"}</td>

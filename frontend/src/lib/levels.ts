@@ -1,4 +1,6 @@
 // Échelle de priorité unique P0–P3 (docs/DESIGN_SYSTEM.md, brand book ILL Watch v2), appliquée aux sévérités et priorités.
+// Libellés traduits à la lecture (ADR-027) : voir labels.i18n.ts.
+import { labelTable, labels } from "./labels.i18n.js";
 
 export type Tone = "p0" | "p1" | "p2" | "p3";
 
@@ -13,11 +15,8 @@ const TONES: Record<string, Tone> = {
   P3_FAIBLE: "p3",
 };
 
-const LABELS: Record<string, string> = {
-  CRITICAL: "Critique",
-  HIGH: "Élevée",
-  MEDIUM: "Moyenne",
-  LOW: "Faible",
+const SEVERITY_LABEL = new Set(["CRITICAL", "HIGH", "MEDIUM", "LOW"]);
+const PRIORITY_LABEL: Record<string, string> = {
   P0_CRITIQUE: "P0",
   P1_ELEVE: "P1",
   P2_MOYEN: "P2",
@@ -52,42 +51,26 @@ export function toneOf(level: string): Tone {
 }
 
 export function levelLabel(level: string): string {
-  return LABELS[level] ?? level;
+  if (SEVERITY_LABEL.has(level)) return labels(`level.${level}` as Parameters<typeof labels>[0]);
+  return PRIORITY_LABEL[level] ?? level;
 }
 
 export function rankOf(level: string): number {
   return Number(toneOf(level).slice(1));
 }
 
-export const INCIDENT_STATUS: Record<string, string> = {
-  NOUVEAU: "Nouveau",
-  ANALYSE: "En analyse",
-  CONFINEMENT: "Confinement",
-  ERADICATION: "Éradication",
-  RECUPERATION: "Récupération",
-  CLOTURE: "Clôturé",
-};
+const STATUSES = ["NOUVEAU", "ANALYSE", "CONFINEMENT", "ERADICATION", "RECUPERATION", "CLOTURE"];
 
-export const ALERT_REASON: Record<string, string> = {
-  kev: "Catalogue KEV",
-  epss: "Hausse EPSS",
-  nvd: "Mise à jour NVD",
-};
+export const INCIDENT_STATUS = labelTable("status", STATUSES);
+
+export const ALERT_REASON = labelTable("reason", ["kev", "epss", "nvd"]);
 
 /** Niveaux SOC (M9, ADR-022) : l'escalade ne fait que monter. */
 export const SOC_TIERS = ["L1", "L2", "L3"];
-export const TIER_LABEL: Record<string, string> = {
-  L1: "L1 · qualification",
-  L2: "L2 · investigation",
-  L3: "L3 · expertise",
-};
+export const TIER_LABEL = labelTable("tier", SOC_TIERS);
+
+/** Rôles des comptes (barre supérieure, administration). */
+export const ROLE_LABEL = labelTable("role", ["ADMIN", "ANALYST", "VIEWER"]);
 
 /** Phases NIST où s'inscrit une recommandation de réponse. */
-export const PHASE_LABEL: Record<string, string> = {
-  NOUVEAU: "Nouveau",
-  ANALYSE: "Analyse",
-  CONFINEMENT: "Confinement",
-  ERADICATION: "Éradication",
-  RECUPERATION: "Récupération",
-  CLOTURE: "Clôture",
-};
+export const PHASE_LABEL = labelTable("phase", STATUSES);

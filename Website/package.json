@@ -1,0 +1,15 @@
+{
+  "name": "illwatch-website",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Site de présentation international d'ILL Watch (ADR-027) : Node seul, aucune dépendance.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "preview": "node build.mjs && python3 -m http.server 8080 -d dist"
+  }
+}

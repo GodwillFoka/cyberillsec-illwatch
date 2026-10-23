@@ -8,6 +8,38 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Langue selon le pays, interface multilingue (ADR-027, 23/10)
+- `GET /api/v1/locale` (public) : langue du visiteur d'après le **pays** de son adresse IP
+  (base DB-IP Lite locale, aucun service tiers), ou d'après `INSTANCE_COUNTRY` sur un réseau
+  interne ; le navigateur départage les pays bilingues (Suisse, Belgique, Canada, Cameroun…) ;
+  puis `Accept-Language`, `DEFAULT_LANGUAGE`, anglais. Adresse ni renvoyée, ni journalisée, ni
+  conservée ; `Accept-Language` borné et validé ; recherches simultanées plafonnées.
+- Interface web en **cinq langues** (français, anglais, allemand, espagnol, chinois simplifié) :
+  sélecteur sur l'écran de connexion et dans la barre supérieure, textes de chaque écran
+  vérifiés à la compilation, nombres, dates, durées et pays selon la langue.
+- Site de présentation : même ordre de décision (pays d'abord) et même table pays → langues
+  que l'API, vérifiée par test.
+
+### Corrigé
+- CI : `certifi` 2026.10.19 (PYSEC-2026-4320) et `opentelemetry-api` 1.45.1 (CVE-2026-114603) ;
+  pip-audit annote désormais chaque vulnérabilité ; données du site exclues par erreur de Git.
+
+### Ajouté — Site de présentation, lot S1 (ADR-027)
+- Dossier `Website/` : site de présentation international, distinct de la documentation et de
+  l'application, en **cinq langues** (français, anglais, allemand, espagnol, chinois simplifié).
+- Choix automatique de la langue à la première visite : choix mémorisé, langue du navigateur,
+  pays (IP côté serveur au lot S6 ; fuseau horaire tant que le site est statique), anglais.
+- Générateur statique sans dépendance (`node Website/build.mjs`) : clé de traduction manquante,
+  style ou script en ligne, ressource tierce, lien cassé ou budget de poids dépassé font
+  échouer la construction ; CSP `script-src 'self'; style-src 'self'`.
+- Accueil : promesse, chiffres constatés datés (`Website/src/data/facts.json`), modules, visite
+  des écrans (captures de la CI), **simulateur de priorité CVE** à la formule du moteur
+  (parité vérifiée par `tests/test_site_score_parity.py` et `node --test`), pipeline,
+  preuves de confiance, feuille de route.
+- Workflow « Site web » : construction, tests, captures grand écran et téléphone des cinq
+  langues, contrôle de la détection de langue.
+- Feuille de route du site : `Website/ROADMAP.md`.
+
 ### Ajouté — M11 Observability & Deployment (ADR-026)
 - `GET /metrics` (format Prometheus, sans dépendance) : requêtes HTTP par modèle de route et
   statut, durées ; IOC actifs, sources (état, dernier succès), collectes 24 h,

@@ -8,24 +8,28 @@ import { useCreateFeed, useDeleteFeed, useUpdateFeed } from "../api/mutations";
 import { useFeed, useFeedRuns, useFeedsHealth } from "../api/queries";
 import type { CollectionRun, FeedHealth } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
-import { RELIABILITY } from "../components/Confidence";
+import { reliabilityScale } from "../components/Confidence";
 import { QueryState } from "../components/QueryState";
-import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { currentLocale } from "../i18n/core";
+import { messages } from "../i18n/common.i18n";
+import { formatAgo, formatDateTime, formatNumber, formatShare, parseDate } from "../lib/format";
 import { POLLING_CHOICES, formatDuration, formatMs, successRate } from "../lib/ops";
 import { asUuid, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
+import { t } from "./Sources.i18n";
 
-const STATUS: Record<string, [string, string]> = {
-  HEALTHY: ["Saine", "ok"],
-  DEGRADED: ["Dégradée", "p0"],
-  PENDING: ["En attente", "p3"],
-};
+const STATUS_TONE: Record<string, string> = { HEALTHY: "ok", DEGRADED: "p0", PENDING: "p3" };
+
+/** Taux entier (0–100) en pourcentage de la langue : « 83 % », « 83% ». */
+const percent = (rate: number) => formatShare(rate / 100);
 
 const FEED_TYPES = ["JSON", "CSV", "STIX", "OTX", "TAXII"];
 
 function StatusBadge({ health }: { health: Pick<FeedHealth, "status" | "is_active"> }) {
-  if (!health.is_active) return <span className="badge p3">Suspendue</span>;
-  const [label, tone] = STATUS[health.status] ?? [health.status, "p3"];
+  if (!health.is_active) return <span className="badge p3">{t("suspended")}</span>;
+  const tone = STATUS_TONE[health.status] ?? "p3";
+  const label =
+    health.status in STATUS_TONE ? t(`status.${health.status}` as Parameters<typeof t>[0]) : health.status;
   return <span className={`badge ${tone}`}>{label}</span>;
 }
 
@@ -38,18 +42,18 @@ function Summary({ feeds }: { feeds: FeedHealth[] }) {
   const runs = active.reduce((n, f) => n + f.runs_7d, 0);
   const errors = active.reduce((n, f) => n + f.errors_7d, 0);
   const rate = successRate(runs, errors);
-  const items: [string, string, string][] = [
-    ["Sources actives", formatNumber(active.length), `sur ${formatNumber(feeds.length)} déclarées`],
-    ["Saines", formatNumber(healthy), degraded ? `${formatNumber(degraded)} dégradée${degraded > 1 ? "s" : ""}` : "aucune dégradée"],
-    ["Collectes sur 7 jours", formatNumber(runs), rate === null ? "aucune collecte" : `${rate}\u202f% réussies`],
+  const items: [string, string, string, boolean][] = [
+    [t("activeSources"), formatNumber(active.length), t("ofDeclared", { count: feeds.length }), false],
+    [t("healthy"), formatNumber(healthy), degraded ? t.plural("degraded", degraded) : t("noneDegraded"), degraded > 0],
+    [t("runs7d"), formatNumber(runs), rate === null ? t("noRun") : t("succeeded", { rate: percent(rate) }), false],
   ];
   return (
     <div className="stat-strip">
-      {items.map(([label, value, context]) => (
+      {items.map(([label, value, context, alert]) => (
         <div key={label} className="stat">
           <span className="stat-label">{label}</span>
           <span className="stat-value">{value}</span>
-          <span className={`stat-context${label === "Saines" && degraded ? " alert" : ""}`}>{context}</span>
+          <span className={`stat-context${alert ? " alert" : ""}`}>{context}</span>
         </div>
       ))}
     </div>
@@ -82,14 +86,14 @@ function SourceTable({
   }
 
   return (
-    <table className="table selectable" aria-label="Sources de renseignement">
+    <table className="table selectable" aria-label={t("tableLabel")}>
       <thead>
         <tr>
-          <th>Source</th>
-          <th>État</th>
-          <th>Dernier succès</th>
-          <th className="num">Nouveaux</th>
-          <th className="num">Réussite 7 j</th>
+          <th>{t("colSource")}</th>
+          <th>{t("colState")}</th>
+          <th>{t("colLastSuccess")}</th>
+          <th className="num">{t("colNew")}</th>
+          <th className="num">{t("colSuccess7d")}</th>
         </tr>
       </thead>
       <tbody>
@@ -109,16 +113,16 @@ function SourceTable({
               <td className="wrap">
                 <div className="cell-title">{feed.name}</div>
                 <div className="cell-sub">
-                  {feed.feed_type}, fiabilité {feed.reliability}
+                  {t("typeReliability", { type: feed.feed_type, reliability: feed.reliability })}
                 </div>
               </td>
               <td>
                 <StatusBadge health={feed} />
               </td>
-              <td className="muted">{success ? `${formatAgo(success)}` : "jamais"}</td>
+              <td className="muted">{success ? formatAgo(success) : t("never")}</td>
               <td className="num mono">{feed.last_inserted === null ? "—" : formatNumber(feed.last_inserted)}</td>
               <td className={`num mono${rate !== null && rate < 80 ? " error-text" : ""}`}>
-                {rate === null ? "—" : `${rate}\u202f%`}
+                {rate === null ? "—" : percent(rate)}
               </td>
             </tr>
           );
@@ -134,7 +138,7 @@ function RunStrip({ runs }: { runs: CollectionRun[] }) {
   // Les plus anciennes à gauche : la bande se lit comme une frise.
   const ordered = [...runs].reverse();
   return (
-    <div className="run-strip" role="img" aria-label={`${runs.filter((r) => !r.succeeded).length} échec(s) sur les ${runs.length} dernières collectes`}>
+    <div className="run-strip" role="img" aria-label={t("runStrip", { failed: runs.filter((r) => !r.succeeded).length, total: runs.length })}>
       {ordered.map((run) => (
         <span key={run.id} className={`run-cell ${run.succeeded ? "ok" : "ko"}`} title={run.started_at} />
       ))}
@@ -164,7 +168,7 @@ function AdminControls({
   return (
     <div className="form">
       <label className="field">
-        Fréquence de collecte
+        {t("frequency")}
         <select
           value={interval}
           disabled={update.isPending}
@@ -172,19 +176,19 @@ function AdminControls({
         >
           {choices.map((seconds) => (
             <option key={seconds} value={seconds}>
-              toutes les {formatDuration(seconds)}
+              {t("every", { duration: formatDuration(seconds) })}
             </option>
           ))}
         </select>
       </label>
       <label className="field">
-        Fiabilité de la source (pondère la confiance de ses IOC)
+        {t("reliabilityField")}
         <select
           value={reliability}
           disabled={update.isPending}
           onChange={(e) => update.mutate({ reliability: e.target.value })}
         >
-          {RELIABILITY.map(([code, label]) => (
+          {reliabilityScale().map(([code, label]) => (
             <option key={code} value={code}>
               {label}
             </option>
@@ -193,14 +197,14 @@ function AdminControls({
       </label>
       {error && (
         <p className="notice error" role="alert">
-          Modification refusée : {error.message}
+          {t("changeRefused", { message: error.message })}
         </p>
       )}
       <div className="actions">
         {confirming ? (
           <>
             <button className="btn quiet" type="button" onClick={() => setConfirming(false)}>
-              Annuler
+              {t("cancel")}
             </button>
             <button
               className="btn danger"
@@ -209,14 +213,14 @@ function AdminControls({
               onClick={() => remove.mutate(feedId, { onSuccess: () => navigate("/sources", { replace: true }) })}
             >
               <Trash2 size={16} aria-hidden="true" />
-              Supprimer définitivement
+              {t("deleteForever")}
             </button>
           </>
         ) : (
           <>
             <button className="btn quiet" type="button" onClick={() => setConfirming(true)}>
               <Trash2 size={16} aria-hidden="true" />
-              Supprimer
+              {t("delete")}
             </button>
             <button
               className={`btn${active ? "" : " primary"}`}
@@ -225,13 +229,13 @@ function AdminControls({
               onClick={() => update.mutate({ is_active: !active })}
             >
               <Power size={16} aria-hidden="true" />
-              {active ? "Suspendre la collecte" : "Reprendre la collecte"}
+              {active ? t("suspend") : t("resume")}
             </button>
           </>
         )}
       </div>
       {confirming && (
-        <p className="reason">Les IOC déjà collectés sont conservés, sans rattachement à cette source.</p>
+        <p className="reason">{t("deleteNote")}</p>
       )}
     </div>
   );
@@ -246,44 +250,48 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
   const rate = successRate(health.runs_7d, health.errors_7d);
 
   return (
-    <aside className="card detail" aria-label={`Source ${health.name}`}>
+    <aside className="card detail" aria-label={t("panelLabel", { name: health.name })}>
       <section>
         <div className="title">
           <span className="ellipsis">{health.name}</span>
           <StatusBadge health={health} />
         </div>
         {feed.data && (
-          <p className="value-box mono" title="Adresse de collecte">
+          <p className="value-box mono" title={t("collectUrl")}>
             {feed.data.url}
           </p>
         )}
       </section>
 
       <section>
-        <h3>Collecte</h3>
+        <h3>{t("collection")}</h3>
         <dl className="facts">
-          <dt>Format</dt>
+          <dt>{t("format")}</dt>
           <dd>{health.feed_type}</dd>
-          <dt>Fiabilité</dt>
-          <dd>{RELIABILITY.find(([code]) => code === health.reliability)?.[1] ?? health.reliability}</dd>
-          <dt>Fréquence</dt>
-          <dd>{feed.data ? `toutes les ${formatDuration(feed.data.polling_interval)}` : "…"}</dd>
-          <dt>Dernier essai</dt>
-          <dd>{attempt ? `${formatDateTime(attempt, utc)}, ${formatAgo(attempt)}` : "jamais"}</dd>
-          <dt>Dernier succès</dt>
-          <dd>{success ? `${formatDateTime(success, utc)}, ${formatAgo(success)}` : "jamais"}</dd>
-          <dt>Durée</dt>
+          <dt>{t("reliability")}</dt>
+          <dd>{reliabilityScale().find(([code]) => code === health.reliability)?.[1] ?? health.reliability}</dd>
+          <dt>{t("frequencyLabel")}</dt>
+          <dd>{feed.data ? t("every", { duration: formatDuration(feed.data.polling_interval) }) : "…"}</dd>
+          <dt>{t("lastTry")}</dt>
+          <dd>{attempt ? `${formatDateTime(attempt, utc)}, ${formatAgo(attempt)}` : t("never")}</dd>
+          <dt>{t("lastSuccess")}</dt>
+          <dd>{success ? `${formatDateTime(success, utc)}, ${formatAgo(success)}` : t("never")}</dd>
+          <dt>{t("duration")}</dt>
           <dd className="mono">{health.last_duration_ms === null ? "—" : formatMs(health.last_duration_ms)}</dd>
-          <dt>Dernière récolte</dt>
+          <dt>{t("lastHarvest")}</dt>
           <dd>
             {health.last_inserted === null
               ? "—"
-              : `${formatNumber(health.last_inserted)} nouveaux, ${formatNumber(health.last_updated ?? 0)} mis à jour, ${formatNumber(health.last_rejected ?? 0)} rejetés`}
+              : t("harvest", {
+                  inserted: health.last_inserted,
+                  updated: health.last_updated ?? 0,
+                  rejected: health.last_rejected ?? 0,
+                })}
           </dd>
-          <dt>Sur 7 jours</dt>
+          <dt>{t("over7d")}</dt>
           <dd>
-            {formatNumber(health.runs_7d)} collectes, {formatNumber(health.errors_7d)} en échec
-            {rate === null ? "" : ` (${rate}\u202f% réussies)`}
+            {t("runsLine", { runs: health.runs_7d, errors: health.errors_7d })}
+            {rate === null ? "" : t("rateSuffix", { rate: percent(rate) })}
           </dd>
         </dl>
         {health.last_error && (
@@ -294,7 +302,7 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
       </section>
 
       <section>
-        <h3>Dernières collectes</h3>
+        <h3>{t("recentRuns")}</h3>
         <QueryState query={runs} empty={(items) => items.length === 0}>
           {(items) => (
             <>
@@ -308,8 +316,8 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
                       <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
                       <span className="grow ellipsis">
                         {run.succeeded
-                          ? `${formatNumber(run.inserted)} nouveaux, ${formatNumber(run.updated)} mis à jour${run.rejected ? `, ${formatNumber(run.rejected)} rejetés` : ""}`
-                          : (run.error ?? "Échec")}
+                          ? `${t("runOk", { inserted: run.inserted, updated: run.updated })}${run.rejected ? t("runRejected", { count: run.rejected }) : ""}`
+                          : (run.error ?? t("failed"))}
                       </span>
                       <span className="mono muted">{formatMs(run.duration_ms)}</span>
                     </li>
@@ -323,7 +331,7 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
 
       {isAdmin && (
         <section>
-          <h3>Réglages</h3>
+          <h3>{t("settings")}</h3>
           {feed.data ? (
             <AdminControls
               feedId={health.feed_id}
@@ -332,7 +340,7 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
               reliability={feed.data.reliability}
             />
           ) : (
-            <p className="muted">Chargement…</p>
+            <p className="muted">{messages("loading")}</p>
           )}
         </section>
       )}
@@ -360,14 +368,14 @@ function NewSource({ onClose, onCreated }: { onClose: () => void; onCreated: (id
 
   return (
     <form className="card form" onSubmit={submit} aria-labelledby="nouvelle-source">
-      <h2 id="nouvelle-source">Ajouter une source</h2>
+      <h2 id="nouvelle-source">{t("addTitle")}</h2>
       <div className="row">
         <label className="field grow">
-          Nom
+          {t("name")}
           <input required maxLength={100} value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <label className="field">
-          Format
+          {t("format")}
           <select value={feedType} onChange={(e) => setFeedType(e.target.value)}>
             {FEED_TYPES.map((type) => (
               <option key={type} value={type}>
@@ -377,20 +385,20 @@ function NewSource({ onClose, onCreated }: { onClose: () => void; onCreated: (id
           </select>
         </label>
         <label className="field">
-          Fréquence
+          {t("frequencyLabel")}
           <select value={pollEvery} onChange={(e) => setPollEvery(Number(e.target.value))}>
             {POLLING_CHOICES.map((seconds) => (
               <option key={seconds} value={seconds}>
-                toutes les {formatDuration(seconds)}
+                {t("every", { duration: formatDuration(seconds) })}
               </option>
             ))}
           </select>
         </label>
       </div>
       <label className="field">
-        Fiabilité (échelle de l'Amirauté)
+        {t("reliabilityAdmiralty")}
         <select value={reliability} onChange={(e) => setReliability(e.target.value)}>
-          {RELIABILITY.map(([code, label]) => (
+          {reliabilityScale().map(([code, label]) => (
             <option key={code} value={code}>
               {label}
             </option>
@@ -398,20 +406,20 @@ function NewSource({ onClose, onCreated }: { onClose: () => void; onCreated: (id
         </select>
       </label>
       <label className="field">
-        Adresse (HTTPS publique ; les adresses internes sont refusées)
+        {t("url")}
         <input className="mono" required type="url" maxLength={500} value={url} onChange={(e) => setUrl(e.target.value)} />
       </label>
       {create.error && (
         <p className="notice error" role="alert">
-          Source refusée : {create.error.message}
+          {t("refused", { message: create.error.message })}
         </p>
       )}
       <div className="actions">
         <button className="btn quiet" type="button" onClick={onClose}>
-          Annuler
+          {t("cancel")}
         </button>
         <button className="btn primary" type="submit" disabled={create.isPending}>
-          {create.isPending ? "Ajout…" : "Ajouter la source"}
+          {create.isPending ? t("adding") : t("add")}
         </button>
       </div>
     </form>
@@ -422,7 +430,7 @@ function NewSource({ onClose, onCreated }: { onClose: () => void; onCreated: (id
 
 function byAttention(a: FeedHealth, b: FeedHealth): number {
   const weight = (f: FeedHealth) => (!f.is_active ? 3 : f.status === "DEGRADED" ? 0 : f.status === "PENDING" ? 1 : 2);
-  return weight(a) - weight(b) || a.name.localeCompare(b.name, "fr");
+  return weight(a) - weight(b) || a.name.localeCompare(b.name, currentLocale());
 }
 
 export function Sources() {
@@ -440,13 +448,13 @@ export function Sources() {
     <>
       <div className="page-head">
         <div>
-          <h1>Sources CTI</h1>
-          <p>État de la collecte de chaque source de renseignement : les sources en difficulté d'abord</p>
+          <h1>{t("title")}</h1>
+          <p>{t("subtitle")}</p>
         </div>
         {isAdmin && !adding && (
           <button className="btn primary" type="button" onClick={() => setAdding(true)}>
             <Plus size={16} aria-hidden="true" />
-            Ajouter une source
+            {t("addTitle")}
           </button>
         )}
       </div>
@@ -476,7 +484,7 @@ export function Sources() {
         ) : (
           <aside className="card detail">
             <p className="empty">
-              {query.isPending ? "Chargement…" : "Aucune source déclarée. Lancez `illwatch seed` pour les sources de référence."}
+              {query.isPending ? messages("loading") : t("noSource")}
             </p>
           </aside>
         )}

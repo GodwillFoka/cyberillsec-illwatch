@@ -59,6 +59,13 @@ class Settings(BaseSettings):
     debug: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
+    # --- Langue d'affichage (ADR-027) ------------------------------------------
+    # Pays où l'instance est installée (ISO 3166-1 alpha-2, ex. « DE ») : langue des visiteurs
+    # dont l'adresse n'est pas publique (réseau interne, VPN). Langue de l'instance : dernier
+    # recours avant l'anglais, et départage dans un pays bilingue (Suisse, Canada…).
+    instance_country: str | None = Field(default=None, pattern=r"^[A-Za-z]{2}$")
+    default_language: Literal["fr", "en", "de", "es", "zh"] | None = None
+
     # --- Base de données -----------------------------------------------------
     # PostgreSQL 16 en cible ; SQLite/aiosqlite accepté pour les tests locaux.
     database_url: str = Field(
@@ -175,7 +182,12 @@ class Settings(BaseSettings):
     alert_webhook_url: SecretStr | None = None
 
     @field_validator(
-        "secret_key_previous", "migration_database_url", "database_app_role", mode="before"
+        "secret_key_previous",
+        "migration_database_url",
+        "database_app_role",
+        "instance_country",
+        "default_language",
+        mode="before",
     )
     @classmethod
     def _empty_is_unset(cls, value: object) -> object:

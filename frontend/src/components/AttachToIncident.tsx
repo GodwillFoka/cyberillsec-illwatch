@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useAttachToIncident, type AttachTarget } from "../api/mutations";
 import { useOpenIncidents } from "../api/queries";
 import { levelLabel } from "../lib/levels";
+import { ui } from "./components.i18n";
 import { Link } from "../lib/router";
 
 export function AttachToIncident({ target, label }: { target: AttachTarget; label: string }) {
@@ -20,7 +21,7 @@ export function AttachToIncident({ target, label }: { target: AttachTarget; labe
 
   const incidents = open.data?.items ?? [];
   if (open.isSuccess && incidents.length === 0) {
-    return <p className="muted">Aucun incident ouvert auquel l'associer.</p>;
+    return <p className="muted">{ui("attachNone")}</p>;
   }
 
   function submit(event: FormEvent) {
@@ -35,9 +36,9 @@ export function AttachToIncident({ target, label }: { target: AttachTarget; labe
   return (
     <form className="form" onSubmit={submit}>
       <label className="field">
-        Associer {label} à un incident ouvert
+        {ui("attachLabel", { label })}
         <select value={incidentId} onChange={(e) => setIncidentId(e.target.value)} required>
-          <option value="">Choisir…</option>
+          <option value="">{ui("choose")}</option>
           {incidents.map((incident) => (
             <option key={incident.id} value={incident.id}>
               [{levelLabel(incident.severity)}] {incident.title}
@@ -47,18 +48,19 @@ export function AttachToIncident({ target, label }: { target: AttachTarget; labe
       </label>
       {result && (
         <p className="notice ok" role="status">
-          {result.created ? "Associé à " : "Déjà associé à "}
-          <Link to={`/incidents/${result.id}`}>l'incident</Link> (chronologie mise à jour).
+          {result.created ? ui("attachedNew") : ui("attachedAlready")}
+          <Link to={`/incidents/${result.id}`}>{ui("theIncident")}</Link>
+          {ui("timelineUpdated")}
         </p>
       )}
       {attach.error && (
         <p className="notice error" role="alert">
-          Association refusée : {attach.error.message}
+          {ui("attachRefused", { message: attach.error.message })}
         </p>
       )}
       <div className="actions">
         <button className="btn primary" type="submit" disabled={!incidentId || attach.isPending}>
-          {attach.isPending ? "Association…" : "Associer"}
+          {attach.isPending ? ui("attaching") : ui("attach")}
         </button>
       </div>
     </form>
