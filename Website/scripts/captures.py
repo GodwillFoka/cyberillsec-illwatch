@@ -177,7 +177,7 @@ def check_accessibility(browser, base: str, axe: Path, problems: list[str]) -> N
                 if v["impact"] in ("serious", "critical"):
                     problems.append(line)
                 else:
-                    print(f"⚠ {line}")
+                    print(f"::warning title=Accessibilité::{line}")
     context.close()
 
 
@@ -203,6 +203,7 @@ def main() -> int:
 
     for problem in problems:
         print(f"✘ {problem}")
+        print(f"::error title=Site web::{problem}")  # annotation lisible sans les journaux
     pages = len(LANGS) * len(VIEWPORTS) * len(PAGES)
     print(f"{'✘' if problems else '✔'} {pages} pages contrôlées, captures dans {args.out}")
     return 1 if problems else 0
