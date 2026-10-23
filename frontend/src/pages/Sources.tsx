@@ -312,9 +312,8 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
                   const at = parseDate(run.started_at);
                   return (
                     <li key={run.id}>
-                      <span className={`run-dot ${run.succeeded ? "ok" : "ko"}`} aria-hidden="true" />
                       <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
-                      <span className="grow ellipsis">
+                      <span className={`grow ellipsis run-msg ${run.succeeded ? "ok" : "ko"}`}>
                         {run.succeeded
                           ? `${t("runOk", { inserted: run.inserted, updated: run.updated })}${run.rejected ? t("runRejected", { count: run.rejected }) : ""}`
                           : (run.error ?? t("failed"))}
