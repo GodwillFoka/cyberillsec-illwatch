@@ -116,9 +116,20 @@ mkdirSync(join(dist, "assets"), { recursive: true });
 
 const site = { url: SITE_URL, langs: LANGS, links: LINKS, geo: GEO_ENDPOINT, defaultLang: DEFAULT_LANG, instanceLang, connect, demoEndpoint };
 const asset = (path) => `${BASE}assets/${path}`;
+// Liens relatifs à la page : le site s'affiche quelle que soit l'adresse qui le sert (domaine
+// unique de GitLab Pages, sous-dossier, domaine dédié, fichier ouvert en local). Seule la page 404,
+// servie à n'importe quelle profondeur, garde des chemins absolus.
+const relativize = (path, html) => {
+  const depth = path.split("/").length - 1;
+  const prefix = depth ? "../".repeat(depth) : "./";
+  const fix = (url) => (url.startsWith(BASE) && !url.startsWith("//") ? prefix + url.slice(BASE.length) : url);
+  return html.replace(/(\s(?:href|src|srcset|data-base)=")([^"]*)"/g, (_, attr, value) =>
+    attr.includes("srcset") ? `${attr}${value.split(",").map((part) => part.replace(/^(\s*)(\S+)/, (m, sp, url) => sp + fix(url))).join(",")}"` : `${attr}${fix(value)}"`,
+  );
+};
 const write = (path, content) => {
   mkdirSync(dirname(join(dist, path)), { recursive: true });
-  writeFileSync(join(dist, path), content);
+  writeFileSync(join(dist, path), path.endsWith(".html") && path !== "404.html" ? relativize(path, content) : content);
 };
 
 for (const lang of LANGS) {
@@ -201,9 +212,11 @@ for (const page of pages) {
   }
   for (const m of html.matchAll(/\s(?:href|src|srcset)="([^"]+)"/g)) {
     for (const url of m[1].split(",").map((s) => s.trim().split(/\s+/)[0])) {
-      if (!url.startsWith(BASE) || url.startsWith("//")) continue;
-      const target = url.slice(BASE.length).split("#")[0];
-      const file = target === "" || target.endsWith("/") ? join(dist, target, "index.html") : join(dist, target);
+      if (/^(?:[a-z]+:|\/\/|#)/i.test(url)) continue;
+      if (url.startsWith("/") && !url.startsWith(BASE)) continue;
+      if (url.startsWith("/") && name !== "404.html") problems.push(`${name} : lien absolu ${url} (doit être relatif)`);
+      const target = (url.startsWith("/") ? join(dist, url.slice(BASE.length)) : join(dirname(page), url)).split("#")[0];
+      const file = url.split("#")[0].endsWith("/") || target === dist ? join(target, "index.html") : target;
       if (!existsSync(file)) problems.push(`${name} : lien interne cassé ${url}`);
     }
   }
@@ -217,7 +230,7 @@ for (const lang of LANGS) {
   const home = join(dist, lang.code, "index.html");
   const html = readFileSync(home, "utf8");
   let bytes = statSync(home).size + statSync(join(dist, "assets", "site.css")).size;
-  for (const m of html.matchAll(/<script[^>]*src="([^"]+)"/g)) bytes += statSync(join(dist, m[1].slice(BASE.length))).size;
+  for (const m of html.matchAll(/<script[^>]*src="([^"]+)"/g)) bytes += statSync(join(dirname(home), m[1])).size;
   for (const file of ["lang.js", "score.js"]) bytes += statSync(join(dist, "assets", "js", file)).size;
   bytes += statSync(join(dist, "assets", "img", "screens", "01-vue-ensemble.webp")).size;
   if (bytes > HOME_BUDGET) problems.push(`${lang.code}/ : accueil de ${Math.round(bytes / 1024)} Ko > budget ${HOME_BUDGET / 1024} Ko`);
