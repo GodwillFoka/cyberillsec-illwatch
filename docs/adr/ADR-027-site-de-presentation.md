@@ -105,7 +105,7 @@ solution, sur le même serveur.
       Datenschutz, dans les cinq langues ; l'Impressum est rempli depuis
       `Website/src/data/legal.json` et la construction publique (`ILLWATCH_SITE_PUBLIC=1`)
       échoue tant qu'il manque un champ obligatoire.
-    - **Prix arbitraires et indicatifs** (Pilote dès 4 900 €, Accompagnement dès 790 €/mois),
+    - **Prix arbitraires et indicatifs** (Pilote dès 1 490 €, Accompagnement dès 290 €/mois — prix de lancement volontairement bas pour se faire un nom, demande du 23/10/2026),
       affichés comme « en phase d'évaluation » ; prix définitifs à fixer après les premiers
       pilotes (tâche à venir, `Website/ROADMAP.md`).
     - **Demande de démonstration traitée par l'application** : `POST /api/v1/demo-requests`

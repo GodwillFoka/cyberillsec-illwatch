@@ -106,7 +106,7 @@ Caddy seulement ; `Accept-Language` borné et validé ; recherches simultanées 
 ### Tâches à venir (agenda)
 
 - **Prix définitifs** (noté le 23/10/2026 à la demande de Godwill FOKA) : les prix affichés
-  (Pilote dès 4 900 €, Accompagnement dès 790 €/mois) sont **arbitraires et indicatifs**, signalés
+  (Pilote dès 1 490 €, Accompagnement dès 290 €/mois — prix de lancement volontairement bas pour se faire un nom, demande du 23/10/2026) sont **arbitraires et indicatifs**, signalés
   « en phase d'évaluation » sur le site. Les fixer à l'issue des premiers pilotes, puis mettre à
   jour `offers.*_price` dans les cinq dictionnaires et retirer `offers.indicative`.
 - **Mentions légales** : compléter `src/data/legal.json` (adresse, e-mail, hébergeur) ;
