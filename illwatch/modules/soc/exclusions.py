@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from illwatch.app.models import Exclusion, Incident, IncidentEvent
 from illwatch.modules.threat_feeds.validators import InvalidIndicatorError, normalize_indicator
 from illwatch.shared.enums import IncidentEventType, IncidentStatus
+from illwatch.shared.server_text import tr
 
 MAX_REASON_LENGTH = 2000
 MAX_DAYS = 3650
@@ -113,7 +114,10 @@ async def create_exclusion(
                 incident_id=incident.id,
                 author_id=author_id,
                 event_type=IncidentEventType.IOC_EXCLUDED,
-                message=f"Faux positif : {normalized} mis en liste d'exclusion. Motif : {text}",
+                message=tr(
+                    f"Faux positif : {normalized} mis en liste d'exclusion. Motif : {text}",
+                    f"False positive: {normalized} added to the exclusion list. Reason: {text}",
+                ),
                 created_at=moment,
             )
         )

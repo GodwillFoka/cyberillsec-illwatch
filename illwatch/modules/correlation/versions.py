@@ -177,3 +177,12 @@ VERDICT_LABEL: dict[str, str] = {
     "inconnu": "versions vulnérables pas encore publiées par la NVD : à vérifier",
     "version_non_declaree": "version de l'actif non déclarée : à vérifier",
 }
+
+VERDICT_LABEL_EN: dict[str, str] = {
+    "vulnerable": "declared version within a vulnerable range (NVD)",
+    "hors_plateforme": "asset platform differs from those targeted by the NVD",
+    "conditionnel": "vulnerable only on some platforms or distribution packages (NVD): "
+    "to be checked",
+    "inconnu": "vulnerable versions not yet published by the NVD: to be checked",
+    "version_non_declaree": "asset version not declared: to be checked",
+}

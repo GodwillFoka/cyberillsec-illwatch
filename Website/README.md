@@ -1,6 +1,9 @@
 # Site de présentation ILL Watch
 
-Site public qui **présente** ILL Watch (la documentation explique, l'application sert).
+Site public qui **vend** ILL Watch (la documentation explique, l'application sert) : page
+produit dans l'esprit de github.com/home et about.gitlab.com — héros animé, standards en
+défilement, fonctionnalités en onglets avec captures **en anglais**, chiffres constatés animés,
+solutions par équipe, comparaison, offres, FAQ, appel à la démonstration.
 Décision : [ADR-027](../docs/adr/ADR-027-site-de-presentation.md) ·
 feuille de route : [ROADMAP.md](ROADMAP.md).
 
@@ -29,6 +32,7 @@ ou si l'accueil dépasse 500 Ko.
 | `ILLWATCH_SITE_GEO_ENDPOINT` | adresse relayée vers `GET /api/v1/locale` (ex. `/langue`, voir `deploy/`) | vide : fuseau horaire |
 | `ILLWATCH_SITE_COUNTRY` | pays de l'instance (ISO alpha-2), donne la langue par défaut | vide |
 | `ILLWATCH_SITE_DEFAULT_LANG` | langue par défaut explicite (`fr`, `en`, `de`, `es`, `zh`) | vide : anglais |
+| `ILLWATCH_SITE_CONTACT` | cible des boutons « Demander une démo » (`mailto:…` ou `https://…`) | ticket GitHub pré-rempli (modèle `demo.md`) |
 
 ## Organisation
 
@@ -41,8 +45,8 @@ Website/
 │   ├── data/facts.json    chiffres constatés, datés et sourcés
 │   ├── templates.mjs      gabarits HTML
 │   ├── assets/site.css    jetons du brand book (ADR-018)
-│   ├── assets/js/         lang.js (détection), score.js (formule du moteur), simulateur, visite
-│   └── static/img/        captures de la CI (branche captures), en WebP
+│   ├── assets/js/         lang.js (détection), score.js (formule du moteur), simulateur, onglets (tabs.js), mouvements (motion.js)
+│   └── static/img/        captures anglaises de la CI (branche captures), en WebP
 ├── tests/                 node --test ; score-vectors.json partagé avec tests/test_site_score_parity.py
 ├── scripts/captures.py    captures et contrôles navigateur (workflow « Site web »)
 └── deploy/                exemple Caddy pour le VPS

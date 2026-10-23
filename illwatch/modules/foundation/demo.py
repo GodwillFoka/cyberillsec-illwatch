@@ -4,9 +4,10 @@ Toutes les valeurs sont **fictives** : adresses des plages réservées à la doc
 (RFC 5737 : 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 ; RFC 3849 : 2001:db8::/32),
 domaines `example`/`.test`, CVE numérotées CVE-2099-9xxxx (année que MITRE n'attribuera pas
 avant longtemps)
-dont la description commence par « [démo] ». Rien ne peut être confondu avec du renseignement
-réel, et le chargement est refusé sur une base qui contient déjà des IOC : il ne mélange
-jamais la démonstration à une collecte réelle.
+dont la description commence par « [démo] » (« [demo] » sur une instance non francophone :
+les textes suivent `DEFAULT_LANGUAGE`, ADR-027 décision 12). Rien ne peut être confondu
+avec du renseignement réel, et le chargement est refusé sur une base qui contient déjà des
+IOC : il ne mélange jamais la démonstration à une collecte réelle.
 """
 
 from __future__ import annotations
@@ -44,6 +45,7 @@ from illwatch.modules.cve_tracker.scoring import compute_risk_breakdown
 from illwatch.modules.enrichment.dbip import import_dataset
 from illwatch.modules.foundation.seed import seed_reference_feeds
 from illwatch.modules.incidents import service as incidents
+from illwatch.modules.incidents.service import STATUS_LABELS_EN
 from illwatch.modules.soc.exclusions import create_exclusion
 from illwatch.modules.soc.response import hunt_from_incident
 from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
@@ -56,8 +58,17 @@ from illwatch.shared.enums import (
     Severity,
     UserRole,
 )
+from illwatch.shared.server_text import tr
 
 DEMO_TAG = "[démo]"
+DEMO_TAG_EN = "[demo]"
+
+
+def demo_tag() -> str:
+    """Marque des données fictives, dans la langue de l'instance."""
+    return tr(DEMO_TAG, DEMO_TAG_EN)
+
+
 TOR_EXIT = "198.51.100.66"  # relais Tor fictif, servi par la liste Tor de démonstration
 
 
@@ -67,11 +78,13 @@ class DemoRefusedError(RuntimeError):
 
 # Erreur de collecte réaliste (longue, avec une adresse d'un seul tenant) : les captures
 # vérifient qu'elle reste dans son panneau, comme celle qu'un vrai flux TAXII renvoie.
-_DEMO_FEED_ERROR = (
-    "ConnectTimeout : HTTPSConnectionPool(host='feeds.example.org', port=443) : Max retries "
-    "exceeded with url: /taxii2reports/collections/c1f43330-103b-11ee-9ee3-4b022e286589/objects/ "
-    "(connect timeout=15.0) (4 tentatives) [démo]"
-)
+def _demo_feed_error() -> str:
+    return (
+        "ConnectTimeout: HTTPSConnectionPool(host='feeds.example.org', port=443): Max retries "
+        "exceeded with url: /taxii2reports/collections/c1f43330-103b-11ee-9ee3-4b022e286589/"
+        "objects/ (connect timeout=15.0) " + tr("(4 tentatives) ", "(4 attempts) ") + demo_tag()
+    )
+
 
 # Enrichissement fictif des plages de documentation, avec les numéros d'AS réservés à la
 # documentation (RFC 5398) : jamais chargé si une vraie base DB-IP est déjà importée.
@@ -81,23 +94,36 @@ _DEMO_COUNTRY = [
     "203.0.113.0,203.0.113.255,DE",
     "2001:db8::,2001:db8:ffff:ffff:ffff:ffff:ffff:ffff,FR",
 ]
-_DEMO_ASN = [
-    f'192.0.2.0,192.0.2.255,64496,"Hébergeur A {DEMO_TAG}"',
-    f'198.51.100.0,198.51.100.255,64497,"Opérateur B {DEMO_TAG}"',
-    f'203.0.113.0,203.0.113.255,64498,"Nuage C {DEMO_TAG}"',
-    f'2001:db8::,2001:db8:ffff:ffff:ffff:ffff:ffff:ffff,64499,"Hébergeur A {DEMO_TAG}"',
-]
+
+
+def _demo_asn() -> list[str]:
+    host, carrier, cloud, tag = (
+        tr("Hébergeur A", "Hosting A"),
+        tr("Opérateur B", "Carrier B"),
+        tr("Nuage C", "Cloud C"),
+        demo_tag(),
+    )
+    return [
+        f'192.0.2.0,192.0.2.255,64496,"{host} {tag}"',
+        f'198.51.100.0,198.51.100.255,64497,"{carrier} {tag}"',
+        f'203.0.113.0,203.0.113.255,64498,"{cloud} {tag}"',
+        f'2001:db8::,2001:db8:ffff:ffff:ffff:ffff:ffff:ffff,64499,"{host} {tag}"',
+    ]
 
 
 # Inventaire fictif : produits présents dans les CVE de démonstration, une adresse du pare-feu
 # présente dans les IOC (règle CORR-03).
 _DEMO_ASSETS = [
-    ("Pare-feu siège", "FortiOS", "Fortinet", Severity.CRITICAL, ["203.0.113.19"]),
-    ("Messagerie", "Exchange Server", "Microsoft", Severity.HIGH, []),
-    ("Wiki interne", "Confluence", "Atlassian", Severity.MEDIUM, []),
-    ("Intégration continue", "Jenkins", "Jenkins", Severity.LOW, []),
+    (("Pare-feu siège", "HQ firewall"), "FortiOS", "Fortinet", Severity.CRITICAL, ["203.0.113.19"]),
+    (("Messagerie", "Email"), "Exchange Server", "Microsoft", Severity.HIGH, []),
+    (("Wiki interne", "Internal wiki"), "Confluence", "Atlassian", Severity.MEDIUM, []),
+    (("Intégration continue", "Continuous integration"), "Jenkins", "Jenkins", Severity.LOW, []),
     (
-        "Passerelle de messagerie sécurisée du siège — cluster de production principal (Francfort)",
+        (
+            "Passerelle de messagerie sécurisée du siège — cluster de production principal "
+            "(Francfort)",
+            "Headquarters secure email gateway — main production cluster (Frankfurt)",
+        ),
         "Proofpoint Email Protection",
         "Proofpoint",
         Severity.MEDIUM,
@@ -135,21 +161,23 @@ LONG_DOMAIN = (
 )
 
 _FAMILIES = [
-    ("Cobalt Strike C2", Severity.CRITICAL),
-    ("LockBit 3.0 affiliate infrastructure", Severity.CRITICAL),
-    ("Qakbot distribution", Severity.HIGH),
-    ("AsyncRAT C2", Severity.HIGH),
-    ("Phishing Microsoft 365", Severity.MEDIUM),
-    ("Scanner SSH", Severity.LOW),
-    ("Emotet loader", Severity.HIGH),
-    ("Bruteforce RDP", Severity.MEDIUM),
+    (("Cobalt Strike C2", "Cobalt Strike C2"), Severity.CRITICAL),
+    (("LockBit 3.0 affiliate infrastructure",) * 2, Severity.CRITICAL),
+    (("Qakbot distribution", "Qakbot distribution"), Severity.HIGH),
+    (("AsyncRAT C2", "AsyncRAT C2"), Severity.HIGH),
+    (("Phishing Microsoft 365", "Microsoft 365 phishing"), Severity.MEDIUM),
+    (("Scanner SSH", "SSH scanner"), Severity.LOW),
+    (("Emotet loader", "Emotet loader"), Severity.HIGH),
+    (("Bruteforce RDP", "RDP brute force"), Severity.MEDIUM),
 ]
 
 
 def _observations(rng: random.Random, count: int) -> list[Observation]:
     items: list[Observation] = []
+    tag = demo_tag()
     for i in range(count):
-        family, severity = _FAMILIES[i % len(_FAMILIES)]
+        names, severity = _FAMILIES[i % len(_FAMILIES)]
+        family = tr(*names)
         kind = i % 6
         if kind == 0:
             value = f"203.0.113.{1 + i % 250}"
@@ -163,46 +191,105 @@ def _observations(rng: random.Random, count: int) -> list[Observation]:
             value = "".join(rng.choice("0123456789abcdef") for _ in range(64))
         else:
             value = f"2001:db8::{i:x}"
-        items.append(Observation(value, severity=severity, description=f"{family} {DEMO_TAG}"))
+        items.append(Observation(value, severity=severity, description=f"{family} {tag}"))
     # Cas reconnus par les règles de chasse.
     items += [
-        Observation(
-            "203.0.113.50", severity=Severity.CRITICAL, description=f"LockBit 3.0 {DEMO_TAG}"
-        ),
+        Observation("203.0.113.50", severity=Severity.CRITICAL, description=f"LockBit 3.0 {tag}"),
         Observation("beacon.cdn-update.duckdns.org", severity=Severity.HIGH),
         Observation("xjq8wz0vkp3mlq7b.example", severity=Severity.MEDIUM),
-        Observation(TOR_EXIT, severity=Severity.MEDIUM, description=f"Scanner {DEMO_TAG}"),
+        Observation(TOR_EXIT, severity=Severity.MEDIUM, description=f"Scanner {tag}"),
         Observation(
             LONG_URL,
             severity=Severity.HIGH,
-            description=(
+            description=tr(
                 "Page d'hameçonnage imitant la mire de connexion Microsoft 365, envoyée par "
-                f"courriel aux services financiers {DEMO_TAG}"
+                f"courriel aux services financiers {tag}",
+                "Phishing page imitating the Microsoft 365 sign-in screen, emailed to the "
+                f"finance department {tag}",
             ),
         ),
-        Observation(LONG_DOMAIN, severity=Severity.HIGH, description=f"Hameçonnage {DEMO_TAG}"),
+        Observation(
+            LONG_DOMAIN,
+            severity=Severity.HIGH,
+            description=f"{tr('Hameçonnage', 'Phishing')} {tag}",
+        ),
     ]
     return items
 
 
 # --- CVE ---------------------------------------------------------------------------------
 
-_PRODUCTS = [
-    ("Fortinet FortiOS SSL-VPN", "débordement de tas permettant l'exécution de code à distance"),
-    ("Microsoft Exchange Server", "contournement d'authentification puis exécution de code"),
-    ("Atlassian Confluence", "injection de modèle OGNL non authentifiée"),
-    ("Ivanti Connect Secure", "injection de commande dans l'interface web"),
-    ("Citrix NetScaler ADC", "lecture de mémoire hors limites (fuite de session)"),
-    ("Apache Struts", "téléversement de fichier conduisant à l'exécution de code"),
-    ("VMware vCenter", "débordement de tampon dans le protocole DCERPC"),
-    ("Palo Alto PAN-OS", "injection de commande dans GlobalProtect"),
-    ("Cisco IOS XE", "élévation de privilèges via l'interface web"),
-    ("OpenSSH", "condition de concurrence dans le gestionnaire de signaux"),
-    ("WordPress (extension)", "injection SQL authentifiée"),
+_PRODUCTS: list[tuple[str, tuple[str, str]]] = [
+    (
+        "Fortinet FortiOS SSL-VPN",
+        (
+            "débordement de tas permettant l'exécution de code à distance",
+            "heap overflow allowing remote code execution",
+        ),
+    ),
+    (
+        "Microsoft Exchange Server",
+        (
+            "contournement d'authentification puis exécution de code",
+            "authentication bypass followed by code execution",
+        ),
+    ),
+    (
+        "Atlassian Confluence",
+        ("injection de modèle OGNL non authentifiée", "unauthenticated OGNL template injection"),
+    ),
+    (
+        "Ivanti Connect Secure",
+        ("injection de commande dans l'interface web", "command injection in the web interface"),
+    ),
+    (
+        "Citrix NetScaler ADC",
+        (
+            "lecture de mémoire hors limites (fuite de session)",
+            "out-of-bounds memory read (session leak)",
+        ),
+    ),
+    (
+        "Apache Struts",
+        (
+            "téléversement de fichier conduisant à l'exécution de code",
+            "file upload leading to code execution",
+        ),
+    ),
+    (
+        "VMware vCenter",
+        (
+            "débordement de tampon dans le protocole DCERPC",
+            "buffer overflow in the DCERPC protocol",
+        ),
+    ),
+    (
+        "Palo Alto PAN-OS",
+        ("injection de commande dans GlobalProtect", "command injection in GlobalProtect"),
+    ),
+    (
+        "Cisco IOS XE",
+        (
+            "élévation de privilèges via l'interface web",
+            "privilege escalation through the web interface",
+        ),
+    ),
+    (
+        "OpenSSH",
+        (
+            "condition de concurrence dans le gestionnaire de signaux",
+            "race condition in the signal handler",
+        ),
+    ),
+    ("WordPress (extension)", ("injection SQL authentifiée", "authenticated SQL injection")),
     (
         "Jenkins",
-        "lecture de fichiers arbitraires via le CLI (avis : https://www.jenkins.io/security/"
-        "advisory/2099-01-24/#SECURITY-3314-lecture-de-fichiers-arbitraires-via-le-cli)",
+        (
+            "lecture de fichiers arbitraires via le CLI (avis : https://www.jenkins.io/security/"
+            "advisory/2099-01-24/#SECURITY-3314-lecture-de-fichiers-arbitraires-via-le-cli)",
+            "arbitrary file read through the CLI (advisory: https://www.jenkins.io/security/"
+            "advisory/2099-01-24/#SECURITY-3314-arbitrary-file-read-vulnerability-through-the-cli)",
+        ),
     ),
 ]
 
@@ -210,7 +297,8 @@ _PRODUCTS = [
 def _cves(rng: random.Random, now: datetime) -> list[tuple[CVE, list[CVEPriorityChange]]]:
     out: list[tuple[CVE, list[CVEPriorityChange]]] = []
     for i in range(48):
-        product, flaw = _PRODUCTS[i % len(_PRODUCTS)]
+        product, flaws = _PRODUCTS[i % len(_PRODUCTS)]
+        flaw = tr(*flaws)
         cvss = round(rng.choice([9.8, 9.8, 9.1, 8.8, 8.1, 7.5, 7.2, 6.5, 5.3, 4.3]), 1)
         epss = round(rng.betavariate(0.6, 3.0), 4)
         is_kev = i % 5 == 0
@@ -227,7 +315,7 @@ def _cves(rng: random.Random, now: datetime) -> list[tuple[CVE, list[CVEPriority
         modified = now - timedelta(hours=rng.randint(1, 24 * 6))
         cve = CVE(
             id=f"CVE-2099-9{i:04d}",
-            description=f"{DEMO_TAG} {product} : {flaw}.",
+            description=tr(f"{DEMO_TAG} {product} : {flaw}.", f"{DEMO_TAG_EN} {product}: {flaw}."),
             cvss_score=cvss,
             cvss_vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H" if cvss >= 9 else None,
             epss_score=epss,
@@ -236,7 +324,10 @@ def _cves(rng: random.Random, now: datetime) -> list[tuple[CVE, list[CVEPriority
             kev_date_added=(now - timedelta(days=rng.randint(1, 30))).date() if is_kev else None,
             kev_due_date=(now + timedelta(days=rng.randint(2, 21))).date() if is_kev else None,
             kev_required_action=(
-                "Appliquer les correctifs de l'éditeur ou retirer le produit du service."
+                tr(
+                    "Appliquer les correctifs de l'éditeur ou retirer le produit du service.",
+                    "Apply mitigations per vendor instructions or discontinue use of the product.",
+                )
                 if is_kev
                 else None
             ),
@@ -285,6 +376,8 @@ async def load_demo_data(
             "(préproduction locale, captures). Rien n'a été écrit."
         )
     moment = now or datetime.now(UTC)
+    tag = demo_tag()
+    feed_error = _demo_feed_error()
     rng = random.Random(seed)  # noqa: S311 - données fictives, pas de sécurité en jeu
     report = DemoReport()
 
@@ -309,13 +402,13 @@ async def load_demo_data(
                     inserted=0 if failed else rng.randint(0, 400),
                     updated=0 if failed else rng.randint(0, 900),
                     rejected=0 if failed else rng.randint(0, 12),
-                    error=_DEMO_FEED_ERROR if failed else None,
+                    error=feed_error if failed else None,
                 )
             )
             report.runs += 1
         feed.status = FeedStatus.DEGRADED if feed is degraded else FeedStatus.HEALTHY
         feed.last_successful_run = moment - timedelta(hours=18 if feed is degraded else 1)
-        feed.last_error = _DEMO_FEED_ERROR if feed is degraded else None
+        feed.last_error = feed_error if feed is degraded else None
 
     # IOC répartis sur 30 jours, attribués à plusieurs sources.
     observations = _observations(rng, 640)
@@ -373,32 +466,45 @@ async def load_demo_data(
     iocs = list((await session.scalars(select(Indicator).limit(12))).all())
     plans: Sequence[tuple[str, Severity, list[IncidentStatus], int]] = [
         (
-            "Ransomware : chiffrement en cours sur SRV-FILES-02",
+            tr(
+                "Ransomware : chiffrement en cours sur SRV-FILES-02",
+                "Ransomware: encryption in progress on SRV-FILES-02",
+            ),
             Severity.CRITICAL,
             [IncidentStatus.ANALYSE, IncidentStatus.CONFINEMENT],
             0,
         ),
         (
-            "Balise Cobalt Strike depuis un poste comptable",
+            tr(
+                "Balise Cobalt Strike depuis un poste comptable",
+                "Cobalt Strike beacon from an accounting workstation",
+            ),
             Severity.HIGH,
             [IncidentStatus.ANALYSE],
             1,
         ),
         (
-            "Campagne d'hameçonnage Microsoft 365 visant la direction financière, les achats "
-            "et deux filiales (12 destinataires, pièces jointes HTML piégées)",
+            tr(
+                "Campagne d'hameçonnage Microsoft 365 visant la direction financière, les "
+                "achats et deux filiales (12 destinataires, pièces jointes HTML piégées)",
+                "Microsoft 365 phishing campaign targeting finance, procurement and two "
+                "subsidiaries (12 recipients, booby-trapped HTML attachments)",
+            ),
             Severity.MEDIUM,
             [],
             2,
         ),
         (
-            "Exploitation FortiOS SSL-VPN tentée depuis l'extérieur",
+            tr(
+                "Exploitation FortiOS SSL-VPN tentée depuis l'extérieur",
+                "FortiOS SSL-VPN exploitation attempted from outside",
+            ),
             Severity.HIGH,
             [IncidentStatus.ANALYSE, IncidentStatus.CONFINEMENT, IncidentStatus.ERADICATION],
             3,
         ),
         (
-            "Scan SSH massif sur la DMZ",
+            tr("Scan SSH massif sur la DMZ", "Mass SSH scan on the DMZ"),
             Severity.LOW,
             [
                 IncidentStatus.ANALYSE,
@@ -413,15 +519,17 @@ async def load_demo_data(
 
     # Liste Tor de démonstration : aucune requête sortante pendant les chasses.
     async def tor_list(_: str) -> bytes:
-        return f"# démo\n{TOR_EXIT}\n".encode()
+        return f"# demo\n{TOR_EXIT}\n".encode()
 
     for title, severity, path, days_ago in plans:
         incident = await incidents.create_incident(
             session,
-            title=f"{title} {DEMO_TAG}",
-            description=(
+            title=f"{title} {tag}",
+            description=tr(
                 "Incident de démonstration : données fictives, pour présenter le cycle de "
-                "réponse NIST SP 800-61 dans l'interface."
+                "réponse NIST SP 800-61 dans l'interface.",
+                "Demonstration incident: fictitious data, to present the NIST SP 800-61 "
+                "response cycle in the interface.",
             ),
             severity=severity,
             author_id=author,
@@ -437,7 +545,10 @@ async def load_demo_data(
         await incidents.add_note(
             session,
             incident.id,
-            "Premiers constats consignés ; périmètre en cours de qualification.",
+            tr(
+                "Premiers constats consignés ; périmètre en cours de qualification.",
+                "Initial findings recorded; scope being qualified.",
+            ),
             author_id=author,
         )
         for target in path:
@@ -446,9 +557,16 @@ async def load_demo_data(
                 incident.id,
                 target,
                 author_id=author,
-                note=f"Passage en {target.value.lower()}.",
+                note=tr(
+                    f"Passage en {target.value.lower()}.",
+                    f"Moved to {STATUS_LABELS_EN[target].lower()}.",
+                ),
                 closure_summary=(
-                    "Faux positif partiel : scanners bloqués au pare-feu, aucune compromission."
+                    tr(
+                        "Faux positif partiel : scanners bloqués au pare-feu, aucune "
+                        "compromission.",
+                        "Partial false positive: scanners blocked at the firewall, no compromise.",
+                    )
                     if target == IncidentStatus.CLOTURE
                     else None
                 ),
@@ -459,14 +577,19 @@ async def load_demo_data(
             await incidents.escalate(
                 session,
                 incident.id,
-                reason=f"Investigation approfondie nécessaire {DEMO_TAG}",
+                reason=tr("Investigation approfondie nécessaire", "In-depth investigation needed")
+                + f" {tag}",
                 author_id=author,
             )
             if len(path) >= 3:
                 await incidents.escalate(
                     session,
                     incident.id,
-                    reason=f"Règle de détection à écrire, réponse avancée {DEMO_TAG}",
+                    reason=tr(
+                        "Règle de détection à écrire, réponse avancée",
+                        "Detection rule to write, advanced response",
+                    )
+                    + f" {tag}",
                     author_id=author,
                 )
         if report.incidents == 0:
@@ -478,7 +601,11 @@ async def load_demo_data(
             await create_exclusion(
                 session,
                 value="www.example.org",
-                reason=f"Site institutionnel de l'organisation, faux positif récurrent {DEMO_TAG}",
+                reason=tr(
+                    "Site institutionnel de l'organisation, faux positif récurrent",
+                    "The organisation's corporate website, recurring false positive",
+                )
+                + f" {tag}",
                 author_id=author,
                 incident_id=incident.id,
             )
@@ -486,7 +613,10 @@ async def load_demo_data(
             await incidents.add_note(
                 session,
                 incident.id,
-                "Hôte isolé du réseau et image mémoire prise.",
+                tr(
+                    "Hôte isolé du réseau et image mémoire prise.",
+                    "Host isolated from the network and memory image taken.",
+                ),
                 author_id=author,
                 kind=IncidentEventType.ACTION_TAKEN,
             )
@@ -516,10 +646,10 @@ async def load_demo_data(
     report.hunts += 1
 
     if await session.scalar(select(func.count()).select_from(EnrichmentDatasetInfo)) == 0:
-        origin = f"démonstration (RFC 5737, RFC 5398) {DEMO_TAG}"
+        origin = tr("démonstration", "demonstration") + f" (RFC 5737, RFC 5398) {tag}"
         for dataset, lines in (
             (EnrichmentDataset.COUNTRY, _DEMO_COUNTRY),
-            (EnrichmentDataset.ASN, _DEMO_ASN),
+            (EnrichmentDataset.ASN, _demo_asn()),
         ):
             await import_dataset(session, dataset, lines, source=origin, now=moment)
         report.notes.append("enrichissement fictif des plages de documentation")
@@ -527,28 +657,31 @@ async def load_demo_data(
     if await session.scalar(select(func.count()).select_from(AttackTechnique)) == 0:
         await import_attack(session, demo_attack_data(), now=moment)
         report.notes.append("extrait ATT&CK de démonstration")
-    demo_campaign = f"Distribution QakBot {DEMO_TAG}"
+    demo_campaign = tr("Distribution QakBot", "QakBot distribution") + f" {tag}"
     if await session.get(AttackActor, "S0650") is not None and not await session.scalar(
         select(Campaign.id).where(Campaign.name == demo_campaign)
     ):
         campaign = await create_campaign(
             session,
             name=demo_campaign,
-            description="Infrastructure de distribution et de commande du chargeur QakBot.",
+            description=tr(
+                "Infrastructure de distribution et de commande du chargeur QakBot.",
+                "Distribution and command infrastructure of the QakBot loader.",
+            ),
             actor_id="S0650",
         )
         await attach_to_campaign(session, campaign.id, description_contains="Qakbot")
 
-    for name, product, vendor, criticality, addresses in _DEMO_ASSETS:
+    for names, product, vendor, criticality, addresses in _DEMO_ASSETS:
         session.add(
             Asset(
-                name=name,
+                name=tr(*names),
                 product=product,
                 vendor=vendor,
                 criticality=criticality,
                 addresses=addresses,
                 domains=[],
-                notes=f"Actif fictif {DEMO_TAG}",
+                notes=tr("Actif fictif", "Fictitious asset") + f" {tag}",
                 is_active=True,
             )
         )

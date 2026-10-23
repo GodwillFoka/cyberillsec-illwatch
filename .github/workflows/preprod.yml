@@ -36,6 +36,12 @@ jobs:
         with:
           persist-credentials: false
 
+      # Instance en anglais (ADR-027, décision 12) : le jeu de démonstration et les textes écrits
+      # par le serveur (titres, chronologie, recommandations) sont en anglais, comme
+      # l'interface des captures principales — langue commune du site et des présentations.
+      - name: Langue de l'instance (anglais)
+        run: echo "DEFAULT_LANGUAGE=en" >> .env
+
       - name: Démarrage (image de production derrière Caddy)
         run: ./scripts/preprod-local.sh up 2>&1 | tee up.log
 

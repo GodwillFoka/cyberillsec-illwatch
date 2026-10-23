@@ -3,7 +3,10 @@
 Usage : python scripts/captures.py URL_BASE DOSSIER   (mot de passe : variable CAPTURE_PASSWORD)
 
 Se connecte avec le compte « admin », parcourt chaque écran et l'enregistre en PNG, en grand
-écran (1440 × 900) et, pour quelques écrans, en largeur mobile (390 × 844). Échoue si une page
+écran (1440 × 900) et en largeur mobile (390 × 844). Les captures principales sont **en
+anglais** (interface et, avec `DEFAULT_LANGUAGE=en`, données de démonstration) : ce sont elles
+que reprend le site de présentation ; la vue d'ensemble et le triage sont aussi capturés dans
+les quatre autres langues (suffixe `-fr`, `-de`, `-es`, `-zh`). Échoue si une page
 affiche une erreur, si la console du navigateur signale une erreur ou une violation de la
 politique de sécurité (CSP) : une capture « réussie » d'un écran cassé ne doit pas passer.
 """
@@ -176,8 +179,8 @@ def main() -> int:
         context = browser.new_context(
             viewport={"width": 1440, "height": 900},
             ignore_https_errors=True,
-            locale="fr-FR",
-            timezone_id="Europe/Paris",
+            locale="en-GB",
+            timezone_id="Europe/London",
             color_scheme="dark",
         )
         page = context.new_page()
@@ -191,12 +194,15 @@ def main() -> int:
         )
         page.on("pageerror", lambda e: problems.append(f"exception : {e}"[:240]))
 
+        # Interface en anglais dès l'écran de connexion (choix mémorisé, comme le sélecteur).
         page.goto(f"{BASE}/")
+        page.evaluate("localStorage.setItem('illwatch.lang', 'en')")
+        page.reload()
         settle(page)
         page.screenshot(path=OUT / "00-connexion.png")
-        page.get_by_label("Identifiant").fill("admin")
-        page.get_by_label("Mot de passe").fill(PASSWORD)
-        page.get_by_role("button", name=re.compile("connexion|Se connecter", re.I)).click()
+        page.get_by_label("Username").fill("admin")
+        page.get_by_label("Password").fill(PASSWORD)
+        page.get_by_role("button", name=re.compile("^Sign in$", re.I)).click()
         page.wait_for_selector("nav")
         settle(page)
 
@@ -204,6 +210,9 @@ def main() -> int:
             page.goto(f"{BASE}{path}")
             settle(page)
             check(page, name)
+            html_lang = page.evaluate("document.documentElement.lang")
+            if not html_lang.startswith("en"):
+                problems.append(f"{name} : langue du document « {html_lang} » (anglais attendu)")
             shoot(page, OUT / f"{name}.png")
 
         # Page d'investigation : premier incident de la liste.
@@ -220,7 +229,7 @@ def main() -> int:
 
         # Interface multilingue (ADR-027) : la vue d'ensemble et le triage dans les quatre autres
         # langues, choix mémorisé comme le ferait le sélecteur ; erreurs de console contrôlées.
-        for lang in ("en", "de", "es", "zh"):
+        for lang in ("fr", "de", "es", "zh"):
             page.evaluate("lang => localStorage.setItem('illwatch.lang', lang)", lang)
             for name, path in (("01-vue-ensemble", "/"), ("02-triage", "/triage")):
                 page.goto(f"{BASE}{path}")
@@ -230,7 +239,7 @@ def main() -> int:
                     problems.append(f"{name}-{lang} : langue du document « {html_lang} »")
                 check(page, f"{name}-{lang}")
                 shoot(page, OUT / f"{name}-{lang}.png")
-        page.evaluate("localStorage.setItem('illwatch.lang', 'fr')")
+        page.evaluate("localStorage.setItem('illwatch.lang', 'en')")
 
         page.set_viewport_size({"width": 390, "height": 844})
         for name, path in SCREENS:

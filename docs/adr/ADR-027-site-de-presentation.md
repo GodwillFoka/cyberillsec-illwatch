@@ -79,6 +79,24 @@ solution, sur le même serveur.
     recommandations) ne sont pas traduits. La préproduction capture la vue d'ensemble et le
     triage dans chaque langue et échoue sur toute erreur de console.
 
+12. **Textes écrits par le serveur dans la langue de l'instance** (décision du 23/10/2026 :
+    « toute capture doit avoir un contenu au moins en anglais »). Titres de corrélation,
+    règles et résultats de chasse, recommandations de réponse, messages de la chronologie et
+    jeu de démonstration suivent `DEFAULT_LANGUAGE` : français si elle est absente ou `fr`
+    (comportement inchangé), **anglais** pour toute autre langue, en attendant une traduction
+    complète côté serveur (`illwatch/shared/server_text.py`). Un texte déjà enregistré n'est
+    pas réécrit. La préproduction tourne en anglais (`DEFAULT_LANGUAGE=en`) : les captures
+    principales — celles du site — sont entièrement en anglais, interface et données.
+
+13. **Un site qui vend** (décision du 23/10/2026, sur le modèle de github.com/home et
+    about.gitlab.com) : héros animé avec la capture et l'appel « Demander une démo », standards
+    en défilement, fonctionnalités en onglets illustrées, chiffres constatés animés, solutions
+    par équipe, obligations (NIS 2, DORA, RGPD, ISO 27001) sans promesse de certification,
+    comparaison par catégories d'outils (aucun concurrent nommé), offres Communauté / Pilote /
+    Accompagnement **sur demande** (aucun prix publié), FAQ. Pas de logo client ni de
+    témoignage tant qu'il n'en existe pas de réels. Les animations respectent
+    `prefers-reduced-motion` et le contenu reste entier sans JavaScript.
+
 ## Conséquences
 
 - Positif : site rapide partout dans le monde, sans surface d'attaque côté dépendances,

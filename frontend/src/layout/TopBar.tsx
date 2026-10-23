@@ -39,7 +39,6 @@ export function TopBar() {
   return (
     <header className="topbar">
       <span className={`live-chip ${state}`} role="status" aria-live="polite" title={label}>
-        <span className={`dot ${state}`} aria-hidden="true" />
         <span className="live-text">{label}</span>
       </span>
       <button

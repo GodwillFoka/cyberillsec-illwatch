@@ -71,7 +71,7 @@ site de documentation ; l'application reste en Nuit.
 | P2 | `#122848` / `#9BC2FF` | 8,1:1 | `#5B9BF5` | correctif sous 30 j | Moyenne |
 | P3 | `#1E2535` / `#C6CDD9` | 9,6:1 | `#6E7A93` | maintenance | Faible |
 
-Chaque badge porte son libellé et une pastille : la gravité ne repose jamais sur la couleur seule.
+Chaque badge porte son libellé, coloré selon la gravité ou l'état, **sans pastille** (décision du 23/10/2026) : le mot et sa couleur suffisent, et la gravité ne repose jamais sur la couleur seule puisque le libellé l'écrit.
 
 ## Typographie
 

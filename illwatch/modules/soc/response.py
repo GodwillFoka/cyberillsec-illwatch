@@ -38,6 +38,7 @@ from illwatch.shared.enums import (
     Severity,
     SocTier,
 )
+from illwatch.shared.server_text import tr
 
 MAX_EXTRA = 1000
 HUNT_STATUS_LABELS = {
@@ -45,6 +46,12 @@ HUNT_STATUS_LABELS = {
     "TERMINEE": "terminée",
     "PARTIELLE": "partielle (une règle n'a pas pu s'exécuter)",
     "ECHEC": "en échec",
+}
+HUNT_STATUS_LABELS_EN = {
+    "EN_COURS": "running",
+    "TERMINEE": "completed",
+    "PARTIELLE": "partial (a rule could not run)",
+    "ECHEC": "failed",
 }
 
 
@@ -101,16 +108,27 @@ async def hunt_from_incident(
         incident_id=incident.id,
     )
     loaded = await engine.get_hunt(session, hunt.id)
+    status = str(hunt.status)
     lines = [
-        f"Chasse sur {hunt.observables_count} observable(s) et {len(products)} produit(s) de "
-        f"l'inventaire : {hunt.matches_count} correspondance(s), chasse "
-        f"{HUNT_STATUS_LABELS.get(str(hunt.status), str(hunt.status))}."
+        tr(
+            f"Chasse sur {hunt.observables_count} observable(s) et {len(products)} produit(s) "
+            f"de l'inventaire : {hunt.matches_count} correspondance(s), chasse "
+            f"{HUNT_STATUS_LABELS.get(status, status)}.",
+            f"Hunt over {hunt.observables_count} observable(s) and {len(products)} inventory "
+            f"product(s): {hunt.matches_count} match(es), hunt "
+            f"{HUNT_STATUS_LABELS_EN.get(status, status)}.",
+        )
     ]
     lines += [
         f"• {m.rule_id} · {m.observable[:120]} : {m.detail[:160]}" for m in loaded.matches[:8]
     ]
     if hunt.matches_count > 8:
-        lines.append(f"… et {hunt.matches_count - 8} autres (écran Chasse).")
+        lines.append(
+            tr(
+                f"… et {hunt.matches_count - 8} autres (écran Chasse).",
+                f"… and {hunt.matches_count - 8} more (Hunting screen).",
+            )
+        )
     session.add(
         IncidentEvent(
             incident_id=incident.id,
@@ -188,17 +206,25 @@ def recommend(
         out.append(
             (
                 IncidentStatus.ANALYSE,
-                "Escalader en L2",
-                "Sévérité critique : l'investigation relève du niveau 2 (escalade motivée).",
+                tr("Escalader en L2", "Escalate to L2"),
+                tr(
+                    "Sévérité critique : l'investigation relève du niveau 2 (escalade motivée).",
+                    "Critical severity: the investigation belongs to tier 2 (justified "
+                    "escalation).",
+                ),
             )
         )
     if iocs and phase in (IncidentStatus.NOUVEAU, IncidentStatus.ANALYSE):
         out.append(
             (
                 IncidentStatus.ANALYSE,
-                "Chasser les IOC de l'incident",
-                "Lancer la chasse depuis l'incident : correspondances avec la base, DNS "
-                "dynamique, DGA, infrastructures de rançongiciel, CVE de l'inventaire.",
+                tr("Chasser les IOC de l'incident", "Hunt the incident's IOCs"),
+                tr(
+                    "Lancer la chasse depuis l'incident : correspondances avec la base, DNS "
+                    "dynamique, DGA, infrastructures de rançongiciel, CVE de l'inventaire.",
+                    "Run the hunt from the incident: matches in the database, dynamic DNS, "
+                    "DGA, ransomware infrastructure, inventory CVEs.",
+                ),
             )
         )
     addresses = by_type.get(IndicatorType.IPV4, []) + by_type.get(IndicatorType.IPV6, [])
@@ -207,27 +233,45 @@ def recommend(
         out.append(
             (
                 IncidentStatus.CONFINEMENT,
-                "Bloquer les adresses en périphérie",
-                f"Pare-feu et proxy : {_sample(addresses)} ; rechercher les connexions "
-                "sortantes vers ces adresses sur 30 jours (journaux pare-feu, NetFlow).",
+                tr("Bloquer les adresses en périphérie", "Block the addresses at the edge"),
+                tr(
+                    f"Pare-feu et proxy : {_sample(addresses)} ; rechercher les connexions "
+                    "sortantes vers ces adresses sur 30 jours (journaux pare-feu, NetFlow).",
+                    f"Firewall and proxy: {_sample(addresses)}; look for outbound connections "
+                    "to these addresses over 30 days (firewall logs, NetFlow).",
+                ),
             )
         )
     if by_type.get(IndicatorType.DOMAIN):
         out.append(
             (
                 IncidentStatus.CONFINEMENT,
-                "Bloquer les domaines au DNS",
-                f"Résolveur (RPZ ou sinkhole) et proxy : {_sample(by_type[IndicatorType.DOMAIN])} ;"
-                " lister les postes qui les ont résolus.",
+                tr("Bloquer les domaines au DNS", "Block the domains at DNS level"),
+                tr(
+                    "Résolveur (RPZ ou sinkhole) et proxy : "
+                    f"{_sample(by_type[IndicatorType.DOMAIN])} ; lister les postes qui les ont "
+                    "résolus.",
+                    "Resolver (RPZ or sinkhole) and proxy: "
+                    f"{_sample(by_type[IndicatorType.DOMAIN])}; list the hosts that resolved "
+                    "them.",
+                ),
             )
         )
     if by_type.get(IndicatorType.URL):
         out.append(
             (
                 IncidentStatus.CONFINEMENT,
-                "Bloquer les URL et retrouver les destinataires",
-                f"Proxy et passerelle de messagerie : {_sample(by_type[IndicatorType.URL], 2)} ;"
-                " identifier qui a reçu ou ouvert le lien, réinitialiser les identifiants saisis.",
+                tr(
+                    "Bloquer les URL et retrouver les destinataires",
+                    "Block the URLs and find the recipients",
+                ),
+                tr(
+                    "Proxy et passerelle de messagerie : "
+                    f"{_sample(by_type[IndicatorType.URL], 2)} ; identifier qui a reçu ou "
+                    "ouvert le lien, réinitialiser les identifiants saisis.",
+                    f"Proxy and mail gateway: {_sample(by_type[IndicatorType.URL], 2)}; "
+                    "identify who received or opened the link, reset any credentials entered.",
+                ),
             )
         )
     hashes = [
@@ -239,18 +283,26 @@ def recommend(
         out.append(
             (
                 IncidentStatus.CONFINEMENT,
-                "Bloquer les fichiers sur les postes",
-                f"Liste de blocage EDR : {_sample(hashes, 2)} ; balayer le parc et isoler les "
-                "postes où le fichier est présent.",
+                tr("Bloquer les fichiers sur les postes", "Block the files on endpoints"),
+                tr(
+                    f"Liste de blocage EDR : {_sample(hashes, 2)} ; balayer le parc et isoler "
+                    "les postes où le fichier est présent.",
+                    f"EDR block list: {_sample(hashes, 2)}; sweep the fleet and isolate the "
+                    "hosts where the file is present.",
+                ),
             )
         )
     if by_type.get(IndicatorType.EMAIL):
         out.append(
             (
                 IncidentStatus.CONFINEMENT,
-                "Bloquer les expéditeurs",
-                f"Passerelle de messagerie : {_sample(by_type[IndicatorType.EMAIL])} ; purger les "
-                "messages déjà distribués.",
+                tr("Bloquer les expéditeurs", "Block the senders"),
+                tr(
+                    f"Passerelle de messagerie : {_sample(by_type[IndicatorType.EMAIL])} ; "
+                    "purger les messages déjà distribués.",
+                    f"Mail gateway: {_sample(by_type[IndicatorType.EMAIL])}; purge the "
+                    "messages already delivered.",
+                ),
             )
         )
     ransomware = any(RANSOMWARE_PATTERN.search(i.description or "") for i in iocs) or any(
@@ -260,56 +312,88 @@ def recommend(
         out.append(
             (
                 IncidentStatus.CONFINEMENT,
-                "Isoler les hôtes touchés (rançongiciel)",
-                "Isoler du réseau sans éteindre (mémoire utile à l'analyse) ; vérifier que les "
-                "sauvegardes hors ligne sont intactes et non joignables depuis le réseau.",
+                tr(
+                    "Isoler les hôtes touchés (rançongiciel)", "Isolate affected hosts (ransomware)"
+                ),
+                tr(
+                    "Isoler du réseau sans éteindre (mémoire utile à l'analyse) ; vérifier que "
+                    "les sauvegardes hors ligne sont intactes et non joignables depuis le réseau.",
+                    "Isolate from the network without powering off (memory is useful for "
+                    "analysis); check that offline backups are intact and unreachable from "
+                    "the network.",
+                ),
             )
         )
     for cve in cves:
         if cve.is_kev:
             due = (
-                f" avant l'échéance CISA du {cve.kev_due_date:%d/%m/%Y}" if cve.kev_due_date else ""
+                tr(
+                    f" avant l'échéance CISA du {cve.kev_due_date:%d/%m/%Y}",
+                    f" before the CISA due date of {cve.kev_due_date:%Y-%m-%d}",
+                )
+                if cve.kev_due_date
+                else ""
             )
             out.append(
                 (
                     IncidentStatus.ERADICATION,
-                    f"Corriger {cve.id}",
-                    f"Exploitée activement (catalogue KEV) : appliquer le correctif{due} ; "
-                    "à défaut, la mesure d'atténuation de l'éditeur, puis vérifier l'absence "
-                    "de compromission antérieure.",
+                    tr(f"Corriger {cve.id}", f"Fix {cve.id}"),
+                    tr(
+                        f"Exploitée activement (catalogue KEV) : appliquer le correctif{due} ; "
+                        "à défaut, la mesure d'atténuation de l'éditeur, puis vérifier l'absence "
+                        "de compromission antérieure.",
+                        f"Actively exploited (KEV catalogue): apply the patch{due}; otherwise "
+                        "the vendor's mitigation, then check for any earlier compromise.",
+                    ),
                 )
             )
         elif cve.has_public_exploit:
             out.append(
                 (
                     IncidentStatus.ERADICATION,
-                    f"Corriger {cve.id}",
-                    "Exploit public disponible : correctif prioritaire et surveillance des "
-                    "tentatives d'exploitation.",
+                    tr(f"Corriger {cve.id}", f"Fix {cve.id}"),
+                    tr(
+                        "Exploit public disponible : correctif prioritaire et surveillance des "
+                        "tentatives d'exploitation.",
+                        "Public exploit available: priority patch and monitoring of "
+                        "exploitation attempts.",
+                    ),
                 )
             )
     out.append(
         (
             IncidentStatus.ERADICATION,
-            "Supprimer les accès de l'attaquant",
-            "Persistance (tâches, services, comptes créés) retirée ; identifiants exposés "
-            "réinitialisés, sessions et jetons révoqués.",
+            tr("Supprimer les accès de l'attaquant", "Remove the attacker's access"),
+            tr(
+                "Persistance (tâches, services, comptes créés) retirée ; identifiants exposés "
+                "réinitialisés, sessions et jetons révoqués.",
+                "Persistence (tasks, services, created accounts) removed; exposed credentials "
+                "reset, sessions and tokens revoked.",
+            ),
         )
     )
     out.append(
         (
             IncidentStatus.RECUPERATION,
-            "Rétablir et surveiller",
-            "Restaurer depuis une source saine, puis surveillance renforcée 72 h sur les "
-            "hôtes et comptes concernés.",
+            tr("Rétablir et surveiller", "Restore and monitor"),
+            tr(
+                "Restaurer depuis une source saine, puis surveillance renforcée 72 h sur les "
+                "hôtes et comptes concernés.",
+                "Restore from a clean source, then heightened monitoring for 72 h on the "
+                "affected hosts and accounts.",
+            ),
         )
     )
     out.append(
         (
             IncidentStatus.RECUPERATION,
-            "Préparer le retour d'expérience",
-            "Résumé de clôture (cause, mesures, enseignements) ; IOC jugés faux positifs mis en "
-            "liste d'exclusion ; règle de détection à créer ou ajuster (L3).",
+            tr("Préparer le retour d'expérience", "Prepare the lessons learned"),
+            tr(
+                "Résumé de clôture (cause, mesures, enseignements) ; IOC jugés faux positifs "
+                "mis en liste d'exclusion ; règle de détection à créer ou ajuster (L3).",
+                "Closure summary (cause, measures, lessons); IOCs judged false positives "
+                "added to the exclusion list; detection rule to create or adjust (L3).",
+            ),
         )
     )
     order = list(IncidentStatus)

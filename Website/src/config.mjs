@@ -30,7 +30,14 @@ export const GEO_ENDPOINT = process.env.ILLWATCH_SITE_GEO_ENDPOINT || "";
 export const INSTANCE_COUNTRY = (process.env.ILLWATCH_SITE_COUNTRY || "").trim().toUpperCase();
 export const INSTANCE_LANG = (process.env.ILLWATCH_SITE_DEFAULT_LANG || "").trim().toLowerCase();
 
+// Demande de démonstration ou de pilote : adresse commerciale (ex. « mailto:contact@… » ou
+// formulaire) à fournir par ILLWATCH_SITE_CONTACT ; à défaut, un ticket GitHub pré-rempli.
+const DEMO_FALLBACK =
+  "https://github.com/GodwillFoka/cyberillsec-illwatch/issues/new?template=demo.md&title=Demo%20request";
+const CONTACT = (process.env.ILLWATCH_SITE_CONTACT || "").trim();
+
 export const LINKS = {
+  demo: /^(?:https:\/\/|mailto:)/.test(CONTACT) ? CONTACT : DEMO_FALLBACK,
   gitlab: "https://gitlab.com/GodwillFoka/cyberillsec-illwatch",
   github: "https://github.com/GodwillFoka/cyberillsec-illwatch",
   docs: "https://godwillfoka.github.io/cyberillsec-illwatch/",
