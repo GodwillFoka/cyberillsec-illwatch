@@ -33,6 +33,7 @@ from illwatch.modules.foundation.audit import AuditContext, AuditRecorder, get_a
 from illwatch.modules.foundation.users import authenticate, get_user_by_username
 from illwatch.modules.stix import export
 from illwatch.shared.enums import AuditOutcome
+from illwatch.shared.server_text import tr
 
 TAXII_MEDIA = "application/taxii+json;version=2.1"
 STIX_MEDIA = "application/stix+json;version=2.1"
@@ -41,11 +42,19 @@ MAX_CONTENT_LENGTH = 10 * 1024 * 1024
 
 
 class _Collection:
-    def __init__(self, key: str, title: str, description: str) -> None:
+    def __init__(self, key: str, title: tuple[str, str], description: tuple[str, str]) -> None:
         self.key = key
         self.id = str(uuid5(export.NAMESPACE, f"collection:{key}"))
-        self.title = title
-        self.description = description
+        self._title = title  # (français, anglais) : langue de l'instance (ADR-027, décision 12)
+        self._description = description
+
+    @property
+    def title(self) -> str:
+        return tr(*self._title)
+
+    @property
+    def description(self) -> str:
+        return tr(*self._description)
 
     def read(self) -> dict[str, Any]:
         return {
@@ -60,13 +69,19 @@ class _Collection:
 
 INDICATORS = _Collection(
     "indicateurs",
-    "Indicateurs ILL Watch",
-    "IOC actifs (non expirés, non exclus), confiance 0–100, sévérité en étiquette.",
+    ("Indicateurs ILL Watch", "ILL Watch indicators"),
+    (
+        "IOC actifs (non expirés, non exclus), confiance 0–100, sévérité en étiquette.",
+        "Active IOCs (not expired, not excluded), confidence 0–100, severity as a label.",
+    ),
 )
 CAMPAIGNS = _Collection(
     "campagnes",
-    "Campagnes ILL Watch",
-    "Campagnes, acteurs MITRE ATT&CK et IOC de leur infrastructure, avec leurs relations.",
+    ("Campagnes ILL Watch", "ILL Watch campaigns"),
+    (
+        "Campagnes, acteurs MITRE ATT&CK et IOC de leur infrastructure, avec leurs relations.",
+        "Campaigns, MITRE ATT&CK actors and the IOCs of their infrastructure, with relationships.",
+    ),
 )
 COLLECTIONS = {c.id: c for c in (INDICATORS, CAMPAIGNS)}
 

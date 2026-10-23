@@ -46,11 +46,13 @@ from illwatch.modules.enrichment.dbip import import_dataset
 from illwatch.modules.foundation.seed import seed_reference_feeds
 from illwatch.modules.incidents import service as incidents
 from illwatch.modules.incidents.service import STATUS_LABELS_EN
+from illwatch.modules.sales.demo_requests import create_request
 from illwatch.modules.soc.exclusions import create_exclusion
 from illwatch.modules.soc.response import hunt_from_incident
 from illwatch.modules.threat_feeds.indicators import Observation, ingest_indicators
 from illwatch.modules.threat_hunting.engine import run_hunt
 from illwatch.shared.enums import (
+    DemoInterest,
     EnrichmentDataset,
     FeedStatus,
     IncidentEventType,
@@ -686,6 +688,29 @@ async def load_demo_data(
             )
         )
     await session.flush()
+
+    # Demandes reçues par le site de présentation (fictives, domaines example.*).
+    prospects = [
+        ("Lena Vogel", "CERT Nord", "Head of CERT", "DE", DemoInterest.PILOT, "de", 2),
+        ("Marc Dubois", "Groupe Exemple SA", "RSSI", "FR", DemoInterest.DEMO, "fr", 20),
+        ("Ana Ruiz", "SOC Iberia (MSSP)", "SOC manager", "ES", DemoInterest.SUPPORT, "es", 50),
+    ]
+    for name, org, title, country, interest, lang, hours in prospects:
+        await create_request(
+            session,
+            name=name,
+            email=f"{name.split()[0].lower()}@example.org",
+            organisation=org,
+            job_title=title,
+            country=country,
+            interest=interest,
+            message=tr(
+                "Démonstration souhaitée pour notre équipe.",
+                "We would like a demonstration for our team.",
+            ),
+            language=lang,
+            now=moment - timedelta(hours=hours),
+        )
     correlation = await run_correlation(
         session, now=moment, min_confidence=settings.correlation_min_confidence
     )

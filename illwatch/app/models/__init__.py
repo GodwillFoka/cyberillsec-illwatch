@@ -9,6 +9,7 @@ from illwatch.app.models.audit import AuditEvent
 from illwatch.app.models.campaign import Campaign, CampaignIndicator
 from illwatch.app.models.correlation import Asset, CorrelatedEvent
 from illwatch.app.models.cve import CVE, CollectorState, CVEAlert, CVEPriorityChange
+from illwatch.app.models.demo_request import DemoRequest
 from illwatch.app.models.enrichment import EnrichmentDatasetInfo, IpRange
 from illwatch.app.models.exclusion import Exclusion
 from illwatch.app.models.hunting import HuntingMatch, HuntingSession
@@ -31,6 +32,7 @@ __all__ = [
     "CollectionRun",
     "CollectorState",
     "CorrelatedEvent",
+    "DemoRequest",
     "EnrichmentDatasetInfo",
     "Exclusion",
     "HuntingMatch",

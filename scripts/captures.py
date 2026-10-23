@@ -47,6 +47,7 @@ SCREENS = [
     ("09-administration", "/administration"),
     ("09b-parametres", "/administration?onglet=parametres"),
     ("09c-journal", "/administration?onglet=audit"),
+    ("09d-demandes", "/administration?onglet=demandes"),
     ("10-correlations", "/correlations"),
     ("11-inventaire", "/inventaire"),
     ("12-pilotage", "/pilotage"),

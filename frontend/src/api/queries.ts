@@ -15,6 +15,7 @@ import type {
   Account,
   Asset,
   AuditPage,
+  DemoRequestPage,
   CorrelationPage,
   CollectionRun,
   Feed,
@@ -345,6 +346,22 @@ export interface AuditFilters {
 }
 
 export const AUDIT_PAGE_SIZE = 50;
+
+export const DEMO_REQUESTS_PAGE_SIZE = 50;
+
+/** Demandes reçues par le site de présentation (ADMIN, ADR-027 lot S4). */
+export function useDemoRequests(status: string | undefined, offset: number) {
+  return useQuery({
+    queryKey: ["admin", "demo-requests", status, offset],
+    queryFn: ({ signal }) =>
+      apiGet<DemoRequestPage>(
+        "/demo-requests",
+        { status: status || undefined, limit: DEMO_REQUESTS_PAGE_SIZE, offset },
+        signal,
+      ),
+    placeholderData: keepPreviousData,
+  });
+}
 
 export function useAudit(filters: AuditFilters, offset: number) {
   return useQuery({

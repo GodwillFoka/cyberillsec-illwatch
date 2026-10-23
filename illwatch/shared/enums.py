@@ -147,3 +147,18 @@ class AuditOutcome(StrEnum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"  # tentative invalide (mauvais mot de passe, entrée refusée)
     DENIED = "DENIED"  # refus de sécurité (limitation de débit, droits insuffisants)
+
+
+class DemoInterest(StrEnum):
+    """Objet d'une demande reçue par le site de présentation (ADR-027, lot S4)."""
+
+    DEMO = "DEMO"  # démonstration
+    PILOT = "PILOT"  # pilote accompagné
+    SUPPORT = "SUPPORT"  # accompagnement, intégration
+    OTHER = "OTHER"
+
+
+class DemoRequestStatus(StrEnum):
+    NEW = "NEW"
+    CONTACTED = "CONTACTED"
+    CLOSED = "CLOSED"

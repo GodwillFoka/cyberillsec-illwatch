@@ -1,12 +1,27 @@
-// Administration (ADMIN) : comptes, journal d'audit, paramètres en vigueur. L'onglet est dans
-// l'adresse (?onglet=comptes|audit|parametres). Chaque action est consignée au journal
+// Administration (ADMIN) : comptes, journal d'audit, demandes de démonstration, paramètres en
+// vigueur. L'onglet est dans l'adresse (?onglet=comptes|audit|demandes|parametres).
+// Chaque action est consignée au journal
 // d'audit par le serveur ; l'interface ne fait qu'en montrer le résultat.
 import { KeyRound, LogOut, RefreshCw, UserPlus } from "lucide-react";
 import { useState, type FormEvent, type KeyboardEvent } from "react";
 
-import { useCreateAccount, useResetPassword, useRevokeSessions, useUpdateAccount } from "../api/mutations";
-import { AUDIT_PAGE_SIZE, useAccounts, useAudit, useSettingsInfo, type AuditFilters } from "../api/queries";
-import type { Account, AuditEvent } from "../api/types";
+import {
+  useCreateAccount,
+  useResetPassword,
+  useRevokeSessions,
+  useUpdateAccount,
+  useUpdateDemoRequest,
+} from "../api/mutations";
+import {
+  AUDIT_PAGE_SIZE,
+  DEMO_REQUESTS_PAGE_SIZE,
+  useAccounts,
+  useAudit,
+  useDemoRequests,
+  useSettingsInfo,
+  type AuditFilters,
+} from "../api/queries";
+import type { Account, AuditEvent, DemoRequest, DemoRequestStatus } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
@@ -24,11 +39,12 @@ const ROLE_CODES = ["ADMIN", "ANALYST", "VIEWER"];
 const roles = (): [string, string, string][] =>
   ROLE_CODES.map((code) => [code, ROLE_LABEL[code] ?? code, t(`roleHelp.${code}` as Key)]);
 
-type Tab = "comptes" | "audit" | "parametres";
-const TAB_CODES: Tab[] = ["comptes", "audit", "parametres"];
+type Tab = "comptes" | "audit" | "demandes" | "parametres";
+const TAB_CODES: Tab[] = ["comptes", "audit", "demandes", "parametres"];
 const tabs = (): [Tab, string][] => [
   ["comptes", t("tabAccounts")],
   ["audit", t("tabAudit")],
+  ["demandes", t("tabRequests")],
   ["parametres", t("tabSettings")],
 ];
 
@@ -484,6 +500,126 @@ function AuditLog() {
   );
 }
 
+// --- Demandes de démonstration ------------------------------------------------------------
+
+const REQUEST_TONE: Record<string, string> = { NEW: "p1", CONTACTED: "ok", CLOSED: "p3" };
+const REQUEST_STATES: DemoRequestStatus[] = ["NEW", "CONTACTED", "CLOSED"];
+
+function RequestActions({ request }: { request: DemoRequest }) {
+  const update = useUpdateDemoRequest();
+  const set = (status: DemoRequestStatus) => update.mutate({ id: request.id, status });
+  return (
+    <div className="row">
+      {request.status === "NEW" && (
+        <button className="btn quiet" type="button" disabled={update.isPending} onClick={() => set("CONTACTED")}>
+          {t("markContacted")}
+        </button>
+      )}
+      {request.status !== "CLOSED" ? (
+        <button className="btn quiet" type="button" disabled={update.isPending} onClick={() => set("CLOSED")}>
+          {t("markClosed")}
+        </button>
+      ) : (
+        <button className="btn quiet" type="button" disabled={update.isPending} onClick={() => set("NEW")}>
+          {t("reopen")}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function DemoRequests() {
+  const { utc } = useTimeZone();
+  const [status, setStatus] = useState<string>("");
+  const [offset, setOffset] = useState(0);
+  const query = useDemoRequests(status || undefined, offset);
+
+  return (
+    <section className="card">
+      <div className="toolbar">
+        <span className="muted">{query.data ? t.plural("requests", query.data.total) : " "}</span>
+        <div className="seg" role="group" aria-label={t("colStatus")}>
+          {["", ...REQUEST_STATES].map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={status === value}
+              onClick={() => {
+                setStatus(value);
+                setOffset(0);
+              }}
+            >
+              {value ? t(`reqStatus.${value}` as Key) : t("filterAll")}
+            </button>
+          ))}
+        </div>
+      </div>
+      <QueryState query={query} empty={(page) => page.items.length === 0}>
+        {(page) => (
+          <>
+            <table className="table" aria-label={t("requestsTable")}>
+              <thead>
+                <tr>
+                  <th>{t("colReceived")}</th>
+                  <th>{t("colContact")}</th>
+                  <th>{t("colOrganisation")}</th>
+                  <th>{t("colInterest")}</th>
+                  <th>{t("colMessage")}</th>
+                  <th>{t("colStatus")}</th>
+                  <th aria-label={t("colStatus")} />
+                </tr>
+              </thead>
+              <tbody>
+                {page.items.map((request) => {
+                  const at = parseDate(request.created_at);
+                  return (
+                    <tr key={request.id}>
+                      <td className="mono muted">{at ? formatDateTime(at, utc) : "—"}</td>
+                      <td>
+                        {request.name}
+                        <span className="cell-sub">
+                          <a href={`mailto:${request.email}`}>{request.email}</a>
+                        </span>
+                      </td>
+                      <td>
+                        {request.organisation}
+                        <span className="cell-sub muted">
+                          {[request.job_title, request.country, request.language.toUpperCase()].filter(Boolean).join(" · ")}
+                        </span>
+                      </td>
+                      <td>{t(`interest.${request.interest}` as Key)}</td>
+                      <td className="ellipsis muted" style={{ maxWidth: 280 }} title={request.message ?? undefined}>
+                        {request.message ?? "—"}
+                      </td>
+                      <td>
+                        <span className={`badge ${REQUEST_TONE[request.status] ?? "p3"}`}>
+                          {t(`reqStatus.${request.status}` as Key)}
+                        </span>
+                      </td>
+                      <td>
+                        <RequestActions request={request} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <Pager
+              pageSize={DEMO_REQUESTS_PAGE_SIZE}
+              offset={offset}
+              shown={page.items.length}
+              total={page.total}
+              busy={query.isPlaceholderData}
+              onOffset={setOffset}
+            />
+          </>
+        )}
+      </QueryState>
+      <p className="muted small">{t("requestsNote")}</p>
+    </section>
+  );
+}
+
 // --- Paramètres ----------------------------------------------------------------------------
 
 const SECRETS = new Set(["nvd_api_key", "otx_api_key", "abusech_auth_key", "alert_webhook_url", "secret_key_previous"]);
@@ -654,6 +790,7 @@ export function Admin() {
       <div id={`panneau-${tab}`} role="tabpanel" aria-labelledby={`onglet-${tab}`}>
         {tab === "comptes" && <Accounts />}
         {tab === "audit" && <AuditLog />}
+        {tab === "demandes" && <DemoRequests />}
         {tab === "parametres" && <SettingsView />}
       </div>
     </>

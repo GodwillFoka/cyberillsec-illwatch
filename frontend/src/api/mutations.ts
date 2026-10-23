@@ -21,6 +21,8 @@ import type {
   IngestResult,
   Exclusion,
   Campaign,
+  DemoRequest,
+  DemoRequestStatus,
 } from "./types";
 
 export function useAcknowledgeAlert() {
@@ -396,4 +398,16 @@ export function useAttachToCampaign(campaignId: string) {
 
 export function useDeleteCampaign() {
   return useCampaignMutation((campaignId: string) => apiDelete(`/campaigns/${encodeURIComponent(campaignId)}`));
+}
+
+/** Suivi d'une demande de démonstration (ADMIN). */
+export function useUpdateDemoRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: DemoRequestStatus }) =>
+      apiSend<DemoRequest>("PATCH", `/demo-requests/${encodeURIComponent(id)}`, { status }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["admin", "demo-requests"] });
+    },
+  });
 }

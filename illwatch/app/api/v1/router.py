@@ -16,6 +16,7 @@ from illwatch.app.api.v1 import (
     correlations,
     cves,
     dashboard,
+    demo_requests,
     exclusions,
     feeds,
     hunting,
@@ -35,6 +36,8 @@ api_router.include_router(auth.router)
 
 # ADR-027 — langue d'affichage du visiteur (publique : écran de connexion, site)
 api_router.include_router(locale.router)
+# ADR-027, lot S4 — demandes de démonstration (POST public, suivi ADMIN)
+api_router.include_router(demo_requests.router)
 
 # Phase 2 — MOD-02 : sources de flux (T2.2) et indicateurs (RF-07, RF-08)
 api_router.include_router(feeds.router)
