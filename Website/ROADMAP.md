@@ -1,6 +1,6 @@
 # ILL Watch — Feuille de route du site de présentation
 
-**Version :** 22/10/2026 · **Décision :** [ADR-027](../docs/adr/ADR-027-site-de-presentation.md) ·
+**Version :** 23/10/2026 · **Décision :** [ADR-027](../docs/adr/ADR-027-site-de-presentation.md) ·
 **Dossier :** `Website/`
 
 Comme les jalons M1–M11 : chaque lot a ses livrables et un critère de sortie **constaté**, et
