@@ -1,4 +1,4 @@
-// Configuration du site de présentation ILL Watch (ADR-027).
+// Configuration du site de présentation ILLWATCH (ADR-027).
 // Ajouter une langue : un dictionnaire src/i18n/<code>.json + une ligne dans LANGS.
 
 export const LANGS = [
@@ -30,21 +30,32 @@ export const GEO_ENDPOINT = process.env.ILLWATCH_SITE_GEO_ENDPOINT || "";
 export const INSTANCE_COUNTRY = (process.env.ILLWATCH_SITE_COUNTRY || "").trim().toUpperCase();
 export const INSTANCE_LANG = (process.env.ILLWATCH_SITE_DEFAULT_LANG || "").trim().toLowerCase();
 
-// Demande de démonstration ou de pilote : adresse commerciale (ex. « mailto:contact@… » ou
-// formulaire) à fournir par ILLWATCH_SITE_CONTACT ; à défaut, un ticket GitHub pré-rempli.
-const DEMO_FALLBACK =
-  "https://github.com/GodwillFoka/cyberillsec-illwatch/issues/new?template=demo.md&title=Demo%20request";
+// Dépôt public du projet : GitLab (décision du 23/10/2026, tous les liens du site y mènent).
+const GITLAB = "https://gitlab.com/GodwillFoka/cyberillsec-illwatch";
+
+// Documentation : publiée par GitLab Pages avec le site (job « pages », sous /docs/) ; à défaut
+// d'adresse fournie à la construction, le dossier docs/ du dépôt.
+const DOCS = (process.env.ILLWATCH_SITE_DOCS_URL || `${GITLAB}/-/tree/main/docs`).replace(/\/?$/, "/");
+
+// Demande de démonstration (lot S4) :
+// - ILLWATCH_SITE_DEMO_ENDPOINT : adresse de `POST /api/v1/demo-requests` de l'application
+//   (même origine, ex. « /api/v1/demo-requests », ou absolue) → formulaire sur le site ;
+// - ILLWATCH_SITE_CONTACT : « mailto:… » ou « https://… » si aucun formulaire n'est servi ;
+// - à défaut : ticket GitLab pré-rempli (modèle .gitlab/issue_templates/Demo.md).
+export const DEMO_ENDPOINT = (process.env.ILLWATCH_SITE_DEMO_ENDPOINT || "").trim();
 const CONTACT = (process.env.ILLWATCH_SITE_CONTACT || "").trim();
+const DEMO_FALLBACK = `${GITLAB}/-/issues/new?issuable_template=Demo`;
 
 export const LINKS = {
   demo: /^(?:https:\/\/|mailto:)/.test(CONTACT) ? CONTACT : DEMO_FALLBACK,
-  gitlab: "https://gitlab.com/GodwillFoka/cyberillsec-illwatch",
-  github: "https://github.com/GodwillFoka/cyberillsec-illwatch",
-  docs: "https://godwillfoka.github.io/cyberillsec-illwatch/",
-  releases: "https://github.com/GodwillFoka/cyberillsec-illwatch/releases",
-  license: "https://gitlab.com/GodwillFoka/cyberillsec-illwatch/-/blob/main/LICENSE",
-  security: "https://gitlab.com/GodwillFoka/cyberillsec-illwatch/-/blob/main/SECURITY.md",
-  roadmap: "https://godwillfoka.github.io/cyberillsec-illwatch/ROADMAP/",
+  gitlab: GITLAB,
+  clone: `${GITLAB}.git`,
+  docs: DOCS,
+  releases: `${GITLAB}/-/releases`,
+  issues: `${GITLAB}/-/issues`,
+  license: `${GITLAB}/-/blob/main/LICENSE`,
+  security: `${GITLAB}/-/blob/main/SECURITY.md`,
+  roadmap: process.env.ILLWATCH_SITE_DOCS_URL ? `${DOCS}ROADMAP/` : `${GITLAB}/-/blob/main/docs/ROADMAP.md`,
 };
 
 // Budget de poids de l'accueil (HTML + CSS + JS + image principale), en octets.

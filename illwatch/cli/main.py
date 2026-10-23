@@ -1,4 +1,4 @@
-"""CLI ILL Watch — RF-03. Point d'entrée `illwatch` (Click + Rich)."""
+"""CLI ILLWATCH — RF-03. Point d'entrée `illwatch` (Click + Rich)."""
 
 import asyncio
 
@@ -18,7 +18,7 @@ console = Console()
 @click.group()
 @click.version_option(package_name="illwatch", prog_name="illwatch")
 def cli() -> None:
-    """ILL Watch — Security Monitoring & Threat Intelligence Platform (CyberillSec)."""
+    """ILLWATCH — Security Monitoring & Threat Intelligence Platform (CyberillSec)."""
 
 
 @cli.command()
@@ -52,7 +52,7 @@ def openapi(output: str | None) -> None:
 def config() -> None:
     """Affiche la configuration effective (secrets masqués)."""
     settings = get_settings()
-    table = Table(title="Configuration ILL Watch", show_lines=False)
+    table = Table(title="Configuration ILLWATCH", show_lines=False)
     table.add_column("Clé", style="cyan", no_wrap=True)
     table.add_column("Valeur", style="white")
 
@@ -426,6 +426,7 @@ def _register_subcommands() -> None:
     from illwatch.cli.feeds import feeds
     from illwatch.cli.hunt import hunt
     from illwatch.cli.incidents import incidents
+    from illwatch.cli.sales import demo_requests
     from illwatch.cli.soc import soc
     from illwatch.cli.status import status
     from illwatch.cli.stix import stix
@@ -439,6 +440,7 @@ def _register_subcommands() -> None:
     cli.add_command(cves)
     cli.add_command(dashboard)
     cli.add_command(demo)
+    cli.add_command(demo_requests)
     cli.add_command(enrich)
     cli.add_command(feeds)
     cli.add_command(hunt)

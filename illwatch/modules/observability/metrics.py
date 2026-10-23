@@ -10,7 +10,7 @@ Deux familles :
   corrélés non acquittés, refus d'authentification sur 24 h, base et Redis joignables.
 
 Sans dépendance : le format texte est simple et stable ; `prometheus_client` apporterait un
-registre global, des processus multiples et des collecteurs dont ILL Watch n'a pas besoin.
+registre global, des processus multiples et des collecteurs dont ILLWATCH n'a pas besoin.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-// Onglets accessibles (fonctionnalités de l'accueil). Sans JavaScript, tous les panneaux sont
+// Onglets accessibles (fonctionnalités, explorateur ATT&CK, exemple TAXII). Sans JavaScript, tous les panneaux sont
 // affichés l'un sous l'autre ; avec, ils deviennent des onglets (flèches, Début, Fin).
 for (const root of document.querySelectorAll("[data-tabs]")) {
   const tabs = [...root.querySelectorAll('[role="tab"]')];
@@ -19,7 +19,9 @@ for (const root of document.querySelectorAll("[data-tabs]")) {
     tab.addEventListener("click", () => select(index));
     tab.addEventListener("keydown", (event) => {
       const last = tabs.length - 1;
-      const moves = { ArrowRight: index === last ? 0 : index + 1, ArrowLeft: index === 0 ? last : index - 1, Home: 0, End: last };
+      const next = index === last ? 0 : index + 1;
+      const previous = index === 0 ? last : index - 1;
+      const moves = { ArrowRight: next, ArrowDown: next, ArrowLeft: previous, ArrowUp: previous, Home: 0, End: last };
       if (event.key in moves) {
         event.preventDefault();
         select(moves[event.key], true);

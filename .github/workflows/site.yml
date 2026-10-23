@@ -1,5 +1,5 @@
 # ============================================================================
-# ILL Watch — Site de présentation (ADR-027)
+# ILLWATCH — Site de présentation (ADR-027)
 # Construction sans dépendance, tests, captures grand écran et téléphone des cinq langues,
 # contrôle de la détection de langue. Publication : lot S6 (VPS, derrière Caddy).
 # ============================================================================
@@ -39,6 +39,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      # Variante avec formulaire de démonstration (lot S4), testée contre une API factice.
+      - name: Construction (variante avec formulaire)
+        run: |
+          ILLWATCH_SITE_DEMO_ENDPOINT=/api/v1/demo-requests node Website/build.mjs
+          cp -r Website/dist "$RUNNER_TEMP/site-demo"
+
       - name: Construction et contrôles
         run: node Website/build.mjs
 
@@ -51,13 +57,18 @@ jobs:
           # -c /dev/null : sans les options du projet (couverture, asyncio), inutiles ici.
           PYTHONPATH=. python -m pytest -c /dev/null --rootdir . -q -p no:cacheprovider --noconftest tests/test_site_score_parity.py
 
-      - name: Captures et contrôles navigateur
+      - name: Captures et contrôles navigateur (pages, formulaire, accessibilité)
         run: |
           python -m pip install --quiet "playwright==1.49.1"
           python -m playwright install --with-deps chromium >/dev/null
+          # axe-core (contrôle WCAG 2.2 AA), version figée, hors du site publié.
+          npm install --prefix "$RUNNER_TEMP/axe" --no-save --no-audit --no-fund axe-core@4.10.2 >/dev/null
           python -m http.server 8080 -d Website/dist >/dev/null 2>&1 &
+          python Website/scripts/mock_api.py "$RUNNER_TEMP/site-demo" 8091 &
           sleep 1
-          python Website/scripts/captures.py http://127.0.0.1:8080 Website/captures
+          python Website/scripts/captures.py http://127.0.0.1:8080 Website/captures \
+            --demo http://127.0.0.1:8091 \
+            --axe "$RUNNER_TEMP/axe/node_modules/axe-core/axe.min.js"
 
       - uses: actions/upload-artifact@v7
         if: always()

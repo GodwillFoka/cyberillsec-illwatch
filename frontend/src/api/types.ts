@@ -37,6 +37,9 @@ export type CollectionRun = Schemas["CollectionRunRead"];
 export type Account = Schemas["AccountRead"];
 export type AuditEvent = Schemas["AuditEventRead"];
 export type AuditPage = Schemas["AuditPage"];
+export type DemoRequest = Schemas["DemoRequestRead"];
+export type DemoRequestPage = Schemas["DemoRequestPage"];
+export type DemoRequestStatus = DemoRequest["status"];
 export type SettingsInfo = Schemas["SettingsRead"];
 
 export type Asset = Schemas["AssetRead"];

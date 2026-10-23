@@ -1,4 +1,4 @@
-# ADR-018 — Identité ILL Watch : le brand book v2 fait autorité sur l'interface
+# ADR-018 — Identité ILLWATCH : le brand book v2 fait autorité sur l'interface
 
 - **Statut :** **accepté le 11/10/2026** (décision de Godwill FOKA : appliquer le brand book à l'interface)
 - **Date :** 2026-10-11
@@ -12,7 +12,7 @@
 
 Le système de design v7 « Veille de nuit » (11/10/2026) avait été dessiné sans charte de marque :
 logo en forme d'œil, polices IBM Plex, accent violet, nom écrit « ILLWATCH ». Le même jour, le
-**brand book ILL Watch v2** (kit « Design System », fichiers SVG, jetons, voix) a été remis. Deux
+**brand book ILLWATCH v2** (kit « Design System », fichiers SVG, jetons, voix) a été remis. Deux
 identités en parallèle ne sont pas tenables : l'interface, la documentation et les supports
 commerciaux doivent dire la même chose.
 
@@ -21,7 +21,7 @@ commerciaux doivent dire la même chose.
 1. **Le brand book fait autorité** pour le nom, le logo, la palette, la typographie, les icônes,
    le mouvement et la voix. `docs/DESIGN_SYSTEM.md` (v8) n'en est que la déclinaison pour
    l'interface ; en cas d'écart, le brand book l'emporte.
-2. **Nom** : « ILL Watch », endossement « PAR CYBERILL », dans tous les textes (interface,
+2. **Nom** : « ILLWATCH », endossement « PAR CYBERILL », dans tous les textes (interface,
    documentation, messages, titres d'API et de CLI). Les **identifiants techniques ne changent
    pas** : paquet `illwatch`, commande `illwatch`, variables `ILLWATCH_*`, volumes, en-tête
    `User-Agent: ILLWATCH/…` (déjà connu des sources). Les rapports et entrées datés passés ne sont
@@ -46,7 +46,7 @@ commerciaux doivent dire la même chose.
 - Positives : une seule identité ; contrastes du brand book (AA à AAA) ; logos et favicon
   cohérents entre application, documentation et dépôt.
 - Négatives : deuxième refonte visuelle le même jour (captures de référence à régénérer) ;
-  écart assumé entre le nom affiché (« ILL Watch ») et les identifiants (`illwatch`) ; le site de
+  écart assumé entre le nom affiché (« ILLWATCH ») et les identifiants (`illwatch`) ; le site de
   documentation charge Inter et JetBrains Mono depuis Google Fonts (thème Material).
 
 ## Suivi

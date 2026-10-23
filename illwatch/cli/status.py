@@ -35,7 +35,7 @@ def status() -> None:
         raise SystemExit(1) from exc
 
     settings = get_settings()
-    console.print(f"[bold cyan]ILL Watch[/] v{__version__} · environnement {settings.environment}")
+    console.print(f"[bold cyan]ILLWATCH[/] v{__version__} · environnement {settings.environment}")
     schema_ok = current == head
     console.print(
         f"Schéma : {'[green]à jour[/]' if schema_ok else '[red]en retard[/]'} "

@@ -8,7 +8,7 @@ chaque CVE : produits touchés et plages de versions (« de 5.8 incluse à 5.10.
 - La version déclarée est hors de toutes les plages → pas d'évènement (Dirty COW, corrigée en
   4.8.3, sur un noyau 7.1.5).
 - Plages inconnues (CVE pas encore analysée) ou version non déclarée → évènement conservé :
-  dans le doute, ILL Watch signale.
+  dans le doute, ILLWATCH signale.
 - Version dans la plage mais seulement sur certaines plateformes (configuration ET de la NVD :
   « Redis sur Debian 9 à 11 », CVE-2022-0543) ou version « - » (sans objet : faille d'un paquet
   de distribution) → « conditionnel » : évènement conservé, condition affichée à l'analyste.

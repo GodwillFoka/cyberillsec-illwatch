@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILL Watch — Construire l'interface web servie par uvicorn (frontend/dist)
+# ILLWATCH — Construire l'interface web servie par uvicorn (frontend/dist)
 #
 # Les types TypeScript sont générés depuis le schéma OpenAPI de l'API : après un `git pull`
 # qui modifie l'API, `npm run build` seul compile avec l'ancien schéma et échoue (TS2339).

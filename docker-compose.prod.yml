@@ -1,5 +1,5 @@
 # ============================================================================
-# ILL Watch — déploiement de production (M7 lot 3, ADR-013)
+# ILLWATCH — déploiement de production (M7 lot 3, ADR-013)
 #
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d
 #
@@ -77,12 +77,15 @@ services:
     restart: unless-stopped
     environment:
       ILLWATCH_DOMAIN: ${ILLWATCH_DOMAIN:-localhost}
+      ILLWATCH_SITE_DOMAIN: ${ILLWATCH_SITE_DOMAIN:-site.localhost}
     ports:
       - "80:80"
       - "443:443"
       - "443:443/udp"
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Site de présentation construit par scripts/build-site.sh (ADR-027, lot S6).
+      - ./Website/dist:/srv/illwatch-website:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:

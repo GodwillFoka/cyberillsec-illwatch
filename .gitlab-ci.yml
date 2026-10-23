@@ -1,6 +1,6 @@
 # ============================================================================
-# ILL Watch — Pipeline d'intégration continue GitLab
-# Quatre étapes : qualité, tests, build, sécurité.
+# ILLWATCH — Pipeline d'intégration continue GitLab
+# Cinq étapes : qualité, tests, build, sécurité, publication (GitLab Pages).
 # Une merge request ne peut être fusionnée que si tout est vert (RSK-05).
 # ============================================================================
 
@@ -9,6 +9,7 @@ stages:
   - tests
   - build
   - securite
+  - publication
 
 variables:
   PYTHON_IMAGE: "python:3.12-slim"
@@ -252,3 +253,33 @@ container_scanning:
   variables:
     CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   allow_failure: true
+
+# ---------------------------------------------------------------------------
+# Étape 5 — Publication : site de présentation et documentation sur GitLab Pages
+# (ADR-027, lot S6, publication intermédiaire avant le domaine définitif).
+#   <CI_PAGES_URL>/        site de présentation, cinq langues
+#   <CI_PAGES_URL>/docs/   documentation MkDocs
+# Le formulaire de démonstration n'y est pas servi (aucune API derrière GitLab Pages) :
+# « Demander une démo » ouvre un ticket GitLab (modèle Demo) tant que le VPS n'est pas en ligne.
+# ---------------------------------------------------------------------------
+
+pages:
+  stage: publication
+  image: node:22-bookworm-slim
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - apt-get update -qq && apt-get install -y -qq python3 python3-venv >/dev/null
+    - python3 -m venv /tmp/venv && /tmp/venv/bin/pip install -q "mkdocs-material>=9.5,<10"
+    - export ILLWATCH_SITE_URL="$(node -e 'process.stdout.write(new URL(process.env.CI_PAGES_URL).origin)')"
+    - export ILLWATCH_SITE_BASE="$(node -e 'process.stdout.write(new URL(process.env.CI_PAGES_URL).pathname)')"
+    - export ILLWATCH_SITE_DOCS_URL="${CI_PAGES_URL%/}/docs/"
+    - node Website/build.mjs
+    - rm -rf public && cp -r Website/dist public
+    - /tmp/venv/bin/python scripts/docs_prepare.py
+    - sed -i "s#^site_url:.*#site_url: ${CI_PAGES_URL%/}/docs/#" mkdocs.yml
+    - /tmp/venv/bin/mkdocs build --site-dir public/docs
+  artifacts:
+    paths:
+      - public

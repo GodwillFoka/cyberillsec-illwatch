@@ -1,5 +1,5 @@
 # ============================================================================
-# ILL Watch — Pipeline d'intégration continue GitHub Actions
+# ILLWATCH — Pipeline d'intégration continue GitHub Actions
 # Miroir de .gitlab-ci.yml (GitLab reste le dépôt de référence, ADR-002) :
 # qualité, tests PostgreSQL/Redis réels, migrations, image Docker, sécurité.
 # ============================================================================

@@ -1,9 +1,12 @@
 # ============================================================================
-# ILL Watch — reverse proxy TLS (M7 lot 3, ADR-013)
+# ILLWATCH — reverse proxy TLS (M7 lot 3, ADR-013)
 #
 # ILLWATCH_DOMAIN=illwatch.exemple.eu : certificat Let's Encrypt automatique (ports 80 et 443
 #                                   joignables depuis Internet, DNS pointant sur l'hôte).
 # ILLWATCH_DOMAIN=localhost (défaut) : certificat de l'autorité interne de Caddy, pour tester.
+# ILLWATCH_SITE_DOMAIN=illwatch.exemple.eu et ILLWATCH_DOMAIN=app.illwatch.exemple.eu : le site
+#                                   de présentation (Website/dist, scripts/build-site.sh) est servi
+#                                   à côté de l'application (ADR-027, lot S6).
 #
 # Caddy fixe X-Forwarded-For à l'adresse réelle du client et ignore celui qu'il reçoit
 # (aucun proxy de confiance déclaré) : un client ne peut pas usurper une adresse auprès de
@@ -37,6 +40,65 @@
 	}
 	request_body {
 		max_size 10MB
+	}
+	log {
+		output stdout
+		format json
+	}
+}
+
+# Site de présentation (ADR-027, lot S6) : fichiers statiques, mêmes en-têtes de sécurité que
+# l'application. Deux routes de l'API seulement y sont relayées, sur la même origine (aucun
+# CORS) : la langue du visiteur et le dépôt d'une demande de démonstration.
+{$ILLWATCH_SITE_DOMAIN:site.localhost} {
+	root * /srv/illwatch-website
+	encode zstd gzip
+	header {
+		-Server
+		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; object-src 'none'; frame-ancestors 'none'"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		Cross-Origin-Opener-Policy "same-origin"
+	}
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=604800"
+	@pages not path /assets/*
+	header @pages Cache-Control "no-cache"
+
+	# Langue du pays du visiteur (construire avec ILLWATCH_SITE_GEO_ENDPOINT=/langue).
+	handle /langue {
+		rewrite * /api/v1/locale
+		reverse_proxy {$ILLWATCH_UPSTREAM:api:8000} {
+			header_down -Server
+		}
+	}
+	# Demandes de démonstration (construire avec ILLWATCH_SITE_DEMO_ENDPOINT=/api/v1/demo-requests).
+	@demo {
+		path /api/v1/demo-requests
+		method POST
+	}
+	handle @demo {
+		request_body {
+			max_size 16KB
+		}
+		reverse_proxy {$ILLWATCH_UPSTREAM:api:8000} {
+			header_down -Server
+		}
+	}
+	# Rien d'autre de l'API n'est joignable par le domaine du site.
+	handle /api/* {
+		respond 404
+	}
+	handle {
+		file_server
+	}
+	handle_errors {
+		@404 expression {err.status_code} == 404
+		rewrite @404 /404.html
+		file_server
 	}
 	log {
 		output stdout

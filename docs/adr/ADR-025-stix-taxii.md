@@ -8,7 +8,7 @@
 
 ## Contexte
 
-ILL Watch consomme du STIX et du TAXII (flux, ATT&CK) mais ne savait rien partager : un SIEM,
+ILLWATCH consomme du STIX et du TAXII (flux, ATT&CK) mais ne savait rien partager : un SIEM,
 un pare-feu ou une autre plateforme CTI (OpenCTI, MISP) devait recopier les IOC à la main.
 
 ## Décision
@@ -20,9 +20,9 @@ un pare-feu ou une autre plateforme CTI (OpenCTI, MISP) devait recopier les IOC 
      `valid_until` à l'expiration ;
    - campagnes, acteur (`intrusion-set` pour un groupe, `malware` pour un logiciel, avec la
      référence `mitre-attack`), relations `attributed-to` / `uses` et `indicates` ;
-   - identifiants **déterministes** (UUID v5 d'un espace de noms propre à ILL Watch) : un IOC
+   - identifiants **déterministes** (UUID v5 d'un espace de noms propre à ILLWATCH) : un IOC
      garde le même identifiant d'un export à l'autre, les consommateurs dédupliquent ;
-   - chaque objet signé par l'identité « ILL Watch » (`created_by_ref`).
+   - chaque objet signé par l'identité « ILLWATCH » (`created_by_ref`).
 2. **Serveur TAXII 2.1 en lecture seule**, monté hors de `/api` (`/taxii2/`) : découverte,
    API root `illwatch`, collections **indicateurs** (paginée par curseur stable sur la date de
    dernière observation, filtre `added_after`, en-têtes `X-TAXII-Date-Added-First/Last`) et
@@ -41,7 +41,7 @@ format est vérifié par l'aller-retour avec notre propre analyseur STIX) ; `med
 
 ## Conséquences
 
-- Positives : ILL Watch devient une source TAXII qu'OpenCTI, MISP ou `taxii2-client`
+- Positives : ILLWATCH devient une source TAXII qu'OpenCTI, MISP ou `taxii2-client`
   consomment sans développement ; le partage respecte les exclusions et la confiance.
 - Négatives : la lecture d'un objet par identifiant (`objects/{id}/`) et les filtres
   `match[id]` / `match[version]` ne sont pas servis (identifiants dérivés, non stockés) ;

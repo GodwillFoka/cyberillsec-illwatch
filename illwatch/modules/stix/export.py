@@ -1,4 +1,4 @@
-"""Export STIX 2.1 du renseignement d'ILL Watch — M10, incrément 3 (ADR-025).
+"""Export STIX 2.1 du renseignement d'ILLWATCH — M10, incrément 3 (ADR-025).
 
 - **Indicateurs** : un objet `indicator` par IOC actif (non expiré, non exclu), motif STIX
   selon son type, confiance 0–100 (ADR-017), sévérité en étiquette, validité (`valid_until`)
@@ -9,7 +9,7 @@
   `malware` pour un logiciel, avec la référence `mitre-attack`), relations « attribuée à » ou
   « utilise », et « indique » de chaque IOC de leur infrastructure vers la campagne.
 
-Tout objet est signé par l'identité « ILL Watch » (`created_by_ref`).
+Tout objet est signé par l'identité « ILLWATCH » (`created_by_ref`).
 """
 
 import base64
@@ -77,9 +77,9 @@ def identity() -> dict[str, Any]:
         "id": IDENTITY_ID,
         "created": created,
         "modified": created,
-        "name": "ILL Watch",
+        "name": "ILLWATCH",
         "identity_class": "system",
-        "description": "Plateforme CTI/SOC ILL Watch (CyberillSec).",
+        "description": "Plateforme CTI/SOC ILLWATCH (CyberillSec).",
     }
 
 

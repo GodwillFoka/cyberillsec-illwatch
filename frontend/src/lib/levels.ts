@@ -1,4 +1,4 @@
-// Échelle de priorité unique P0–P3 (docs/DESIGN_SYSTEM.md, brand book ILL Watch v2), appliquée aux sévérités et priorités.
+// Échelle de priorité unique P0–P3 (docs/DESIGN_SYSTEM.md, brand book ILLWATCH v2), appliquée aux sévérités et priorités.
 // Libellés traduits à la lecture (ADR-027) : voir labels.i18n.ts.
 import { labelTable, labels } from "./labels.i18n.js";
 
@@ -31,7 +31,7 @@ export const TONE_COLORS: Record<Tone, string> = {
   p3: "#6E7A93",
 };
 
-/** Couleurs du thème des graphiques (jetons ILL Watch v2, thème Nuit). Les courbes et barres
+/** Couleurs du thème des graphiques (jetons ILLWATCH v2, thème Nuit). Les courbes et barres
  * sans gravité sont en Signal, la couleur de la veille. */
 export const CHART = {
   text: "#A3ACBF",

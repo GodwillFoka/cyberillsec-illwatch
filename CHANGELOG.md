@@ -8,6 +8,17 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Site complet, demandes de démonstration, GitLab (ADR-027 décision 14, 23/10)
+- Site : pages Plateforme (fonctionnement animé, modules, explorateur MITRE ATT&CK, exemple
+  TAXII 2.1), Sécurité (architecture, mesures), Tarifs (prix indicatifs en évaluation),
+  À propos, Démonstration (formulaire), Impressum et Datenschutz, en cinq langues.
+- `POST /api/v1/demo-requests` (public, débit limité, aucune IP conservée) ; `GET`/`PATCH`
+  administrateur audités ; onglet « Demandes de démo » ; `illwatch demo-requests list|purge`.
+- Tous les liens mènent à GitLab ; publication du site et de la documentation par GitLab Pages ;
+  Caddy sert le site à côté de l'application (`ILLWATCH_SITE_DOMAIN`, `scripts/build-site.sh`).
+- CI « Site web » : 80 pages contrôlées, formulaire testé contre une API factice, accessibilité
+  WCAG 2.2 AA (axe-core).
+
 ### Ajouté — Captures et contenus en anglais (ADR-027 décision 12, 23/10)
 - Textes écrits par le serveur (corrélations, règles et résultats de chasse, recommandations
   de réponse, chronologie des incidents, jeu de démonstration) dans la langue de l'instance :
@@ -164,8 +175,8 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   propres fichiers : l'écran de connexion n'attend plus les graphiques, plus d'avertissement
   « chunk > 900 kB » au build.
 
-### Modifié — identité ILL Watch v2 (brand book, ADR-018)
-- Nom affiché « ILL Watch », endossement « PAR CYBERILL » (interface, API, CLI, documentation) ;
+### Modifié — identité ILLWATCH v2 (brand book, ADR-018)
+- Nom affiché « ILLWATCH », endossement « PAR CYBERILL » (interface, API, CLI, documentation) ;
   identifiants techniques inchangés (`illwatch`, `ILLWATCH_*`).
 - Logos, symbole écu-radar, favicon, icône d'application et avatar du kit dans `docs/assets/` ;
   composant `Logo` à la géométrie de `illwatch-mark.svg` ; logotype vectorisé à la connexion.

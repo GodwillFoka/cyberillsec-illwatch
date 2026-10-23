@@ -1,6 +1,6 @@
 """État d'avancement mesuré sur les données — `illwatch status`.
 
-Le code dit ce qu'ILL Watch *sait faire* ; seule la base dit ce qu'il *a fait*. Ce module
+Le code dit ce qu'ILLWATCH *sait faire* ; seule la base dit ce qu'il *a fait*. Ce module
 calcule les indicateurs qui permettent de constater un jalon (M2 : ingestion
 opérationnelle) au lieu de le supposer.
 """

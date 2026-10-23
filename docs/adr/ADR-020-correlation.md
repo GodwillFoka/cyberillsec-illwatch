@@ -7,7 +7,7 @@
 
 ## Contexte
 
-Jusqu'ici ILL Watch dit ce qui est dangereux **dans le monde** (CVE exploitées, IOC) ; il ne dit
+Jusqu'ici ILLWATCH dit ce qui est dangereux **dans le monde** (CVE exploitées, IOC) ; il ne dit
 pas ce qui est dangereux **pour l'organisation**. Le critère de sortie de M8 l'exige : « un
 évènement corrélé produit une alerte priorisée », avec un taux de faux positifs mesuré.
 
@@ -42,7 +42,7 @@ pas ce qui est dangereux **pour l'organisation**. Le critère de sortie de M8 l'
   Reportée : le nom de produit en mot entier, piégé et mesuré, suffit pour démarrer.
 - **Moteur de règles générique** (Sigma, requêtes libres) : puissant mais impossible à mesurer
   et à expliquer simplement ; trois règles explicables d'abord.
-- **Corrélation sur les journaux** (SIEM) : ILL Watch ne collecte pas de journaux ; c'est le
+- **Corrélation sur les journaux** (SIEM) : ILLWATCH ne collecte pas de journaux ; c'est le
   rôle de la chasse (M6) sur des observables fournis.
 
 ## Conséquences

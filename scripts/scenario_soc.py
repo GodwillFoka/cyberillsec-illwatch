@@ -1,4 +1,4 @@
-"""Scénario d'acceptation SOC de bout en bout contre une instance ILL Watch réelle.
+"""Scénario d'acceptation SOC de bout en bout contre une instance ILLWATCH réelle.
 
 Usage : python scripts/scenario_soc.py [URL_BASE]   (défaut : http://localhost:8000)
 
@@ -150,7 +150,7 @@ def main() -> int:
     )
     check("Liaison CVE réelle", r.status_code in (200, 201), str(r.status_code))
 
-    # --- M9 : L1 → L2 → L3 sans quitter ILL Watch -------------------------------------------
+    # --- M9 : L1 → L2 → L3 sans quitter ILLWATCH -------------------------------------------
     r = call(
         c,
         "POST",
@@ -478,7 +478,7 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except httpx.ConnectError:
-        print(f"✘ ILL Watch injoignable sur {BASE} : démarrez l'API (uvicorn) avant le scénario.")
+        print(f"✘ ILLWATCH injoignable sur {BASE} : démarrez l'API (uvicorn) avant le scénario.")
         sys.exit(2)
     except PrerequisiteError as exc:
         print(f"✘ Prérequis manquant : {exc}")

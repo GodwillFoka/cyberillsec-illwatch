@@ -1,7 +1,7 @@
 apiVersion: 1
 providers:
-  - name: ILL Watch
-    folder: ILL Watch
+  - name: ILLWATCH
+    folder: ILLWATCH
     type: file
     disableDeletion: true
     allowUiUpdates: false

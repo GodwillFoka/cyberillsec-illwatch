@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILL Watch — Préproduction locale : la pile de production sur ce poste, en HTTPS
+# ILLWATCH — Préproduction locale : la pile de production sur ce poste, en HTTPS
 #
 #   ./scripts/preprod-local.sh up       # construit l'image, démarre, crée le compte admin
 #   ./scripts/preprod-local.sh check    # contrôles : HTTPS, en-têtes, API, SSE via Caddy,
@@ -55,7 +55,7 @@ secrets() {
   if [[ ! -f "${ENV_FILE}" ]]; then
     umask 077
     cat > "${ENV_FILE}" <<EOF
-# Préproduction locale ILL Watch — généré le $(date -u +%FT%TZ). Ne pas versionner.
+# Préproduction locale ILLWATCH — généré le $(date -u +%FT%TZ). Ne pas versionner.
 ILLWATCH_DOMAIN=${DOMAIN}
 SECRET_KEY=$(openssl rand -hex 32)
 POSTGRES_PASSWORD=$(openssl rand -hex 24)
@@ -298,7 +298,7 @@ cmd_observability() {
     [[ "${boards}" -ge 2 ]] && break
     sleep 2
   done
-  [[ "${boards}" -ge 2 ]] && ok "Grafana : ${boards} tableaux ILL Watch provisionnés" || ko "Grafana : tableaux absents (${boards})"
+  [[ "${boards}" -ge 2 ]] && ok "Grafana : ${boards} tableaux ILLWATCH provisionnés" || ko "Grafana : tableaux absents (${boards})"
   if ((FAILED)); then die "${FAILED} contrôle(s) d'observabilité en échec."; fi
 }
 

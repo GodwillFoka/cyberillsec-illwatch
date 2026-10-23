@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILL Watch — Déploiement sur un VPS (clôture de M7 : « … up sur un VPS UE, SSL Labs ≥ A »)
+# ILLWATCH — Déploiement sur un VPS (clôture de M7 : « … up sur un VPS UE, SSL Labs ≥ A »)
 #
 # Sur un serveur Debian 12/13 ou Ubuntu 24.04 neuf, en root (ou sudo), avec un nom DNS
 # (enregistrement A, et AAAA si IPv6) qui pointe déjà sur ce serveur :
@@ -35,6 +35,16 @@ step() { printf '\n\033[1m▶ %s\033[0m\n' "$*"; }
 die() { printf '\033[31m✘ %s\033[0m\n' "$*" >&2; exit 1; }
 
 need_root() { [[ $EUID -eq 0 ]] || die "à lancer en root (sudo)."; }
+
+# Site de présentation (ADR-027, lot S6) : construit si ILLWATCH_SITE_DOMAIN est renseigné.
+site_build() {
+  local site
+  site=$(grep -E '^ILLWATCH_SITE_DOMAIN=' "${DIR}/.env" 2>/dev/null | cut -d= -f2 || true)
+  if [[ -n "${site}" ]]; then
+    step "Site de présentation (${site})"
+    (cd "${DIR}" && ILLWATCH_SITE_DOMAIN="${site}" ./scripts/build-site.sh)
+  fi
+}
 
 install_docker() {
   if command -v docker >/dev/null && docker compose version >/dev/null 2>&1; then
@@ -106,7 +116,7 @@ dns_check() {
 backups() {
   mkdir -p /srv/illwatch-backups
   cat >/etc/cron.d/illwatch-backup <<EOF
-# Sauvegarde quotidienne de la base ILL Watch (14 jours conservés).
+# Sauvegarde quotidienne de la base ILLWATCH (14 jours conservés).
 17 2 * * * root cd ${DIR} && ./scripts/backup.sh /srv/illwatch-backups >>/var/log/illwatch-backup.log 2>&1
 # Test de restauration mensuel (M11) : le 1er du mois, après la sauvegarde.
 47 3 1 * * root cd ${DIR} && ./scripts/restore-test.sh /srv/illwatch-backups >>/var/log/illwatch-restore-test.log 2>&1
@@ -130,6 +140,7 @@ cmd_install() {
   step "DNS"
   dns_check "${domain}"
   step "Démarrage (construction de l'image : quelques minutes)"
+  site_build
   docker compose up -d --build
   docker compose ps
   step "Compte administrateur"
@@ -192,6 +203,7 @@ cmd_update() {
   step "Code et image"
   git pull --ff-only -q
   write_env "$(grep -E '^ILLWATCH_DOMAIN=' "${DIR}/.env" | cut -d= -f2)"
+  site_build
   docker compose up -d --build
   step "Contrôles"
   cmd_check ""

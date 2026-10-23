@@ -1,4 +1,4 @@
-// Menu latéral (brand book v2) : symbole 32 px et « ILL Watch / PAR CYBERILL », sections en
+// Menu latéral (brand book v2) : symbole 32 px et « ILLWATCH / PAR CYBERILL », sections en
 // capitales espacées, icônes Lucide 20 px trait 1,5 en muted, élément actif indigo avec repère
 // orange de 3 px. Les compteurs n'apparaissent que s'il y a quelque chose à traiter.
 import {

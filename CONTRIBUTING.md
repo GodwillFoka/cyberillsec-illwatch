@@ -1,4 +1,4 @@
-# Contribuer à ILL Watch
+# Contribuer à ILLWATCH
 
 Merci de l'intérêt que vous portez au projet. Ce document décrit exactement ce qu'on attend d'une
 contribution — lisez-le avant d'ouvrir une merge request, il vous évitera un aller-retour.

@@ -1,5 +1,5 @@
 # ============================================================================
-# ILL Watch — Préproduction locale, exécutée en CI
+# ILLWATCH — Préproduction locale, exécutée en CI
 #
 # Monte la pile de PRODUCTION (image finale, migrations éphémères, rôle applicatif, Redis
 # protégé, Caddy HTTPS) avec scripts/preprod-local.sh, exactement comme sur un poste :

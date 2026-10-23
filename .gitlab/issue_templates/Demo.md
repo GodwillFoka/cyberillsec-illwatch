@@ -1,8 +1,3 @@
----
-name: Demo or pilot request / Demande de démonstration
-about: Ask for a demonstration of ILL Watch or a guided pilot on your infrastructure
-labels: demo
----
 
 <!--
 This issue is public. Do not share confidential information (addresses, names of systems,

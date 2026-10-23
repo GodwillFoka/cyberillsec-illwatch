@@ -104,7 +104,7 @@ async def test_acces_restreint(client: AsyncClient, monkeypatch: pytest.MonkeyPa
 
 
 def test_tableaux_et_alertes_coherents() -> None:
-    """Chaque métrique citée par Grafana ou par une alerte est bien exposée par ILL Watch."""
+    """Chaque métrique citée par Grafana ou par une alerte est bien exposée par ILLWATCH."""
     source = (ROOT / "illwatch/modules/observability/metrics.py").read_text(encoding="utf-8")
     exposed = set(re.findall(r'"(illwatch_[a-z0-9_]+)"', source))
     exposed |= {"illwatch_http_requests_total", "illwatch_build_info"}

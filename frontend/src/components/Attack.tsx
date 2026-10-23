@@ -1,6 +1,6 @@
 // Contexte MITRE ATT&CK d'une détection (M10, ADR-023) : techniques révélées par la règle,
 // groupes ou logiciels cités dans le renseignement, avec leurs techniques connues. Les liens
-// ouvrent attack.mitre.org dans un nouvel onglet, sans transmettre l'adresse d'ILL Watch.
+// ouvrent attack.mitre.org dans un nouvel onglet, sans transmettre l'adresse d'ILLWATCH.
 import type { AttackContext, TechniqueRef } from "../api/types";
 import { Link } from "../lib/router";
 import { ui } from "./components.i18n";

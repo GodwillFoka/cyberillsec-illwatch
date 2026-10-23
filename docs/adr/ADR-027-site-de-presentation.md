@@ -4,12 +4,12 @@
   langues, langue du navigateur puis pays, dossier `Website`, dépôt GitHub par PR)
 - **Date :** 2026-10-22
 - **Décideurs :** Godwill FOKA
-- **Concerne :** ADR-013 (Caddy), ADR-016 (interface web), ADR-018 (identité ILL Watch v2),
+- **Concerne :** ADR-013 (Caddy), ADR-016 (interface web), ADR-018 (identité ILLWATCH v2),
   ADR-019 (DB-IP Lite), feuille de route `Website/ROADMAP.md`
 
 ## Contexte
 
-ILL Watch a une documentation (MkDocs, GitHub Pages) et une interface d'analyste, mais rien qui
+ILLWATCH a une documentation (MkDocs, GitHub Pages) et une interface d'analyste, mais rien qui
 **présente** la solution à quelqu'un qui ne la connaît pas : RSSI, responsable de SOC, CERT
 national, décideur public ou privé, contributeur open source. La cible est **internationale** :
 le site doit parler la langue du visiteur dès la première page et être hébergé à terme avec la
@@ -96,6 +96,24 @@ solution, sur le même serveur.
     Accompagnement **sur demande** (aucun prix publié), FAQ. Pas de logo client ni de
     témoignage tant qu'il n'en existe pas de réels. Les animations respectent
     `prefers-reduced-motion` et le contenu reste entier sans JavaScript.
+
+14. **Site complet et publication** (décision du 23/10/2026, réponses de Godwill FOKA) :
+    - **GitLab seul** comme dépôt public : tous les liens du site (code, versions, sécurité,
+      demande de démo) mènent à GitLab ; le projet GitLab doit être rendu public. La
+      documentation et le site sont publiés par GitLab Pages (`<pages>/` et `<pages>/docs/`).
+    - **Pages** Plateforme, Sécurité, Tarifs, À propos, Démonstration, Impressum,
+      Datenschutz, dans les cinq langues ; l'Impressum est rempli depuis
+      `Website/src/data/legal.json` et la construction publique (`ILLWATCH_SITE_PUBLIC=1`)
+      échoue tant qu'il manque un champ obligatoire.
+    - **Prix arbitraires et indicatifs** (Pilote dès 4 900 €, Accompagnement dès 790 €/mois),
+      affichés comme « en phase d'évaluation » ; prix définitifs à fixer après les premiers
+      pilotes (tâche à venir, `Website/ROADMAP.md`).
+    - **Demande de démonstration traitée par l'application** : `POST /api/v1/demo-requests`
+      public (débit limité par IP sans l'enregistrer, plafond quotidien, champ piège,
+      consentement daté), suivi par les administrateurs (journal d'audit), purge à 12 mois.
+      Caddy ne relaie vers l'API, sur le domaine du site, que cette route et `/langue`.
+    - **Qualité** : chaque page contrôlée dans les cinq langues en grand écran et sur téléphone
+      (débordement, console, CSP), accessibilité WCAG 2.2 AA par axe-core en CI.
 
 ## Conséquences
 

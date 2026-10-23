@@ -61,7 +61,7 @@ async def test_export_aller_retour(db_session: AsyncSession) -> None:
     assert all(
         o["created_by_ref"] == IDENTITY_ID and 0 <= o["confidence"] <= 100 for o in indicators
     )
-    # Ce qu'ILL Watch exporte, ILL Watch (ou tout client STIX) le relit à l'identique.
+    # Ce qu'ILLWATCH exporte, ILLWATCH (ou tout client STIX) le relit à l'identique.
     parsed = {o.value for o in parse_stix_objects(document["objects"]).observations}
     assert set(values) <= parsed
     assert "www.example.org" not in parsed  # IOC exclu (faux positif) : jamais partagé

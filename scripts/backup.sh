@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILL Watch — Sauvegarde PostgreSQL (M7 Production Hardening)
+# ILLWATCH — Sauvegarde PostgreSQL (M7 Production Hardening)
 #
 #   scripts/backup.sh [DOSSIER]        # défaut : ./backups, 14 sauvegardes conservées
 #   KEEP=30 scripts/backup.sh /srv/illwatch-backups

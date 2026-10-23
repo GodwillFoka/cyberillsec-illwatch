@@ -13,7 +13,7 @@ from illwatch.app.main import create_app
 from illwatch.app.web import UI_CSP
 from illwatch.cli.main import cli
 
-INDEX = "<!doctype html><title>ILL Watch</title><div id=root></div>"
+INDEX = "<!doctype html><title>ILLWATCH</title><div id=root></div>"
 
 
 @pytest.fixture

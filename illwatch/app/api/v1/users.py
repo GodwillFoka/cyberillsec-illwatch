@@ -2,7 +2,7 @@
 
 Mêmes opérations que `illwatch users …`, avec les mêmes effets : création sous politique de
 mot de passe, désactivation et réinitialisation qui révoquent les sessions, tout consigné au
-journal d'audit. Garde-fou : ILL Watch garde toujours au moins un administrateur actif, et un
+journal d'audit. Garde-fou : ILLWATCH garde toujours au moins un administrateur actif, et un
 administrateur ne peut ni se désactiver ni se retirer son propre rôle (pas de verrouillage
 accidentel de l'instance).
 """

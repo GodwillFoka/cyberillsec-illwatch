@@ -1,4 +1,4 @@
-# ILL Watch — État d'avancement des travaux
+# ILLWATCH — État d'avancement des travaux
 
 **Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **15/10/2026, 03 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
@@ -12,7 +12,7 @@ Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci
 > environnements dev → staging → production (ADR-026, PR #51). **M7 et la clôture de M11
 > attendent le VPS** (7 jours de staging) ; M9 et M10 restent à constater sur Kali.
 
-> **11-12/10 — Identité ILL Watch v2** (brand book, ADR-018) : nom affiché « ILL Watch » (identifiants
+> **11-12/10 — Identité ILLWATCH v2** (brand book, ADR-018) : nom affiché « ILLWATCH » (identifiants
 > techniques inchangés), logo écu-radar, palette Nuit et Signal, Inter et JetBrains Mono, voix de la
 > marque ; appliquée à l'interface et à la documentation, vérifiée écran par écran (PR #33).
 
@@ -42,7 +42,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | M4 Incidents | ✅ | incident mené jusqu'à la clôture |
 | M5 Dashboard | ✅ | scénario SOC 48/48 |
 | M6 Hunting | ✅ | 339 correspondances en CI |
-| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, identité ILL Watch v2, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
+| **M7 Production Hardening** | 🟡 en cours | lots 1-3 fusionnés ; performances gros volume traitées ; ADR-014 appliqué ; analyses de sécurité constatées (image 0 Critical, SAST 0, secrets 0) ; interface complète (8 écrans, identité ILLWATCH v2, React 19) ; préproduction locale vérifiée en CI ; **VPS UE reporté (11/10)** |
 | M8 Detection & Correlation | ✅ clos le 14/10 | incréments 1 à 4 livrés : confiance (ADR-017), enrichissement (ADR-019), inventaire et corrélation CORR-01 à 03 (ADR-020), mesure 100 % / 0 % FP (`Rapport/M8_MESURE_13-10-2026.md`) ; passe réelle Kali ≈ 80 % FP → corrélation par version (ADR-021), données réelles 38 → 0 vrai positif (`Rapport/BILAN_M8.md`) |
 | M9 SOC Operations | 🟢 livré le 14/10 (ADR-022, PR #46) | critère constaté en CI (parcours L1 → L2 → L3, MTTR mesuré) ; scénario à rejouer sur Kali (`Rapport/BILAN_M9.md`) |
 | M10 CTI Intelligence Layer | 🟢 livré le 15/10 (ADR-023 à 025, PR #47, #49, #50) | technique ATT&CK et acteur (critère constaté en CI) ; campagnes et attribution par l'infrastructure ; export STIX 2.1 et serveur TAXII 2.1 `/taxii2/` ; à constater sur Kali après `illwatch attack import` |
@@ -77,7 +77,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | 13/10 | PR #36 | **M8 incréments 3 et 4** : inventaire d'actifs, corrélation CORR-01 à 03 (score justifié, worker horaire, écrans Corrélations et Inventaire), mesure sur jeu figé 100 % / 0 % FP vérifiée par la CI, mise à jour mensuelle automatique de DB-IP ; ADR-020 |
 | 12/10 | PR #35 | Enrichissement : volumes réels mesurés sur Kali (710 834 plages pays, 477 362 AS) |
 | 12/10 | PR #34 | **M8 incrément 2** : enrichissement hors ligne des IP (pays, système autonome) depuis DB-IP Lite importée localement, `illwatch enrich`, ADR-019 ; écrans chargés à la demande (fin de l'avertissement de taille au build) ; captures de la fiche IP et des paramètres |
-| 12/10 | PR #33 | **Identité ILL Watch v2** (ADR-018) : logos et favicon du kit, symbole écu-radar, jetons Nuit, Signal, Inter + JetBrains Mono, menu et voix de la marque, DESIGN_SYSTEM v8, site de documentation ; reprise complète A-B-C-D : CI, préproduction et captures vertes, revue indépendante (4 points corrigés), « à l'instant », typographie française (unités insécables, virgule décimale, libellés français de la chronologie et de la chasse) |
+| 12/10 | PR #33 | **Identité ILLWATCH v2** (ADR-018) : logos et favicon du kit, symbole écu-radar, jetons Nuit, Signal, Inter + JetBrains Mono, menu et voix de la marque, DESIGN_SYSTEM v8, site de documentation ; reprise complète A-B-C-D : CI, préproduction et captures vertes, revue indépendante (4 points corrigés), « à l'instant », typographie française (unités insécables, virgule décimale, libellés français de la chronologie et de la chasse) |
 | 11/10 | PR #32 | **B** écrans Sources CTI et Administration (API comptes et paramètres) ; **D** M8 démarré : fiabilité des sources (A–F), confiance des IOC ; seconde revue indépendante : 11 points corrigés |
 | 11/10 | PR #31 | Design v7 « Veille de nuit » : logo œil-radar, IBM Plex, icônes, palette recalibrée, mobile ; vérifié sur captures |
 | 11/10 | PR #30 | **C** React 19.3 + Vite 7.3 : `npm audit` 0 vulnérabilité, outils compris (audit complet bloquant) |
