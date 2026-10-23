@@ -63,8 +63,7 @@ export async function fetchServerLanguage(
   try {
     const response = await fetcher(LOCALE_ENDPOINT, {
       signal: controller.signal,
-      credentials: "omit",
-      cache: "no-store",
+      credentials: "omit", // la réponse porte déjà « Cache-Control: no-store »
       headers: { Accept: "application/json" },
     });
     if (!response.ok) return null;

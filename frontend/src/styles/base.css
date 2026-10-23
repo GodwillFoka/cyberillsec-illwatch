@@ -1402,6 +1402,19 @@ fieldset.rules legend {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  /* Sélecteur de langue ajouté à la barre (ADR-027) : sur téléphone, la barre se resserre et
+     l'horloge ne garde que l'heure, pour que rien ne déborde à 390 px. */
+  .topbar {
+    gap: var(--s2);
+    padding: 0 var(--s3);
+  }
+  .clock-zone,
+  .clock-sep {
+    display: none;
+  }
+  .lang-select.compact select {
+    padding: 0 var(--s1);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

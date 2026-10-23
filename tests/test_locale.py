@@ -152,7 +152,8 @@ async def test_route_pays_du_visiteur(db_session: AsyncSession) -> None:
     assert body["lang"] == "de" and body["source"] == "country"
     assert body["supported"] == list(SUPPORTED)
     assert "country" not in body and "ip" not in body  # minimisation : la langue seulement
-    assert vary == "Accept-Language"
+    # CORS ajoute « Origin » : seule compte la présence d'Accept-Language.
+    assert vary is not None and "Accept-Language" in vary
 
 
 @pytest.mark.usefixtures("load_countries")

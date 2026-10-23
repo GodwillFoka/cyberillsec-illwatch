@@ -21,7 +21,6 @@ async function serverLang() {
     const response = await fetch(endpoint, {
       signal: controller.signal,
       credentials: "omit",
-      cache: "no-store",
       headers: { Accept: "application/json" },
     });
     if (!response.ok) return null;
