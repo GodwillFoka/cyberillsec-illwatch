@@ -72,19 +72,24 @@ dictionnaires et CSS.
 
 ## 5. Langues et détection
 
-| Ordre | Signal | Où | Pourquoi |
-|---|---|---|---|
-| 1 | choix déjà fait | navigateur (`localStorage`) | le visiteur a toujours le dernier mot |
-| 2 | langue du navigateur | `Accept-Language` (serveur) / `navigator.languages` | reflète la personne, pas le réseau |
-| 3 | pays | IP via DB-IP Lite locale (serveur) ; fuseau horaire tant que le site est statique | aucun service tiers, adresse jamais conservée |
-| 4 | anglais | — | langue par défaut internationale |
+Révisé le 23/10/2026 : **la langue suit le pays** (ADR-027, décision 3), pour le site et pour
+l'application.
 
-Pays → langue : France, Belgique, Suisse romande, Luxembourg, Canada (Québec), Afrique
-francophone → FR ; Allemagne, Autriche, Suisse alémanique, Liechtenstein → DE ; Espagne,
-Amérique latine, Guinée équatoriale → ES ; Chine, Taïwan, Hong Kong, Macao → ZH ; reste → EN.
+| Ordre | Signal | Où |
+|---|---|---|
+| 1 | choix fait par le visiteur | navigateur (`localStorage`), toujours prioritaire |
+| 2 | pays du visiteur (IP publique) ou, sur un réseau interne, pays de l'instance | `GET /api/v1/locale`, DB-IP Lite locale ; site statique : fuseau horaire |
+| 3 | langue du navigateur (départage aussi les pays bilingues) | `Accept-Language` / `navigator.languages` |
+| 4 | langue de l'instance, puis anglais | `DEFAULT_LANGUAGE` / `ILLWATCH_SITE_DEFAULT_LANG` |
 
-Seule l'adresse racine `/` redirige ; chaque page a son URL (`/de/`, `/zh/`…), `hreflang` et
-`x-default`. Les traductions sont relues par des locuteurs natifs avant la mise en ligne.
+Pays → langue (table unique `illwatch/shared/i18n.py`) : France et outre-mer, Monaco, Afrique
+francophone, Maghreb, Haïti → FR ; Allemagne, Autriche, Liechtenstein → DE ; Espagne,
+Amérique hispanophone, Guinée équatoriale → ES ; Chine, Taïwan, Hong Kong, Macao → ZH ; pays
+anglophones → EN ; Suisse, Belgique, Luxembourg, Canada, Cameroun, Singapour, Porto Rico :
+le navigateur départage. Ailleurs : navigateur, puis instance, puis anglais.
+
+Sécurité : adresse jamais renvoyée, journalisée ni conservée ; `X-Forwarded-For` accepté de
+Caddy seulement ; `Accept-Language` borné et validé ; recherches simultanées plafonnées.
 
 ## 6. Lots
 

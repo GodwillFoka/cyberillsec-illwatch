@@ -53,8 +53,12 @@ def main(base: str, out: Path) -> int:
                 problems += [f"{lang} {name} : console : {e}" for e in errors]
                 context.close()
 
-        # Détection : langue du navigateur, puis pays (fuseau horaire), puis anglais.
+        # Détection hors serveur : pays (fuseau horaire) d'abord, navigateur pour départager
+        # un pays bilingue ou à défaut de pays, puis anglais.
         for browser_lang, zone, expected in (
+            ("en-US", "Europe/Berlin", "de"),
+            ("fr-CH", "Europe/Zurich", "fr"),
+            ("en-CA", "America/Toronto", "en"),
             ("de-AT", "UTC", "de"),
             ("zh-CN", "UTC", "zh"),
             ("es-MX", "UTC", "es"),

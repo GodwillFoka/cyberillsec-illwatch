@@ -1,6 +1,8 @@
 """Langue d'affichage du visiteur (ADR-027) : négociation pure et route `GET /api/v1/locale`."""
 
+import json
 from collections.abc import AsyncGenerator
+from pathlib import Path
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -193,3 +195,12 @@ async def test_route_ignore_x_forwarded_for_non_fiable(db_session: AsyncSession)
     async with AsyncClient(transport=transport, base_url="http://test") as http:
         response = await http.get("/api/v1/locale", headers={"X-Forwarded-For": "9.9.9.9"})
     assert response.json()["lang"] == "en"  # États-Unis, pas l'Allemagne
+
+
+def test_table_des_pays_identique_sur_le_site() -> None:
+    """Le site applique la même table hors ligne (fuseau horaire) : elle ne doit pas diverger."""
+    path = (
+        Path(__file__).resolve().parents[1] / "Website" / "src" / "data" / "country-languages.json"
+    )
+    site = json.loads(path.read_text(encoding="utf-8"))["countries"]
+    assert site == {country: list(langs) for country, langs in COUNTRY_LANGUAGES.items()}

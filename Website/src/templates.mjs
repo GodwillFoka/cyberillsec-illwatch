@@ -401,7 +401,7 @@ export function rootPage(ctx, dictionaries) {
     .join("");
   const en = dictionaries.en;
   return `<!doctype html>
-<html lang="en" data-base="${base}" data-geo="${esc(site.geo)}">
+<html lang="en" data-base="${base}" data-geo="${esc(site.geo)}" data-instance-lang="${esc(site.instanceLang)}">
   ${head({ ...ctx, lang: null }, { title: "ILL Watch", description: en.meta.description, path: "" })}
   <body class="root">
   <main class="root__inner">

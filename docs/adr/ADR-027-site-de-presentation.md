@@ -24,19 +24,28 @@ solution, sur le même serveur.
    échouer la construction (aucune page à moitié traduite). Ajouter une langue = ajouter un
    fichier et une ligne dans `Website/src/config.mjs`. L'arabe (droite à gauche) n'est pas
    exclu : la mise en page utilise des propriétés logiques CSS pour le permettre.
-3. **Choix automatique de la langue à la première visite**, dans cet ordre :
-   1. choix déjà fait par le visiteur (mémorisé dans son navigateur) ;
-   2. **langue du navigateur** (`Accept-Language` côté serveur, `navigator.languages` côté
-      navigateur) — elle reflète la personne, pas le réseau (Suisse, Belgique, Canada,
-      expatriés, VPN) ;
-   3. **pays du visiteur** — côté serveur par l'adresse IP, avec la base DB-IP Lite déjà
-      importée pour l'enrichissement (ADR-019), **sans service tiers ni conservation de
-      l'adresse** ; tant que le site est statique, le fuseau horaire du navigateur sert de
-      signal de pays équivalent ;
-   4. anglais par défaut.
-   Le sélecteur de langue est visible sur chaque page ; un choix manuel l'emporte toujours. Les
-   URL portent la langue (`/fr/`, `/en/`…), avec `hreflang` et `x-default` pour les moteurs de
-   recherche : la détection ne redirige que l'adresse racine `/`.
+3. **Choix automatique de la langue selon le pays** (révisé le 23/10/2026 à la demande de
+   CYBERILL : « la langue s'adapte en fonction du pays »), dans cet ordre, **le même pour le
+   site et pour l'application** :
+   1. choix déjà fait par le visiteur (mémorisé dans son navigateur) — toujours prioritaire ;
+   2. **pays** : celui du visiteur, d'après son adresse IP publique et la base DB-IP Lite déjà
+      importée (ADR-019), **sans service tiers** ; à défaut (adresse privée : réseau interne,
+      VPN), celui où l'instance est installée (`INSTANCE_COUNTRY`). Dans un pays à plusieurs
+      langues prises en charge (Suisse, Belgique, Luxembourg, Canada, Cameroun, Singapour,
+      Porto Rico), la langue du navigateur départage ;
+   3. **langue du navigateur** (`Accept-Language`) si le pays n'en donne aucune (Japon,
+      Brésil…) ;
+   4. **langue de l'instance** (`DEFAULT_LANGUAGE`), puis **anglais**.
+   La décision est prise par `GET /api/v1/locale` (`illwatch/shared/i18n.py`). Le site
+   statique, sans serveur, applique la même table pays → langues (copie vérifiée par test)
+   avec le fuseau horaire du navigateur comme indice de pays.
+   **Sécurité et vie privée** : l'adresse sert à une seule recherche locale en mémoire ; elle
+   n'est ni renvoyée, ni journalisée, ni conservée ; la réponse ne contient que la langue.
+   uvicorn n'accepte `X-Forwarded-For` que de Caddy (un en-tête forgé ne change pas le pays) ;
+   `Accept-Language` est borné (512 caractères, 20 étiquettes) et validé ; les recherches
+   simultanées sont plafonnées (au-delà, décision sans la base). Le sélecteur de langue est
+   visible partout ; les URL du site portent la langue (`/fr/`, `/en/`…), avec `hreflang` et
+   `x-default` : seule l'adresse racine `/` redirige.
 4. **Générateur statique sans dépendance** (`Website/build.mjs`, Node ≥ 20 seul). Pas de
    framework : rien à mettre à jour, aucune alerte `npm audit`, construction vérifiable depuis
    n'importe quel poste, pages légères (cible < 500 Ko pour l'accueil) et **CSP stricte**

@@ -1,26 +1,34 @@
 // Adresse racine « / » : choisit la langue puis redirige vers /<langue>/ (ADR-027).
 // Sans JavaScript, la page affiche simplement la liste des langues.
-import { matchLanguage, pickLanguage, readSaved, SUPPORTED } from "./lang.js";
+import { COUNTRY_LANGUAGES } from "./countries.js";
+import { pickLanguage, readSaved, SUPPORTED } from "./lang.js";
 
 const root = document.documentElement;
 const base = root.dataset.base || "/";
 const endpoint = root.dataset.geo || "";
+const instanceLang = root.dataset.instanceLang || null;
 
 function go(lang) {
   window.location.replace(base + lang + "/" + window.location.hash);
 }
 
-async function countryLang() {
+/** Langue décidée par le serveur (pays de l'adresse IP), ou null s'il ne répond pas vite. */
+async function serverLang() {
   if (!endpoint) return null;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 800);
+  const timer = setTimeout(() => controller.abort(), 1200);
   try {
-    const response = await fetch(endpoint, { signal: controller.signal, credentials: "omit" });
+    const response = await fetch(endpoint, {
+      signal: controller.signal,
+      credentials: "omit",
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
     if (!response.ok) return null;
     const body = await response.json();
-    return SUPPORTED.includes(body.lang) ? body.lang : null;
+    return typeof body.lang === "string" && SUPPORTED.includes(body.lang) ? body.lang : null;
   } catch {
-    return null; // serveur absent ou lent : on passe au signal suivant
+    return null; // serveur absent, lent ou réponse invalide : décision locale
   } finally {
     clearTimeout(timer);
   }
@@ -42,14 +50,14 @@ try {
 
 const signals = {
   saved: readSaved(storage),
-  languages: navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language],
   timeZone,
+  languages: navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language],
+  instanceLang,
+  countries: COUNTRY_LANGUAGES,
 };
 
-// Le pays (adresse IP côté serveur) n'est demandé que si ni un choix mémorisé ni la langue du
-// navigateur ne décident.
-if ((signals.saved && SUPPORTED.includes(signals.saved)) || matchLanguage(signals.languages)) {
-  go(pickLanguage(signals));
+if (signals.saved && SUPPORTED.includes(signals.saved)) {
+  go(signals.saved); // le choix du visiteur l'emporte : aucune requête
 } else {
-  countryLang().then((lang) => go(pickLanguage({ ...signals, countryLang: lang })));
+  serverLang().then((lang) => go(pickLanguage({ ...signals, serverLang: lang })));
 }

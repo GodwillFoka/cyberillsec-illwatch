@@ -5,8 +5,9 @@ Décision : [ADR-027](../docs/adr/ADR-027-site-de-presentation.md) ·
 feuille de route : [ROADMAP.md](ROADMAP.md).
 
 - **Cinq langues** : français, anglais, allemand, espagnol, chinois simplifié.
-- **Langue choisie automatiquement** à la première visite de `/` : choix mémorisé → langue du
-  navigateur → pays → anglais. Le sélecteur de langue l'emporte toujours.
+- **Langue choisie selon le pays** à la première visite de `/` : choix mémorisé → pays du
+  visiteur (IP, par l'API) → langue du navigateur → langue de l'instance → anglais ; le
+  navigateur départage les pays bilingues. Le sélecteur de langue l'emporte toujours.
 - **Aucune dépendance** : Node ≥ 20 suffit. Aucune police, aucun script, aucune image tiers.
 
 ## Construire et prévisualiser
@@ -25,7 +26,9 @@ ou si l'accueil dépasse 500 Ko.
 |---|---|---|
 | `ILLWATCH_SITE_URL` | adresse publique (canonique, `hreflang`, plan du site) | `https://illwatch.example` |
 | `ILLWATCH_SITE_BASE` | sous-chemin si le site n'est pas à la racine | `/` |
-| `ILLWATCH_SITE_GEO_ENDPOINT` | point d'entrée serveur `{"lang": "de"}` d'après l'IP (lot S6) | vide |
+| `ILLWATCH_SITE_GEO_ENDPOINT` | adresse relayée vers `GET /api/v1/locale` (ex. `/langue`, voir `deploy/`) | vide : fuseau horaire |
+| `ILLWATCH_SITE_COUNTRY` | pays de l'instance (ISO alpha-2), donne la langue par défaut | vide |
+| `ILLWATCH_SITE_DEFAULT_LANG` | langue par défaut explicite (`fr`, `en`, `de`, `es`, `zh`) | vide : anglais |
 
 ## Organisation
 

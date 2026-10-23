@@ -1,14 +1,26 @@
 #!/usr/bin/env node
 // Construction du site de présentation ILL Watch (ADR-027) : Node seul, aucune dépendance.
 //   node Website/build.mjs            → Website/dist/
-// Variables : ILLWATCH_SITE_URL, ILLWATCH_SITE_BASE, ILLWATCH_SITE_GEO_ENDPOINT (src/config.mjs).
+// Variables : ILLWATCH_SITE_URL, ILLWATCH_SITE_BASE, ILLWATCH_SITE_GEO_ENDPOINT,
+// ILLWATCH_SITE_COUNTRY, ILLWATCH_SITE_DEFAULT_LANG (src/config.mjs).
 // La construction échoue (code 1) si une traduction manque, si une page contient du style ou
 // du script en ligne, une ressource tierce, un lien interne cassé, ou dépasse le budget de poids.
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { BASE, DEFAULT_LANG, GEO_ENDPOINT, HOME_BUDGET, LANGS, LINKS, REFERENCE_LANG, SITE_URL } from "./src/config.mjs";
+import {
+  BASE,
+  DEFAULT_LANG,
+  GEO_ENDPOINT,
+  HOME_BUDGET,
+  INSTANCE_COUNTRY,
+  INSTANCE_LANG,
+  LANGS,
+  LINKS,
+  REFERENCE_LANG,
+  SITE_URL,
+} from "./src/config.mjs";
 import { esc, homePage, notFoundPage, rootPage } from "./src/templates.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -21,6 +33,19 @@ const problems = [];
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const dictionaries = Object.fromEntries(LANGS.map((l) => [l.code, readJson(join(src, "i18n", `${l.code}.json`))]));
 const facts = readJson(join(src, "data", "facts.json"));
+const countryLanguages = readJson(join(src, "data", "country-languages.json")).countries;
+
+// Langue de l'instance : explicite, sinon celle du pays de l'instance.
+const supportedCodes = LANGS.map((l) => l.code);
+if (INSTANCE_LANG && !supportedCodes.includes(INSTANCE_LANG)) {
+  problems.push(`ILLWATCH_SITE_DEFAULT_LANG inconnue : ${INSTANCE_LANG}`);
+}
+if (INSTANCE_COUNTRY && !/^[A-Z]{2}$/.test(INSTANCE_COUNTRY)) {
+  problems.push(`ILLWATCH_SITE_COUNTRY invalide (ISO alpha-2 attendu) : ${INSTANCE_COUNTRY}`);
+}
+const instanceLang = supportedCodes.includes(INSTANCE_LANG)
+  ? INSTANCE_LANG
+  : (countryLanguages[INSTANCE_COUNTRY] || [])[0] || "";
 
 function flatten(object, prefix = "") {
   return Object.entries(object).flatMap(([key, value]) =>
@@ -68,7 +93,7 @@ function translator(code) {
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(join(dist, "assets"), { recursive: true });
 
-const site = { url: SITE_URL, langs: LANGS, links: LINKS, geo: GEO_ENDPOINT, defaultLang: DEFAULT_LANG };
+const site = { url: SITE_URL, langs: LANGS, links: LINKS, geo: GEO_ENDPOINT, defaultLang: DEFAULT_LANG, instanceLang };
 const asset = (path) => `${BASE}assets/${path}`;
 const write = (path, content) => {
   mkdirSync(dirname(join(dist, path)), { recursive: true });
@@ -109,6 +134,11 @@ write(
 // ── Ressources ───────────────────────────────────────────────────────────────────────────
 cpSync(join(src, "assets", "site.css"), join(dist, "assets", "site.css"));
 cpSync(join(src, "assets", "js"), join(dist, "assets", "js"), { recursive: true });
+// Table pays → langues de l'API (copie vérifiée par tests/test_locale.py), en module.
+writeFileSync(
+  join(dist, "assets", "js", "countries.js"),
+  `// Généré par build.mjs depuis src/data/country-languages.json : ne pas modifier.\nexport const COUNTRY_LANGUAGES = ${JSON.stringify(countryLanguages)};\n`,
+);
 cpSync(join(src, "static", "img"), join(dist, "assets", "img"), { recursive: true });
 for (const file of ["illwatch-logo-endorsed-dark.svg", "illwatch-mark.svg", "favicon.svg"]) {
   cpSync(join(brand, file), join(dist, "assets", "img", file));
@@ -160,7 +190,7 @@ for (const lang of LANGS) {
   const html = readFileSync(home, "utf8");
   let bytes = statSync(home).size + statSync(join(dist, "assets", "site.css")).size;
   for (const m of html.matchAll(/<script[^>]*src="([^"]+)"/g)) bytes += statSync(join(dist, m[1].slice(BASE.length))).size;
-  bytes += statSync(join(dist, "assets", "js", "lang.js")).size + statSync(join(dist, "assets", "js", "score.js")).size;
+  for (const file of ["lang.js", "score.js"]) bytes += statSync(join(dist, "assets", "js", file)).size;
   bytes += statSync(join(dist, "assets", "img", "screens", "01-vue-ensemble.webp")).size;
   if (bytes > HOME_BUDGET) problems.push(`${lang.code}/ : accueil de ${Math.round(bytes / 1024)} Ko > budget ${HOME_BUDGET / 1024} Ko`);
   else console.log(`  ${lang.code}/  accueil ${Math.round(bytes / 1024)} Ko (budget ${HOME_BUDGET / 1024} Ko)`);

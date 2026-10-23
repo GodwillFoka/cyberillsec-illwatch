@@ -25,6 +25,11 @@ export const BASE = (process.env.ILLWATCH_SITE_BASE || "/").replace(/\/?$/, "/")
 // (DB-IP Lite locale, ADR-019) ; vide tant que le site est statique (lot S6).
 export const GEO_ENDPOINT = process.env.ILLWATCH_SITE_GEO_ENDPOINT || "";
 
+// Pays et langue de l'instance (mêmes rôles que INSTANCE_COUNTRY et DEFAULT_LANGUAGE côté API) :
+// dernier recours avant l'anglais quand ni le pays du visiteur ni son navigateur ne décident.
+export const INSTANCE_COUNTRY = (process.env.ILLWATCH_SITE_COUNTRY || "").trim().toUpperCase();
+export const INSTANCE_LANG = (process.env.ILLWATCH_SITE_DEFAULT_LANG || "").trim().toLowerCase();
+
 export const LINKS = {
   gitlab: "https://gitlab.com/GodwillFoka/cyberillsec-illwatch",
   github: "https://github.com/GodwillFoka/cyberillsec-illwatch",

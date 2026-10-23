@@ -18,13 +18,13 @@ illwatch.example {
 	@assets path /assets/*
 	header @assets Cache-Control "public, max-age=604800"
 
-	# Lot S6 : pays du visiteur → langue, par l'application (DB-IP Lite locale, ADR-019).
-	# La réponse ne contient que {"lang": "xx"} ; l'adresse n'est ni journalisée ni conservée.
-	# Construire alors le site avec ILLWATCH_SITE_GEO_ENDPOINT=/geo-lang.
-	# handle /geo-lang {
-	# 	rewrite * /api/v1/site/lang
-	# 	reverse_proxy illwatch-api:8000
-	# }
+	# Pays du visiteur → langue, décidé par l'API (DB-IP Lite locale, ADR-019) ; la réponse ne
+	# contient que {"lang": "xx", ...} et l'adresse n'est ni journalisée ni conservée.
+	# Construire le site avec ILLWATCH_SITE_GEO_ENDPOINT=/langue.
+	handle /langue {
+		rewrite * /api/v1/locale
+		reverse_proxy {$ILLWATCH_UPSTREAM:api:8000}
+	}
 
 	file_server
 	handle_errors {
