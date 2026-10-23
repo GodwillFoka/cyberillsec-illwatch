@@ -95,7 +95,7 @@ function explorer(ctx) {
         <p class="explorer__rules"><span class="label">${t("explorer.rules")}</span>${
           rules.length ? rules.map((r) => `<span class="tag mono">${r}</span>`).join("") : `<span class="muted">${t("explorer.context")}</span>`
         }</p>
-        <a href="${attackUrl(id)}">${t("explorer.mitre")} ${icon("external", "icon icon--inline")}</a>
+        <a class="link-target" href="${attackUrl(id)}">${t("explorer.mitre")} ${icon("external", "icon icon--inline")}</a>
       </div>`,
   ).join("");
   return `<section class="section" id="attack" aria-labelledby="attack-titre">

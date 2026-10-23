@@ -545,6 +545,7 @@ progress::-moz-progress-bar { background: var(--signal); border-radius: 999px; }
 .module__shot { box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.9); }
 
 /* Explorateur ATT&CK */
+.link-target { display: inline-flex; align-items: center; gap: 6px; min-block-size: 24px; }
 .explorer { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 24px; margin-block-start: 44px; align-items: start; }
 .explorer__list { display: grid; gap: 8px; }
 .explorer__list button {

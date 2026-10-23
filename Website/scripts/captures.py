@@ -154,7 +154,11 @@ def check_demo_form(browser, demo: str, problems: list[str]) -> None:
 
 def check_accessibility(browser, base: str, axe: Path, problems: list[str]) -> None:
     # Le script axe-core est injecté en contournant la CSP du site, pour le seul contrôle.
-    context = browser.new_context(viewport={"width": 1440, "height": 900}, bypass_csp=True)
+    # Animations réduites : les sections s'affichent d'emblée (sinon, encore transparentes avant
+    # le défilement, elles fausseraient le calcul des contrastes).
+    context = browser.new_context(
+        viewport={"width": 1440, "height": 900}, bypass_csp=True, reduced_motion="reduce"
+    )
     page = context.new_page()
     for lang in ("en", "zh"):
         for slug in PAGES:
