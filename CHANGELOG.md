@@ -8,6 +8,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté — Captures et contenus en anglais (ADR-027 décision 12, 23/10)
+- Textes écrits par le serveur (corrélations, règles et résultats de chasse, recommandations
+  de réponse, chronologie des incidents, jeu de démonstration) dans la langue de l'instance :
+  français par défaut, anglais dès que `DEFAULT_LANGUAGE` vaut une autre langue.
+- Préproduction en anglais : captures principales entièrement en anglais (interface et
+  données), vue d'ensemble et triage aussi capturés en français, allemand, espagnol, chinois.
+
 ### Ajouté — Langue selon le pays, interface multilingue (ADR-027, 23/10)
 - `GET /api/v1/locale` (public) : langue du visiteur d'après le **pays** de son adresse IP
   (base DB-IP Lite locale, aucun service tiers), ou d'après `INSTANCE_COUNTRY` sur un réseau

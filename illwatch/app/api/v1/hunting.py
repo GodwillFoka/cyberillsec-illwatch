@@ -145,8 +145,8 @@ async def rules(_: CurrentUser) -> list[RuleRead]:
     return [
         RuleRead(
             id=r.id,
-            name=r.name,
-            description=r.description,
+            name=r.label(),
+            description=r.summary(),
             severity=r.severity,
             version=r.version,
             changes=list(r.changes),

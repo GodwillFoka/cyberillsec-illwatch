@@ -42,6 +42,7 @@ from illwatch.shared.enums import (
     SocTier,
     UserRole,
 )
+from illwatch.shared.server_text import server_language, tr
 
 MAX_TITLE_LENGTH = 200
 SEVERITY_ORDER = {Severity.CRITICAL: 4, Severity.HIGH: 3, Severity.MEDIUM: 2, Severity.LOW: 1}
@@ -79,6 +80,25 @@ TIER_ROLE = {
     SocTier.L2: "investigation",
     SocTier.L3: "expertise et ingénierie de détection",
 }
+# Libellés anglais (instance non francophone, ADR-027 décision 12).
+STATUS_LABELS_EN: dict[IncidentStatus, str] = {
+    IncidentStatus.NOUVEAU: "New",
+    IncidentStatus.ANALYSE: "Analysis",
+    IncidentStatus.CONFINEMENT: "Containment",
+    IncidentStatus.ERADICATION: "Eradication",
+    IncidentStatus.RECUPERATION: "Recovery",
+    IncidentStatus.CLOTURE: "Closed",
+}
+INDICATOR_LABELS_EN = {**INDICATOR_LABELS, "DOMAIN": "domain", "EMAIL": "email", "NETWORK": "range"}
+TIER_ROLE_EN = {
+    SocTier.L1: "triage",
+    SocTier.L2: "investigation",
+    SocTier.L3: "expertise and detection engineering",
+}
+
+
+def _status(status: IncidentStatus) -> str:
+    return tr(STATUS_LABELS[status], STATUS_LABELS_EN[status])
 
 
 class IncidentNotFoundError(LookupError):
@@ -259,7 +279,10 @@ async def create_incident(
         _event(
             incident,
             IncidentEventType.CREATED,
-            f"Incident ouvert, sévérité {incident.severity}.",
+            tr(
+                f"Incident ouvert, sévérité {incident.severity}.",
+                f"Incident opened, severity {incident.severity}.",
+            ),
             author_id,
             to_status=IncidentStatus.NOUVEAU,
         )
@@ -289,11 +312,11 @@ async def transition(
     validate_transition(current, target, closure_summary=closure_summary)
 
     incident.status = target
-    message = f"{STATUS_LABELS[current]} → {STATUS_LABELS[target]}"
+    message = f"{_status(current)} → {_status(target)}"
     if target is IncidentStatus.CLOTURE:
         incident.closure_summary = (closure_summary or "").strip()
         incident.closed_at = _now()
-        message += f". Résumé de clôture : {incident.closure_summary}"
+        message += tr(". Résumé de clôture : ", ". Closure summary: ") + incident.closure_summary
     if note and note.strip():
         message += f". {note.strip()}"
     session.add(
@@ -339,10 +362,12 @@ async def assign(
     incident = await get_incident(session, incident_id)
     _ensure_open(incident)
     if assignee is None:
-        message = "Incident désassigné."
+        message = tr("Incident désassigné.", "Incident unassigned.")
     else:
         user = await _check_assignee(session, assignee)
-        message = f"Incident assigné à {user.username}."
+        message = tr(
+            f"Incident assigné à {user.username}.", f"Incident assigned to {user.username}."
+        )
     incident.assigned_to = assignee
     session.add(_event(incident, IncidentEventType.ASSIGNED, message, author_id))
     await session.flush()
@@ -378,7 +403,10 @@ async def escalate(
         _event(
             incident,
             IncidentEventType.ESCALATED,
-            f"Escalade {current} → {wanted} ({TIER_ROLE[wanted]}). Motif : {text[:2000]}",
+            tr(
+                f"Escalade {current} → {wanted} ({TIER_ROLE[wanted]}). Motif : {text[:2000]}",
+                f"Escalation {current} → {wanted} ({TIER_ROLE_EN[wanted]}). Reason: {text[:2000]}",
+            ),
             author_id,
         )
     )
@@ -418,12 +446,16 @@ async def attach_indicator(
     incident.indicators.append(
         IncidentIndicator(indicator_id=indicator.id, added_by=author_id, added_at=_now())
     )
-    kind = INDICATOR_LABELS.get(str(indicator.type), str(indicator.type))
+    labels = INDICATOR_LABELS if server_language() == "fr" else INDICATOR_LABELS_EN
+    kind = labels.get(str(indicator.type), str(indicator.type))
     session.add(
         _event(
             incident,
             IncidentEventType.IOC_ATTACHED,
-            f"Indicateur associé : {kind} {indicator.value}",
+            tr(
+                f"Indicateur associé : {kind} {indicator.value}",
+                f"Indicator attached: {kind} {indicator.value}",
+            ),
             author_id,
         )
     )
@@ -443,13 +475,16 @@ async def attach_cve(
     if any(link.cve_id == cve.id for link in incident.cves):
         return False
     incident.cves.append(IncidentCVE(cve_id=cve.id, added_by=author_id, added_at=_now()))
-    score = f"{float(cve.composite_risk_score):.1f}".replace(".", ",")
+    score = f"{float(cve.composite_risk_score):.1f}"
     priority = PRIORITY_LABELS.get(str(cve.priority), str(cve.priority))
     session.add(
         _event(
             incident,
             IncidentEventType.CVE_ATTACHED,
-            f"CVE associée : {cve.id} (score {score}, {priority})",
+            tr(
+                f"CVE associée : {cve.id} (score {score.replace('.', ',')}, {priority})",
+                f"CVE attached: {cve.id} (score {score}, {priority})",
+            ),
             author_id,
         )
     )

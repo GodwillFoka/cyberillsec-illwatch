@@ -6,10 +6,11 @@ remplace par le référentiel complet. ATT&CK® © The MITRE Corporation.
 """
 
 from illwatch.modules.attack.stix import Actor, AttackData, Technique
+from illwatch.shared.server_text import tr
 
 
 def demo_attack_data() -> AttackData:
-    data = AttackData(version="extrait de démonstration")
+    data = AttackData(version=tr("extrait de démonstration", "demonstration extract"))
     for technique in (
         Technique("T1190", "Exploit Public-Facing Application", ["initial-access"], False),
         Technique("T1486", "Data Encrypted for Impact", ["impact"], False),
@@ -35,14 +36,20 @@ def demo_attack_data() -> AttackData:
         "malware",
         "QakBot",
         ["Pinkslipbot", "QBot", "QuackBot"],
-        "Cheval de Troie bancaire devenu chargeur d'accès initial pour des rançongiciels.",
+        tr(
+            "Cheval de Troie bancaire devenu chargeur d'accès initial pour des rançongiciels.",
+            "Banking trojan turned initial-access loader for ransomware.",
+        ),
     )
     data.actors["G0102"] = Actor(
         "G0102",
         "group",
         "Wizard Spider",
         ["UNC1878", "TEMP.MixMaster", "Grim Spider"],
-        "Groupe criminel à motivation financière, opérateur des rançongiciels Ryuk et Conti.",
+        tr(
+            "Groupe criminel à motivation financière, opérateur des rançongiciels Ryuk et Conti.",
+            "Financially motivated criminal group, operator of the Ryuk and Conti ransomware.",
+        ),
     )
     data.uses |= {
         ("S0650", "T1566.001"),

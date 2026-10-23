@@ -35,7 +35,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.models import CVE, Asset, CollectorState, CorrelatedEvent, Indicator
 from illwatch.modules.correlation.confidence import compute_confidence, source_reliabilities
-from illwatch.modules.correlation.versions import VERDICT_LABEL, assess, platforms
+from illwatch.modules.correlation.versions import VERDICT_LABEL, VERDICT_LABEL_EN, assess, platforms
 from illwatch.modules.cve_tracker.scoring import classify_priority
 from illwatch.modules.enrichment.lookup import enrich_ip
 from illwatch.modules.threat_feeds.indicators import is_active_clause
@@ -46,6 +46,7 @@ from illwatch.shared.enums import (
     RiskPriority,
     Severity,
 )
+from illwatch.shared.server_text import tr
 
 CORRELATION_STATE = "correlation"
 
@@ -170,9 +171,12 @@ async def _cve_findings(session: AsyncSession, asset: Asset) -> list[Finding]:
         signals = [
             label
             for flag, label in (
-                (cve.is_kev, "catalogue KEV"),
-                (cve.has_public_exploit, "exploit public"),
-                (cve.has_ransomware_campaign, "campagnes de rançongiciel"),
+                (cve.is_kev, tr("catalogue KEV", "KEV catalogue")),
+                (cve.has_public_exploit, tr("exploit public", "public exploit")),
+                (
+                    cve.has_ransomware_campaign,
+                    tr("campagnes de rançongiciel", "ransomware campaigns"),
+                ),
             )
             if flag
         ]
@@ -180,7 +184,10 @@ async def _cve_findings(session: AsyncSession, asset: Asset) -> list[Finding]:
             Finding(
                 rule=rule,
                 asset=asset,
-                title=f"{cve.id} touche {asset.name} ({product})",
+                title=tr(
+                    f"{cve.id} touche {asset.name} ({product})",
+                    f"{cve.id} affects {asset.name} ({product})",
+                ),
                 signal=float(cve.composite_risk_score),
                 cve_id=cve.id,
                 detail={
@@ -192,7 +199,9 @@ async def _cve_findings(session: AsyncSession, asset: Asset) -> list[Finding]:
                     "version": asset.version,
                     "platform": asset.platform,
                     "version_check": verdict,
-                    "version_label": VERDICT_LABEL.get(verdict, verdict),
+                    "version_label": tr(
+                        VERDICT_LABEL.get(verdict, verdict), VERDICT_LABEL_EN.get(verdict, verdict)
+                    ),
                     "version_platforms": (
                         platforms(product, cve.affected) if verdict == "conditionnel" else None
                     ),
@@ -276,9 +285,17 @@ async def _ioc_findings(
         if inside:
             detail["address"] = inside
         title = (
-            f"{inside} ({asset.name}) est dans la plage {ioc.value}, indicateur de compromission"
+            tr(
+                f"{inside} ({asset.name}) est dans la plage {ioc.value}, "
+                "indicateur de compromission",
+                f"{inside} ({asset.name}) is inside the range {ioc.value}, "
+                "an indicator of compromise",
+            )
             if inside
-            else f"{ioc.value} ({asset.name}) figure dans un indicateur de compromission"
+            else tr(
+                f"{ioc.value} ({asset.name}) figure dans un indicateur de compromission",
+                f"{ioc.value} ({asset.name}) appears in an indicator of compromise",
+            )
         )
         found.append(
             Finding(
