@@ -1,12 +1,13 @@
-# Site de documentation ILL Watch — publié sur GitHub Pages par .github/workflows/docs.yml
+# Site de documentation ILL Watch — publié par GitLab Pages (job « pages », sous /docs/ du site)
+# et par GitHub Pages (.github/workflows/docs.yml)
 # Aperçu local : pip install "mkdocs-material>=9.5,<10" && python scripts/docs_prepare.py && mkdocs serve
 site_name: ILL Watch — Documentation
 site_description: Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)
 site_author: Godwill FOKA
 site_url: https://godwillfoka.github.io/cyberillsec-illwatch/
-repo_url: https://github.com/GodwillFoka/cyberillsec-illwatch
+repo_url: https://gitlab.com/GodwillFoka/cyberillsec-illwatch
 repo_name: GodwillFoka/cyberillsec-illwatch
-edit_uri: edit/main/docs/
+edit_uri: -/edit/main/docs/
 copyright: © 2026 CYBERILL · Licence MIT
 
 docs_dir: docs

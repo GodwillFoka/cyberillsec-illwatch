@@ -97,6 +97,24 @@ solution, sur le même serveur.
     témoignage tant qu'il n'en existe pas de réels. Les animations respectent
     `prefers-reduced-motion` et le contenu reste entier sans JavaScript.
 
+14. **Site complet et publication** (décision du 23/10/2026, réponses de Godwill FOKA) :
+    - **GitLab seul** comme dépôt public : tous les liens du site (code, versions, sécurité,
+      demande de démo) mènent à GitLab ; le projet GitLab doit être rendu public. La
+      documentation et le site sont publiés par GitLab Pages (`<pages>/` et `<pages>/docs/`).
+    - **Pages** Plateforme, Sécurité, Tarifs, À propos, Démonstration, Impressum,
+      Datenschutz, dans les cinq langues ; l'Impressum est rempli depuis
+      `Website/src/data/legal.json` et la construction publique (`ILLWATCH_SITE_PUBLIC=1`)
+      échoue tant qu'il manque un champ obligatoire.
+    - **Prix arbitraires et indicatifs** (Pilote dès 4 900 €, Accompagnement dès 790 €/mois),
+      affichés comme « en phase d'évaluation » ; prix définitifs à fixer après les premiers
+      pilotes (tâche à venir, `Website/ROADMAP.md`).
+    - **Demande de démonstration traitée par l'application** : `POST /api/v1/demo-requests`
+      public (débit limité par IP sans l'enregistrer, plafond quotidien, champ piège,
+      consentement daté), suivi par les administrateurs (journal d'audit), purge à 12 mois.
+      Caddy ne relaie vers l'API, sur le domaine du site, que cette route et `/langue`.
+    - **Qualité** : chaque page contrôlée dans les cinq langues en grand écran et sur téléphone
+      (débordement, console, CSP), accessibilité WCAG 2.2 AA par axe-core en CI.
+
 ## Conséquences
 
 - Positif : site rapide partout dans le monde, sans surface d'attaque côté dépendances,

@@ -96,12 +96,24 @@ Caddy seulement ; `Accept-Language` borné et validé ; recherches simultanées 
 | Lot | Contenu | Critère de sortie |
 |---|---|---|
 | **S0 Cadrage** ✅ | publics, messages, arborescence, ADR-027 | ADR accepté — **22/10** |
-| **S1 Fondations** 🟡 | `Website/`, générateur, 5 langues, détection, jetons, accueil, simulateur, CI « Site web » | construction et contrôles verts en CI, captures de l'accueil dans les 5 langues |
-| **S2 Contenu** | pages Plateforme, Cas d'usage, Sécurité, Feuille de route, À propos, légal | toutes les pages dans les 5 langues, aucune clé manquante, relecture native |
-| **S3 Interactivité** | visite guidée, explorateur ATT&CK, exemple TAXII, schéma animé, chiffres quotidiens | chaque module testé (`node --test`), dégradé sans JavaScript |
-| **S4 Contact** | demande de démo traitée par l'application (point d'entrée dédié, limité en débit), consentement, mesure d'audience sans cookie | demande reçue de bout en bout, aucune donnée inutile conservée |
-| **S5 Qualité** | WCAG 2.2 AA, performance, référencement multilingue, en-têtes de sécurité | Lighthouse ≥ 95, accueil < 500 Ko, 0 violation CSP, 0 lien mort |
-| **S6 Mise en ligne** | domaine, Caddy (site + application), détection serveur par IP | site servi sur le VPS, SSL Labs ≥ A, redirection constatée depuis 5 pays |
+| **S1 Fondations** ✅ | `Website/`, générateur, 5 langues, détection, jetons, accueil, simulateur, CI « Site web » | construction et contrôles verts en CI, captures de l'accueil dans les 5 langues — **23/10** |
+| **S2 Contenu** 🟡 | pages Plateforme, Sécurité, Tarifs, À propos, Démonstration, Impressum, Datenschutz (5 langues) | **livré le 23/10** ; reste : relecture native, données de l'Impressum (`src/data/legal.json`), relecture juridique |
+| **S3 Interactivité** 🟡 | fonctionnement animé, explorateur ATT&CK, exemple TAXII, onglets, chiffres animés | **livré le 23/10**, testé dans le navigateur par la CI, dégradé sans JavaScript ; reste : chiffres quotidiens générés |
+| **S4 Contact** ✅ | `POST /api/v1/demo-requests` (débit limité, champ piège, consentement, aucune IP), onglet d'administration, purge à 12 mois | demande reçue de bout en bout (test API + formulaire contre une API factice en CI) — **23/10** |
+| **S5 Qualité** 🟡 | WCAG 2.2 AA (axe-core en CI), en-têtes de sécurité, 0 débordement, 0 lien mort, plan du site multilingue | reste : Lighthouse ≥ 95 mesuré |
+| **S6 Mise en ligne** 🟡 | GitLab Pages (site + documentation) en attendant le domaine ; Caddy sert le site à côté de l'application (`ILLWATCH_SITE_DOMAIN`, `scripts/build-site.sh`) | reste : domaine, projet GitLab public, SSL Labs ≥ A, redirection constatée depuis 5 pays |
+
+### Tâches à venir (agenda)
+
+- **Prix définitifs** (noté le 23/10/2026 à la demande de Godwill FOKA) : les prix affichés
+  (Pilote dès 4 900 €, Accompagnement dès 790 €/mois) sont **arbitraires et indicatifs**, signalés
+  « en phase d'évaluation » sur le site. Les fixer à l'issue des premiers pilotes, puis mettre à
+  jour `offers.*_price` dans les cinq dictionnaires et retirer `offers.indicative`.
+- **Mentions légales** : compléter `src/data/legal.json` (adresse, e-mail, hébergeur) ;
+  `ILLWATCH_SITE_PUBLIC=1` refuse la publication tant qu'un champ manque. Relecture juridique.
+- **Projet GitLab public** et `main` poussé sur GitLab : tous les liens du site y mènent.
+- **Adresse commerciale** : `ILLWATCH_SITE_CONTACT` si le formulaire n'est pas servi.
+- **Relecture native** des cinq langues (priorité : chinois, espagnol, allemand juridique).
 
 ## 7. Points de vigilance
 

@@ -36,6 +36,16 @@ die() { printf '\033[31m✘ %s\033[0m\n' "$*" >&2; exit 1; }
 
 need_root() { [[ $EUID -eq 0 ]] || die "à lancer en root (sudo)."; }
 
+# Site de présentation (ADR-027, lot S6) : construit si ILLWATCH_SITE_DOMAIN est renseigné.
+site_build() {
+  local site
+  site=$(grep -E '^ILLWATCH_SITE_DOMAIN=' "${DIR}/.env" 2>/dev/null | cut -d= -f2 || true)
+  if [[ -n "${site}" ]]; then
+    step "Site de présentation (${site})"
+    (cd "${DIR}" && ILLWATCH_SITE_DOMAIN="${site}" ./scripts/build-site.sh)
+  fi
+}
+
 install_docker() {
   if command -v docker >/dev/null && docker compose version >/dev/null 2>&1; then
     ok "Docker déjà installé ($(docker --version | cut -d, -f1))"
@@ -130,6 +140,7 @@ cmd_install() {
   step "DNS"
   dns_check "${domain}"
   step "Démarrage (construction de l'image : quelques minutes)"
+  site_build
   docker compose up -d --build
   docker compose ps
   step "Compte administrateur"
@@ -192,6 +203,7 @@ cmd_update() {
   step "Code et image"
   git pull --ff-only -q
   write_env "$(grep -E '^ILLWATCH_DOMAIN=' "${DIR}/.env" | cut -d= -f2)"
+  site_build
   docker compose up -d --build
   step "Contrôles"
   cmd_check ""

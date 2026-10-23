@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import {
   BASE,
   DEFAULT_LANG,
+  DEMO_ENDPOINT,
   GEO_ENDPOINT,
   HOME_BUDGET,
   INSTANCE_COUNTRY,
@@ -21,6 +22,7 @@ import {
   REFERENCE_LANG,
   SITE_URL,
 } from "./src/config.mjs";
+import { PAGES } from "./src/pages.mjs";
 import { esc, homePage, notFoundPage, rootPage } from "./src/templates.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -34,6 +36,25 @@ const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const dictionaries = Object.fromEntries(LANGS.map((l) => [l.code, readJson(join(src, "i18n", `${l.code}.json`))]));
 const facts = readJson(join(src, "data", "facts.json"));
 const countryLanguages = readJson(join(src, "data", "country-languages.json")).countries;
+const legal = readJson(join(src, "data", "legal.json"));
+const legalMissing = legal.required.filter((key) => !String(legal[key] || "").trim());
+const PUBLIC = process.env.ILLWATCH_SITE_PUBLIC === "1";
+if (legalMissing.length) {
+  const message = `mentions légales incomplètes (src/data/legal.json) : ${legalMissing.join(", ")}`;
+  if (PUBLIC) problems.push(`${message} — publication publique refusée`);
+  else console.warn(`⚠ ${message} (pages légales marquées noindex)`);
+}
+
+// Formulaire de démonstration : adresse de l'API (même origine ou absolue en HTTPS).
+let demoEndpoint = "";
+const connect = [];
+if (DEMO_ENDPOINT) {
+  if (DEMO_ENDPOINT.startsWith("/")) demoEndpoint = DEMO_ENDPOINT;
+  else if (/^https:\/\/[^/]+\//.test(DEMO_ENDPOINT)) {
+    demoEndpoint = DEMO_ENDPOINT;
+    connect.push(new URL(DEMO_ENDPOINT).origin);
+  } else problems.push(`ILLWATCH_SITE_DEMO_ENDPOINT invalide (chemin « /… » ou https://…) : ${DEMO_ENDPOINT}`);
+}
 
 // Langue de l'instance : explicite, sinon celle du pays de l'instance.
 const supportedCodes = LANGS.map((l) => l.code);
@@ -93,7 +114,7 @@ function translator(code) {
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(join(dist, "assets"), { recursive: true });
 
-const site = { url: SITE_URL, langs: LANGS, links: LINKS, geo: GEO_ENDPOINT, defaultLang: DEFAULT_LANG, instanceLang };
+const site = { url: SITE_URL, langs: LANGS, links: LINKS, geo: GEO_ENDPOINT, defaultLang: DEFAULT_LANG, instanceLang, connect, demoEndpoint };
 const asset = (path) => `${BASE}assets/${path}`;
 const write = (path, content) => {
   mkdirSync(dirname(join(dist, path)), { recursive: true });
@@ -106,6 +127,9 @@ for (const lang of LANGS) {
   const dateFormat = new Intl.DateTimeFormat(lang.locale, { dateStyle: "long", timeZone: "UTC" });
   const ctx = {
     lang,
+    path: "",
+    legal,
+    legalComplete: legalMissing.length === 0,
     site,
     base: BASE,
     asset,
@@ -116,19 +140,23 @@ for (const lang of LANGS) {
     date: (iso) => esc(dateFormat.format(new Date(`${iso}T00:00:00Z`))),
   };
   write(`${lang.code}/index.html`, homePage(ctx));
+  for (const [slug, render] of PAGES) write(`${lang.code}/${slug}index.html`, render({ ...ctx, path: slug }));
 }
 
-const neutral = { site, base: BASE, asset, lang: null };
+const neutral = { site, base: BASE, asset, lang: null, path: "" };
 write("index.html", rootPage(neutral, dictionaries));
 write("404.html", notFoundPage(neutral, dictionaries));
 
 write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}${BASE}sitemap.xml\n`);
-const alternates = LANGS.map((l) => `<xhtml:link rel="alternate" hreflang="${l.html}" href="${SITE_URL}${BASE}${l.code}/"/>`).join("");
+const SLUGS = ["", ...PAGES.map(([slug]) => slug).filter((slug) => !["legal/", "privacy/"].includes(slug))];
 write(
   "sitemap.xml",
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${LANGS.map(
-    (l) => `  <url><loc>${SITE_URL}${BASE}${l.code}/</loc>${alternates}<xhtml:link rel="alternate" hreflang="x-default" href="${SITE_URL}${BASE}"/></url>`,
-  ).join("\n")}\n</urlset>\n`,
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${SLUGS.flatMap((slug) => {
+    const alternates = LANGS.map((l) => `<xhtml:link rel="alternate" hreflang="${l.html}" href="${SITE_URL}${BASE}${l.code}/${slug}"/>`).join("");
+    return LANGS.map(
+      (l) => `  <url><loc>${SITE_URL}${BASE}${l.code}/${slug}</loc>${alternates}<xhtml:link rel="alternate" hreflang="x-default" href="${SITE_URL}${BASE}"/></url>`,
+    );
+  }).join("\n")}\n</urlset>\n`,
 );
 
 // ── Ressources ───────────────────────────────────────────────────────────────────────────

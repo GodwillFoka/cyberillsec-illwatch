@@ -196,7 +196,10 @@ async def discovery(request: Request, _: TaxiiUser) -> JSONResponse:
     return taxii_response(
         {
             "title": "ILL Watch — TAXII 2.1",
-            "description": "Renseignement sur les menaces partagé par ILL Watch (CyberillSec).",
+            "description": tr(
+                "Renseignement sur les menaces partagé par ILL Watch (CyberillSec).",
+                "Threat intelligence shared by ILL Watch (CyberillSec).",
+            ),
             "contact": "CyberillSec",
             "default": root,
             "api_roots": [root],
@@ -209,7 +212,10 @@ async def api_root(_: TaxiiUser) -> JSONResponse:
     return taxii_response(
         {
             "title": "ILL Watch",
-            "description": "Indicateurs et campagnes au format STIX 2.1 (lecture seule).",
+            "description": tr(
+                "Indicateurs et campagnes au format STIX 2.1 (lecture seule).",
+                "Indicators and campaigns in STIX 2.1 format (read only).",
+            ),
             "versions": [TAXII_MEDIA],
             "max_content_length": MAX_CONTENT_LENGTH,
         }
