@@ -39,6 +39,7 @@ from illwatch.app.models import (
 from illwatch.modules.correlation.events import open_count as correlation_open_count
 from illwatch.modules.threat_feeds.indicators import is_active_clause
 from illwatch.shared.enums import FeedStatus, IncidentStatus, RiskPriority
+from illwatch.shared.server_text import tr
 
 RECENT_LIMIT = 200
 EXPORT_CHUNK = 1000
@@ -295,7 +296,7 @@ async def recent_activity(
             "alert",
             _utc(a.created_at) or moment,
             str(a.id),
-            f"Alerte {a.cve_id} — score {float(a.score):.1f}",
+            tr("Alerte", "Alert") + f" {a.cve_id} — score {float(a.score):.1f}",
             a.priority,
         )
         for a in alerts.scalars()

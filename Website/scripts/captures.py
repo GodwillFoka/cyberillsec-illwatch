@@ -49,6 +49,11 @@ def main(base: str, out: Path) -> int:
                     page.locator("[data-preset]").nth(2).click()
                     if page.locator('[data-out="floor"]').is_hidden():
                         problems.append(f"{lang} : simulateur, plancher KEV non affiché")
+                    # Onglets des fonctionnalités : un seul panneau visible, celui choisi.
+                    page.locator("#tab-hunt").click()
+                    visible = page.locator('[role="tabpanel"]:visible')
+                    if visible.count() != 1 or visible.first.get_attribute("id") != "panel-hunt":
+                        problems.append(f"{lang} : onglets des fonctionnalités inopérants")
                 page.screenshot(path=str(out / f"{lang}-{name}.png"), full_page=True)
                 problems += [f"{lang} {name} : console : {e}" for e in errors]
                 context.close()

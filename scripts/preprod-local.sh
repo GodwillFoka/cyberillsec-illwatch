@@ -203,7 +203,7 @@ cmd_check() {
     local reader=$!
     sleep 3
     pcurl -o /dev/null -X POST -H "Authorization: Bearer ${tok}" -H 'Content-Type: application/json' \
-      -d '{"title":"Contrôle SSE préproduction","description":"Créé par preprod-local.sh check","severity":"LOW"}' \
+      -d '{"title":"Pre-production SSE check","description":"Created by preprod-local.sh check","severity":"LOW"}' \
       "${BASE}/api/v1/incidents"
     sleep 5
     kill "${reader}" 2>/dev/null || true

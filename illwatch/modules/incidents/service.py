@@ -510,13 +510,22 @@ async def open_from_alert(
     priority = RiskPriority(alert.priority)
     sla = remediation_sla_hours(priority)
     description = (
-        f"Alerte ILL Watch : {alert.cve_id} a franchi le seuil de risque "
-        f"(score {float(alert.score):.1f}/100, {priority}, remédiation sous {sla} h, "
-        f"déclencheur : {alert.reason}).\n\n{cve.description if cve else ''}"
+        tr(
+            f"Alerte ILL Watch : {alert.cve_id} a franchi le seuil de risque "
+            f"(score {float(alert.score):.1f}/100, {priority}, remédiation sous {sla} h, "
+            f"déclencheur : {alert.reason}).",
+            f"ILL Watch alert: {alert.cve_id} crossed the risk threshold "
+            f"(score {float(alert.score):.1f}/100, {priority}, remediation within {sla} h, "
+            f"trigger: {alert.reason}).",
+        )
+        + f"\n\n{cve.description if cve else ''}"
     )
     incident = await create_incident(
         session,
-        title=f"{alert.cve_id} — remédiation {priority} (score {float(alert.score):.0f})",
+        title=tr(
+            f"{alert.cve_id} — remédiation {priority} (score {float(alert.score):.0f})",
+            f"{alert.cve_id} — {priority} remediation (score {float(alert.score):.0f})",
+        ),
         description=description,
         severity=PRIORITY_TO_SEVERITY[priority],
         author_id=author_id,

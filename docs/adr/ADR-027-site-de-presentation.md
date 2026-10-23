@@ -88,6 +88,15 @@ solution, sur le même serveur.
     pas réécrit. La préproduction tourne en anglais (`DEFAULT_LANGUAGE=en`) : les captures
     principales — celles du site — sont entièrement en anglais, interface et données.
 
+13. **Un site qui vend** (décision du 23/10/2026, sur le modèle de github.com/home et
+    about.gitlab.com) : héros animé avec la capture et l'appel « Demander une démo », standards
+    en défilement, fonctionnalités en onglets illustrées, chiffres constatés animés, solutions
+    par équipe, obligations (NIS 2, DORA, RGPD, ISO 27001) sans promesse de certification,
+    comparaison par catégories d'outils (aucun concurrent nommé), offres Communauté / Pilote /
+    Accompagnement **sur demande** (aucun prix publié), FAQ. Pas de logo client ni de
+    témoignage tant qu'il n'en existe pas de réels. Les animations respectent
+    `prefers-reduced-motion` et le contenu reste entier sans JavaScript.
+
 ## Conséquences
 
 - Positif : site rapide partout dans le monde, sans surface d'attaque côté dépendances,

@@ -19,6 +19,7 @@ from illwatch.app.models import AttackActor, AttackTechnique, AttackUse
 from illwatch.modules.attack import service
 from illwatch.modules.attack.campaigns import campaigns_of
 from illwatch.modules.attack.catalog import actor_url, technique_url
+from illwatch.shared.server_text import tr
 
 router = APIRouter(prefix="/attack", tags=["MITRE ATT&CK"])
 
@@ -85,9 +86,12 @@ async def attack_context(
     refs = await service.technique_refs(session, ids)
     campaigns = await campaigns_of(session, [i for i in indicator_ids if i is not None])
     # Attribution par l'infrastructure d'abord (campagne → acteur), puis par le nom cité.
-    actors = await service.actor_refs(
-        session, [(c.actor_id, f"campagne « {c.name} »") for c in campaigns if c.actor_id], memo
-    )
+    cited = [
+        (c.actor_id, tr(f"campagne « {c.name} »", f"campaign “{c.name}”"))
+        for c in campaigns
+        if c.actor_id
+    ]
+    actors = await service.actor_refs(session, cited, memo)
     seen = {a.id for a in actors}
     actors += [a for a in await service.actors_in(session, texts, memo, index) if a.id not in seen]
     return AttackContextRead(

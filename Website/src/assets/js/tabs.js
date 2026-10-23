@@ -1,9 +1,8 @@
-// Visite des écrans : sans JavaScript, toutes les captures sont listées ; avec, elles deviennent
-// des onglets accessibles (flèches gauche/droite, Début, Fin).
-const tour = document.querySelector("[data-tour]");
-if (tour) {
-  const tabs = [...tour.querySelectorAll('[role="tab"]')];
-  const panels = [...tour.querySelectorAll('[role="tabpanel"]')];
+// Onglets accessibles (fonctionnalités de l'accueil). Sans JavaScript, tous les panneaux sont
+// affichés l'un sous l'autre ; avec, ils deviennent des onglets (flèches, Début, Fin).
+for (const root of document.querySelectorAll("[data-tabs]")) {
+  const tabs = [...root.querySelectorAll('[role="tab"]')];
+  const panels = [...root.querySelectorAll('[role="tabpanel"]')];
 
   function select(index, focus = false) {
     tabs.forEach((tab, i) => {
@@ -11,6 +10,7 @@ if (tour) {
       tab.setAttribute("aria-selected", String(active));
       tab.tabIndex = active ? 0 : -1;
       panels[i].hidden = !active;
+      panels[i].classList.toggle("is-active", active);
     });
     if (focus) tabs[index].focus();
   }
@@ -26,6 +26,6 @@ if (tour) {
       }
     });
   });
-  tour.classList.add("is-live");
+  root.classList.add("is-live");
   select(0);
 }

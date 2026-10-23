@@ -8,8 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app import config
 from illwatch.app.config import Settings
-from illwatch.app.models import CVE, Asset, CorrelatedEvent, Incident, IncidentEvent, Indicator
+from illwatch.app.models import (
+    CVE,
+    Asset,
+    CorrelatedEvent,
+    Incident,
+    IncidentEvent,
+    Indicator,
+    ThreatFeed,
+)
+from illwatch.modules.foundation import demo
 from illwatch.modules.foundation.demo import DEMO_TAG, DEMO_TAG_EN, load_demo_data
+from illwatch.modules.foundation.seed import REFERENCE_FEEDS, seed_reference_feeds
 from illwatch.modules.threat_hunting.rules import CATALOG
 from illwatch.shared.server_text import server_language, tr
 
@@ -41,34 +51,70 @@ def test_regles_de_chasse_en_anglais(monkeypatch: pytest.MonkeyPatch) -> None:
     assert CATALOG[0].label() == "Relais de sortie Tor"
 
 
+async def _demo(monkeypatch: pytest.MonkeyPatch, session: AsyncSession, lang: str | None) -> None:
+    """Charge la démonstration même si des tests précédents ont laissé des données en base."""
+
+    async def always_empty(_: AsyncSession) -> bool:
+        return True
+
+    monkeypatch.setattr(demo, "_empty", always_empty)
+    await load_demo_data(session, settings=_use(monkeypatch, lang), now=NOW)
+
+
 async def test_demonstration_en_anglais(
     monkeypatch: pytest.MonkeyPatch, db_session: AsyncSession
 ) -> None:
-    settings = _use(monkeypatch, "en")
-    await load_demo_data(db_session, settings=settings, now=NOW)
+    await _demo(monkeypatch, db_session, "en")
 
-    titles = list((await db_session.scalars(select(Incident.title))).all())
+    ours = Incident.title.like(f"%{DEMO_TAG_EN}")
+    titles = list((await db_session.scalars(select(Incident.title).where(ours))).all())
     assert "Ransomware: encryption in progress on SRV-FILES-02 [demo]" in titles
-    assert all(t.endswith(DEMO_TAG_EN) for t in titles)
-
+    assert len(titles) == 5
+    demo_assets = select(Asset.id).where(Asset.notes.like(f"%{DEMO_TAG_EN}"))
     texts = [
         *titles,
-        *(await db_session.scalars(select(IncidentEvent.message))).all(),
-        *(await db_session.scalars(select(CVE.description))).all(),
-        *(d for d in (await db_session.scalars(select(Indicator.description))).all() if d),
-        *(await db_session.scalars(select(Asset.name))).all(),
-        *(await db_session.scalars(select(CorrelatedEvent.title))).all(),
+        *(await db_session.scalars(select(IncidentEvent.message).join(Incident).where(ours))).all(),
+        *(
+            await db_session.scalars(select(CVE.description).where(CVE.id.like("CVE-2099-9%")))
+        ).all(),
+        *(
+            await db_session.scalars(
+                select(Indicator.description).where(Indicator.description.like(f"%{DEMO_TAG_EN}%"))
+            )
+        ).all(),
+        *(await db_session.scalars(select(Asset.name).where(Asset.id.in_(demo_assets)))).all(),
+        *(
+            await db_session.scalars(
+                select(CorrelatedEvent.title).where(CorrelatedEvent.asset_id.in_(demo_assets))
+            )
+        ).all(),
     ]
+    assert len(texts) > 40
     french = ("[démo]", "Incident ouvert", "Indicateur associé", "CVE associée", " touche ")
-    leaks = [t for t in texts if any(word in t for word in french)]
+    leaks = [t for t in texts if t and any(word in t for word in french)]
     assert not leaks, leaks[:5]
 
 
 async def test_demonstration_en_francais_par_defaut(
     monkeypatch: pytest.MonkeyPatch, db_session: AsyncSession
 ) -> None:
-    settings = _use(monkeypatch, None)
-    await load_demo_data(db_session, settings=settings, now=NOW)
-    titles = list((await db_session.scalars(select(Incident.title))).all())
+    await _demo(monkeypatch, db_session, None)
+    ours = Incident.title.like(f"%{DEMO_TAG}")
+    titles = list((await db_session.scalars(select(Incident.title).where(ours))).all())
     assert "Ransomware : chiffrement en cours sur SRV-FILES-02 [démo]" in titles
-    assert all(t.endswith(DEMO_TAG) for t in titles)
+
+
+async def test_sources_semees_sans_doublon_si_la_langue_change(
+    monkeypatch: pytest.MonkeyPatch, db_session: AsyncSession
+) -> None:
+    known = [f.name for f in REFERENCE_FEEDS] + [f.name_en for f in REFERENCE_FEEDS]
+    query = select(ThreatFeed.name).where(ThreatFeed.name.in_(known))
+    before = list((await db_session.scalars(query)).all())
+    _use(monkeypatch, "en")
+    await seed_reference_feeds(db_session)
+    _use(monkeypatch, None)
+    assert await seed_reference_feeds(db_session) == []
+    after = list((await db_session.scalars(query)).all())
+    assert len(after) == len(REFERENCE_FEEDS)
+    if not before:
+        assert "AlienVault OTX — subscribed pulses" in after
