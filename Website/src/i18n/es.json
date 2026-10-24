@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "ILLWATCH — Plataforma de código abierto de inteligencia de amenazas y SOC",
+    "title": "ILLWATCH | Plataforma de código abierto de inteligencia de amenazas y SOC",
     "description": "ILLWATCH recopila inteligencia de amenazas, clasifica las vulnerabilidades según el riesgo real, las cruza con sus activos y dirige la respuesta a incidentes. Código abierto, autoalojado, en un solo servidor."
   },
   "nav": {
@@ -25,7 +25,7 @@
     "eyebrow": "Plataforma de código abierto de inteligencia de amenazas y SOC",
     "title_a": "Convierta el ruido de las amenazas en",
     "title_b": "decisiones que importan.",
-    "lead": "ILLWATCH recopila inteligencia de amenazas, clasifica las vulnerabilidades según el riesgo real, las cruza con sus activos y dirige la respuesta a incidentes — en su propio servidor, sin coste de licencia.",
+    "lead": "ILLWATCH recopila inteligencia de amenazas, clasifica las vulnerabilidades según el riesgo real, las cruza con sus activos y dirige la respuesta a incidentes, en su propio servidor, sin coste de licencia.",
     "cta_demo": "Solicitar una demo",
     "cta_start": "Empezar gratis",
     "chips_label": "Lo esencial",
@@ -351,7 +351,7 @@
     "privacy_policy": "Política de privacidad"
   },
   "root": {
-    "title": "ILLWATCH — Elija su idioma",
+    "title": "ILLWATCH | Elija su idioma",
     "choose": "Elegir este idioma"
   },
   "notfound": {
@@ -509,7 +509,7 @@
     "story_p1": "Las plataformas comerciales de inteligencia de amenazas cuestan decenas de miles al año. Las alternativas de código abierto completas exigen una infraestructura pesada y un equipo para operarlas. Entre ambas, muchos SOC, CERT y organismos públicos trabajan con hojas de cálculo y copiar y pegar.",
     "story_p2": "ILLWATCH nació en 2026 para cerrar esa brecha: una plataforma, en un servidor, que hace el trabajo repetitivo de un SOC y deja las decisiones a los analistas.",
     "story_p3": "El proyecto es de código abierto y se guía por hitos medidos: un hito se cierra cuando sus criterios se verifican con datos reales, no cuando el código se fusiona.",
-    "founder_role": "Fundador y desarrollador principal — especialista en seguridad informática (SOC, SIEM, seguridad de redes, análisis forense)",
+    "founder_role": "Fundador y desarrollador principal, especialista en seguridad informática (SOC, SIEM, seguridad de redes, análisis forense)",
     "values_label": "Nuestros principios",
     "values_title": "Lo que guía nuestro trabajo",
     "measured_title": "Medido, no prometido",

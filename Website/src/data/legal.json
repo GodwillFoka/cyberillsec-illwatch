@@ -1,6 +1,6 @@
 {
-  "_comment": "Mentions légales (Impressum, § 5 DDG) et responsable du traitement (RGPD) — à compléter par l'éditeur du site avant la mise en ligne publique. Un champ vide s'affiche « à compléter » ; la construction publique (ILLWATCH_SITE_PUBLIC=1) échoue tant qu'un champ obligatoire est vide. Faire relire les textes par un juriste.",
-  "operator": "Godwill Foka — CYBERILL",
+  "_comment": "Mentions légales (Impressum, § 5 DDG) et responsable du traitement (RGPD), à compléter par l'éditeur du site avant la mise en ligne publique. Un champ vide s'affiche « à compléter » ; la construction publique (ILLWATCH_SITE_PUBLIC=1) échoue tant qu'un champ obligatoire est vide. Faire relire les textes par un juriste.",
+  "operator": "Godwill Foka, CYBERILL",
   "representative": "Godwill Foka",
   "street": "",
   "postcode_city": "",

@@ -22,6 +22,9 @@ La confiance d'un IOC (ADR-017) n'utilise pas l'échelle de gravité : jauge Sig
 
 ## Marque
 
+- **Ponctuation du site** : pas de tiret long (« — ») dans un texte visible (décision du
+  24/10/2026) ; virgule, deux-points ou point dans une phrase, « | » dans un titre de page.
+  La construction du site échoue si une page en contient.
 - **Nom** : « ILLWATCH », en un seul mot et en capitales (décision du 23/10/2026) ; jamais
   « ILL Watch », IllWatch ou Ill Watch dans un texte ; le dessin du logo (ILL + Watch) reste
   inchangé pour l'instant. Endossement :
