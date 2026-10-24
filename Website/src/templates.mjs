@@ -161,7 +161,7 @@ function footer(ctx) {
     <div class="wrap footer__legal">
       <p>${t("footer.privacy")}</p>
       <p class="footer__links"><a href="${href(ctx, "legal/")}">${t("footer.imprint")}</a><a href="${href(ctx, "privacy/")}">${t("footer.privacy_policy")}</a><a href="${site.links.license}">${t("footer.license")}</a></p>
-      <p>© 2026 CYBERILL — Godwill FOKA</p>
+      <p>© 2026 CYBERILL · Godwill FOKA</p>
     </div>
   </footer>`;
 }
@@ -383,7 +383,7 @@ function features(ctx) {
           <p>${t(`features.${key}_text`)}</p>
           <ul class="ticks">${[1, 2, 3].map((b) => `<li>${t(`features.${key}_b${b}`)}</li>`).join("")}</ul>
         </div>
-        ${frame(picture(ctx, file, `${t(`features.${key}_tab`, {}, false)} — ${t(`features.${key}_title`, {}, false)}`), "feature__shot")}
+        ${frame(picture(ctx, file, `${t(`features.${key}_tab`, {}, false)}: ${t(`features.${key}_title`, {}, false)}`), "feature__shot")}
       </div>`,
   ).join("");
   return `<section class="section" id="produit" aria-labelledby="produit-titre">
@@ -615,12 +615,12 @@ export function notFoundPage(ctx, dictionaries) {
   const blocks = ctx.site.langs
     .map((l) => {
       const d = dictionaries[l.code].notfound;
-      return `<p lang="${l.html}"><strong>${esc(d.title)}</strong> — ${esc(d.text)} <a href="${base}${l.code}/">${esc(d.back)}</a></p>`;
+      return `<p lang="${l.html}"><strong>${esc(d.title)}</strong> · ${esc(d.text)} <a href="${base}${l.code}/">${esc(d.back)}</a></p>`;
     })
     .join("");
   return `<!doctype html>
 <html lang="en">
-  ${head({ ...ctx, lang: null }, { title: "404 — ILLWATCH", description: dictionaries.en.notfound.text, path: "", alternates: false, noindex: true })}
+  ${head({ ...ctx, lang: null }, { title: "404 | ILLWATCH", description: dictionaries.en.notfound.text, path: "", alternates: false, noindex: true })}
   <body class="root">
   <main class="root__inner root__inner--404">
     <img src="${asset("img/illwatch-mark.svg")}" alt="" width="64" height="64">

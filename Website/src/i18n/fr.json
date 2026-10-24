@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "ILLWATCH — Plateforme open source de renseignement sur les menaces et de SOC",
+    "title": "ILLWATCH | Plateforme open source de renseignement sur les menaces et de SOC",
     "description": "ILLWATCH collecte le renseignement sur les menaces, classe les vulnérabilités selon le risque réel, les croise avec vos actifs et pilote la réponse aux incidents. Open source, auto-hébergé, sur un seul serveur."
   },
   "nav": {
@@ -25,7 +25,7 @@
     "eyebrow": "Plateforme open source de renseignement sur les menaces et de SOC",
     "title_a": "Transformez le bruit des menaces en",
     "title_b": "décisions qui comptent.",
-    "lead": "ILLWATCH collecte le renseignement sur les menaces, classe les vulnérabilités selon le risque réel, les croise avec vos actifs et pilote la réponse aux incidents — sur votre propre serveur, sans coût de licence.",
+    "lead": "ILLWATCH collecte le renseignement sur les menaces, classe les vulnérabilités selon le risque réel, les croise avec vos actifs et pilote la réponse aux incidents, sur votre propre serveur, sans coût de licence.",
     "cta_demo": "Demander une démo",
     "cta_start": "Démarrer gratuitement",
     "chips_label": "Points forts",
@@ -58,7 +58,7 @@
     "prioritize_b3": "Alerte dès qu'une CVE franchit votre seuil",
     "triage_tab": "Trier",
     "triage_title": "Une seule file, classée par risque",
-    "triage_text": "Chaque alerte arrive avec son score détaillé. Acquittez-la, ou ouvrez un incident en un clic — rien n'est recopié à la main.",
+    "triage_text": "Chaque alerte arrive avec son score détaillé. Acquittez-la, ou ouvrez un incident en un clic : rien n'est recopié à la main.",
     "triage_b1": "Mise à jour en temps réel",
     "triage_b2": "Détail du score sur chaque alerte",
     "triage_b3": "Incident ouvert en un clic",
@@ -98,7 +98,7 @@
   "platform": {
     "label": "Plateforme",
     "title": "Sept modules. Une plateforme. Une seule traçabilité.",
-    "lead": "Les modules partagent les mêmes données, la même échelle de gravité et le même historique — aucune recopie d'un outil à l'autre.",
+    "lead": "Les modules partagent les mêmes données, la même échelle de gravité et le même historique : aucune recopie d'un outil à l'autre.",
     "pipeline": "Chaîne de traitement",
     "feeds_title": "Flux de menaces",
     "feeds_text": "CSV, JSON, STIX 2.1, TAXII 2.1, AlienVault OTX, abuse.ch… Indicateurs normalisés, dédupliqués, avec leur provenance et un score de confiance.",
@@ -199,7 +199,7 @@
   "compare": {
     "label": "Pourquoi ILLWATCH",
     "title": "La puissance d'une plateforme commerciale, sans la dépendance",
-    "lead": "ILLWATCH réunit ce qui demande d'habitude plusieurs outils — et le garde sur votre infrastructure.",
+    "lead": "ILLWATCH réunit ce qui demande d'habitude plusieurs outils, et le garde sur votre infrastructure.",
     "criterion": "Critère",
     "col_illwatch": "ILLWATCH",
     "col_commercial": "Plateforme commerciale de renseignement",
@@ -302,7 +302,7 @@
     "support_b4": "Traitement prioritaire de vos demandes",
     "support_cta": "Nous contacter",
     "more": "Comparer les offres en détail",
-    "indicative": "Prix indicatifs, hors taxes — nos offres sont encore en phase d'évaluation et peuvent évoluer.",
+    "indicative": "Prix indicatifs, hors taxes. Nos offres sont encore en phase d'évaluation et peuvent évoluer.",
     "community_unit": "pour toujours, licence MIT",
     "pilot_unit": "forfait · 4 à 6 semaines",
     "support_unit": "par mois"
@@ -351,7 +351,7 @@
     "privacy_policy": "Politique de confidentialité"
   },
   "root": {
-    "title": "ILLWATCH — Choisissez votre langue",
+    "title": "ILLWATCH | Choisissez votre langue",
     "choose": "Choisir cette langue"
   },
   "notfound": {
@@ -370,7 +370,7 @@
     "s3_text": "Pays et système autonome hors ligne, confiance calculée d'après la fiabilité des sources.",
     "s4_text": "Indicateurs, CVE et actifs croisés version par version.",
     "s5_text": "Score P0 à P3 déterministe et expliqué, alerte au-delà de votre seuil.",
-    "s6_text": "Incident ouvert en un clic, escaladé, instruit, clos — tout est tracé.",
+    "s6_text": "Incident ouvert en un clic, escaladé, instruit, clos : tout est tracé.",
     "feeds_b1": "Neuf sources de référence préconfigurées, d'autres en quelques clics",
     "feeds_b2": "État de chaque source et historique de chaque collecte",
     "feeds_b3": "Clés d'API lues dans l'environnement, jamais stockées en base",
@@ -401,7 +401,7 @@
     "context": "Contexte seulement : campagnes et acteurs",
     "mitre": "La technique sur attack.mitre.org",
     "note": "ATT&CK® © The MITRE Corporation, reproduit avec autorisation. Extrait limité aux techniques rattachées aux règles de la version actuelle.",
-    "T1190": "Une vulnérabilité d'un produit exposé est exploitée. ILLWATCH alerte quand une CVE activement exploitée, ou dotée d'un exploit public, touche un produit de votre inventaire dans une version vulnérable — et la chasse signale les CVE exploitées sur vos actifs.",
+    "T1190": "Une vulnérabilité d'un produit exposé est exploitée. ILLWATCH alerte quand une CVE activement exploitée, ou dotée d'un exploit public, touche un produit de votre inventaire dans une version vulnérable, et la chasse signale les CVE exploitées sur vos actifs.",
     "T1566_001": "Pièces jointes piégées envoyées par courriel. Quand une campagne utilise cette technique (QakBot par exemple), ILLWATCH relie l'acteur aux IOC de son infrastructure : une alerte sur l'un de ces IOC arrive avec le bon contexte.",
     "T1090_003": "Trafic relayé par plusieurs mandataires, comme Tor, pour masquer son origine. La règle de chasse reconnaît les relais de sortie Tor d'après la liste officielle.",
     "T1568": "Infrastructure qui change d'adresse grâce au DNS dynamique. La règle de chasse reconnaît une quarantaine de fournisseurs de DNS dynamique gratuits prisés des serveurs C2 et du hameçonnage.",
@@ -509,7 +509,7 @@
     "story_p1": "Les plateformes commerciales de renseignement sur les menaces coûtent des dizaines de milliers par an. Les alternatives open source complètes exigent une infrastructure lourde et une équipe pour les faire tourner. Entre les deux, beaucoup de SOC, de CERT et d'organismes publics travaillent avec des tableurs et des copier-coller.",
     "story_p2": "ILLWATCH est né en 2026 pour combler ce fossé : une plateforme, sur un serveur, qui fait le travail répétitif d'un SOC et laisse les décisions aux analystes.",
     "story_p3": "Le projet est open source et piloté par des jalons mesurés : un jalon est clos quand ses critères sont vérifiés sur des données réelles, pas quand le code est fusionné.",
-    "founder_role": "Fondateur et développeur principal — spécialiste en sécurité informatique (SOC, SIEM, sécurité réseau, forensique)",
+    "founder_role": "Fondateur et développeur principal, spécialiste en sécurité informatique (SOC, SIEM, sécurité réseau, forensique)",
     "values_label": "Nos principes",
     "values_title": "Ce qui guide notre travail",
     "measured_title": "Mesuré, pas affirmé",
@@ -546,7 +546,7 @@
     "interest_OTHER": "Autre chose",
     "consent": "J'accepte qu'ILLWATCH utilise ces informations pour répondre à ma demande, comme décrit dans la {privacy}.",
     "submit": "Envoyer ma demande",
-    "sent": "Merci — votre demande est bien reçue. Nous revenons vers vous rapidement.",
+    "sent": "Merci, votre demande est bien reçue. Nous revenons vers vous rapidement.",
     "error": "La demande n'a pas pu être envoyée. Merci de réessayer plus tard.",
     "limited": "Trop de demandes depuis votre réseau. Merci de réessayer dans une heure.",
     "invalid": "Vérifiez les champs signalés et la case de consentement.",

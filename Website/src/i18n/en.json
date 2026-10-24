@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "ILLWATCH — Open-source threat intelligence and SOC platform",
+    "title": "ILLWATCH | Open-source threat intelligence and SOC platform",
     "description": "ILLWATCH collects threat intelligence, ranks vulnerabilities by real risk, correlates them with your assets and drives incident response. Open source, self-hosted, on a single server."
   },
   "nav": {
@@ -25,7 +25,7 @@
     "eyebrow": "Open-source threat intelligence and SOC platform",
     "title_a": "Turn threat noise into",
     "title_b": "decisions that matter.",
-    "lead": "ILLWATCH collects threat intelligence, ranks vulnerabilities by real risk, correlates them with your assets and drives incident response — on your own server, with no licence fee.",
+    "lead": "ILLWATCH collects threat intelligence, ranks vulnerabilities by real risk, correlates them with your assets and drives incident response, on your own server, with no licence fee.",
     "cta_demo": "Book a demo",
     "cta_start": "Get started free",
     "chips_label": "Highlights",
@@ -58,7 +58,7 @@
     "prioritize_b3": "Alert as soon as a CVE crosses your threshold",
     "triage_tab": "Triage",
     "triage_title": "One queue, ranked by risk",
-    "triage_text": "Every alert arrives with its score broken down. Acknowledge it, or open an incident in one click — nothing is copied by hand.",
+    "triage_text": "Every alert arrives with its score broken down. Acknowledge it, or open an incident in one click: nothing is copied by hand.",
     "triage_b1": "Updated in real time",
     "triage_b2": "Score breakdown on every alert",
     "triage_b3": "Incident opened in one click",
@@ -98,7 +98,7 @@
   "platform": {
     "label": "Platform",
     "title": "Seven modules. One platform. One audit trail.",
-    "lead": "The modules share the same data, the same severity scale and the same history — no copying from one tool to another.",
+    "lead": "The modules share the same data, the same severity scale and the same history: no copying from one tool to another.",
     "pipeline": "Processing pipeline",
     "feeds_title": "Threat feeds",
     "feeds_text": "CSV, JSON, STIX 2.1, TAXII 2.1, AlienVault OTX, abuse.ch… Indicators normalised, deduplicated, with their provenance and a confidence score.",
@@ -199,7 +199,7 @@
   "compare": {
     "label": "Why ILLWATCH",
     "title": "The power of a commercial platform, without the lock-in",
-    "lead": "ILLWATCH brings together what usually takes several tools — and keeps it on your infrastructure.",
+    "lead": "ILLWATCH brings together what usually takes several tools, and keeps it on your infrastructure.",
     "criterion": "Criterion",
     "col_illwatch": "ILLWATCH",
     "col_commercial": "Commercial threat intelligence platform",
@@ -302,7 +302,7 @@
     "support_b4": "Priority handling of your requests",
     "support_cta": "Contact us",
     "more": "Compare the offers in detail",
-    "indicative": "Indicative prices, excluding VAT — our offers are still being evaluated and may change.",
+    "indicative": "Indicative prices, excluding VAT. Our offers are still being evaluated and may change.",
     "community_unit": "forever, MIT licence",
     "pilot_unit": "one-off · 4 to 6 weeks",
     "support_unit": "per month"
@@ -351,7 +351,7 @@
     "privacy_policy": "Privacy policy"
   },
   "root": {
-    "title": "ILLWATCH — Choose your language",
+    "title": "ILLWATCH | Choose your language",
     "choose": "Choose your language"
   },
   "notfound": {
@@ -370,7 +370,7 @@
     "s3_text": "Country and autonomous system offline, confidence computed from source reliability.",
     "s4_text": "Indicators, CVEs and your assets crossed version by version.",
     "s5_text": "Deterministic P0–P3 score, explained, with an alert above your threshold.",
-    "s6_text": "Incident opened in one click, escalated, investigated, closed — all traced.",
+    "s6_text": "Incident opened in one click, escalated, investigated, closed: all traced.",
     "feeds_b1": "Nine reference sources preconfigured, more in a few clicks",
     "feeds_b2": "Health of each source and history of every collection run",
     "feeds_b3": "API keys read from the environment, never stored in the database",
@@ -401,7 +401,7 @@
     "context": "Context only: campaigns and actors",
     "mitre": "Technique on attack.mitre.org",
     "note": "ATT&CK® © The MITRE Corporation, reproduced with permission. Extract limited to the techniques mapped to the rules of the current version.",
-    "T1190": "A vulnerability in an exposed product is exploited. ILLWATCH alerts when an actively exploited CVE, or one with a public exploit, affects a product of your inventory in a vulnerable version — and hunting flags exploited CVEs on your assets.",
+    "T1190": "A vulnerability in an exposed product is exploited. ILLWATCH alerts when an actively exploited CVE, or one with a public exploit, affects a product of your inventory in a vulnerable version, and hunting flags exploited CVEs on your assets.",
     "T1566_001": "Booby-trapped attachments sent by email. When a campaign uses this technique (QakBot for example), ILLWATCH links the actor to the IOCs of its infrastructure, so an alert on one of these IOCs carries the right context.",
     "T1090_003": "Traffic relayed through several proxies, such as Tor, to hide its origin. The hunting rule recognises Tor exit relays from the official list.",
     "T1568": "Infrastructure that changes address through dynamic DNS. The hunting rule recognises some forty free dynamic DNS providers favoured by C2 servers and phishing.",
@@ -509,7 +509,7 @@
     "story_p1": "Commercial threat intelligence platforms cost tens of thousands per year. Complete open-source alternatives require heavy infrastructure and a team to run them. Between the two, many SOCs, CERTs and public bodies work with spreadsheets and copy-paste.",
     "story_p2": "ILLWATCH was born in 2026 to close that gap: one platform, on one server, that does the repetitive work of a SOC and leaves the decisions to analysts.",
     "story_p3": "The project is open source and driven by measured milestones: a milestone is closed when its criteria are verified on real data, not when the code is merged.",
-    "founder_role": "Founder and lead developer — IT security specialist (SOC, SIEM, network security, forensics)",
+    "founder_role": "Founder and lead developer, IT security specialist (SOC, SIEM, network security, forensics)",
     "values_label": "Our principles",
     "values_title": "What guides our work",
     "measured_title": "Measured, not claimed",
@@ -546,7 +546,7 @@
     "interest_OTHER": "Something else",
     "consent": "I agree that ILLWATCH may use these details to answer my request, as described in the {privacy}.",
     "submit": "Send my request",
-    "sent": "Thank you — your request has been received. We will get back to you soon.",
+    "sent": "Thank you, your request has been received. We will get back to you soon.",
     "error": "The request could not be sent. Please try again later.",
     "limited": "Too many requests from your network. Please try again in an hour.",
     "invalid": "Please check the highlighted fields and the consent box.",

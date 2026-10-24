@@ -194,6 +194,8 @@ const pages = walk(dist).filter((p) => p.endsWith(".html"));
 for (const page of pages) {
   const html = readFileSync(page, "utf8");
   const name = relative(dist, page);
+  // Règle éditoriale (24/10/2026) : pas de tiret long ; virgule, deux-points, point ou « | ».
+  if (html.includes("\u2014")) problems.push(`${name} : tiret long « \u2014 » (remplacer par une ponctuation)`);
   for (const bad of ["NaN", "undefined", "[object Object]"]) {
     if (html.includes(bad)) problems.push(`${name} : « ${bad} » dans la page (donnée manquante)`);
   }

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "ILLWATCH — Open-Source-Plattform für Threat Intelligence und SOC",
+    "title": "ILLWATCH | Open-Source-Plattform für Threat Intelligence und SOC",
     "description": "ILLWATCH sammelt Bedrohungsinformationen, priorisiert Schwachstellen nach realem Risiko, gleicht sie mit Ihren Assets ab und steuert die Incident Response. Open Source, selbst gehostet, auf einem einzigen Server."
   },
   "nav": {
@@ -25,7 +25,7 @@
     "eyebrow": "Open-Source-Plattform für Threat Intelligence und SOC",
     "title_a": "Aus Bedrohungsrauschen werden",
     "title_b": "Entscheidungen, die zählen.",
-    "lead": "ILLWATCH sammelt Bedrohungsinformationen, priorisiert Schwachstellen nach realem Risiko, gleicht sie mit Ihren Assets ab und steuert die Incident Response — auf Ihrem eigenen Server, ohne Lizenzkosten.",
+    "lead": "ILLWATCH sammelt Bedrohungsinformationen, priorisiert Schwachstellen nach realem Risiko, gleicht sie mit Ihren Assets ab und steuert die Incident Response, auf Ihrem eigenen Server, ohne Lizenzkosten.",
     "cta_demo": "Demo anfragen",
     "cta_start": "Kostenlos starten",
     "chips_label": "Highlights",
@@ -58,7 +58,7 @@
     "prioritize_b3": "Alarm, sobald eine CVE Ihren Schwellenwert überschreitet",
     "triage_tab": "Triage",
     "triage_title": "Eine Warteschlange, nach Risiko sortiert",
-    "triage_text": "Jeder Alarm kommt mit aufgeschlüsseltem Score. Bestätigen Sie ihn oder eröffnen Sie mit einem Klick einen Vorfall — nichts wird von Hand kopiert.",
+    "triage_text": "Jeder Alarm kommt mit aufgeschlüsseltem Score. Bestätigen Sie ihn oder eröffnen Sie mit einem Klick einen Vorfall: Nichts wird von Hand kopiert.",
     "triage_b1": "Aktualisierung in Echtzeit",
     "triage_b2": "Score-Aufschlüsselung bei jedem Alarm",
     "triage_b3": "Vorfall mit einem Klick eröffnet",
@@ -98,7 +98,7 @@
   "platform": {
     "label": "Plattform",
     "title": "Sieben Module. Eine Plattform. Ein Audit-Trail.",
-    "lead": "Die Module teilen dieselben Daten, dieselbe Schweregradskala und dieselbe Historie — kein Kopieren von einem Werkzeug ins andere.",
+    "lead": "Die Module teilen dieselben Daten, dieselbe Schweregradskala und dieselbe Historie: kein Kopieren von einem Werkzeug ins andere.",
     "pipeline": "Verarbeitungskette",
     "feeds_title": "Bedrohungsfeeds",
     "feeds_text": "CSV, JSON, STIX 2.1, TAXII 2.1, AlienVault OTX, abuse.ch… Normalisierte, deduplizierte Indikatoren mit Herkunft und Konfidenzwert.",
@@ -199,7 +199,7 @@
   "compare": {
     "label": "Warum ILLWATCH",
     "title": "Die Leistung einer kommerziellen Plattform, ohne Lock-in",
-    "lead": "ILLWATCH vereint, wofür sonst mehrere Werkzeuge nötig sind — und behält alles auf Ihrer Infrastruktur.",
+    "lead": "ILLWATCH vereint, wofür sonst mehrere Werkzeuge nötig sind, und behält alles auf Ihrer Infrastruktur.",
     "criterion": "Kriterium",
     "col_illwatch": "ILLWATCH",
     "col_commercial": "Kommerzielle Threat-Intelligence-Plattform",
@@ -302,7 +302,7 @@
     "support_b4": "Bevorzugte Bearbeitung Ihrer Anfragen",
     "support_cta": "Kontakt aufnehmen",
     "more": "Angebote im Detail vergleichen",
-    "indicative": "Richtpreise, zzgl. MwSt. — unsere Angebote befinden sich noch in der Evaluierung und können sich ändern.",
+    "indicative": "Richtpreise, zzgl. MwSt. Unsere Angebote befinden sich noch in der Evaluierung und können sich ändern.",
     "community_unit": "dauerhaft, MIT-Lizenz",
     "pilot_unit": "einmalig · 4 bis 6 Wochen",
     "support_unit": "pro Monat"
@@ -351,7 +351,7 @@
     "privacy_policy": "Datenschutzerklärung"
   },
   "root": {
-    "title": "ILLWATCH — Sprache wählen",
+    "title": "ILLWATCH | Sprache wählen",
     "choose": "Diese Sprache wählen"
   },
   "notfound": {
@@ -370,7 +370,7 @@
     "s3_text": "Land und autonomes System offline, Konfidenz aus der Zuverlässigkeit der Quellen berechnet.",
     "s4_text": "Indikatoren, CVEs und Ihre Assets Version für Version abgeglichen.",
     "s5_text": "Deterministischer, erklärter P0–P3-Score, Alarm oberhalb Ihres Schwellenwerts.",
-    "s6_text": "Vorfall mit einem Klick eröffnet, eskaliert, untersucht, abgeschlossen — alles nachvollziehbar.",
+    "s6_text": "Vorfall mit einem Klick eröffnet, eskaliert, untersucht, abgeschlossen: alles nachvollziehbar.",
     "feeds_b1": "Neun Referenzquellen vorkonfiguriert, weitere mit wenigen Klicks",
     "feeds_b2": "Zustand jeder Quelle und Historie jedes Abrufs",
     "feeds_b3": "API-Schlüssel aus der Umgebung gelesen, nie in der Datenbank gespeichert",
@@ -401,16 +401,16 @@
     "context": "Nur Kontext: Kampagnen und Akteure",
     "mitre": "Technik auf attack.mitre.org",
     "note": "ATT&CK® © The MITRE Corporation, Wiedergabe mit Genehmigung. Ausschnitt beschränkt auf die Techniken, die den Regeln der aktuellen Version zugeordnet sind.",
-    "T1190": "Eine Schwachstelle in einem exponierten Produkt wird ausgenutzt. ILLWATCH alarmiert, wenn eine aktiv ausgenutzte CVE oder eine mit öffentlichem Exploit ein Produkt Ihres Inventars in einer verwundbaren Version betrifft — und das Hunting meldet ausgenutzte CVEs auf Ihren Assets.",
+    "T1190": "Eine Schwachstelle in einem exponierten Produkt wird ausgenutzt. ILLWATCH alarmiert, wenn eine aktiv ausgenutzte CVE oder eine mit öffentlichem Exploit ein Produkt Ihres Inventars in einer verwundbaren Version betrifft, und das Hunting meldet ausgenutzte CVEs auf Ihren Assets.",
     "T1566_001": "Präparierte Anhänge per E-Mail. Nutzt eine Kampagne diese Technik (zum Beispiel QakBot), verknüpft ILLWATCH den Akteur mit den IOCs seiner Infrastruktur: Ein Alarm zu einem dieser IOCs kommt mit dem richtigen Kontext.",
     "T1090_003": "Datenverkehr über mehrere Proxys, etwa Tor, um seine Herkunft zu verschleiern. Die Hunting-Regel erkennt Tor-Exit-Relays anhand der offiziellen Liste.",
     "T1568": "Infrastruktur, die ihre Adresse über dynamisches DNS wechselt. Die Hunting-Regel erkennt rund vierzig kostenlose Anbieter für dynamisches DNS, die bei C2-Servern und Phishing beliebt sind.",
-    "T1568_002": "Algorithmisch erzeugte Domainnamen (DGA), um Steuerserver zu erreichen. Die Regel misst, wie unwahrscheinlich ein Name im Englischen ist — kalibriert auf 100.000 echten Domains.",
+    "T1568_002": "Algorithmisch erzeugte Domainnamen (DGA), um Steuerserver zu erreichen. Die Regel misst, wie unwahrscheinlich ein Name im Englischen ist, kalibriert auf 100.000 echten Domains.",
     "T1486": "Daten werden verschlüsselt, um Lösegeld zu erpressen. Die Regel meldet Adressen mit Bezug zu Ransomware-Infrastruktur, und die Reaktionsempfehlungen verlangen, Hosts zu isolieren und Offline-Backups zu prüfen."
   },
   "taxii": {
     "title": "Teilen Sie Ihre Bedrohungsinformationen im Standardformat",
-    "lead": "ILLWATCH stellt seine Indikatoren und Kampagnen per TAXII 2.1 im STIX-2.1-Format bereit — für Ihr SIEM, Ihre Firewall oder ein Partner-CERT.",
+    "lead": "ILLWATCH stellt seine Indikatoren und Kampagnen per TAXII 2.1 im STIX-2.1-Format bereit: für Ihr SIEM, Ihre Firewall oder ein Partner-CERT.",
     "discovery": "Discovery",
     "collections": "Collections",
     "objects": "Objekte",
@@ -426,7 +426,7 @@
     "lead": "ILLWATCH verarbeitet sensible Informationen. Es läuft auf Ihrer Infrastruktur, Ihre Daten bleiben bei Ihnen, und jede Sicherheitsmaßnahme lässt sich im Quellcode prüfen.",
     "arch_label": "Architektur",
     "arch_title": "Alles läuft auf Ihrem Server",
-    "arch_lead": "Für den Betrieb wird kein externer Dienst benötigt. Kontaktiert werden nur die Quellen, die Sie aktivieren — per HTTPS.",
+    "arch_lead": "Für den Betrieb wird kein externer Dienst benötigt. Kontaktiert werden nur die Quellen, die Sie aktivieren, per HTTPS.",
     "arch_internet": "Außen",
     "arch_server": "Ihr Server",
     "arch_users": "Ihre Analysten",
@@ -509,7 +509,7 @@
     "story_p1": "Kommerzielle Threat-Intelligence-Plattformen kosten Zehntausende pro Jahr. Vollständige Open-Source-Alternativen verlangen eine schwere Infrastruktur und ein Team für den Betrieb. Dazwischen arbeiten viele SOCs, CERTs und Behörden mit Tabellen und Copy-and-Paste.",
     "story_p2": "ILLWATCH entstand 2026, um diese Lücke zu schließen: eine Plattform auf einem Server, die die Routinearbeit eines SOC erledigt und die Entscheidungen den Analysten überlässt.",
     "story_p3": "Das Projekt ist Open Source und wird über gemessene Meilensteine gesteuert: Ein Meilenstein ist abgeschlossen, wenn seine Kriterien auf echten Daten geprüft sind, nicht wenn der Code gemergt ist.",
-    "founder_role": "Gründer und leitender Entwickler — IT-Sicherheitsspezialist (SOC, SIEM, Netzwerksicherheit, Forensik)",
+    "founder_role": "Gründer und leitender Entwickler, IT-Sicherheitsspezialist (SOC, SIEM, Netzwerksicherheit, Forensik)",
     "values_label": "Unsere Prinzipien",
     "values_title": "Was unsere Arbeit leitet",
     "measured_title": "Gemessen, nicht behauptet",
@@ -546,7 +546,7 @@
     "interest_OTHER": "Etwas anderes",
     "consent": "Ich bin einverstanden, dass ILLWATCH diese Angaben zur Beantwortung meiner Anfrage verwendet, wie in der {privacy} beschrieben.",
     "submit": "Anfrage senden",
-    "sent": "Vielen Dank — Ihre Anfrage ist eingegangen. Wir melden uns in Kürze.",
+    "sent": "Vielen Dank, Ihre Anfrage ist eingegangen. Wir melden uns in Kürze.",
     "error": "Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es später erneut.",
     "limited": "Zu viele Anfragen aus Ihrem Netzwerk. Bitte versuchen Sie es in einer Stunde erneut.",
     "invalid": "Bitte prüfen Sie die markierten Felder und das Einwilligungsfeld.",

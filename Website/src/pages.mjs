@@ -19,7 +19,7 @@ import {
   trustCards,
 } from "./templates.mjs";
 
-const title = (ctx, key) => `${ctx.t(key, {}, false)} — ILLWATCH`;
+const title = (ctx, key) => `${ctx.t(key, {}, false)} | ILLWATCH`;
 
 // ── Plateforme ──────────────────────────────────────────────────────────────────────────
 
@@ -119,7 +119,7 @@ const TAXII_STEPS = [
   -u analyst \\
   -H "Accept: application/taxii+json;version=2.1"`,
     `{
-  "title": "ILLWATCH — TAXII 2.1",
+  "title": "ILLWATCH: TAXII 2.1",
   "description": "Threat intelligence shared by ILLWATCH (CyberillSec).",
   "default": "https://illwatch.example/taxii2/illwatch/",
   "api_roots": ["https://illwatch.example/taxii2/illwatch/"]
@@ -323,7 +323,7 @@ export function pricingPage(ctx) {
                 .map(
                   (m, i) =>
                     `<td${cols[i] === "pilot" ? ' class="is-us"' : ""}>${
-                      m ? `${icon("ci", "icon icon--yes")}<span class="sr-only">${t("pricingPage.yes")}</span>` : `<span class="muted" aria-label="${t("pricingPage.no")}">—</span>`
+                      m ? `${icon("ci", "icon icon--yes")}<span class="sr-only">${t("pricingPage.yes")}</span>` : `<span class="muted">${t("pricingPage.no")}</span>`
                     }</td>`,
                 )
                 .join("")}</tr>`,
@@ -453,7 +453,7 @@ function demoForm(ctx) {
         ${field("email", t("demoPage.f_email"), 'type="email" required maxlength="254" autocomplete="email"')}
         ${field("organisation", t("demoPage.f_org"), 'required minlength="2" maxlength="160" autocomplete="organization"')}
         ${field("job_title", t("demoPage.f_job"), 'maxlength="120" autocomplete="organization-title"')}
-        <label class="field"><span>${t("demoPage.f_country")}</span><select name="country" autocomplete="country"><option value="">—</option>${countryOptions(lang.locale)
+        <label class="field"><span>${t("demoPage.f_country")}</span><select name="country" autocomplete="country"><option value=""></option>${countryOptions(lang.locale)
           .map(([code, name]) => `<option value="${code}">${esc(name)}</option>`)
           .join("")}</select></label>
         <label class="field"><span>${t("demoPage.f_interest")}</span><select name="interest">${INTERESTS.map(

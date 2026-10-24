@@ -8,6 +8,10 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Modifié — Site sans tiret long (24/10)
+- Le tiret long est remplacé dans les cinq langues par une virgule, deux-points, un point ou
+  « | » (titres de page) ; la construction refuse toute page qui en contient encore.
+
 ### Corrigé — Style absent sur GitLab Pages (24/10)
 - Le site utilisait des chemins absolus (`/cyberillsec-illwatch/assets/site.css`) calculés
   depuis `CI_PAGES_URL` : servi depuis une autre adresse (domaine unique de GitLab Pages,
