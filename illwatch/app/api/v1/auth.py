@@ -131,6 +131,10 @@ async def login(
         ip=ip,
         user_agent=request.headers.get("user-agent"),
     )
+    # Valider avant de répondre : la session de requête n'est validée qu'après l'envoi de la
+    # réponse, et un client qui enchaîne aussitôt (rafraîchissement, déconnexion) ne verrait pas
+    # encore le jeton émis ou révoqué (échec intermittent de la préproduction, 24/10/2026).
+    await session.commit()
     return TokenResponse(
         access_token=create_access_token(user.id, user.role),
         expires_in=settings.access_token_expire_minutes * 60,
@@ -185,6 +189,7 @@ async def refresh(
     await audit.record(
         "auth.refresh", actor=user, context=context, detail={"family_id": str(issued.family_id)}
     )
+    await session.commit()  # même raison qu'à la connexion
     return TokenResponse(
         access_token=create_access_token(user.id, user.role),
         expires_in=settings.access_token_expire_minutes * 60,
@@ -214,6 +219,7 @@ async def sign_out(
         await audit.record(
             "auth.logout", actor_id=user_id, context=AuditContext.from_request(request)
         )
+    await session.commit()  # même raison qu'à la connexion
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

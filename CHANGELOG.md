@@ -8,6 +8,18 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Corrigé — Style absent sur GitLab Pages (24/10)
+- Le site utilisait des chemins absolus (`/cyberillsec-illwatch/assets/site.css`) calculés
+  depuis `CI_PAGES_URL` : servi depuis une autre adresse (domaine unique de GitLab Pages,
+  fichier ouvert en local), la feuille de style et les images ne se chargeaient pas. Tous les
+  liens et ressources sont désormais relatifs à la page ; la construction refuse tout lien
+  interne absolu (sauf la page 404).
+
+### Corrigé — Rafraîchissement refusé juste après la connexion (24/10)
+- `POST /auth/token`, `/auth/refresh` et `/auth/logout` valident la transaction avant de
+  répondre : un client qui rafraîchissait aussitôt pouvait recevoir un 401 (jeton pas encore
+  enregistré), d'où l'échec intermittent du scénario SOC en préproduction.
+
 ### Ajouté — Site complet, demandes de démonstration, GitLab (ADR-027 décision 14, 23/10)
 - Site : pages Plateforme (fonctionnement animé, modules, explorateur MITRE ATT&CK, exemple
   TAXII 2.1), Sécurité (architecture, mesures), Tarifs (prix indicatifs en évaluation),
