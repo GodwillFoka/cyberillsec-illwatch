@@ -1,9 +1,17 @@
 # ILLWATCH : État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **15/10/2026, 03 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **30/10/2026, 01 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
+
+> **30/10, documentation v2.0 et inventaire par Excel** (PR #61). Import et export de
+> l'inventaire en Excel ou CSV depuis l'écran Inventaire, avec modèle téléchargeable, aperçu ligne
+> par ligne et import tout ou rien (ADR-028) ; mêmes fonctions en ligne de commande
+> (`illwatch assets template`, `assets import --dry-run`, `assets export`). Plus aucun tiret long
+> ni tiret moyen dans le dépôt, avec un test qui empêche leur retour. Documentation refondue en
+> version 2.0, en Markdown et en PDF : guide d'installation et d'exploitation, manuel fonctionnel
+> (acteurs, fonctionnalités, actions), cahier des charges, vision produit et feuille de route.
 
 > **15/10, M10 livré, M11 livré.** M10 : campagnes et attribution par l'infrastructure
 > (ADR-024, PR #49), partage STIX 2.1 / serveur TAXII 2.1 en lecture seule (ADR-025, PR #50).
@@ -65,6 +73,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 30/10 | PR #61 | **Inventaire Excel ou CSV** (ADR-028) : modèle, aperçu, import tout ou rien, export réimportable, interface et CLI ; ponctuation sans tiret long dans tout le dépôt (test `test_ponctuation.py`) ; **documentation v2.0** (guide, manuel fonctionnel, cahier des charges, vision, feuille de route) en Markdown et PDF, 13 schémas, captures en français |
 | 15/10 | PR #51 | **M11 Observability & Deployment** (ADR-026) : `/metrics` (HTTP par modèle de route, IOC, sources, collectes, synchronisations, incidents, refus d'authentification), Prometheus + Grafana (10 alertes, 2 tableaux générés), acceptation SOC en CI sur jeu figé, `scripts/restore-test.sh` mensuel, `docs/ENVIRONNEMENTS.md` |
 | 15/10 | PR #50 | **M10, incrément 3** (ADR-025) : serveur TAXII 2.1 en lecture seule `/taxii2/` (indicateurs, campagnes ; Bearer ou Basic), export STIX 2.1 (`/api/v1/stix/bundle`, `illwatch stix export`) ; infrastructure des campagnes repliée au-delà de 20 IOC |
 | 15/10 | PR #49 | **M10, incrément 2** (ADR-024) : campagnes, infrastructure (IOC rattachés par valeur ou description), attribution par l'infrastructure dans chasses, corrélations et incidents ; écran Campagnes |
