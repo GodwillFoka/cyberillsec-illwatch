@@ -1,4 +1,4 @@
-"""CLI `illwatch taxii` — découverte de serveurs TAXII 2.1 avant intégration.
+"""CLI `illwatch taxii` : découverte de serveurs TAXII 2.1 avant intégration.
 
     illwatch taxii discover https://attack-taxii.mitre.org/taxii2/
 
@@ -39,7 +39,7 @@ def taxii_discover(url: str) -> None:
         console.print(f"[red]Échec :[/] {mask_secrets(str(exc), settings)}")
         raise SystemExit(1) from exc
 
-    console.print(f"[bold]{found.title or url}[/] — {len(found.api_roots)} API root(s)")
+    console.print(f"[bold]{found.title or url}[/]: {len(found.api_roots)} API root(s)")
     for root, error in found.errors.items():
         console.print(f"[yellow]! {root} :[/] {mask_secrets(error, settings)}")
     if not found.collections:

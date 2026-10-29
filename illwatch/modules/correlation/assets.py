@@ -1,4 +1,4 @@
-"""Inventaire d'actifs — M8, ADR-020. Saisi par les analystes (API, écran Inventaire, CLI).
+"""Inventaire d'actifs : M8, ADR-020. Saisi par les analystes (API, écran Inventaire, CLI).
 
 Chaque champ est normalisé à l'écriture : la corrélation compare ensuite des valeurs propres
 (adresses IP canoniques, domaines en minuscules sans point final).

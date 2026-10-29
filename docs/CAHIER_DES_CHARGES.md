@@ -1,21 +1,21 @@
-# ILLWATCH — Cahier des charges & dossier d'ingénierie logicielle
+# ILLWATCH : Cahier des charges & dossier d'ingénierie logicielle
 
 > **Conversion Markdown versionnable** du document maître
-> `CYBERILL-ILLWATCH — Cahier des Charges & Dossier d'Ingénierie v1.0.0`.
+> `CYBERILL-ILLWATCH : Cahier des Charges & Dossier d'Ingénierie v1.0.0`.
 > Le PDF d'origine est conservé dans [`pdf/SENTRY_Cahier_des_Charges.pdf`](pdf/SENTRY_Cahier_des_Charges.pdf).
 > En cas de divergence, **ce fichier Markdown fait foi** : il est celui que la CI, les revues de
 > code et les merge requests référencent.
 
 | | |
 |---|---|
-| **Projet** | ILLWATCH — Security Monitoring & Threat Intelligence Platform |
-| **Initiative** | CyberillSec — A CYBERILL Initiative |
+| **Projet** | ILLWATCH : Security Monitoring & Threat Intelligence Platform |
+| **Initiative** | CyberillSec : A CYBERILL Initiative |
 | **Auteur & architecte** | Godwill FOKA, Lead Architect & Security Engineer |
 | **Destinataire** | Équipe d'ingénierie logicielle / développeurs en onboarding |
 | **Version** | v1.0.0 (Master Engineering Baseline) |
-| **Baseline** | Juillet – Septembre 2026 |
+| **Baseline** | Juillet à Septembre 2026 |
 | **Dépôt** | `gitlab.com/GodwillFoka/cyberillsec-illwatch` (voir [ADR-002](adr/ADR-002-hebergement-gitlab.md)) |
-| **Classification** | Interne CYBERILL — document fondateur de référence |
+| **Classification** | Interne CYBERILL : document fondateur de référence |
 | **Statut** | Approuvé pour développement |
 
 ---
@@ -69,25 +69,25 @@ ILLWATCH crée un cerveau centralisé qui :
 
 | Terme | Définition |
 |---|---|
-| **CTI** | *Cyber Threat Intelligence* — renseignement sur les attaquants, leurs motivations, capacités et méthodes. |
-| **IOC** | *Indicator of Compromise* — empreinte numérique laissée par un attaquant : IP malveillante, domaine frauduleux, URL de phishing, hash d'un binaire. |
-| **CVE** | *Common Vulnerabilities and Exposures* — identifiant universel d'une faille (ex. `CVE-2026-16812`). |
+| **CTI** | *Cyber Threat Intelligence* : renseignement sur les attaquants, leurs motivations, capacités et méthodes. |
+| **IOC** | *Indicator of Compromise*, empreinte numérique laissée par un attaquant : IP malveillante, domaine frauduleux, URL de phishing, hash d'un binaire. |
+| **CVE** | *Common Vulnerabilities and Exposures* : identifiant universel d'une faille (ex. `CVE-2026-16812`). |
 | **CVSS** | Note technique de 0.0 à 10.0 mesurant la sévérité intrinsèque d'une faille (9.8 = critique, exploitable à distance sans authentification). |
-| **EPSS** | *Exploit Prediction Scoring System* — score probabiliste de 0.0 à 1.0 calculé quotidiennement par FIRST, prédisant la probabilité d'exploitation réelle sous 30 jours. Au-delà de 0.7, l'attaque est très probablement imminente. |
-| **CISA KEV** | *Known Exploited Vulnerabilities* — catalogue gouvernemental américain des failles dont l'exploitation active a été formellement prouvée. Une CVE au KEV est une urgence absolue. |
-| **TTP / MITRE ATT&CK** | Cartographie des comportements d'attaquants : les tactiques disent le *pourquoi* (« Accès initial »), les techniques le *comment* (« T1566 — Phishing »). |
+| **EPSS** | *Exploit Prediction Scoring System* : score probabiliste de 0.0 à 1.0 calculé quotidiennement par FIRST, prédisant la probabilité d'exploitation réelle sous 30 jours. Au-delà de 0.7, l'attaque est très probablement imminente. |
+| **CISA KEV** | *Known Exploited Vulnerabilities* : catalogue gouvernemental américain des failles dont l'exploitation active a été formellement prouvée. Une CVE au KEV est une urgence absolue. |
+| **TTP / MITRE ATT&CK** | Cartographie des comportements d'attaquants : les tactiques disent le *pourquoi* (« Accès initial »), les techniques le *comment* (« T1566, Phishing »). |
 | **Threat Hunting** | Démarche proactive de recherche, dans son propre réseau, de traces d'attaques ayant contourné les défenses classiques. |
 | **Sigma** | Règles génériques en YAML pour détecter des comportements suspects dans les journaux d'événements. |
 | **YARA** | Signatures textuelles ou binaires identifiant des familles de malwares dans des fichiers. |
 
 ### 1.4 La journée type de l'analyste SOC
 
-**Sans ILLWATCH** — Alex ouvre quinze onglets (CISA, NVD, AlienVault, réseaux sociaux, presse
+**Sans ILLWATCH** : Alex ouvre quinze onglets (CISA, NVD, AlienVault, réseaux sociaux, presse
 spécialisée), lit quarante articles, repère une faille Fortinet, cherche manuellement son CVSS,
 vérifie l'existence d'un exploit public, croise les IP attaquantes, ouvre un ticket. Il est 11 h 30
 et rien n'est encore bloqué.
 
-**Avec ILLWATCH** — les tâches asynchrones ont tourné toute la nuit. À 08 h 01, `illwatch dashboard show`
+**Avec ILLWATCH** : les tâches asynchrones ont tourné toute la nuit. À 08 h 01, `illwatch dashboard show`
 affiche les trois CVE critiques de la nuit (score > 80 parce que KEV = oui et EPSS > 0.85), les
 quarante nouveaux IOC dédupliqués et rattachés à la campagne en cours, et l'incident créé
 automatiquement avec sa chronologie pré-remplie. En cinq minutes, le blocage firewall est lancé et
@@ -99,14 +99,14 @@ le RSSI notifié.
 
 ### 2.1 Contexte et état de l'art en 2026
 
-1. **Industrialisation des ransomwares (RaaS)** — les attaquants exploitent les vulnérabilités moins
+1. **Industrialisation des ransomwares (RaaS)** : les attaquants exploitent les vulnérabilités moins
    de 48 heures après divulgation publique. Le patching mensuel type « Patch Tuesday » est obsolète.
-2. **Inflation normative européenne (NIS 2, DORA)** — obligation légale de veille active sur les
+2. **Inflation normative européenne (NIS 2, DORA)** : obligation légale de veille active sur les
    vulnérabilités et de notification des incidents majeurs sous 24 à 72 heures.
-3. **Coût prohibitif du CTI propriétaire** — Recorded Future, Mandiant Advantage, CrowdStrike Falcon
+3. **Coût prohibitif du CTI propriétaire** : Recorded Future, Mandiant Advantage, CrowdStrike Falcon
    Intelligence facturent 40 000 € à 150 000 € par an, excluant de fait les PME, ETI et
    organisations publiques régionales.
-4. **Lourdeur des outils open source actuels** — OpenCTI et ses pairs exigent des clusters
+4. **Lourdeur des outils open source actuels** : OpenCTI et ses pairs exigent des clusters
    (Elasticsearch, Redis, MinIO, RabbitMQ) et 16 Go de RAM minimum au démarrage, ce qui les rend
    inutilisables en environnement contraint.
 
@@ -146,20 +146,20 @@ le RSSI notifié.
 
 ### 2.6 Analyse SWOAT
 
-**Forces** — architecture légère, asynchrone, modulaire ; scoring composite exclusif à quatre
+**Forces** : architecture légère, asynchrone, modulaire ; scoring composite exclusif à quatre
 dimensions ; double interface native API + CLI ; indépendance vis-à-vis des solutions propriétaires
 fermées.
 
-**Faiblesses** — projet jeune ; dépendance à la connectivité et à la stabilité des API publiques
+**Faiblesses** : projet jeune ; dépendance à la connectivité et à la stabilité des API publiques
 externes ; absence d'IHM lourde en phase 1 (choix assumé au profit de l'API et de la CLI).
 
-**Opportunités** — NIS 2 impose la surveillance CTI ; forte demande pour des briques CTI autonomes
+**Opportunités** : NIS 2 impose la surveillance CTI ; forte demande pour des briques CTI autonomes
 et transparentes déployables on-premise ; possibilité de fédérer une communauté internationale.
 
-**Aspirations** — positionner ILLWATCH comme le standard open source européen de surveillance des
+**Aspirations** : positionner ILLWATCH comme le standard open source européen de surveillance des
 menaces d'ici 2030 ; démontrer une excellence technique au niveau des plus grands centres de R&D.
 
-**Menaces** — évolution ou fermeture des points d'accès API gratuits ; concurrence d'outils massifs
+**Menaces** : évolution ou fermeture des points d'accès API gratuits ; concurrence d'outils massifs
 mieux financés.
 
 ---
@@ -212,7 +212,7 @@ mieux financés.
 
 ### 3.3 Spécification des modules
 
-#### MOD-01 — Foundation & Configuration
+#### MOD-01 : Foundation & Configuration
 
 Socle technique : configuration, pool de connexions PostgreSQL, migrations Alembic, CLI Click.
 
@@ -221,7 +221,7 @@ Commandes clés : `illwatch db init`, `illwatch db upgrade`, `illwatch version`,
 > **Règle de gestion.** Aucune requête applicative ne s'exécute si la configuration n'est pas validée
 > au démarrage par Pydantic.
 
-#### MOD-02 — Threat Feeds & moteur IOC
+#### MOD-02 : Threat Feeds & moteur IOC
 
 Formats d'IOC supportés :
 
@@ -243,9 +243,9 @@ Formats d'IOC supportés :
 La contrainte `UNIQUE (type, value)` est la garantie structurelle de cette règle : la déduplication
 n'est pas laissée à la discipline du code applicatif.
 
-#### MOD-03 — CVE Tracker & Vulnerability Intelligence
+#### MOD-03 : CVE Tracker & Vulnerability Intelligence
 
-**Score de risque composite** — pour chaque CVE, *R* ∈ [0, 100] :
+**Score de risque composite** : pour chaque CVE, *R* ∈ [0, 100] :
 
 ```
 R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + K × 25 + E × 10 + A × 10)
@@ -263,10 +263,10 @@ R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + K × 25 + E × 10 + A × 10)
 
 | Score | Priorité | Action |
 |---|---|---|
-| R ≥ 80 | **P0 — Critique** | Alerte immédiate, patch sous 24 heures |
-| 60 ≤ R < 80 | **P1 — Élevé** | Alerte de quart, patch sous 7 jours |
-| 40 ≤ R < 60 | **P2 — Moyen** | Revue hebdomadaire, patch sous 30 jours |
-| R < 40 | **P3 — Faible** | Maintenance standard |
+| R ≥ 80 | **P0 : Critique** | Alerte immédiate, patch sous 24 heures |
+| 60 ≤ R < 80 | **P1 : Élevé** | Alerte de quart, patch sous 7 jours |
+| 40 ≤ R < 60 | **P2 : Moyen** | Revue hebdomadaire, patch sous 30 jours |
+| R < 40 | **P3 : Faible** | Maintenance standard |
 
 > **Écart documenté.** Le *Product Vision Document* v1.0 décrit une pondération différente
 > (CVSS 30 % + EPSS 25 % + KEV 25 % + Exploit 10 % + Ransomware 5 % + CWE 5 %) et des seuils
@@ -275,7 +275,7 @@ R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + K × 25 + E × 10 + A × 10)
 
 Implémentation : [`illwatch/modules/cve_tracker/scoring.py`](../illwatch/modules/cve_tracker/scoring.py).
 
-#### MOD-04 — Incident Management (NIST SP 800-61 Rev. 2)
+#### MOD-04 : Incident Management (NIST SP 800-61 Rev. 2)
 
 ```
 NOUVEAU → ANALYSE → CONFINEMENT → ERADICATION → RECUPERATION → CLOTURE
@@ -291,13 +291,13 @@ NOUVEAU → ANALYSE → CONFINEMENT → ERADICATION → RECUPERATION → CLOTURE
 
 Implémentation : [`illwatch/modules/incidents/state_machine.py`](../illwatch/modules/incidents/state_machine.py).
 
-#### MOD-05 — SOC Dashboard & Analytics
+#### MOD-05 : SOC Dashboard & Analytics
 
 Métriques temps réel : nombre total d'IOC actifs, ratio de sévérité des CVE, incidents ouverts par
 criticité, santé des collecteurs. Export sérialisé en JSON conforme RFC 8259 ou CSV conforme
 RFC 4180.
 
-#### MOD-06 — Threat Hunting Engine
+#### MOD-06 : Threat Hunting Engine
 
 | Règle | Détection |
 |---|---|
@@ -307,7 +307,7 @@ RFC 4180.
 | **RULE-04** Known Ransomware Extortion IP | IP associées aux infrastructures de fuite de données (DLS) |
 | **RULE-05** Critical CVE + Exploit Match | Corrélation entre un actif exposé et une vulnérabilité à exploit public vérifié |
 
-### 3.4 Cas d'usage UC-01 — Ingestion automatisée d'un flux
+### 3.4 Cas d'usage UC-01 : Ingestion automatisée d'un flux
 
 **Acteur primaire :** worker périodique (background scheduler)
 **Préconditions :** un `ThreatFeed` est configuré avec `is_active = True`
@@ -326,9 +326,9 @@ RFC 4180.
 
 **Scénarios alternatifs**
 
-- *2a — erreur réseau ou timeout :* jusqu'à 3 tentatives avec backoff exponentiel ; en cas d'échec
+- *2a : erreur réseau ou timeout :* jusqu'à 3 tentatives avec backoff exponentiel ; en cas d'échec
   persistant, `status = DEGRADED` et erreur tracée.
-- *3a — réponse HTTP 429 :* extraction de l'en-tête `Retry-After`, ou temporisation par défaut de
+- *3a : réponse HTTP 429 :* extraction de l'en-tête `Retry-After`, ou temporisation par défaut de
   60 s ; la collecte est reportée au cycle suivant.
 
 ---
@@ -366,8 +366,8 @@ RFC 4180.
 
 **Pourquoi Python plutôt que Node.js ou Go ?**
 
-1. *L'écosystème CTI.* L'intégralité des standards mondiaux — STIX, TAXII, bindings YARA, parsers
-   Sigma — est développée prioritairement en Python.
+1. *L'écosystème CTI.* L'intégralité des standards mondiaux : STIX, TAXII, bindings YARA, parsers
+   Sigma : est développée prioritairement en Python.
 2. *FastAPI et Pydantic v2.* Le cœur de validation réécrit en Rust rapproche les débits de ceux de
    Go tout en conservant l'expressivité de Python.
 3. *SQLAlchemy 2.0 async.* Abstraction relationnelle complète sans blocage de threads sur les accès
@@ -480,7 +480,7 @@ CREATE INDEX idx_incident_events_timeline ON incident_events (incident_id, creat
 ```
 
 L'implémentation SQLAlchemy vit dans [`illwatch/app/models/`](../illwatch/app/models/) et ajoute trois
-colonnes non prévues au DDL d'origine — `cves.cvss_vector`, `cves.has_ransomware_campaign` (requise
+colonnes non prévues au DDL d'origine : `cves.cvss_vector`, `cves.has_ransomware_campaign` (requise
 par le facteur *A* de la formule de scoring) et `incidents.closure_summary` (requise par la règle de
 clôture). Ces ajouts sont tracés dans le CHANGELOG.
 
@@ -513,12 +513,12 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 
 | Phase | Jours | Fenêtre | Charge |
 |---|---|---|---|
-| **P1** Foundation & squelette applicatif | J01–J07 | 30/07 – 06/08 | 8 h |
-| **P2** Threat Feeds & moteur IOC | J08–J21 | 06/08 – 20/08 | 12 h |
-| **P3** CVE Tracker & surveillance vulnérabilités | J22–J35 | 20/08 – 03/09 | 10 h |
-| **P4** Incident Management & workflow | J36–J49 | 03/09 – 17/09 | 10 h |
-| **P5** SOC Dashboard & analytics | J50–J56 | 17/09 – 24/09 | 6 h |
-| **P6** Threat Hunting & clôture v1.0 | J57–J63 | 24/09 – 01/10 | 5 h |
+| **P1** Foundation & squelette applicatif | J01-J07 | 30/07 au 06/08 | 8 h |
+| **P2** Threat Feeds & moteur IOC | J08-J21 | 06/08 au 20/08 | 12 h |
+| **P3** CVE Tracker & surveillance vulnérabilités | J22-J35 | 20/08 au 03/09 | 10 h |
+| **P4** Incident Management & workflow | J36-J49 | 03/09 au 17/09 | 10 h |
+| **P5** SOC Dashboard & analytics | J50-J56 | 17/09 au 24/09 | 6 h |
+| **P6** Threat Hunting & clôture v1.0 | J57-J63 | 24/09 au 01/10 | 5 h |
 
 ### 5.2 Jalons d'acceptation
 
@@ -533,7 +533,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 
 ### 5.3 Découpage des 44 tâches
 
-#### Phase 1 — Foundation (J1–J7)
+#### Phase 1 : Foundation (J1-J7)
 
 | Tâche | Date | Contenu |
 |---|---|---|
@@ -541,16 +541,16 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T1.2 | 30/07 | Module `database.py`, modèle `User`, migration Alembic initiale |
 | T1.3 | 31/07 | CLI Click racine (`illwatch`) avec `db init`, `db upgrade`, `version` |
 | T1.4 | 31/07 | `docker-compose.yml` : PostgreSQL 16 et Redis 7 avec volumes persistants |
-| T1.5–1.7 | 01/08 | Isolation des répertoires modules (`threat_feeds`, `cve_tracker`, `incidents`) |
+| T1.5-1.7 | 01/08 | Isolation des répertoires modules (`threat_feeds`, `cve_tracker`, `incidents`) |
 | T1.8 | 01/08 | Framework `pytest`, fixtures asynchrones, premier test sur `/health` |
 
-#### Phase 2 — Threat Feeds (J8–J21)
+#### Phase 2 : Threat Feeds (J8-J21)
 
 | Tâche | Date | Contenu |
 |---|---|---|
 | T2.1 | 06/08 | Modèle `ThreatFeed` et migration |
 | T2.2 | 06/08 | Contrôleurs CRUD `/api/v1/feeds` avec schémas Pydantic |
-| — | 07/08 | *Activité externe :* création du compte AlienVault OTX et récupération de la clé API |
+| - | 07/08 | *Activité externe :* création du compte AlienVault OTX et récupération de la clé API |
 | T2.3 | 07/08 | Client HTTP asynchrone générique, parseurs JSON / CSV / STIX |
 | T2.4 | 08/08 | Modèle `Indicator` et migration |
 | T2.5 | 08/08 | Insertion optimisée et déduplication automatique (upsert) |
@@ -560,7 +560,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T2.9 | 15/08 | Connecteur AlienVault OTX, extraction des pulses récents |
 | T2.10 | 16/08 | Parseur STIX/TAXII |
 
-#### Phase 3 — CVE Tracker (J22–J35)
+#### Phase 3 : CVE Tracker (J22-J35)
 
 | Tâche | Date | Contenu |
 |---|---|---|
@@ -573,7 +573,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T3.7 | 26/08 | CLI `illwatch cves list / search / alert` |
 | T3.8 | 27/08 | Tests de précision du scoring et de tolérance aux pannes réseau |
 
-#### Phase 4 — Incident Management (J36–J49)
+#### Phase 4 : Incident Management (J36-J49)
 
 | Tâche | Date | Contenu |
 |---|---|---|
@@ -586,7 +586,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T4.7 | 09/09 | CLI `illwatch incidents list / create / close` |
 | T4.8 | 10/09 | Tests d'intégrité de la machine d'état et des transitions interdites |
 
-#### Phase 5 — SOC Dashboard (J50–J56)
+#### Phase 5 : SOC Dashboard (J50-J56)
 
 | Tâche | Date | Contenu |
 |---|---|---|
@@ -597,7 +597,7 @@ Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semain
 | T5.5 | 21/09 | Moteur de sérialisation et d'export JSON / CSV |
 | T5.6 | 22/09 | Tests d'intégration des métriques et formats d'export |
 
-#### Phase 6 — Threat Hunting (J57–J63)
+#### Phase 6 : Threat Hunting (J57-J63)
 
 | Tâche | Date | Contenu |
 |---|---|---|
@@ -616,8 +616,8 @@ le dépôt. Le gabarit normé est fourni dans [`../Rapport/TEMPLATE.md`](../Rapp
 
 ## 6. Guide d'onboarding développeur
 
-Le guide pratique complet — prérequis, installation pas à pas, structure du dépôt expliquée dossier
-par dossier, standards d'ingénierie, GitFlow et première tâche — vit dans un fichier dédié :
+Le guide pratique complet : prérequis, installation pas à pas, structure du dépôt expliquée dossier
+par dossier, standards d'ingénierie, GitFlow et première tâche : vit dans un fichier dédié :
 [`ONBOARDING.md`](ONBOARDING.md).
 
 ---

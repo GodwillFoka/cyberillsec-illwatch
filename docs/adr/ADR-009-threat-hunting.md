@@ -1,4 +1,4 @@
-# ADR-009 — Threat hunting : règles déterministes, deux modes, sessions enregistrées
+# ADR-009, Threat hunting : règles déterministes, deux modes, sessions enregistrées
 
 - **Statut :** proposé
 - **Date :** 2026-10-03

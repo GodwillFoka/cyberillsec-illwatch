@@ -1,4 +1,4 @@
-"""Mesure de la corrélation sur un jeu de données figé — M8, incrément 4 (ADR-017, ADR-020).
+"""Mesure de la corrélation sur un jeu de données figé : M8, incrément 4 (ADR-017, ADR-020).
 
 `benchmark.json` (versionné) décrit des actifs, des CVE et des IOC fictifs, et la liste des
 évènements attendus ; tout autre évènement produit est un faux positif. La mesure tourne

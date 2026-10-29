@@ -1,4 +1,4 @@
-"""Journal des collectes et santé des sources — ADR-016, écran « Sources CTI »."""
+"""Journal des collectes et santé des sources : ADR-016, écran « Sources CTI »."""
 
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta

@@ -1,4 +1,4 @@
-# ILLWATCH — Audit global du 10/10/2026
+# ILLWATCH : Audit global du 10/10/2026
 
 **Périmètre :** dépôt complet sur `main` @ `56f12db` (API, worker, CLI, interface web, migrations,
 CI GitHub et GitLab, documentation, suivi de projet). **Méthode :** revue indépendante (agent
@@ -30,8 +30,8 @@ mises à jour mineures (#13, #15, #19). `main` @ `12fbe41` : CI et publication v
 | Faible | Fenêtre de calcul du retrait (7 j) relue à chaque cycle | ✅ ramenée à 2 j |
 | Faible | Détail d'une CVE non relu après une alerte | ✅ relu |
 | Faible | `aria-selected` sur des lignes de tableau simple | ✅ `aria-current` |
-| Faible | `Retry-After` d'une réponse 429 ignoré (retrait à 1 min) | ⏳ ouvert — à traiter avec le lot « sources » (M8) |
-| Faible | Événement déduit dans un point de sauvegarde annulé, non oublié | ⏳ ouvert — impact nul en pratique (l'interface relit), à reprendre si un cas réel apparaît |
+| Faible | `Retry-After` d'une réponse 429 ignoré (retrait à 1 min) | ⏳ ouvert : à traiter avec le lot « sources » (M8) |
+| Faible | Événement déduit dans un point de sauvegarde annulé, non oublié | ⏳ ouvert : impact nul en pratique (l'interface relit), à reprendre si un cas réel apparaît |
 | Info | GitLab (référence) ne contrôlait pas l'interface | ✅ jobs `openapi` et `interface`, image vérifiée servant l'interface |
 | Info | Repli `npm install` si le verrouillage manque ; artefact obsolète | ✅ `npm ci` obligatoire (CI et image) |
 | Info | npm non suivi par Dependabot | ✅ suivi ; mineures regroupées, majeures planifiées à la main |

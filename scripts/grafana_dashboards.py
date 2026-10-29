@@ -101,7 +101,7 @@ def service() -> dict[str, Any]:
     ok = [(None, "red"), (1, "green")]
     return dashboard(
         "illwatch-service",
-        "ILLWATCH — Service",
+        "ILLWATCH: Service",
         [
             panel(
                 lay,
@@ -191,7 +191,7 @@ def cti() -> dict[str, Any]:
     lay = Layout()
     return dashboard(
         "illwatch-cti",
-        "ILLWATCH — Collecte et SOC",
+        "ILLWATCH : Collecte et SOC",
         [
             panel(
                 lay,

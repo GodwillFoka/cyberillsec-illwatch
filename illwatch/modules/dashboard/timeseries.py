@@ -1,4 +1,4 @@
-"""Séries temporelles du tableau de bord — ADR-016 (Vue d'ensemble).
+"""Séries temporelles du tableau de bord : ADR-016 (Vue d'ensemble).
 
 Comptage par tranche (heure ou jour, en UTC) des nouveaux IOC, des alertes CVE et des incidents
 ouverts, avec la répartition par niveau (sévérité ou priorité). Les tranches vides valent zéro :

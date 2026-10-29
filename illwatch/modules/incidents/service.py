@@ -1,4 +1,4 @@
-"""Gestion des incidents — MOD-04, RF-17 à RF-20 (phase 4, ADR-008).
+"""Gestion des incidents : MOD-04, RF-17 à RF-20 (phase 4, ADR-008).
 
 Toute action sur un incident passe par ce service, qui garantit trois invariants :
 
@@ -382,7 +382,7 @@ async def escalate(
     author_id: UUID | None,
     target: SocTier | None = None,
 ) -> Incident:
-    """Monte l'incident au niveau SOC supérieur (L1 → L2 → L3), motif obligatoire — M9.
+    """Monte l'incident au niveau SOC supérieur (L1 → L2 → L3), motif obligatoire : M9.
 
     L'escalade ne redescend jamais : un incident traité en L3 y reste jusqu'à sa clôture.
     """
@@ -523,8 +523,8 @@ async def open_from_alert(
     incident = await create_incident(
         session,
         title=tr(
-            f"{alert.cve_id} — remédiation {priority} (score {float(alert.score):.0f})",
-            f"{alert.cve_id} — {priority} remediation (score {float(alert.score):.0f})",
+            f"{alert.cve_id} : remédiation {priority} (score {float(alert.score):.0f})",
+            f"{alert.cve_id}: {priority} remediation (score {float(alert.score):.0f})",
         ),
         description=description,
         severity=PRIORITY_TO_SEVERITY[priority],

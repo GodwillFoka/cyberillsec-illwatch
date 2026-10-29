@@ -1,4 +1,4 @@
-"""Moteur CVE — synchronisation, recalcul du score et alerting (phase 3, ADR-007).
+"""Moteur CVE : synchronisation, recalcul du score et alerting (phase 3, ADR-007).
 
     KEV (catalogue complet) → NVD (hasKev à la 1re synchro, puis fenêtres incrémentales)
     → EPSS (toutes les CVE suivies) → recalcul du score des CVE touchées → alertes

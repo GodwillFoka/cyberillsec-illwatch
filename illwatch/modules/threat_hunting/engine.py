@@ -1,4 +1,4 @@
-"""Moteur de threat hunting — RF-25 à RF-28 (phase 6, ADR-009).
+"""Moteur de threat hunting : RF-25 à RF-28 (phase 6, ADR-009).
 
     observables soumis (ou IOC de la base) ─┐
     inventaire d'actifs ────────────────────┼─▶ règles du catalogue ─▶ correspondances

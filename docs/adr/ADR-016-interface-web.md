@@ -1,4 +1,4 @@
-# ADR-016 — Interface web : React + TypeScript, temps réel par SSE, système de design v6
+# ADR-016, Interface web : React + TypeScript, temps réel par SSE, système de design v6
 
 - **Statut :** **accepté le 08/10/2026** (décision de Godwill FOKA)
 - **Date :** 2026-10-08
@@ -13,9 +13,9 @@ préproduction attendrait une interface graphique. Exigences exprimées : une in
 **dynamique et asynchrone** (mises à jour sans rechargement), capable de suivre les évolutions de
 la plateforme, d'aspect professionnel et propre à CYBERILLSEC.
 
-Six itérations de maquette ont été faites (canevas « ILLWATCH — Maquette v6 (système de design) »).
+Six itérations de maquette ont été faites (canevas « ILLWATCH : Maquette v6 (système de design) »).
 La v6, adoptée, retient une console SOC « premium et sobre » : hiérarchie en trois niveaux
-(à traiter, situation, contexte), une seule échelle de priorité P0–P3, tableaux et panneaux de
+(à traiter, situation, contexte), une seule échelle de priorité P0-P3, tableaux et panneaux de
 détail uniformes, mouvement discret.
 
 ## Décision
@@ -60,12 +60,12 @@ détail uniformes, mouvement discret.
 | Lot | Contenu | Jalon |
 |---|---|---|
 | 1 | Socle `frontend/` (Vite, TS, TanStack Query, génération OpenAPI), connexion, Vue d'ensemble, Triage (alertes CVE), IOC, CVE, Incidents, Investigation, Chasse ; côté serveur : flux SSE, séries temporelles, journal de collecte | M7 |
-| 2 | Comptes, paramètres modifiables, profil, double authentification (TOTP), écran mural | M7–M9 |
+| 2 | Comptes, paramètres modifiables, profil, double authentification (TOTP), écran mural | M7-M9 |
 | 3 | Alertes de chasse dans le triage, score de confiance des IOC, géolocalisation, graphe de relations | M8 |
 | 4 | Faux positifs, niveaux L1/L2/L3, tâches d'incident, délais mesurés | M9 |
 | 5 | ATT&CK, inventaire d'actifs et exposition | M10 |
 
-## Addendum (10/10/2026) — choix d'outillage revus après le premier `npm audit`
+## Addendum (10/10/2026) : choix d'outillage revus après le premier `npm audit`
 
 - **Routage** : React Router est retiré (toute la branche 6 présentait des failles de
   redirection ouverte et de XSS ; correctif seulement en version 7). Un routeur interne de

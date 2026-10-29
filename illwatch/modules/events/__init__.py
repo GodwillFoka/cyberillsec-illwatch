@@ -1,4 +1,4 @@
-"""Bus d'événements temps réel — ADR-016 (flux SSE `GET /api/v1/stream`)."""
+"""Bus d'événements temps réel : ADR-016 (flux SSE `GET /api/v1/stream`)."""
 
 from illwatch.modules.events import derive as _derive  # noqa: F401 - enregistre les écouteurs
 from illwatch.modules.events.bus import (

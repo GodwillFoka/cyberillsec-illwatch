@@ -1,4 +1,4 @@
-# ADR-025 — M10, incrément 3 : export STIX 2.1 et serveur TAXII 2.1
+# ADR-025, M10, incrément 3 : export STIX 2.1 et serveur TAXII 2.1
 
 - **Statut :** **accepté le 15/10/2026** (décision de Godwill FOKA : « attaque M10 »)
 - **Date :** 2026-10-15
@@ -16,7 +16,7 @@ un pare-feu ou une autre plateforme CTI (OpenCTI, MISP) devait recopier les IOC 
 1. **Export STIX 2.1** (`illwatch.modules.stix.export`) :
    - un `indicator` par IOC **actif** (non expiré, non exclu : un faux positif qualifié n'est
      jamais partagé), motif STIX selon le type (une plage `NETWORK` en `ipv4-addr` ou
-     `ipv6-addr`), confiance 0–100 d'ADR-017, sévérité en étiquette `severity:…`,
+     `ipv6-addr`), confiance 0-100 d'ADR-017, sévérité en étiquette `severity:…`,
      `valid_until` à l'expiration ;
    - campagnes, acteur (`intrusion-set` pour un groupe, `malware` pour un logiciel, avec la
      référence `mitre-attack`), relations `attributed-to` / `uses` et `indicates` ;

@@ -1,4 +1,4 @@
-"""Modèles de la gestion d'incidents — MOD-04 (phase 4, ADR-008).
+"""Modèles de la gestion d'incidents: MOD-04 (phase 4, ADR-008).
 
 - `incidents` : incident de sécurité, sévérité (RF-17), statut piloté par la machine d'état
   NIST SP 800-61 (RF-18), éventuellement ouvert depuis une alerte CVE.
@@ -25,7 +25,7 @@ def _utcnow() -> datetime:
 
 
 class Incident(UUIDPrimaryKeyMixin, TimestampMixin, Base):
-    """Incident de sécurité suivant la machine d'état à 6 étapes — RF-17 / RF-18."""
+    """Incident de sécurité suivant la machine d'état à 6 étapes : RF-17 / RF-18."""
 
     __tablename__ = "incidents"
     __table_args__ = (
@@ -72,7 +72,7 @@ class Incident(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 
 class IncidentEvent(UUIDPrimaryKeyMixin, Base):
-    """Événement immuable de la chronologie d'un incident — RF-19."""
+    """Événement immuable de la chronologie d'un incident: RF-19."""
 
     __tablename__ = "incident_events"
     __table_args__ = (
@@ -115,7 +115,7 @@ def _refuse_rewrite(*_: Any) -> None:
 
 
 class IncidentIndicator(Base):
-    """IOC associé à un incident — RF-20."""
+    """IOC associé à un incident : RF-20."""
 
     __tablename__ = "incident_indicators"
 
@@ -134,7 +134,7 @@ class IncidentIndicator(Base):
 
 
 class IncidentCVE(Base):
-    """CVE associée à un incident — RF-20."""
+    """CVE associée à un incident : RF-20."""
 
     __tablename__ = "incident_cves"
 

@@ -1,4 +1,4 @@
-# ADR-015 — Miroir GitHub : CI, documentation publiée, image Docker et releases
+# ADR-015, Miroir GitHub : CI, documentation publiée, image Docker et releases
 
 - **Statut :** accepté
 - **Date :** 2026-10-06
@@ -30,7 +30,7 @@ même CI, publie la documentation, l'image Docker et les releases.
 - Distribution : une image versionnée sur `ghcr.io` évite de construire sur le serveur de
   production (`ILLWATCH_IMAGE`, `--no-build`).
 
-Option écartée : basculer entièrement sur GitHub — contredirait l'argument de souveraineté de
+Option écartée : basculer entièrement sur GitHub, contredirait l'argument de souveraineté de
 l'ADR-002 sans nécessité.
 
 ## Conséquences

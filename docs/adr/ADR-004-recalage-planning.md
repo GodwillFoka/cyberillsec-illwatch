@@ -1,4 +1,4 @@
-# ADR-004 — Recalage du planning sur la date réelle de fin de phase 1
+# ADR-004 : Recalage du planning sur la date réelle de fin de phase 1
 
 - **Statut :** proposé
 - **Date :** 2026-09-23
@@ -18,12 +18,12 @@ le 24/09/2026 :
 
 | Phase | Fenêtre | Jalon |
 |---|---|---|
-| P1 Foundation | → 24/09/2026 | M1 — 24/09/2026 |
-| P2 Threat Feeds | 25/09 – 08/10 | M2 — 08/10/2026 |
-| P3 CVE Tracker | 09/10 – 22/10 | M3 — 22/10/2026 |
-| P4 Incidents | 23/10 – 05/11 | M4 — 05/11/2026 |
-| P5 SOC Dashboard | 06/11 – 12/11 | M5 — 12/11/2026 |
-| P6 Threat Hunting | 13/11 – 19/11 | v1.0 — 19/11/2026 |
+| P1 Foundation | → 24/09/2026 | M1 : 24/09/2026 |
+| P2 Threat Feeds | 25/09 au 08/10 | M2 : 08/10/2026 |
+| P3 CVE Tracker | 09/10 au 22/10 | M3 : 22/10/2026 |
+| P4 Incidents | 23/10 au 05/11 | M4 : 05/11/2026 |
+| P5 SOC Dashboard | 06/11 au 12/11 | M5 : 12/11/2026 |
+| P6 Threat Hunting | 13/11 au 19/11 | v1.0 : 19/11/2026 |
 
 ## Justification
 

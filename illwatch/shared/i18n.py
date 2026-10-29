@@ -1,4 +1,4 @@
-"""Choix de la langue d'affichage (ADR-027) — fonctions pures, sans base ni réseau.
+"""Choix de la langue d'affichage (ADR-027) : fonctions pures, sans base ni réseau.
 
 Ordre de décision, demandé par CYBERILL le 23/10/2026 (« la langue s'adapte au pays ») :
 

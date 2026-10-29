@@ -1,4 +1,4 @@
-"""Modèle User — table `users` (§4.4 du Cahier des Charges)."""
+"""Modèle User : table `users` (§4.4 du Cahier des Charges)."""
 
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column

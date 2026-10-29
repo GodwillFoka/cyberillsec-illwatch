@@ -1,4 +1,4 @@
-"""`illwatch assets` et `illwatch correlate` — inventaire et corrélation (M8, ADR-020).
+"""`illwatch assets` et `illwatch correlate` : inventaire et corrélation (M8, ADR-020).
 
     illwatch assets add "Pare-feu siège" --product FortiOS --criticality CRITICAL \\
         --address 198.51.100.10 --domain vpn.example.com
@@ -293,7 +293,7 @@ def event_version(event: Any) -> str:
     """Version déclarée et verdict d'ADR-021 ; « non vérifiée » avant la corrélation par version."""
     detail = event.detail or {}
     if not event.cve_id:
-        return "—"
+        return "-"
     verdict = VERDICT_SHORT.get(str(detail.get("version_check")), "non vérifiée")
     return f"{detail.get('version') or '?'} · {verdict}"
 
@@ -402,7 +402,7 @@ def correlate_evaluate(report_path: Path | None) -> None:
             console.print(f"  [red]{label} :[/] {item}")
     if report_path is not None:
         lines = [
-            f"# Mesure de la corrélation — jeu {result.version}",
+            f"# Mesure de la corrélation : jeu {result.version}",
             "",
             "| Mesure | Valeur |",
             "|---|---|",

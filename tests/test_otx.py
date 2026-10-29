@@ -67,7 +67,7 @@ def test_analyse_d_une_page() -> None:
         ("44d88612fea8a8f36de82e1278abb02f", IndicatorType.HASH_MD5),
     ]
     assert parsed.skipped == 2  # CVE, indicateur inactif (les plages CIDR sont retenues)
-    assert parsed.observations[0].description == "Campagne QakBot — infrastructure C2"
+    assert parsed.observations[0].description == "Campagne QakBot \u2014 infrastructure C2"
     # Sans date propre, l'IOC prend la date de modification du pulse.
     assert parsed.observations[3].observed_at == datetime(2026, 9, 27, 9, 0, tzinfo=UTC)
 

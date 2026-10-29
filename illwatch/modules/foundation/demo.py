@@ -1,4 +1,4 @@
-"""Jeu de données de démonstration — préproduction locale, captures d'écran, présentations.
+"""Jeu de données de démonstration : préproduction locale, captures d'écran, présentations.
 
 Toutes les valeurs sont **fictives** : adresses des plages réservées à la documentation
 (RFC 5737 : 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 ; RFC 3849 : 2001:db8::/32),
@@ -122,9 +122,9 @@ _DEMO_ASSETS = [
     (("Intégration continue", "Continuous integration"), "Jenkins", "Jenkins", Severity.LOW, []),
     (
         (
-            "Passerelle de messagerie sécurisée du siège — cluster de production principal "
+            "Passerelle de messagerie sécurisée du siège : cluster de production principal "
             "(Francfort)",
-            "Headquarters secure email gateway — main production cluster (Frankfurt)",
+            "Headquarters secure email gateway: main production cluster (Frankfurt)",
         ),
         "Proofpoint Email Protection",
         "Proofpoint",

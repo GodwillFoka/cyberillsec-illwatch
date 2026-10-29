@@ -1,4 +1,4 @@
-# 🛡️ SENTRY — Bilan M7 « Production Hardening », lot 2
+# 🛡️ SENTRY : Bilan M7 « Production Hardening », lot 2
 
 **Date :** 04/10/2026 · **Branche :** `feature/m7-production-hardening` (lots 1 et 2) ·
 **Décision :** ADR-012 (proposé)
@@ -63,7 +63,7 @@ Avec le CVSS réel du NVD et sans EPSS, la répartition des 1 733 CVE KEV est :
 
 | Priorité | CVE | Score moyen |
 |---|---|---|
-| P0 | **0** | — |
+| P0 | **0** | - |
 | P1 | 617 | 65,9 |
 | P2 | 1 100 | 51,6 |
 | P3 | 16 | 37,8 |
@@ -91,7 +91,7 @@ d'EPSS sur la répartition reste à mesurer sur Kali.
 | Opérations API / commandes CLI | 33 / 35 | **35 / 40** |
 | Image Docker | non construite | **construite et exécutée** (base de substitution) |
 | `pip-audit` / `bandit` haut-moyen | 0 / 0 | **0 / 0** |
-| Rafraîchissement de session (latence) | — | 9,8 ms |
+| Rafraîchissement de session (latence) | - | 9,8 ms |
 
 ## 6. Limites assumées
 

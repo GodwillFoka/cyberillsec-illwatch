@@ -1,4 +1,4 @@
-"""Service de gestion des sources de flux — RF-04 (CRUD), MOD-02.
+"""Service de gestion des sources de flux : RF-04 (CRUD), MOD-02.
 
 Logique métier pure : aucune dépendance à HTTP ni à la CLI, pour que l'API
 (`/api/v1/feeds`) et la future commande `illwatch feeds` (T2.7) partagent
@@ -97,7 +97,7 @@ def validate_feed_url(url: str, *, max_length: int = MAX_URL_LENGTH) -> str:
 
     Règles :
       * HTTPS uniquement : un flux en clair peut être falsifié en transit
-        (injection de faux IOC) — RNF-SEC-01 ;
+        (injection de faux IOC): RNF-SEC-01 ;
       * aucun identifiant dans l'URL (`https://user:pass@…`) : un secret n'a
         rien à faire dans une colonne lisible par tous les rôles ;
       * hôte public : pas d'IP privée, de loopback, de link-local (dont

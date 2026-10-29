@@ -1,4 +1,4 @@
-"""`illwatch demo` — jeu de données de démonstration (préproduction locale, captures).
+"""`illwatch demo` : jeu de données de démonstration (préproduction locale, captures).
 
 Valeurs fictives uniquement ; refusé sur une base qui contient déjà des IOC.
 """

@@ -1,4 +1,4 @@
-"""Extrait ATT&CK minimal pour la démonstration (`illwatch demo load`) — M10, ADR-023.
+"""Extrait ATT&CK minimal pour la démonstration (`illwatch demo load`) : M10, ADR-023.
 
 Quelques techniques, un groupe et un logiciel réels d'ATT&CK Enterprise, pour que les
 écrans montrent le contexte ATT&CK sans téléchargement. `illwatch attack import` le

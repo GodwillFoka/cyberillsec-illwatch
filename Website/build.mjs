@@ -41,7 +41,7 @@ const legalMissing = legal.required.filter((key) => !String(legal[key] || "").tr
 const PUBLIC = process.env.ILLWATCH_SITE_PUBLIC === "1";
 if (legalMissing.length) {
   const message = `mentions légales incomplètes (src/data/legal.json) : ${legalMissing.join(", ")}`;
-  if (PUBLIC) problems.push(`${message} — publication publique refusée`);
+  if (PUBLIC) problems.push(`${message} : publication publique refusée`);
   else console.warn(`⚠ ${message} (pages légales marquées noindex)`);
 }
 

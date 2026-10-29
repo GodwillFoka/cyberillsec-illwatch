@@ -1,4 +1,4 @@
-"""Moteur de Score de Risque Composite — RF-14 (§3.3.3 du Cahier des Charges).
+"""Moteur de Score de Risque Composite : RF-14 (§3.3.3 du Cahier des Charges).
 
 Formule de référence (CdC v1.0.0, baseline approuvée) :
 
@@ -13,13 +13,13 @@ Formule de référence (CdC v1.0.0, baseline approuvée) :
 Somme des contributions maximales = 100, la borne `min` est donc une sécurité
 défensive contre des entrées hors domaine plutôt qu'un écrêtage nominal.
 
-ÉCART DOCUMENTÉ — le Product Vision Document v1.0 décrit une pondération
+ÉCART DOCUMENTÉ : le Product Vision Document v1.0 décrit une pondération
 différente (CVSS 30 % + EPSS 25 % + KEV 25 % + Exploit 10 % + Ransomware 5 %
 + CWE 5 %) et des seuils différents (70/40/20 au lieu de 80/60/40). Le Cahier
 des Charges, seul document « Approuvé pour Développement », fait foi pour la
 v1.0. Voir docs/adr/ADR-001-scoring-composite.md.
 
-PLANCHER KEV (ADR-014, décidé le 07/10/2026) — une CVE du catalogue CISA KEV est classée
+PLANCHER KEV (ADR-014, décidé le 07/10/2026) : une CVE du catalogue CISA KEV est classée
 **au moins P1**, quel que soit son score. Le score lui-même n'est pas modifié (formule
 inchangée, comparabilité de l'historique préservée) : seule la priorité est relevée, et
 `RiskBreakdown.kev_floor` le signale. Motif : une vulnérabilité activement exploitée ne peut
@@ -31,7 +31,7 @@ from dataclasses import dataclass
 
 from illwatch.shared.enums import RiskPriority
 
-# Coefficients de pondération — §3.3.3
+# Coefficients de pondération : §3.3.3
 W_CVSS = 3.0
 W_EPSS = 25.0
 W_KEV = 25.0
@@ -40,7 +40,7 @@ W_ATTACK = 10.0
 
 MAX_SCORE = 100.0
 
-# Grille de décision SOC — §3.3.3
+# Grille de décision SOC : §3.3.3
 THRESHOLD_CRITICAL = 80.0
 THRESHOLD_HIGH = 60.0
 THRESHOLD_MEDIUM = 40.0

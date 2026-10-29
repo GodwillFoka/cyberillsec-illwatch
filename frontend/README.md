@@ -64,9 +64,9 @@ liste chaque fichier `*.i18n.ts` à compléter.
 | `src/auth/` | session : connexion, renouvellement anticipé, déconnexion |
 | `src/realtime/` | flux SSE : analyse, reconnexion, pause, relecture des données concernées |
 | `src/layout/` | menu latéral, barre supérieure (direct, pause, UTC/local) |
-| `src/components/` | carte indicateur, badges P0–P3, graphique, états de chargement, pagination, association à un incident, score de CVE |
+| `src/components/` | carte indicateur, badges P0-P3, graphique, états de chargement, pagination, association à un incident, score de CVE |
 | `src/pages/` | écrans du lot 1 : vue d'ensemble, triage, incidents (et investigation), indicateurs, CVE, chasse |
 
 Règles : aucun type d'échange écrit à la main (`src/api/types.ts` ne fait que nommer les types
-générés) ; une donnée absente s'affiche « — », jamais une valeur inventée ; pas de script ni de
+générés) ; une donnée absente s'affiche « - », jamais une valeur inventée ; pas de script ni de
 style en ligne (politique de sécurité `script-src 'self'; style-src 'self'`).

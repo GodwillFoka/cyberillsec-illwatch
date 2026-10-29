@@ -1,4 +1,4 @@
-"""Connecteur TAXII 2.1 — tâche 1.8, client de référence `taxii2-client` (OASIS).
+"""Connecteur TAXII 2.1 : tâche 1.8, client de référence `taxii2-client` (OASIS).
 
     ILLWATCH ─▶ fetch_taxii ─┬─▶ taxii2-client (production) ─▶ Collection.get_objects()
                            └─▶ fetcher injecté (tests, TAXII_CLIENT=builtin)

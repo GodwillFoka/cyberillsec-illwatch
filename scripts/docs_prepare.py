@@ -69,7 +69,7 @@ def main() -> None:
         title = head[0].lstrip("# ").strip()
         found = DATE.search("\n".join(head[:12]))
         key = (found.group(3), found.group(2), found.group(1)) if found else ("0", "0", "0")
-        label = f"{found.group(1)}/{found.group(2)}/{found.group(3)} — " if found else ""
+        label = f"{found.group(1)}/{found.group(2)}/{found.group(3)}: " if found else ""
         entries.append((key, f"- {label}[{title}]({report.name})"))
     lines += [line for _, line in sorted(entries, reverse=True)]
     (target / "index.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

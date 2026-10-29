@@ -1,4 +1,4 @@
-"""CLI `illwatch audit` — consultation du journal d'audit de sécurité (M7, ADR-011).
+"""CLI `illwatch audit` : consultation du journal d'audit de sécurité (M7, ADR-011).
 
 illwatch audit list                          # 30 dernières actions
 illwatch audit list --action auth. --outcome FAILURE --since 24
@@ -54,9 +54,9 @@ def audit_list(
                         f"{r.occurred_at:%Y-%m-%d %H:%M:%S}",
                         r.action,
                         r.outcome,
-                        r.actor_name or "—",
-                        f"{r.target_type}:{r.target_id}" if r.target_type else "—",
-                        r.ip or "—",
+                        r.actor_name or "-",
+                        f"{r.target_type}:{r.target_id}" if r.target_type else "-",
+                        r.ip or "-",
                     )
                     for r in rows
                 ], total

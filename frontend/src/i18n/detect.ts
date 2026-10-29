@@ -1,4 +1,4 @@
-// Langue de l'interface à l'ouverture (ADR-027) — même ordre que le site et l'API :
+// Langue de l'interface à l'ouverture (ADR-027) : même ordre que le site et l'API :
 //   1. choix fait par l'utilisateur (mémorisé dans ce navigateur) ;
 //   2. réponse de `GET /api/v1/locale` : pays de l'adresse IP (ou de l'instance sur un réseau
 //      interne), le navigateur départageant les pays bilingues ; puis navigateur ; puis langue

@@ -1,22 +1,22 @@
-# ILLWATCH — Product Vision Document
+# ILLWATCH : Product Vision Document
 
 > **Conversion Markdown versionnable** du document
-> `CYBERILL-ILLWATCH — Product Vision Document v1.0` (Godwill FOKA, Berlin, juillet 2026).
+> `CYBERILL-ILLWATCH : Product Vision Document v1.0` (Godwill FOKA, Berlin, juillet 2026).
 > Le PDF d'origine est conservé dans [`pdf/CYBERILL-SENTRY-PRODUCT-VISION_3.pdf`](pdf/CYBERILL-SENTRY-PRODUCT-VISION_3.pdf).
 >
 > Ce document porte la **vision produit et stratégique**. Pour les spécifications opposables au
-> développement, c'est le [Cahier des charges](CAHIER_DES_CHARGES.md) qui fait foi — il est le seul
+> développement, c'est le [Cahier des charges](CAHIER_DES_CHARGES.md) qui fait foi : il est le seul
 > document marqué « approuvé pour développement ».
 
 ---
 
-## Tome 1 — Vision & stratégie
+## Tome 1 : Vision & stratégie
 
 ### CYBERILL
 
 CYBERILL est né d'une conviction : la cybersécurité n'est pas un luxe mais une nécessité. Fondé par
 Godwill FOKA, Cybersecurity Engineer à Berlin, CYBERILL rassemble six domaines fonctionnant en
-synergie — CyberillSec alimente les autres branches en renseignements, Cyberill Labs enrichit
+synergie : CyberillSec alimente les autres branches en renseignements, Cyberill Labs enrichit
 CyberillSec par ses recherches, et chaque projet renforce les autres.
 
 | Projet | Domaine | Description |
@@ -34,8 +34,8 @@ Innovation · Excellence · Transparence · Souveraineté · Collaboration · É
 
 ### CyberillSec
 
-Face à un paysage de menace professionnalisé — 1 655 CVE au catalogue KEV, 858 techniques MITRE
-ATT&CK, RaaS en expansion — CyberillSec collecte, corrèle et analyse le renseignement pour anticiper
+Face à un paysage de menace professionnalisé : 1 655 CVE au catalogue KEV, 858 techniques MITRE
+ATT&CK, RaaS en expansion : CyberillSec collecte, corrèle et analyse le renseignement pour anticiper
 les attaques. ILLWATCH en est le moteur technologique.
 
 **Cinq problèmes majeurs** : surcharge informationnelle, fragmentation des outils, coût (> 50 k€/an
@@ -46,7 +46,7 @@ hébergement européen.
 
 ---
 
-## Tome 2 — Étude de marché
+## Tome 2 : Étude de marché
 
 | Indicateur | Valeur |
 |---|---|
@@ -63,12 +63,12 @@ hébergement européen.
 | Open source | Non | Non | AGPL | Apache | **MIT** |
 | Dashboard | Oui | Partiel | Non | Non | **Natif** |
 | Scoring | Oui | Oui | Non | Non | **Composite** |
-| Prix / an | 50–100 k$ | 30–200 k$ | 0 $ | 0 $ | **0 $ (CE)** |
+| Prix / an | 50-100 k$ | 30-200 k$ | 0 $ | 0 $ | **0 $ (CE)** |
 | Hébergement UE | Non | Non | Oui | Oui | **Oui** |
 
 ---
 
-## Tome 3 — Architecture fonctionnelle
+## Tome 3 : Architecture fonctionnelle
 
 ### Pipeline de Threat Intelligence
 
@@ -83,7 +83,7 @@ BSI.
 ### Algorithme de scoring composite (vision)
 
 CVSS 30 % + EPSS 25 % + KEV 25 % + Exploit 10 % + Ransomware 5 % + CWE 5 %.
-Seuils : 0–20 faible · 20–40 moyen · 40–70 élevé · 70–100 critique.
+Seuils : 0-20 faible · 20-40 moyen · 40-70 élevé · 70-100 critique.
 
 > ⚠️ **Écart avec le cahier des charges.** Le CdC v1.0.0 retient une pondération différente
 > (Ransomware 10 %, pas de facteur CWE) et des seuils différents (80/60/40). Le CdC fait foi pour
@@ -92,20 +92,20 @@ Seuils : 0–20 faible · 20–40 moyen · 40–70 élevé · 70–100 critique.
 
 ### Modules complémentaires
 
-**IOC Management** — base centralisée (IP, domaine, URL, hash, e-mail, certificat) avec cycle de vie
+**IOC Management** : base centralisée (IP, domaine, URL, hash, e-mail, certificat) avec cycle de vie
 `New → Active → Aged → Expired` et enrichissement automatique.
 
-**Incident Response** — workflow NIST SP 800-61 Rev. 2, 5 playbooks (ransomware, phishing, DDoS,
+**Incident Response** : workflow NIST SP 800-61 Rev. 2, 5 playbooks (ransomware, phishing, DDoS,
 malware, data breach), génération de rapports PDF.
 
-**SOC Dashboard** — 15 widgets temps réel, KPI (MTTR, MTTD), cartographie mondiale, heatmap.
+**SOC Dashboard** : 15 widgets temps réel, KPI (MTTR, MTTD), cartographie mondiale, heatmap.
 
-**AI Assistant (phase 6)** — LLM (Llama 3 / Mistral) + RAG pour résumé automatique, analyse d'IOC et
+**AI Assistant (phase 6)** : LLM (Llama 3 / Mistral) + RAG pour résumé automatique, analyse d'IOC et
 génération de rapports.
 
 ---
 
-## Tome 4 — Cahier des charges général
+## Tome 4 : Cahier des charges général
 
 | Aspect | Valeur |
 |---|---|
@@ -118,21 +118,21 @@ génération de rapports.
 
 ---
 
-## Tome 5 — Cahier des charges fonctionnel
+## Tome 5 : Cahier des charges fonctionnel
 
-**F-THR-001 — Gestion des menaces.** Entrées : données brutes des collecteurs. Sorties : menace
+**F-THR-001, Gestion des menaces.** Entrées : données brutes des collecteurs. Sorties : menace
 normalisée et scorée. Critères d'acceptation : normalisation uniforme, alerte si score ≥ 70,
 recherche < 500 ms.
 
-**F-CVE-001 — Gestion des CVE.** Réception NVD → enrichissement EPSS/KEV → scoring → actions
+**F-CVE-001 : Gestion des CVE.** Réception NVD → enrichissement EPSS/KEV → scoring → actions
 (critique : immédiat ; élevé : quotidien).
 
-**F-IR-001 — Gestion des incidents.** Création → analyse → containment → éradication → restauration
+**F-IR-001 : Gestion des incidents.** Création → analyse → containment → éradication → restauration
 → post-mortem. 5 playbooks, rapport PDF automatique.
 
 ---
 
-## Tome 6 — Cahier des charges technique
+## Tome 6 : Cahier des charges technique
 
 | Couche | Technologie |
 |---|---|
@@ -151,7 +151,7 @@ JWT à partir de la phase 4.
 
 ---
 
-## Tome 7 — Architecture technique
+## Tome 7 : Architecture technique
 
 Architecture en couches : Sources → Collecteurs (8+) → Normalisation et enrichissement → Stockage
 (SQLite/PostgreSQL + JSON) → API FastAPI → Sorties (dashboard, CLI, Telegram, e-mail).
@@ -161,23 +161,23 @@ volume dépassera 100 000 événements par jour.
 
 ---
 
-## Tome 8 — Roadmap
+## Tome 8 : Roadmap
 
 | Phase | Durée | Livrable |
 |---|---|---|
 | P0 Foundation | S1 | Structure + CLI + CI/CD |
-| P1 Threat Feeds | S2–3 | 8 collecteurs + API + dashboard |
-| P2 Vuln Intel | S4–5 | CVE + EPSS + KEV + bulletins |
-| P3 Incident Response | S6–7 | Playbooks + timeline + rapports |
-| P4 SOC Dashboard | S8–9 | KPI + graphiques + cartes |
-| P5 Hunting | S10–13 | Sigma + YARA + ATT&CK |
-| P6 AI | S14–17 | LLM + RAG + résumé automatique |
-| P7 Enterprise | S18–21 | Multi-tenant + SSO |
-| P8 Cloud | S22–25+ | Cyberill TI Cloud |
+| P1 Threat Feeds | S2-3 | 8 collecteurs + API + dashboard |
+| P2 Vuln Intel | S4-5 | CVE + EPSS + KEV + bulletins |
+| P3 Incident Response | S6-7 | Playbooks + timeline + rapports |
+| P4 SOC Dashboard | S8-9 | KPI + graphiques + cartes |
+| P5 Hunting | S10-13 | Sigma + YARA + ATT&CK |
+| P6 AI | S14-17 | LLM + RAG + résumé automatique |
+| P7 Enterprise | S18-21 | Multi-tenant + SSO |
+| P8 Cloud | S22-25+ | Cyberill TI Cloud |
 
 ---
 
-## Tome 9 — Gestion de projet
+## Tome 9 : Gestion de projet
 
 Scrum en sprints de deux semaines, GitLab Boards, GitFlow. Équipe cible phase 1 : PO / lead dev
 seul. Équipe cible phase 7 : 15 à 20 personnes.
@@ -187,19 +187,19 @@ concurrence (atténuée par la différenciation open source).
 
 ---
 
-## Tome 10 — Communication & marketing
+## Tome 10 : Communication & marketing
 
 Identité visuelle : Indigo `#20155C` + Orange `#E6681B`, logo bouclier « S », typographie Inter.
-Canaux : GitLab (continu), LinkedIn (2–3 par semaine), blog (1 par semaine), Discord, Telegram.
+Canaux : GitLab (continu), LinkedIn (2-3 par semaine), blog (1 par semaine), Discord, Telegram.
 
 > **Écart documenté.** Le PVD d'origine désignait GitHub comme canal principal. L'hébergement du
-> code a été déplacé sur GitLab pour cohérence avec le positionnement de souveraineté européenne —
+> code a été déplacé sur GitLab pour cohérence avec le positionnement de souveraineté européenne :
 > voir [`adr/ADR-002-hebergement-gitlab.md`](adr/ADR-002-hebergement-gitlab.md), qui documente aussi
 > le coût de ce choix en découvrabilité auprès des contributeurs.
 
 ---
 
-## Tome 11 — Open source
+## Tome 11 : Open source
 
 Licence MIT (permissive). Code of Conduct : Contributor Covenant v2.1. Standards : Ruff (PEP 8),
 mypy strict, Conventional Commits, couverture ≥ 80 %.
@@ -208,7 +208,7 @@ Workflow contributeur : Fork → Branch → Code → Test → Commit → MR → 
 
 ---
 
-## Tome 12 — Vision 2035
+## Tome 12 : Vision 2035
 
 > En 2035, CyberillSec sera la plateforme européenne de référence en CTI.
 
@@ -221,8 +221,8 @@ Workflow contributeur : Fork → Branch → Code → Test → Commit → MR → 
 | Revenus | 20 M€+ / an |
 | Reconnaissance | Partenaire ENISA, FIRST, CERT-EU |
 
-**Quatre scénarios :** European Champion (60 %) — leader CTI européen ; Africa Bridge (25 %) — pont
-Europe-Afrique ; The Platform (10 %) — multi-produits ; The Niche (5 %) — projet maintenu.
+**Quatre scénarios :** European Champion (60 %) : leader CTI européen ; Africa Bridge (25 %) : pont
+Europe-Afrique ; The Platform (10 %) : multi-produits ; The Niche (5 %) : projet maintenu.
 
 ---
 
@@ -230,6 +230,6 @@ Europe-Afrique ; The Platform (10 %) — multi-produits ; The Niche (5 %) — pr
 
 **Construisons ensemble l'alternative européenne en Cyber Threat Intelligence.**
 
-*Godwill FOKA — Cybersecurity Engineer, Initiator @ CYBERILL · Berlin, juillet 2026*
+*Godwill FOKA : Cybersecurity Engineer, Initiator @ CYBERILL · Berlin, juillet 2026*
 
 </div>

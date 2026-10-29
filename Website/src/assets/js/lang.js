@@ -1,4 +1,4 @@
-// Choix de la langue à la première visite (ADR-027) — fonctions pures, testées par
+// Choix de la langue à la première visite (ADR-027) : fonctions pures, testées par
 // tests/lang.test.mjs. Même ordre que l'API (illwatch/shared/i18n.py) :
 //   1. choix mémorisé du visiteur ;
 //   2. réponse du serveur (pays de l'adresse IP, navigateur, langue de l'instance) ;

@@ -1,4 +1,4 @@
-"""Moteur de corrélation — M8, ADR-020 (incrément 3).
+"""Moteur de corrélation : M8, ADR-020 (incrément 3).
 
 Trois règles relient l'inventaire d'actifs au renseignement collecté :
 
@@ -10,7 +10,7 @@ Trois règles relient l'inventaire d'actifs au renseignement collecté :
   la confiance atteint le seuil (`CORRELATION_MIN_CONFIDENCE`, 40 = « moyenne ») : un actif
   compromis, usurpé ou listé.
 
-Score 0–100, chaque point justifié (`detail.breakdown`) : base de la règle + criticité de
+Score 0-100, chaque point justifié (`detail.breakdown`) : base de la règle + criticité de
 l'actif + signal (score de la CVE ou confiance de l'IOC). La priorité suit la même grille
 que les CVE (P0 ≥ 80, P1 ≥ 60, P2 ≥ 40). Un évènement est unique par règle et par couple
 (actif, CVE/IOC) : une nouvelle passe le met à jour ; s'il monte d'un cran de priorité après
@@ -61,8 +61,8 @@ CRITICALITY_POINTS: dict[str, float] = {
     Severity.HIGH: 12.0,
     Severity.CRITICAL: 20.0,
 }
-CVE_SIGNAL_WEIGHT = 0.2  # score composite de la CVE (0–100) → 0–20 points
-IOC_SIGNAL_WEIGHT = 0.3  # confiance de l'IOC (0–100) → 0–30 points
+CVE_SIGNAL_WEIGHT = 0.2  # score composite de la CVE (0-100) → 0-20 points
+IOC_SIGNAL_WEIGHT = 0.3  # confiance de l'IOC (0-100) → 0-30 points
 
 RULE_LABEL: dict[CorrelationRule, str] = {
     CorrelationRule.KEV_ASSET: "CVE exploitée activement (KEV) sur un actif",
@@ -103,7 +103,7 @@ class Finding:
     rule: CorrelationRule
     asset: Asset
     title: str
-    signal: float  # 0–100 : score de la CVE ou confiance de l'IOC
+    signal: float  # 0-100 : score de la CVE ou confiance de l'IOC
     detail: dict[str, Any]
     cve_id: str | None = None
     indicator_id: Any = None

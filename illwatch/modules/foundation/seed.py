@@ -1,4 +1,4 @@
-"""Amorçage des données de référence — `illwatch seed` (RF-03).
+"""Amorçage des données de référence : `illwatch seed` (RF-03).
 
 Idempotent : relancer la commande ne crée aucun doublon. Seules des sources
 publiques et gratuites sont semées. Les clés éventuelles (ABUSECH_AUTH_KEY pour
@@ -40,11 +40,18 @@ class FeedSeed:
     def label(self) -> str:
         return tr(self.name, self.name_en or self.name)
 
+    def legacy_names(self) -> tuple[str, ...]:
+        """Noms publiés avant le 30/10/2026, au tiret long (renommés sans doublon)."""
+        names = [self.name.replace(" : ", " \u2014 ", 1)]
+        if self.name_en:
+            names.append(self.name_en.replace(": ", " \u2014 ", 1))
+        return tuple(n for n in names if n not in (self.name, self.name_en))
+
 
 REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
     FeedSeed(
-        name="abuse.ch URLhaus — URL malveillantes récentes",
-        name_en="abuse.ch URLhaus — recent malicious URLs",
+        name="abuse.ch URLhaus : URL malveillantes récentes",
+        name_en="abuse.ch URLhaus: recent malicious URLs",
         # Depuis 2025, abuse.ch exige une clé (Auth-Key) dans l'URL de téléchargement.
         url="https://urlhaus-api.abuse.ch/v2/files/exports/{ABUSECH_AUTH_KEY}/recent.csv",
         feed_type=FeedType.CSV,
@@ -52,8 +59,8 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         reliability=SourceReliability.B,
     ),
     FeedSeed(
-        name="abuse.ch Feodo Tracker — serveurs C2 botnet",
-        name_en="abuse.ch Feodo Tracker — botnet C2 servers",
+        name="abuse.ch Feodo Tracker : serveurs C2 botnet",
+        name_en="abuse.ch Feodo Tracker: botnet C2 servers",
         url="https://feodotracker.abuse.ch/downloads/ipblocklist.csv",
         feed_type=FeedType.CSV,
         polling_interval=3600,
@@ -61,16 +68,16 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
     ),
     # --- Sources publiques sans clé : de quoi constater M2 dès l'installation ------------
     FeedSeed(
-        name="C2IntelFeeds — IP de serveurs C2 (30 j)",
-        name_en="C2IntelFeeds — C2 server IPs (30 d)",
+        name="C2IntelFeeds : IP de serveurs C2 (30 j)",
+        name_en="C2IntelFeeds: C2 server IPs (30 d)",
         # Colonnes `#ip,ioc` : l'IOC est `ip`, `ioc` est un libellé (choix par le contenu).
         url="https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/IPC2s-30day.csv",
         feed_type=FeedType.CSV,
         polling_interval=6 * 3600,
     ),
     FeedSeed(
-        name="C2IntelFeeds — domaines de serveurs C2 (30 j)",
-        name_en="C2IntelFeeds — C2 server domains (30 d)",
+        name="C2IntelFeeds : domaines de serveurs C2 (30 j)",
+        name_en="C2IntelFeeds: C2 server domains (30 d)",
         url=(
             "https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/"
             "domainC2s-30day-filter-abused.csv"
@@ -79,8 +86,8 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         polling_interval=6 * 3600,
     ),
     FeedSeed(
-        name="IPsum — IP malveillantes (≥ 5 listes noires)",
-        name_en="IPsum — malicious IPs (≥ 5 blocklists)",
+        name="IPsum : IP malveillantes (≥ 5 listes noires)",
+        name_en="IPsum: malicious IPs (≥ 5 blocklists)",
         # Agrégat quotidien de 30+ listes publiques (licence Unlicense). Niveau 5 : IP vues
         # sur au moins 5 listes, faux positifs rares. Vérifié le 03/10/2026 : 4 372 IP.
         url="https://raw.githubusercontent.com/stamparm/ipsum/master/levels/5.txt",
@@ -89,8 +96,8 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         reliability=SourceReliability.B,
     ),
     FeedSeed(
-        name="RedEye — indicateurs de menace STIX 2.1 (TAXII)",
-        name_en="RedEye — STIX 2.1 threat indicators (TAXII)",
+        name="RedEye : indicateurs de menace STIX 2.1 (TAXII)",
+        name_en="RedEye: STIX 2.1 threat indicators (TAXII)",
         # Jeton gratuit (inscription par e-mail) : TAXII_AUTH=feeds.redeyesecurity.com=bearer:…
         # IP, URL, domaines, hashs en indicateurs STIX ; 100 requêtes / h par jeton.
         url=(
@@ -101,8 +108,8 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         polling_interval=6 * 3600,
     ),
     FeedSeed(
-        name="DigitalSide — URL malveillantes (7 j)",
-        name_en="DigitalSide — malicious URLs (7 d)",
+        name="DigitalSide : URL malveillantes (7 j)",
+        name_en="DigitalSide: malicious URLs (7 d)",
         # Injoignable le 03/10/2026 (délai de connexion dépassé depuis deux réseaux) : semée
         # inactive. Réactiver après `illwatch feeds probe` réussie.
         url="https://osint.digitalside.it/Threat-Intel/lists/latesturls.txt",
@@ -111,8 +118,8 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         is_active=False,
     ),
     FeedSeed(
-        name="DigitalSide — IoC réseau STIX 2.1 (TAXII, 24 h)",
-        name_en="DigitalSide — STIX 2.1 network IoCs (TAXII, 24 h)",
+        name="DigitalSide : IoC réseau STIX 2.1 (TAXII, 24 h)",
+        name_en="DigitalSide: STIX 2.1 network IoCs (TAXII, 24 h)",
         # Accès invité public (guest/guest, TAXII_AUTH par défaut). Même hôte que ci-dessus :
         # injoignable le 03/10/2026, semée inactive.
         url=(
@@ -124,8 +131,8 @@ REFERENCE_FEEDS: tuple[FeedSeed, ...] = (
         is_active=False,
     ),
     FeedSeed(
-        name="AlienVault OTX — pulses abonnés",
-        name_en="AlienVault OTX — subscribed pulses",
+        name="AlienVault OTX : pulses abonnés",
+        name_en="AlienVault OTX: subscribed pulses",
         # Clé OTX_API_KEY envoyée en en-tête ; `modified_since` ajouté à chaque collecte.
         url="https://otx.alienvault.com/api/v1/pulses/subscribed?limit=50",
         feed_type=FeedType.OTX,
@@ -163,6 +170,12 @@ async def seed_reference_feeds(session: AsyncSession) -> list[str]:
 
     for feed in REFERENCE_FEEDS:
         if feed.name in existing or (feed.name_en and feed.name_en in existing):
+            continue
+        legacy = next((existing[n] for n in feed.legacy_names() if n in existing), None)
+        if legacy is not None:
+            # Source semée sous son ancien nom : renommée, son historique est conservé.
+            legacy.name = feed.label()
+            created.append(f"{feed.label()} (renommée)")
             continue
         session.add(
             ThreatFeed(

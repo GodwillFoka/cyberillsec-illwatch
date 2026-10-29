@@ -1,4 +1,4 @@
-"""Séries temporelles du tableau de bord — ADR-016 (Vue d'ensemble)."""
+"""Séries temporelles du tableau de bord : ADR-016 (Vue d'ensemble)."""
 
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4

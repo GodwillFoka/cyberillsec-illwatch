@@ -1,4 +1,4 @@
-# Guide d'onboarding — Day-1 Survival Guide
+# Guide d'onboarding : Day-1 Survival Guide
 
 Ce guide te prend par la main pour configurer ton poste et livrer ta première fonctionnalité en
 moins d'une heure. Il est écrit pour quelqu'un qui n'a jamais fait de cybersécurité : le
@@ -10,9 +10,9 @@ CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te
 - Linux (Kali Linux, Ubuntu 22.04+ ou Debian 12), macOS, ou WSL2 sous Windows
 - Kali Linux : `sudo apt install -y docker.io docker-compose python3-venv` puis
   `sudo usermod -aG docker $USER` et reconnexion
-- Python 3.12 ou supérieur — `python3 --version`
-- Git — `git --version`
-- Docker et Docker Compose — `docker compose version`
+- Python 3.12 ou supérieur : `python3 --version`
+- Git : `git --version`
+- Docker et Docker Compose : `docker compose version`
 
 ## 2. Installation
 
@@ -42,7 +42,7 @@ illwatch db init
 illwatch seed
 illwatch users create --username admin --email admin@example.org --role admin
 
-# 7. Vérification — SQLite par défaut ; PostgreSQL si DATABASE_URL est exportée
+# 7. Vérification : SQLite par défaut ; PostgreSQL si DATABASE_URL est exportée
 pytest
 ./scripts/ci-local.sh   # pipeline complet sur la base dédiée illwatch_test
 
@@ -63,7 +63,7 @@ cyberillsec-illwatch/
 ├── alembic/
 │   └── versions/            Historique immuable des migrations SQL
 ├── docs/
-│   ├── CAHIER_DES_CHARGES.md   Spécification opposable — la référence
+│   ├── CAHIER_DES_CHARGES.md   Spécification opposable : la référence
 │   ├── PRODUCT_VISION.md       Vision stratégique
 │   ├── ARCHITECTURE.md         Comment le code est organisé et pourquoi
 │   ├── ONBOARDING.md           Ce fichier
@@ -126,7 +126,7 @@ git checkout main && git pull origin main
 git checkout -b feat/T3.6-cve-alerting
 ```
 
-Format des messages — [Conventional Commits](https://www.conventionalcommits.org/fr/) :
+Format des messages : [Conventional Commits](https://www.conventionalcommits.org/fr/) :
 
 ```
 feat(feeds): add STIX 2.1 parser for alienvault otx
@@ -137,11 +137,11 @@ docs(onboarding): update day-1 guide for docker compose setup
 
 ## 6. Ta première tâche, pas à pas
 
-1. **Synchroniser** — `git checkout main && git pull origin main`
-2. **Brancher** — `git checkout -b feat/T2.1-threat-feed-model`
-3. **Développer** — dans le sous-module concerné
-4. **Tester** — écris le test dans `tests/`, puis `pytest -v`
-5. **Vérifier le style** — `ruff check . && ruff format --check . && mypy illwatch`
+1. **Synchroniser** : `git checkout main && git pull origin main`
+2. **Brancher** : `git checkout -b feat/T2.1-threat-feed-model`
+3. **Développer** : dans le sous-module concerné
+4. **Tester** : écris le test dans `tests/`, puis `pytest -v`
+5. **Vérifier le style** : `ruff check . && ruff format --check . && mypy illwatch`
 6. **Committer et pousser**
    ```bash
    git add .
@@ -197,5 +197,5 @@ et poussé sur le dépôt. Le gabarit est dans [`../Rapport/TEMPLATE.md`](../Rap
 
 ---
 
-Une question sans réponse dans ce guide ? Ouvre une issue avec le label `question` — si tu t'es posé
+Une question sans réponse dans ce guide ? Ouvre une issue avec le label `question` : si tu t'es posé
 la question, quelqu'un d'autre se la posera.

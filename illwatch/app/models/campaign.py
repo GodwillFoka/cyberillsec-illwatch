@@ -1,4 +1,4 @@
-"""Campagnes et leur infrastructure — M10, incrément 2 (ADR-024).
+"""Campagnes et leur infrastructure : M10, incrément 2 (ADR-024).
 
 Une campagne regroupe l'infrastructure (IOC : adresses, domaines, URL, empreintes) d'une même
 opération adverse et, si l'on sait, l'acteur ATT&CK qui la mène. Une détection qui touche un

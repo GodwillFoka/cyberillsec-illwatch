@@ -1,6 +1,6 @@
 """incident management
 
-Gestion d'incidents — phase 4 (ADR-008) : liens incident ↔ IOC / CVE (RF-20), auteur et
+Gestion d'incidents, phase 4 (ADR-008) : liens incident ↔ IOC / CVE (RF-20), auteur et
 alerte d'origine, statuts de transition dans la chronologie, contraintes CHECK, et
 **déclencheur PostgreSQL rendant `incident_events` immuable** (RF-19) : un UPDATE ou un
 DELETE direct en SQL est refusé, pas seulement par l'application.

@@ -31,11 +31,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 def create_app() -> FastAPI:
-    """Fabrique de l'application — testable et réutilisable."""
+    """Fabrique de l'application : testable et réutilisable."""
     settings = get_settings()
 
     app = FastAPI(
-        title="ILLWATCH — Security Monitoring & Threat Intelligence Platform",
+        title="ILLWATCH: Security Monitoring & Threat Intelligence Platform",
         description=(
             "CyberillSec, a CYBERILL initiative. "
             "Plateforme CTI open source : collecte de flux de menaces, suivi CVE "
@@ -65,9 +65,9 @@ def create_app() -> FastAPI:
     app.add_exception_handler(TaxiiError, taxii_error_handler)
 
     app.include_router(health_router)
-    app.include_router(metrics_router)  # M11 — Prometheus (ADR-026)
+    app.include_router(metrics_router)  # M11: Prometheus (ADR-026)
     app.include_router(api_router, prefix=settings.api_v1_prefix)
-    # M10 — partage STIX 2.1 / TAXII 2.1 en lecture seule (ADR-025)
+    # M10: partage STIX 2.1 / TAXII 2.1 en lecture seule (ADR-025)
     app.include_router(taxii_router)
     # Interface web (ADR-016) : déclarée en dernier, elle ne capte que les adresses hors API.
     mount_web_ui(app, resolve_web_dir(settings))

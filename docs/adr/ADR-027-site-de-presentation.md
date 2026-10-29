@@ -1,4 +1,4 @@
-# ADR-027 — Site de présentation international (`Website/`)
+# ADR-027 : Site de présentation international (`Website/`)
 
 - **Statut :** **accepté le 22/10/2026** (décisions de Godwill FOKA : portée mondiale, cinq
   langues, langue du navigateur puis pays, dossier `Website`, dépôt GitHub par PR)
@@ -27,7 +27,7 @@ solution, sur le même serveur.
 3. **Choix automatique de la langue selon le pays** (révisé le 23/10/2026 à la demande de
    CYBERILL : « la langue s'adapte en fonction du pays »), dans cet ordre, **le même pour le
    site et pour l'application** :
-   1. choix déjà fait par le visiteur (mémorisé dans son navigateur) — toujours prioritaire ;
+   1. choix déjà fait par le visiteur (mémorisé dans son navigateur) : toujours prioritaire ;
    2. **pays** : celui du visiteur, d'après son adresse IP publique et la base DB-IP Lite déjà
       importée (ADR-019), **sans service tiers** ; à défaut (adresse privée : réseau interne,
       VPN), celui où l'instance est installée (`INSTANCE_COUNTRY`). Dans un pays à plusieurs
@@ -54,7 +54,7 @@ solution, sur le même serveur.
    migration vers Astro reste possible sans changer les dictionnaires ni les gabarits CSS.
 5. **Identité** : jetons et fichiers du brand book (ADR-018), thème Nuit, symbole écu-radar.
 6. **Interactivité utile, jamais décorative** : simulateur de priorité CVE qui applique la
-   **formule réelle** du moteur (ADR-001, plancher KEV de l'ADR-014) — un test Python vérifie
+   **formule réelle** du moteur (ADR-001, plancher KEV de l'ADR-014) : un test Python vérifie
    que le simulateur et `illwatch.modules.cve_tracker.scoring` donnent les mêmes résultats sur
    un jeu de cas partagé ; visite guidée des écrans ; chiffres constatés.
 7. **Le site n'appelle jamais l'API en direct.** Les chiffres viennent d'un fichier
@@ -86,7 +86,7 @@ solution, sur le même serveur.
     (comportement inchangé), **anglais** pour toute autre langue, en attendant une traduction
     complète côté serveur (`illwatch/shared/server_text.py`). Un texte déjà enregistré n'est
     pas réécrit. La préproduction tourne en anglais (`DEFAULT_LANGUAGE=en`) : les captures
-    principales — celles du site — sont entièrement en anglais, interface et données.
+    principales (celles du site) sont entièrement en anglais, interface et données.
 
 13. **Un site qui vend** (décision du 23/10/2026, sur le modèle de github.com/home et
     about.gitlab.com) : héros animé avec la capture et l'appel « Demander une démo », standards
@@ -105,7 +105,7 @@ solution, sur le même serveur.
       Datenschutz, dans les cinq langues ; l'Impressum est rempli depuis
       `Website/src/data/legal.json` et la construction publique (`ILLWATCH_SITE_PUBLIC=1`)
       échoue tant qu'il manque un champ obligatoire.
-    - **Prix arbitraires et indicatifs** (Pilote dès 1 490 €, Accompagnement dès 290 €/mois — prix de lancement volontairement bas pour se faire un nom, demande du 23/10/2026),
+    - **Prix arbitraires et indicatifs** (Pilote dès 1 490 €, Accompagnement dès 290 €/mois : prix de lancement volontairement bas pour se faire un nom, demande du 23/10/2026),
       affichés comme « en phase d'évaluation » ; prix définitifs à fixer après les premiers
       pilotes (tâche à venir, `Website/ROADMAP.md`).
     - **Demande de démonstration traitée par l'application** : `POST /api/v1/demo-requests`

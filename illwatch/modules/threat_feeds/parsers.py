@@ -1,4 +1,4 @@
-"""Analyse des formats de flux — RF-06 (JSON, CSV, STIX 2.1), T2.3.
+"""Analyse des formats de flux : RF-06 (JSON, CSV, STIX 2.1), T2.3.
 
 Chaque analyseur transforme un contenu brut en `Observation`. Il ne **valide pas** les
 IOC : c'est le rôle de `ingest_indicators`, qui normalise, rejette et compte. Un

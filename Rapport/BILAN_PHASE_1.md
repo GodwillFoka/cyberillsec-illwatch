@@ -1,6 +1,6 @@
-# 🛡️ SENTRY — Bilan de clôture de la phase 1 « Foundation »
+# 🛡️ SENTRY : Bilan de clôture de la phase 1 « Foundation »
 
-**Version :** 0.1.0 · **Jalon :** M1 — Squelette opérationnel · **Date du bilan :** 24/09/2026
+**Version :** 0.1.0 · **Jalon :** M1 : Squelette opérationnel · **Date du bilan :** 24/09/2026
 **Module :** MOD-01 Foundation & Configuration · **Référence :** Cahier des charges v1.0.0, §3.3, §5.2, §5.3
 **Dépôt :** `gitlab.com/GodwillFoka/cyberillsec-sentry`, branche `main`, HEAD `e11831c`
 
@@ -56,10 +56,10 @@ sans erreur ; `/health` retourne 200 avec la base connectée ; suite de tests à
 | T1.2 | `database.py`, modèle `User`, migration initiale | ✅ Moteur SQLAlchemy 2.0 async, sessions injectées, **six** modèles (`users`, `threat_feeds`, `indicators`, `cves`, `incidents`, `incident_events`) et migration `c36227f04410`. |
 | T1.3 | CLI `db init`, `db upgrade`, `version` | ✅ `version`, `config` (secrets masqués), `db init / upgrade / downgrade / current / check`, `seed`, `users create`. |
 | T1.4 | Docker Compose PostgreSQL 16 + Redis 7 | ✅ Volumes persistants, *healthchecks*, image applicative non privilégiée (UID 10001), profil `full`. |
-| T1.5–1.7 | Isolation des répertoires modules | ✅ `threat_feeds`, `cve_tracker`, `incidents`, `dashboard`, `threat_hunting`, plus `foundation` (comptes et seed). |
+| T1.5-1.7 | Isolation des répertoires modules | ✅ `threat_feeds`, `cve_tracker`, `incidents`, `dashboard`, `threat_hunting`, plus `foundation` (comptes et seed). |
 | T1.8 | Pytest asynchrone, premier test `/health` | ✅ Base de test pilotée par `DATABASE_URL`, isolation transactionnelle par test, marqueur `postgres`. |
 | Hors plan | Authentification (ADR-003) | ✅ Argon2id, JWT HS256, `POST /api/v1/auth/token`, `GET /api/v1/users/me`, `require_roles`. |
-| Hors plan | Logique métier anticipée | ✅ Score de risque composite (RF-14), machine d'état des incidents (RF-18), détection et normalisation des IOC (RF-07) — testés à 100 %, sans API ni persistance. |
+| Hors plan | Logique métier anticipée | ✅ Score de risque composite (RF-14), machine d'état des incidents (RF-18), détection et normalisation des IOC (RF-07) : testés à 100 %, sans API ni persistance. |
 
 ---
 
@@ -67,10 +67,10 @@ sans erreur ; `/health` retourne 200 avec la base connectée ; suite de tests à
 
 | Exigence | État en fin de phase 1 |
 |---|---|
-| RNF-SEC-01 — TLS, aucun secret dans le code | ⚠️ Aucun secret en dur ; SENTRY refuse de démarrer en production avec la clé par défaut, une clé de moins de 32 caractères ou `DEBUG=true`. Le TLS relève du déploiement (reverse proxy), pas encore en place. |
-| RNF-SEC-02 — Entrées typées (Pydantic) | ✅ Configuration, réponses et formulaire d'authentification typés ; requêtes SQL exclusivement paramétrées via l'ORM. |
-| RNF-MAIN-01 — `ruff` 100 %, couverture ≥ 80 % | ✅ `ruff` et `mypy --strict` sans erreur ; couverture 94 %. |
-| RNF-MEM-01 — ≤ 256 Mo | 🟡 Mesure indicative : 133 Mo de RSS après chargement de l'application. Une mesure sous charge reste à faire en phase 2, quand les collecteurs tourneront. |
+| RNF-SEC-01 : TLS, aucun secret dans le code | ⚠️ Aucun secret en dur ; SENTRY refuse de démarrer en production avec la clé par défaut, une clé de moins de 32 caractères ou `DEBUG=true`. Le TLS relève du déploiement (reverse proxy), pas encore en place. |
+| RNF-SEC-02 : Entrées typées (Pydantic) | ✅ Configuration, réponses et formulaire d'authentification typés ; requêtes SQL exclusivement paramétrées via l'ORM. |
+| RNF-MAIN-01 : `ruff` 100 %, couverture ≥ 80 % | ✅ `ruff` et `mypy --strict` sans erreur ; couverture 94 %. |
+| RNF-MEM-01 : ≤ 256 Mo | 🟡 Mesure indicative : 133 Mo de RSS après chargement de l'application. Une mesure sous charge reste à faire en phase 2, quand les collecteurs tourneront. |
 | RNF-PERF-01/02 | ➖ Hors périmètre de la phase 1 ; RNF-PERF-02 (1 000 IOC < 5 s) est un critère de la phase 2. |
 
 ---
@@ -98,10 +98,10 @@ sans erreur ; `/health` retourne 200 avec la base connectée ; suite de tests à
 | Couverture | 94,0 % (PostgreSQL) · 86,6 % (SQLite) | ≥ 80 % |
 | `ruff check` / `ruff format` | 0 écart | 0 |
 | `mypy --strict` | 0 erreur, 34 fichiers | 0 |
-| Code applicatif / code de test | ≈ 1 515 / 914 lignes | — |
-| Fichiers de test | 12 | — |
-| Commits sur `main` | 11 | — |
-| ADR | 4 (dont 1 proposé) | — |
+| Code applicatif / code de test | ≈ 1 515 / 914 lignes | - |
+| Fichiers de test | 12 | - |
+| Commits sur `main` | 11 | - |
+| ADR | 4 (dont 1 proposé) | - |
 
 ---
 
@@ -130,7 +130,7 @@ Onze commits entre le 19/09 et le 23/09/2026. Trois constats :
 | 5 | L'image Docker démarrait l'API sans migrer la base | Moyenne | `sentry db upgrade && exec uvicorn …` |
 | 6 | `version_path_separator` déprécié dans `alembic.ini` | Mineure | `path_separator` |
 | 7 | `ruff` prenait le dossier local `alembic/` pour le paquet tiers | Mineure | `known-third-party = ["alembic"]` |
-| 8 | **Port PostgreSQL incohérent** : `docker-compose.yml` expose 5433 (commit `e11831c`) mais `.env.example`, la valeur par défaut de `DATABASE_URL` et le guide pointent vers 5432 | Majeure | Alignement sur 5433 — **à commiter** |
+| 8 | **Port PostgreSQL incohérent** : `docker-compose.yml` expose 5433 (commit `e11831c`) mais `.env.example`, la valeur par défaut de `DATABASE_URL` et le guide pointent vers 5432 | Majeure | Alignement sur 5433 : **à commiter** |
 
 ---
 
@@ -223,7 +223,7 @@ dédupliqués, alimentée en continu par plusieurs flux. C'est la matière premi
 dashboard compte les menaces des dernières 24 h et des 7 derniers jours) et 6 (le hunting compare
 des motifs à ces IOC). Sans phase 2, les modules suivants tournent à vide.
 
-### Attendus — jalon M2
+### Attendus : jalon M2
 | Critère M2 (§5.2) | Mesure de validation |
 |---|---|
 | Collecteur OTX et flux STIX connectés | Une collecte `sentry feeds fetch` réussie sur chacun, `status = HEALTHY` |

@@ -1,4 +1,4 @@
-"""Tests du moteur de Score de Risque Composite — RF-14."""
+"""Tests du moteur de Score de Risque Composite : RF-14."""
 
 import pytest
 

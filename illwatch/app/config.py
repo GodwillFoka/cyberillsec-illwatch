@@ -1,4 +1,4 @@
-"""Configuration applicative immuable — RF-01.
+"""Configuration applicative immuable: RF-01.
 
 Toute la configuration est chargée depuis l'environnement (ou un fichier `.env`)
 et validée par Pydantic au démarrage. Aucune requête applicative ne doit
@@ -74,7 +74,7 @@ class Settings(BaseSettings):
     )
     database_echo: bool = False
     database_pool_size: int = Field(default=10, ge=1, le=100)
-    # M7 lot 2 — séparation des rôles PostgreSQL. `DATABASE_URL` sert l'application (rôle
+    # M7 lot 2 : séparation des rôles PostgreSQL. `DATABASE_URL` sert l'application (rôle
     # sans droit de structure) ; `MIGRATION_DATABASE_URL`, s'il est défini, sert Alembic avec
     # le rôle propriétaire des tables. `DATABASE_APP_ROLE` : rôle à qui `illwatch db upgrade`
     # réapplique les droits minimaux après chaque migration.
@@ -100,7 +100,7 @@ class Settings(BaseSettings):
     secret_key: str = Field(
         default=DEFAULT_SECRET_KEY,
         min_length=8,
-        description="Clé de signature JWT — OBLIGATOIREMENT surchargée en production",
+        description="Clé de signature JWT : OBLIGATOIREMENT surchargée en production",
     )
     # Rotation (M7 lot 2) : l'ancienne clé reste acceptée en vérification, jamais en signature,
     # le temps que les jetons émis avec elle expirent.
@@ -169,7 +169,7 @@ class Settings(BaseSettings):
     hunt_interval_seconds: int = Field(default=24 * 3600, ge=0)
     # Corrélation actifs × CVE × IOC par le worker (s) ; 0 = désactivée (M8, ADR-020).
     correlation_interval_seconds: int = Field(default=3600, ge=0)
-    # Confiance minimale (0–100) d'un IOC pour la règle CORR-03 (« moyenne » = 40).
+    # Confiance minimale (0-100) d'un IOC pour la règle CORR-03 (« moyenne » = 40).
     correlation_min_confidence: int = Field(default=40, ge=0, le=100)
     # Mise à jour mensuelle automatique des bases DB-IP par le worker (ADR-019), seulement
     # après un premier `illwatch enrich update` manuel.

@@ -1,4 +1,4 @@
-# ADR-012 — Rôles PostgreSQL séparés, sessions révocables, rotation de clé (M7, lot 2)
+# ADR-012 : Rôles PostgreSQL séparés, sessions révocables, rotation de clé (M7, lot 2)
 
 - **Statut :** proposé
 - **Date :** 2026-10-04

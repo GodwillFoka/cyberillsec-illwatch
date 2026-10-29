@@ -1,7 +1,7 @@
 [project]
 name = "illwatch"
 version = "0.2.0.dev0"
-description = "ILLWATCH — Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)"
+description = "ILLWATCH : Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
@@ -63,7 +63,7 @@ include = ["illwatch*"]
 "illwatch.modules.correlation" = ["benchmark.json"]
 
 # ----------------------------------------------------------------------------
-# Qualité de code — §6.3 du Cahier des Charges
+# Qualité de code : §6.3 du Cahier des Charges
 # ----------------------------------------------------------------------------
 
 [tool.ruff]

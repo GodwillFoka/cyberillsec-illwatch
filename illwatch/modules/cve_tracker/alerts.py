@@ -1,4 +1,4 @@
-"""Livraison et acquittement des alertes CVE — tâche 2.5 (RF-16).
+"""Livraison et acquittement des alertes CVE : tâche 2.5 (RF-16).
 
 Une alerte est d'abord **enregistrée** (`cve_alerts`, ligne de journal `cve.alert`), puis
 livrée au webhook configuré (`ALERT_WEBHOOK_URL`). Une livraison échouée est retentée aux
@@ -55,7 +55,7 @@ def alert_payload(alert: CVEAlert) -> dict[str, Any]:
     score = float(alert.score)
     return {
         "text": (
-            f"[ILLWATCH] {alert.cve_id} — score {score:.1f}/100 ({priority}), "
+            f"[ILLWATCH] {alert.cve_id}: score {score:.1f}/100 ({priority}), "
             f"remédiation sous {sla} h. Déclencheur : {alert.reason}."
         ),
         "cve": alert.cve_id,

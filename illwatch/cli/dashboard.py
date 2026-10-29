@@ -1,4 +1,4 @@
-"""CLI `illwatch dashboard` — vue console du SOC et exports (RF-23, RF-24).
+"""CLI `illwatch dashboard` : vue console du SOC et exports (RF-23, RF-24).
 
 illwatch dashboard show                     # synthèse + activité des 24 dernières heures
 illwatch dashboard export cves --format csv -o cves.csv
@@ -98,7 +98,7 @@ def dashboard_show(hours: int) -> None:
                     [
                         ("Ouverts", inc["open"]),
                         ("Ouverts 24 h", inc["opened_24h"]),
-                        ("MTTR 90 j", "—" if mttr is None else f"{mttr} h"),
+                        ("MTTR 90 j", "-" if mttr is None else f"{mttr} h"),
                     ],
                 ),
                 _panel(

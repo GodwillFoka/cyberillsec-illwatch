@@ -1,4 +1,4 @@
-"""Bus d'événements temps réel — ADR-016.
+"""Bus d'événements temps réel : ADR-016.
 
 Un événement dit à l'interface « telle donnée a changé » : nouvelle alerte, incident modifié,
 collecte terminée… L'interface relit alors la donnée par l'API REST, avec les droits de

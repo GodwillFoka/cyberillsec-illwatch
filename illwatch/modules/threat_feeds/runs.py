@@ -1,4 +1,4 @@
-"""Journal des collectes et santé des sources — ADR-016 (écran « Sources CTI »).
+"""Journal des collectes et santé des sources : ADR-016 (écran « Sources CTI »).
 
 Chaque collecte d'un flux laisse une ligne `collection_runs` : durée, nouveaux IOC, IOC déjà
 connus (mis à jour), rejets, erreur ou avertissement. Ces lignes alimentent :

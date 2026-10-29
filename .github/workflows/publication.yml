@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Publication : image Docker (GHCR) et release GitHub
+# ILLWATCH, Publication : image Docker (GHCR) et release GitHub
 #
 #   push sur main  → ghcr.io/godwillfoka/cyberillsec-illwatch:edge   (+ :sha-xxxxxxx)
 #   tag vX.Y.Z     → ghcr.io/godwillfoka/cyberillsec-illwatch:X.Y.Z, :X.Y, :latest

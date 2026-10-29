@@ -1,4 +1,4 @@
-"""Routes du threat hunting — `/api/v1/hunting` (MOD-06, RF-25 à RF-28).
+"""Routes du threat hunting : `/api/v1/hunting` (MOD-06, RF-25 à RF-28).
 
 | Opération                                   | ADMIN | ANALYST | VIEWER |
 |---------------------------------------------|:-----:|:-------:|:------:|

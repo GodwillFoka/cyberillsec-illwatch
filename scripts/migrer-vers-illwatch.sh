@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILLWATCH — Migration d'un poste SENTRY vers ILLWATCH (renommage du 08/10/2026)
+# ILLWATCH : Migration d'un poste SENTRY vers ILLWATCH (renommage du 08/10/2026)
 #
 # À lancer UNE fois, depuis la racine du dépôt, après `git pull` du code renommé,
 # venv activé, API et collectes arrêtées :

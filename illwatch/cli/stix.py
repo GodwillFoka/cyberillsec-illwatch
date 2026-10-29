@@ -1,4 +1,4 @@
-"""`illwatch stix` — export STIX 2.1 du renseignement (M10, incrément 3, ADR-025).
+"""`illwatch stix` : export STIX 2.1 du renseignement (M10, incrément 3, ADR-025).
 
     illwatch stix export -o illwatch-stix.json   # 1 000 IOC actifs + campagnes
     illwatch stix export --contenu campagnes

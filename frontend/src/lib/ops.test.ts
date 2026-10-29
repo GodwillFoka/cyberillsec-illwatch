@@ -11,7 +11,7 @@ describe("durées et tailles", () => {
     assert.equal(formatDuration(5400), "1 h 30 min");
     assert.equal(formatDuration(86_400), "1 j");
     assert.equal(formatDuration(90_000), "1 j 1 h");
-    assert.equal(formatDuration(-1), "—");
+    assert.equal(formatDuration(-1), "-");
   });
 
   it("millisecondes et octets", () => {

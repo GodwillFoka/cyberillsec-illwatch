@@ -1,4 +1,4 @@
-"""Provenance multi-sources des IOC — `indicator_sources` (ADR-006, Sprint 3 tâche 1.3)."""
+"""Provenance multi-sources des IOC : `indicator_sources` (ADR-006, Sprint 3 tâche 1.3)."""
 
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta

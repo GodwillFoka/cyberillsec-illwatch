@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: Signaler une vulnérabilité
     url: https://github.com/GodwillFoka/cyberillsec-illwatch/blob/main/SECURITY.md
-    about: Ne publiez pas de vulnérabilité dans une issue publique — suivez la politique de sécurité.
+    about: "Ne publiez pas de vulnérabilité dans une issue publique : suivez la politique de sécurité."

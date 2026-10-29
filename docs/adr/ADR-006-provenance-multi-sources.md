@@ -1,4 +1,4 @@
-# ADR-006 — Provenance multi-sources des IOC et collecte planifiée
+# ADR-006 : Provenance multi-sources des IOC et collecte planifiée
 
 - **Statut :** proposé
 - **Date :** 2026-09-28

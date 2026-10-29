@@ -15,7 +15,7 @@ function numberFormat(maximumFractionDigits = 0): Intl.NumberFormat {
 }
 
 export function formatNumber(value: number | null | undefined): string {
-  return value === null || value === undefined ? "—" : numberFormat(3).format(value);
+  return value === null || value === undefined ? "-" : numberFormat(3).format(value);
 }
 
 /** Nombre à une décimale au plus, séparateur de la langue (« 3,5 », « 3.5 »). */
@@ -78,16 +78,16 @@ export function parseDate(value: string | null | undefined): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-/** Durée en heures, lisible : « 45 min », « 3,5 h », « 2,1 j » ; « — » si inconnue. */
+/** Durée en heures, lisible : « 45 min », « 3,5 h », « 2,1 j » ; « - » si inconnue. */
 export function formatHours(hours: number | null | undefined): string {
-  if (hours === null || hours === undefined || Number.isNaN(hours)) return "—";
+  if (hours === null || hours === undefined || Number.isNaN(hours)) return "-";
   if (hours < 1) return labels("unit.min", { n: Math.max(1, Math.round(hours * 60)) });
   if (hours < 48) return labels("unit.h", { n: formatDecimal(Math.round(hours * 10) / 10) });
   return labels("unit.d", { n: formatDecimal(Math.round((hours / 24) * 10) / 10) });
 }
 
-/** Part (0–1) en pourcentage entier : « 83 % » ; « — » si inconnue. */
+/** Part (0-1) en pourcentage entier : « 83 % » ; « - » si inconnue. */
 export function formatShare(value: number | null | undefined): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "-";
   return labels("unit.percent", { n: Math.round(value * 100) });
 }

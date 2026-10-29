@@ -1,4 +1,4 @@
-# 🛡️ SENTRY — Bilan du Sprint 3 : M2 « Ingestion opérationnelle »
+# 🛡️ SENTRY, Bilan du Sprint 3 : M2 « Ingestion opérationnelle »
 
 **Date :** 28/09/2026 · **Branche :** `feature/sprint3-ingestion` (base `202c6aa`)
 **Rédaction :** Claude (Cowork), pour Godwill FOKA
@@ -43,8 +43,8 @@ multi-sources.
 | 1.5 | Planificateur (T2.6) | `sentry feeds worker`, arrêt propre SIGTERM/Ctrl+C, survit aux pannes passagères ; verrou Redis `SET NX EX` + libération Lua par jeton ; repli local si Redis absent ; service `worker` Docker Compose |
 | 1.6 | Journal JSON | `sentry/shared/logging.py` ; événements `feed.collected`, `feed.skipped_locked`, `worker.cycle`, `lock.redis_unavailable` |
 | 1.9 | Mémoire | `peak_rss_mb` dans chaque ligne de journal ; mesure synthétique ci-dessous |
-| — | Qualité | Test de conformité des CHECK **après migration** : comble le trou de `alembic check`, qui n'aurait pas vu l'ajout de `OTX` |
-| — | Docs | ADR-006, CHANGELOG, README, `.env.example` |
+| - | Qualité | Test de conformité des CHECK **après migration** : comble le trou de `alembic check`, qui n'aurait pas vu l'ajout de `OTX` |
+| - | Docs | ADR-006, CHANGELOG, README, `.env.example` |
 
 ## 5. Métriques
 
@@ -95,7 +95,7 @@ abandonne la modification locale et récupère `202c6aa`.
 
 ## 8. Décisions
 
-- **Prises (à valider)** : ADR-006 — table `indicator_sources`, OTX comme format de flux,
+- **Prises (à valider)** : ADR-006, table `indicator_sources`, OTX comme format de flux,
   worker intégré + verrou Redis, journal JSON.
 - **En attente de votre décision** : ADR-004 (recalage planning), ADR-005 (cycle de vie IOC),
   ADR-006. Choix de la source STIX (tâche 1.8).
@@ -104,4 +104,4 @@ abandonne la modification locale et récupère `202c6aa`.
 
 **Clore M2 (cible 08/10/2026)** : clés abuse.ch et OTX dans `.env`, `sentry seed`,
 `sentry feeds worker` 24 h, `sentry status` tout en ✔, tag `v0.2.0`, `Rapport/BILAN_PHASE_2.md`.
-Puis **phase 3 — CVE** (NVD 2.0, KEV, EPSS) : le worker et le journal servent tels quels.
+Puis **phase 3, CVE** (NVD 2.0, KEV, EPSS) : le worker et le journal servent tels quels.

@@ -1,4 +1,4 @@
-"""Primitives de sécurité — hachage des mots de passe et jetons d'accès JWT (MOD-01).
+"""Primitives de sécurité : hachage des mots de passe et jetons d'accès JWT (MOD-01).
 
 Choix techniques :
   * Argon2id (via `pwdlib`) pour le hachage : lauréat de la Password Hashing
@@ -110,7 +110,7 @@ def decode_access_token(token: str, *, settings: Settings | None = None) -> Toke
     """Valide signature, expiration et type d'un jeton, puis en extrait les revendications.
 
     Raises:
-        InvalidTokenError: pour toute anomalie — le détail n'est jamais renvoyé au client.
+        InvalidTokenError: pour toute anomalie, le détail n'est jamais renvoyé au client.
     """
     cfg = settings or get_settings()
     keys = _verification_keys(cfg)

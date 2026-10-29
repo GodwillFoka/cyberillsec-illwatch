@@ -1,4 +1,4 @@
-"""Backend TAXII 2.1 `taxii2-client` (T3 à T8, T10, T11) — sans réseau.
+"""Backend TAXII 2.1 `taxii2-client` (T3 à T8, T10, T11) : sans réseau.
 
 Un adaptateur `requests` factice joue le serveur TAXII : on vérifie ce que la bibliothèque
 envoie réellement (en-têtes, paramètres, délai) et comment ILLWATCH traduit ses réponses.

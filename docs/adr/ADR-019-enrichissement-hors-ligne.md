@@ -1,4 +1,4 @@
-# ADR-019 — Enrichissement hors ligne des IP : base DB-IP Lite importée localement
+# ADR-019, Enrichissement hors ligne des IP : base DB-IP Lite importée localement
 
 - **Statut :** **accepté le 12/10/2026** (décision de Godwill FOKA : « Faisons cette étape »)
 - **Date :** 2026-10-12
@@ -50,7 +50,7 @@ divulguerait les IOC enquêtés à un tiers et dépendrait de sa disponibilité.
   avec PostgreSQL ; licence CC BY 4.0 compatible avec un usage commercial (attribution).
 - Négatives : environ 1,2 million de plages (mesuré sur Kali le 12/10 : 710 834 pays et 477 362 AS, fichiers de 4,3 et 6,7 Mo) ; précision
   « Lite » (pays et AS, pas de ville) ; données vieilles d'un mois au plus si la mise à jour
-  mensuelle est oubliée — la date d'import est affichée dans Administration → Paramètres.
+  mensuelle est oubliée : la date d'import est affichée dans Administration → Paramètres.
 
 ## Suivi
 

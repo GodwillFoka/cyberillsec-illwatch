@@ -1,4 +1,4 @@
-# ADR-026 — M11 : observabilité et environnements
+# ADR-026, M11 : observabilité et environnements
 
 - **Statut :** **accepté le 15/10/2026** (décision de Godwill FOKA : « tu fais M11 »)
 - **Date :** 2026-10-15

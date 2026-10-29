@@ -1,9 +1,9 @@
-# ILLWATCH — Feuille de route du site de présentation
+# ILLWATCH : Feuille de route du site de présentation
 
 **Version :** 23/10/2026 · **Décision :** [ADR-027](../docs/adr/ADR-027-site-de-presentation.md) ·
 **Dossier :** `Website/`
 
-Comme les jalons M1–M11 : chaque lot a ses livrables et un critère de sortie **constaté**, et
+Comme les jalons M1-M11 : chaque lot a ses livrables et un critère de sortie **constaté**, et
 la CI fait foi.
 
 ## 1. Positionnement
@@ -42,22 +42,22 @@ dictionnaires et CSS.
 
 ## 3. Arborescence
 
-1. **Accueil** — promesse, capture de l'interface, chiffres constatés, modules, simulateur CVE,
+1. **Accueil** : promesse, capture de l'interface, chiffres constatés, modules, simulateur CVE,
    preuves de confiance, appel à l'action.
-2. **Plateforme** — une page par module : flux de menaces · moteur CVE · détection et
+2. **Plateforme**, une page par module : flux de menaces · moteur CVE · détection et
    corrélation · incidents et opérations SOC · chasse · renseignement (ATT&CK, campagnes,
    STIX/TAXII) · observabilité.
-3. **Cas d'usage** — SOC d'entreprise, CERT national ou sectoriel, finance, télécoms, secteur
+3. **Cas d'usage** : SOC d'entreprise, CERT national ou sectoriel, finance, télécoms, secteur
    public, PME et ETI, enseignement et recherche.
-4. **Démo** — visite guidée interactive des écrans.
-5. **Sécurité et confiance** — open source, analyses constatées (image, SAST, secrets),
+4. **Démo** : visite guidée interactive des écrans.
+5. **Sécurité et confiance** : open source, analyses constatées (image, SAST, secrets),
    auto-hébergement, données qui restent chez le client.
-6. **Feuille de route** — jalons M1 → M11 et suite, état réel.
+6. **Feuille de route** : jalons M1 → M11 et suite, état réel.
 7. **Documentation** → site MkDocs.
-8. **À propos** — CYBERILL, porteur du projet.
-9. **Actualités** — tirées du CHANGELOG et des releases.
+8. **À propos** : CYBERILL, porteur du projet.
+9. **Actualités** : tirées du CHANGELOG et des releases.
 10. **Contact / demande de démo**.
-11. **Mentions légales (Impressum) et protection des données** — obligatoires (éditeur en
+11. **Mentions légales (Impressum) et protection des données** : obligatoires (éditeur en
     Allemagne).
 
 ## 4. Interactivité
@@ -95,18 +95,18 @@ Caddy seulement ; `Accept-Language` borné et validé ; recherches simultanées 
 
 | Lot | Contenu | Critère de sortie |
 |---|---|---|
-| **S0 Cadrage** ✅ | publics, messages, arborescence, ADR-027 | ADR accepté — **22/10** |
-| **S1 Fondations** ✅ | `Website/`, générateur, 5 langues, détection, jetons, accueil, simulateur, CI « Site web » | construction et contrôles verts en CI, captures de l'accueil dans les 5 langues — **23/10** |
+| **S0 Cadrage** ✅ | publics, messages, arborescence, ADR-027 | ADR accepté : **22/10** |
+| **S1 Fondations** ✅ | `Website/`, générateur, 5 langues, détection, jetons, accueil, simulateur, CI « Site web » | construction et contrôles verts en CI, captures de l'accueil dans les 5 langues : **23/10** |
 | **S2 Contenu** 🟡 | pages Plateforme, Sécurité, Tarifs, À propos, Démonstration, Impressum, Datenschutz (5 langues) | **livré le 23/10** ; reste : relecture native, données de l'Impressum (`src/data/legal.json`), relecture juridique |
 | **S3 Interactivité** 🟡 | fonctionnement animé, explorateur ATT&CK, exemple TAXII, onglets, chiffres animés | **livré le 23/10**, testé dans le navigateur par la CI, dégradé sans JavaScript ; reste : chiffres quotidiens générés |
-| **S4 Contact** ✅ | `POST /api/v1/demo-requests` (débit limité, champ piège, consentement, aucune IP), onglet d'administration, purge à 12 mois | demande reçue de bout en bout (test API + formulaire contre une API factice en CI) — **23/10** |
+| **S4 Contact** ✅ | `POST /api/v1/demo-requests` (débit limité, champ piège, consentement, aucune IP), onglet d'administration, purge à 12 mois | demande reçue de bout en bout (test API + formulaire contre une API factice en CI) : **23/10** |
 | **S5 Qualité** 🟡 | WCAG 2.2 AA (axe-core en CI), en-têtes de sécurité, 0 débordement, 0 lien mort, plan du site multilingue | reste : Lighthouse ≥ 95 mesuré |
 | **S6 Mise en ligne** 🟡 | GitLab Pages (site + documentation) en attendant le domaine ; Caddy sert le site à côté de l'application (`ILLWATCH_SITE_DOMAIN`, `scripts/build-site.sh`) | reste : domaine, projet GitLab public, SSL Labs ≥ A, redirection constatée depuis 5 pays |
 
 ### Tâches à venir (agenda)
 
 - **Prix définitifs** (noté le 23/10/2026 à la demande de Godwill FOKA) : les prix affichés
-  (Pilote dès 1 490 €, Accompagnement dès 290 €/mois — prix de lancement volontairement bas pour se faire un nom, demande du 23/10/2026) sont **arbitraires et indicatifs**, signalés
+  (Pilote dès 1 490 €, Accompagnement dès 290 €/mois : prix de lancement volontairement bas pour se faire un nom, demande du 23/10/2026) sont **arbitraires et indicatifs**, signalés
   « en phase d'évaluation » sur le site. Les fixer à l'issue des premiers pilotes, puis mettre à
   jour `offers.*_price` dans les cinq dictionnaires et retirer `offers.indicative`.
 - **Mentions légales** : compléter `src/data/legal.json` (adresse, e-mail, hébergeur) ;

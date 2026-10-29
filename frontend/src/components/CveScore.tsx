@@ -8,15 +8,15 @@ import { ui } from "./components.i18n";
 /** Score à une décimale fixe, séparateur de la langue : « 62,2 », « 62.2 ». */
 export const formatScore = (value: number | null | undefined) =>
   value === null || value === undefined
-    ? "—"
+    ? "-"
     : new Intl.NumberFormat(currentLocale(), {
         minimumFractionDigits: 1,
         maximumFractionDigits: 1,
       }).format(value);
 
-/** EPSS (probabilité 0–1) en pourcentage : 0,973 → « 97,3 % » (« 97.3% » en anglais). */
+/** EPSS (probabilité 0-1) en pourcentage : 0,973 → « 97,3 % » (« 97.3% » en anglais). */
 export const formatEpss = (value: number | null | undefined) =>
-  value === null || value === undefined ? "—" : labels("unit.percent", { n: formatDecimal(value * 100) });
+  value === null || value === undefined ? "-" : labels("unit.percent", { n: formatDecimal(value * 100) });
 
 export function Breakdown({ cve }: { cve: CveDetail }) {
   const parts: [string, number][] = [

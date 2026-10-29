@@ -1,6 +1,6 @@
 """production hardening
 
-M7 — Production Hardening (ADR-011) :
+M7: Production Hardening (ADR-011) :
 
 - table `audit_events`, journal d'audit de sécurité en ajout seul ;
 - fonction générique `sentry_refuse_rewrite()` et déclencheurs refusant `UPDATE`, `DELETE`

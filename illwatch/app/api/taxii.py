@@ -1,4 +1,4 @@
-"""Serveur TAXII 2.1 en lecture seule — `/taxii2/` (M10, incrément 3, ADR-025).
+"""Serveur TAXII 2.1 en lecture seule : `/taxii2/` (M10, incrément 3, ADR-025).
 
 Partage le renseignement d'ILLWATCH avec un SIEM, un pare-feu ou une autre plateforme CTI
 (OpenCTI, MISP, `taxii2-client`) au format standard :
@@ -71,8 +71,8 @@ INDICATORS = _Collection(
     "indicateurs",
     ("Indicateurs ILLWATCH", "ILLWATCH indicators"),
     (
-        "IOC actifs (non expirés, non exclus), confiance 0–100, sévérité en étiquette.",
-        "Active IOCs (not expired, not excluded), confidence 0–100, severity as a label.",
+        "IOC actifs (non expirés, non exclus), confiance 0-100, sévérité en étiquette.",
+        "Active IOCs (not expired, not excluded), confidence 0-100, severity as a label.",
     ),
 )
 CAMPAIGNS = _Collection(
@@ -195,7 +195,7 @@ async def discovery(request: Request, _: TaxiiUser) -> JSONResponse:
     root = str(request.url_for("api_root"))
     return taxii_response(
         {
-            "title": "ILLWATCH — TAXII 2.1",
+            "title": "ILLWATCH: TAXII 2.1",
             "description": tr(
                 "Renseignement sur les menaces partagé par ILLWATCH (CyberillSec).",
                 "Threat intelligence shared by ILLWATCH (CyberillSec).",

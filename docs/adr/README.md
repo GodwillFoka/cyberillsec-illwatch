@@ -38,7 +38,7 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 ## Gabarit
 
 ```markdown
-# ADR-NNN — Titre
+# ADR-NNN : Titre
 
 - **Statut :** proposé / accepté / remplacé par ADR-XXX
 - **Date :** AAAA-MM-JJ

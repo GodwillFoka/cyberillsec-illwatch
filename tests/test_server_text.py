@@ -117,4 +117,4 @@ async def test_sources_semees_sans_doublon_si_la_langue_change(
     after = list((await db_session.scalars(query)).all())
     assert len(after) == len(REFERENCE_FEEDS)
     if not before:
-        assert "AlienVault OTX — subscribed pulses" in after
+        assert "AlienVault OTX: subscribed pulses" in after

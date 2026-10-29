@@ -1,4 +1,4 @@
-"""Flux temps réel de l'interface — `GET /api/v1/stream` (ADR-016, Server-Sent Events).
+"""Flux temps réel de l'interface: `GET /api/v1/stream` (ADR-016, Server-Sent Events).
 
 Le navigateur garde cette connexion ouverte et reçoit, au fil de l'eau, les événements que son
 rôle lui permet de voir (`Event.min_role`). Chaque événement dit seulement « telle donnée a

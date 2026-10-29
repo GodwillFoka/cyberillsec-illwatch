@@ -226,7 +226,7 @@ function IndicatorTable({
               </td>
               <td className="num mono">{formatNumber(indicator.source_count)}</td>
               <td className="muted">
-                {seen ? `${formatAgo(seen)}` : "—"}
+                {seen ? `${formatAgo(seen)}` : "-"}
                 {indicator.is_active ? "" : t("expiredSuffix")}
               </td>
             </tr>
@@ -393,9 +393,9 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                 <h3>{t("status")}</h3>
                 <dl className="facts">
                   <dt>{t("firstSeen")}</dt>
-                  <dd>{first ? formatDateTime(first, utc) : "—"}</dd>
+                  <dd>{first ? formatDateTime(first, utc) : "-"}</dd>
                   <dt>{t("lastSeen")}</dt>
-                  <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "—"}</dd>
+                  <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "-"}</dd>
                   <dt>{t("observations")}</dt>
                   <dd className="mono">{formatNumber(ioc.hit_count)}</dd>
                   <dt>{t("validityLabel")}</dt>

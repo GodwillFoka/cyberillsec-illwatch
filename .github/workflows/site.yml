@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Site de présentation (ADR-027)
+# ILLWATCH : Site de présentation (ADR-027)
 # Construction sans dépendance, tests, captures grand écran et téléphone des cinq langues,
 # contrôle de la détection de langue. Publication : lot S6 (VPS, derrière Caddy).
 # ============================================================================

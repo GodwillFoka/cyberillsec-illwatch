@@ -1,4 +1,4 @@
-"""Moteur et sessions asynchrones SQLAlchemy 2.0 — couche DATA ACCESS.
+"""Moteur et sessions asynchrones SQLAlchemy 2.0 : couche DATA ACCESS.
 
 Aucune logique métier ici : uniquement la fabrique de moteur, la session
 asynchrone et la dépendance FastAPI qui l'injecte.

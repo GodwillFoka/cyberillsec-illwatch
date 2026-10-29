@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Calibration de RULE-03 (domaine généré par algorithme)
+# ILLWATCH : Calibration de RULE-03 (domaine généré par algorithme)
 # Faux positifs mesurés sur les 100 000 premiers domaines Tranco (légitimes), détection sur
 # un corpus DGA synthétique ; résultat en annotations du check « Calibration DGA ».
 # Mensuel, à la demande, et à chaque modification de la règle ou du script.

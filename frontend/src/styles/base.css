@@ -1,7 +1,7 @@
 @import "./tokens.css";
 
 /* ===========================================================================================
- * ILLWATCH — feuille de style de l'interface, identité v2 (brand book, ADR-018), thème Nuit.
+ * ILLWATCH : feuille de style de l'interface, identité v2 (brand book, ADR-018), thème Nuit.
  * Règles : une couleur porte une information ; la hiérarchie se lit à la taille et au poids,
  * pas à la décoration (bordures 1 px, aucune ombre) ; cibles cliquables ≥ 40 px ; aucun style
  * en ligne inséré par le code (CSP style-src 'self').

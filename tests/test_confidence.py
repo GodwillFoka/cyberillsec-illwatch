@@ -1,4 +1,4 @@
-"""Score de confiance des IOC — M8, ADR-017."""
+"""Score de confiance des IOC : M8, ADR-017."""
 
 from datetime import UTC, datetime, timedelta
 

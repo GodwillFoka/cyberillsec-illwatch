@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — préproduction LOCALE (ajout au-dessus de docker-compose.prod.yml)
+# ILLWATCH : préproduction LOCALE (ajout au-dessus de docker-compose.prod.yml)
 #
 #   ./scripts/preprod-local.sh up        # le script fournit les fichiers et les secrets
 #

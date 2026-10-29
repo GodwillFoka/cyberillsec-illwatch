@@ -1,4 +1,4 @@
-# 🛡️ SENTRY — État global après intégration M1–M6
+# 🛡️ SENTRY : État global après intégration M1-M6
 
 **Date :** 03/10/2026 · **Référence auditée :** `main` = `266b46e` (« Merge branch
 'feature/phases-4-6' into 'main' ») · **Auteur de l'audit :** Claude (Cowork), pour Godwill FOKA
@@ -78,7 +78,7 @@ moitié NVD/EPSS n'a jamais reçu de vraie réponse.
   normalisation, déduplication, provenance multi-sources, expiration par type ; sondes
   `sentry feeds probe` et `sentry taxii discover`.
 - **Vulnérabilités** : NVD 2.0 incrémental (filtre `hasKev` à la première synchro), KEV, EPSS,
-  score composite 0–100, priorités P0–P3, historique, alertes + webhook.
+  score composite 0-100, priorités P0-P3, historique, alertes + webhook.
 - **Réponse** : machine d'état NIST SP 800-61, assignation, notes, liens IOC/CVE, ouverture depuis
   une alerte (idempotente), post-mortem obligatoire, chronologie immuable.
 - **Pilotage** : synthèse temps réel, activité 24 h, MTTR, exports CSV/JSON en flux.
@@ -118,7 +118,7 @@ l'écart `mypy` du § 13. Correctif prévu en M7 (fichier de contraintes partag�
 | `bandit` (code applicatif) | 0 haut, 0 moyen, 2 faibles (faux positifs documentés : sentinelle de clé refusée en production, libellé `"access"`) |
 | Sans jeton / jeton altéré / `alg=none` | 401 / 401 / 401 ✅ |
 | RBAC : VIEWER crée un incident, lance une chasse ; ANALYST crée une source | 403 ✅ |
-| SSRF : source vers `169.254.169.254` | 422 ✅ — *rectifié le 04/10 : la première version du scénario obtenait ce 422 pour une autre raison (type de flux en minuscules, schéma `http`). Rejoué avec une requête valide : refus par l'anti-SSRF confirmé (« Adresse IP interne ou réservée interdite »).* |
+| SSRF : source vers `169.254.169.254` | 422 ✅, *rectifié le 04/10 : la première version du scénario obtenait ce 422 pour une autre raison (type de flux en minuscules, schéma `http`). Rejoué avec une requête valide : refus par l'anti-SSRF confirmé (« Adresse IP interne ou réservée interdite »).* |
 | Injection dans un identifiant de CVE | 422 ✅ |
 | Force brute : 6ᵉ tentative | 429 ✅ |
 | CORS depuis une origine inconnue | refusé (400) ✅ |
@@ -132,18 +132,18 @@ l'écart `mypy` du § 13. Correctif prévu en M7 (fichier de contraintes partag�
 
 Les cinq lignes ✘ deviennent le premier lot de M7.
 
-## 8. Validation réelle — Threat Feeds (M2)
+## 8. Validation réelle : Threat Feeds (M2)
 
 | Source | Résultat | Lus | Nouveaux | Cause si échec |
 |---|---|---|---|---|
-| IPsum niveau 5 | HEALTHY | 3 528 | 3 528 | — |
-| C2IntelFeeds IP 30 j | HEALTHY | 252 | 252 | — |
+| IPsum niveau 5 | HEALTHY | 3 528 | 3 528 | - |
+| C2IntelFeeds IP 30 j | HEALTHY | 252 | 252 | - |
 | C2IntelFeeds domaines 30 j | HEALTHY | 89 | 87 | 2 doublons internes |
-| abuse.ch Feodo | DEGRADED | — | — | proxy du bac à sable (403), pas la source |
-| abuse.ch URLhaus | DEGRADED | — | — | `ABUSECH_AUTH_KEY` absente (attendu) |
-| AlienVault OTX | DEGRADED | — | — | `OTX_API_KEY` absente (attendu) |
-| RedEye TAXII | DEGRADED | — | — | proxy du bac à sable ; jeton absent |
-| DigitalSide ×2 | inactives | — | — | injoignables (constat du 29/09) |
+| abuse.ch Feodo | DEGRADED | - | - | proxy du bac à sable (403), pas la source |
+| abuse.ch URLhaus | DEGRADED | - | - | `ABUSECH_AUTH_KEY` absente (attendu) |
+| AlienVault OTX | DEGRADED | - | - | `OTX_API_KEY` absente (attendu) |
+| RedEye TAXII | DEGRADED | - | - | proxy du bac à sable ; jeton absent |
+| DigitalSide ×2 | inactives | - | - | injoignables (constat du 29/09) |
 
 - **Déduplication** : seconde collecte d'IPsum → 0 nouveau, 3 528 mis à jour ✅.
 - **Provenance** : chaque IOC expose sa source dans l'API ✅. Recouvrement entre sources : 0
@@ -153,7 +153,7 @@ Les cinq lignes ✘ deviennent le premier lot de M7.
 - **Critères M2** : volume ✅, 3 sources ✅, OTX ✘, STIX ✘ → **non atteint ici, atteignable sur
   Kali** avec la clé OTX et le jeton RedEye.
 
-## 9. Validation réelle — CVE (M3)
+## 9. Validation réelle : CVE (M3)
 
 - **KEV** : catalogue officiel `2026.10.02`, 1 733 entrées, importé en **3 s** via le dépôt
   GitHub `cisagov/kev-data` (mêmes données que cisa.gov, inaccessible depuis le bac à sable) ;
@@ -188,7 +188,7 @@ temporelle, ni file de triage, ni vue par analyste. Ces manques relèvent de M9.
 
 | # | Dette | Gravité | Traitement |
 |---|---|---|---|
-| D1 | `mypy` échoue avec SQLAlchemy 2.0 (`Select[Any, Any]`) — cause du `stash` local du 03/10 | Moyenne | **corrigé** dans `release/v0.1.1` (annotation `Executable`, valide en 2.0 et 2.1) |
+| D1 | `mypy` échoue avec SQLAlchemy 2.0 (`Select[Any, Any]`) : cause du `stash` local du 03/10 | Moyenne | **corrigé** dans `release/v0.1.1` (annotation `Executable`, valide en 2.0 et 2.1) |
 | D2 | Dépendances non verrouillées | Moyenne | M7 |
 | D3 | Pas de test d'acceptation en CI (le scénario exige des données réelles) | Moyenne | M7/M11 : jeu de données figé + job dédié |
 | D4 | Image Docker jamais construite hors GitLab | Faible | job GitLab existant |
@@ -211,8 +211,8 @@ temporelle, ni file de triage, ni vue par analyste. Ces manques relèvent de M9.
 
 | Étape | Objectif | État |
 |---|---|---|
-| M1–M6 | Socle fonctionnel | ✅ intégré dans `main` |
-| Audit global | Validation M1–M6 | ✅ ce rapport |
+| M1-M6 | Socle fonctionnel | ✅ intégré dans `main` |
+| Audit global | Validation M1-M6 | ✅ ce rapport |
 | `v0.1.1` | Baseline stable | ⏳ fusion de `release/v0.1.1`, puis tag |
 | M7 | Production Hardening | 🔄 lot 1 sur `feature/m7-production-hardening` |
 | M8 | Detection & Correlation | ⏳ |
@@ -223,7 +223,7 @@ temporelle, ni file de triage, ni vue par analyste. Ces manques relèvent de M9.
 
 Détail et critères de sortie : `docs/ROADMAP.md`.
 
-## 16. Prochaine phase — actions dans l'ordre
+## 16. Prochaine phase : actions dans l'ordre
 
 1. **Fusionner `release/v0.1.1` → `main`** (MR, pipeline vert). Vérification : `mypy sentry`
    passe sur Kali **sans** le `stash`.

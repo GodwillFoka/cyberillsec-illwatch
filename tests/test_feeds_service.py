@@ -1,4 +1,4 @@
-"""Tests unitaires du service des sources de flux — validation d'URL (SSRF) et de nom."""
+"""Tests unitaires du service des sources de flux : validation d'URL (SSRF) et de nom."""
 
 import pytest
 from sqlalchemy import func, select

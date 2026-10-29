@@ -1,4 +1,4 @@
-# ADR-017 — M8 Detection & Correlation : confiance des IOC d'abord, corrélation ensuite
+# ADR-017, M8 Detection & Correlation : confiance des IOC d'abord, corrélation ensuite
 
 - **Statut :** **accepté le 11/10/2026** (décision de Godwill FOKA : « Démarrer M8 »)
 - **Date :** 2026-10-11
@@ -18,7 +18,7 @@ reportée : M8 démarre pendant que M7 attend son hébergement.
 
 M8 est livré en quatre incréments, dans cet ordre :
 
-1. **Confiance des IOC** (ce lot, livré) — score 0–100 calculé à la lecture, avec sa
+1. **Confiance des IOC** (ce lot, livré) : score 0-100 calculé à la lecture, avec sa
    décomposition :
    - *Sources* (60 points) : 1 − Π(1 − wᵢ) sur les sources distinctes, wᵢ selon la cote de
      fiabilité de la source (échelle de l'Amirauté, OTAN AJP-2.1) : A 0,90 · B 0,75 · C 0,50 ·

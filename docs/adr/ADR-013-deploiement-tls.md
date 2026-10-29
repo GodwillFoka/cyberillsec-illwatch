@@ -1,4 +1,4 @@
-# ADR-013 — Déploiement de production : TLS par Caddy, migrations isolées, analyse d'image (M7, lot 3)
+# ADR-013, Déploiement de production : TLS par Caddy, migrations isolées, analyse d'image (M7, lot 3)
 
 - **Statut :** proposé
 - **Date :** 2026-10-04

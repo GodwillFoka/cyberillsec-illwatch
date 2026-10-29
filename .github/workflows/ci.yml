@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Pipeline d'intégration continue GitHub Actions
+# ILLWATCH : Pipeline d'intégration continue GitHub Actions
 # Miroir de .gitlab-ci.yml (GitLab reste le dépôt de référence, ADR-002) :
 # qualité, tests PostgreSQL/Redis réels, migrations, image Docker, sécurité.
 # ============================================================================
@@ -24,7 +24,7 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Étape 1 — Qualité : lint, formatage, typage strict
+  # Étape 1, Qualité : lint, formatage, typage strict
   # ---------------------------------------------------------------------------
   qualite:
     name: Qualité (ruff, mypy)
@@ -54,7 +54,7 @@ jobs:
             exit 1; }
 
   # ---------------------------------------------------------------------------
-  # Étape 2 — Tests : suite complète contre PostgreSQL 16 et Redis 7 réels
+  # Étape 2, Tests : suite complète contre PostgreSQL 16 et Redis 7 réels
   # ---------------------------------------------------------------------------
   tests:
     name: Tests (Python ${{ matrix.python }})
@@ -199,7 +199,7 @@ jobs:
               const r = JSON.parse(require("fs").readFileSync(0, "utf8"));
               for (const [name, v] of Object.entries(r.vulnerabilities || {})) {
                 const via = (v.via || []).map((x) => (typeof x === "string" ? x : x.title + " " + (x.url || ""))).join(" | ");
-                console.log("::error title=npm audit " + v.severity + "::" + name + " " + v.range + " — " + via.slice(0, 700));
+                console.log("::error title=npm audit " + v.severity + "::" + name + " " + v.range + " : " + via.slice(0, 700));
               }'
             exit 1; }
       - name: Audit des outils de développement
@@ -213,7 +213,7 @@ jobs:
               const r = JSON.parse(require("fs").readFileSync(0, "utf8"));
               for (const [name, v] of Object.entries(r.vulnerabilities || {})) {
                 const via = (v.via || []).map((x) => (typeof x === "string" ? x : x.title + " " + (x.url || ""))).join(" | ");
-                console.log("::error title=npm audit (dév.) " + v.severity + "::" + name + " " + v.range + " — " + via.slice(0, 600));
+                console.log("::error title=npm audit (dév.) " + v.severity + "::" + name + " " + v.range + " : " + via.slice(0, 600));
               }'
             exit 1; }
       - name: Types TypeScript générés depuis l'API
@@ -246,7 +246,7 @@ jobs:
           ! grep -E "<script>[^<]" dist/index.html
 
   # ---------------------------------------------------------------------------
-  # Étape 3 — Build : l'image doit se construire et la CLI répondre
+  # Étape 3, Build : l'image doit se construire et la CLI répondre
   # ---------------------------------------------------------------------------
   image:
     name: Image Docker
@@ -292,7 +292,7 @@ jobs:
           fi
 
   # ---------------------------------------------------------------------------
-  # Étape 4 — Sécurité : dépendances (pip-audit) et code (bandit)
+  # Étape 4, Sécurité : dépendances (pip-audit) et code (bandit)
   # ---------------------------------------------------------------------------
   securite:
     name: Sécurité (pip-audit, bandit, gitleaks)

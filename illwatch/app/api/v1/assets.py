@@ -1,4 +1,4 @@
-"""Inventaire d'actifs — `/api/v1/assets` (M8, ADR-020).
+"""Inventaire d'actifs: `/api/v1/assets` (M8, ADR-020).
 
 | Opération              | ADMIN | ANALYST | VIEWER |
 |------------------------|:-----:|:-------:|:------:|

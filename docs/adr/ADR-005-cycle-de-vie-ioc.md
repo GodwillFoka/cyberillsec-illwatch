@@ -1,4 +1,4 @@
-# ADR-005 — Cycle de vie et déduplication des IOC
+# ADR-005 : Cycle de vie et déduplication des IOC
 
 - **Statut :** proposé
 - **Date :** 2026-09-27
@@ -46,7 +46,7 @@ fausses.
   jusqu'à la gestion des faux positifs.
 - Les durées de validité suivent la pratique CTI : l'infrastructure réseau d'un attaquant change
   de mains en quelques semaines ; un hash reste la preuve d'un fichier précis.
-- *Écartés* — suppression physique à expiration : destruction de l'historique d'enquête ;
+- *Écartés*, suppression physique à expiration : destruction de l'historique d'enquête ;
   lecture puis écriture ligne à ligne : incompatible avec RNF-PERF-02.
 
 ## Conséquences

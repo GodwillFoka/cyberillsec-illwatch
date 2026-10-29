@@ -1,4 +1,4 @@
-"""Orchestration d'une collecte — UC-01 (ingestion automatisée d'un flux), T2.3.
+"""Orchestration d'une collecte : UC-01 (ingestion automatisée d'un flux), T2.3.
 
     flux actif et échu → récupération → analyse → ingestion dédupliquée → état du flux
 

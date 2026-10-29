@@ -1,4 +1,4 @@
-# ADR-020 — Corrélation : inventaire d'actifs, trois règles, score justifié, mesure sur jeu figé
+# ADR-020, Corrélation : inventaire d'actifs, trois règles, score justifié, mesure sur jeu figé
 
 - **Statut :** **accepté le 13/10/2026** (décision de Godwill FOKA : « Fais toutes les choses à faire »)
 - **Date :** 2026-10-13
@@ -21,7 +21,7 @@ pas ce qui est dangereux **pour l'organisation**. Le critère de sortie de M8 l'
    - **CORR-02** : CVE P0/P1 avec exploit public (hors KEV), même correspondance ;
    - **CORR-03** : adresse ou domaine (sous-domaines compris) d'un actif présent dans un IOC
      actif dont la confiance (ADR-017) atteint le seuil, 40 par défaut.
-3. **Score 0–100 justifié** : base de la règle (60, 45, 50) + criticité de l'actif (0, 5, 12,
+3. **Score 0-100 justifié** : base de la règle (60, 45, 50) + criticité de l'actif (0, 5, 12,
    20) + signal (score de la CVE × 0,2, ou confiance de l'IOC × 0,3) ; même grille de priorité
    que les CVE (P0 ≥ 80, P1 ≥ 60, P2 ≥ 40). La décomposition est stockée avec l'évènement.
 4. **Un évènement par règle et par couple (actif, CVE/IOC)** : une nouvelle passe met à jour
@@ -51,7 +51,7 @@ pas ce qui est dangereux **pour l'organisation**. Le critère de sortie de M8 l'
   touche **ses** actifs ; critère de sortie de M8 mesuré et vérifié en continu.
 - Négatives : la version n'est pas comparée (une CVE corrigée dans la version déployée reste
   signalée) ; un produit mal nommé produit du bruit ou du silence ; le jeu figé est petit et
-  écrit à la main — le taux de faux positifs **réel** reste à mesurer sur l'inventaire d'un
+  écrit à la main : le taux de faux positifs **réel** reste à mesurer sur l'inventaire d'un
   pilote ; la recherche des domaines (`LIKE '%.domaine'`) parcourt la table des IOC à chaque
   passe (acceptable à l'heure, à indexer si l'inventaire grossit).
 

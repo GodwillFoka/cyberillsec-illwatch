@@ -1,4 +1,4 @@
-"""Tests de la validation de configuration au démarrage — RF-01 / règle de gestion MOD-01."""
+"""Tests de la validation de configuration au démarrage : RF-01 / règle de gestion MOD-01."""
 
 from pathlib import Path
 

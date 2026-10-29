@@ -25,7 +25,7 @@ RUN pip install --upgrade pip && pip install -c constraints.txt .
 COPY alembic.ini ./
 COPY alembic ./alembic
 
-# Exécution sans privilèges — RNF-SEC
+# Exécution sans privilèges : RNF-SEC
 RUN useradd --create-home --uid 10001 illwatch && chown -R illwatch:illwatch /app
 USER illwatch
 

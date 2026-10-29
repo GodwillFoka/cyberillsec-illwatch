@@ -1,5 +1,5 @@
 // Vue d'ensemble (maquette v6) : ce qui demande votre attention, puis la situation, puis le
-// contexte. Chaque chiffre vient du serveur ; une donnée absente s'affiche « — ».
+// contexte. Chaque chiffre vient du serveur ; une donnée absente s'affiche « - ».
 import { useState } from "react";
 
 
@@ -279,7 +279,7 @@ function Evolution() {
 
 function CvePriorities({ summary }: { summary: Summary | undefined }) {
   const counts = summary?.cves.by_priority ?? {};
-  // Échelle commune à P0–P2 : P3 (maintenance) écraserait les autres barres.
+  // Échelle commune à P0-P2 : P3 (maintenance) écraserait les autres barres.
   const scale = Math.max(1, ...PRIORITY_ORDER.slice(0, 3).map((p) => counts[p] ?? 0));
   return (
     <section className="card">
@@ -328,7 +328,7 @@ function RecentActivity() {
               const at = parseDate(item.at);
               return (
                 <li key={key(item)} className={fresh.has(key(item)) ? "fresh" : undefined}>
-                  <span className="mono muted">{at ? formatTime(at, utc) : "—"}</span>
+                  <span className="mono muted">{at ? formatTime(at, utc) : "-"}</span>
                   <span className={`badge ${toneOf(item.level)}`}>{kindLabel(item.kind)}</span>
                   <span className="ellipsis" title={item.label}>
                     {item.label}

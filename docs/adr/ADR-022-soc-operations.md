@@ -1,4 +1,4 @@
-# ADR-022 — M9 SOC Operations : niveaux L1/L2/L3, faux positifs, réponse, pilotage
+# ADR-022, M9 SOC Operations : niveaux L1/L2/L3, faux positifs, réponse, pilotage
 
 - **Statut :** **accepté le 14/10/2026** (décision de Godwill FOKA : « fais le M9-SOC »)
 - **Date :** 2026-10-14

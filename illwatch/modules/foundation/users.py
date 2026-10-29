@@ -1,4 +1,4 @@
-"""Service de gestion des comptes utilisateurs — logique métier pure, sans HTTP ni CLI."""
+"""Service de gestion des comptes utilisateurs : logique métier pure, sans HTTP ni CLI."""
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession

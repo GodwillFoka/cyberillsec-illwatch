@@ -1,4 +1,4 @@
-"""Cycle de vie des IOC : ingestion dédupliquée et lecture — RF-07, RF-08, T2.5 (ADR-005).
+"""Cycle de vie des IOC : ingestion dédupliquée et lecture, RF-07, RF-08, T2.5 (ADR-005).
 
 Sémantique des colonnes (fixée par l'ADR-005) :
 
@@ -17,7 +17,7 @@ Sémantique des colonnes (fixée par l'ADR-005) :
   ``first_seen``, ``last_seen`` et ``hit_count``.
 
 Déduplication : garantie par la contrainte ``UNIQUE (type, value)`` et appliquée par un
-``INSERT … ON CONFLICT DO UPDATE`` groupé — une seule instruction SQL par paquet, sans
+``INSERT … ON CONFLICT DO UPDATE`` groupé : une seule instruction SQL par paquet, sans
 lecture préalable ligne à ligne (RNF-PERF-02 : 1 000 IOC en moins de 5 s).
 """
 

@@ -1,4 +1,4 @@
-# M8 — Mesure sur données réelles (Kali, 13/10/2026)
+# M8 : Mesure sur données réelles (Kali, 13/10/2026)
 
 ## Conditions
 

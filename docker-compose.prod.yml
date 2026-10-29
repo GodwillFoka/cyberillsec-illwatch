@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — déploiement de production (M7 lot 3, ADR-013)
+# ILLWATCH : déploiement de production (M7 lot 3, ADR-013)
 #
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile full up -d
 #

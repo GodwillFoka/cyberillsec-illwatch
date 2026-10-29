@@ -1,4 +1,4 @@
-"""Journal d'audit de sécurité — M7 Production Hardening (ADR-011).
+"""Journal d'audit de sécurité : M7 Production Hardening (ADR-011).
 
 Une ligne par action sensible : connexion (réussie, échouée, bloquée), administration des
 sources, soumission d'IOC, acquittement d'alerte, chasse, export de données, création de compte.

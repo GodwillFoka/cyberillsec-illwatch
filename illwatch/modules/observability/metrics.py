@@ -1,4 +1,4 @@
-"""Métriques au format texte Prometheus (exposition 0.0.4) — M11, ADR-026.
+"""Métriques au format texte Prometheus (exposition 0.0.4) : M11, ADR-026.
 
 Deux familles :
 

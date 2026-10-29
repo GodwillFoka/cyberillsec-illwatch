@@ -1,4 +1,4 @@
-"""Évènements corrélés — `/api/v1/correlations` (M8, ADR-020).
+"""Évènements corrélés : `/api/v1/correlations` (M8, ADR-020).
 
 Lecture pour tous ; acquittement, ouverture d'incident et passe manuelle de corrélation pour
 ADMIN et ANALYST (consignés au journal d'audit).

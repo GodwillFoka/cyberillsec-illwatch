@@ -1,4 +1,4 @@
-"""`illwatch soc` — pilotage du SOC et liste d'exclusion (M9, ADR-022).
+"""`illwatch soc` : pilotage du SOC et liste d'exclusion (M9, ADR-022).
 
 illwatch soc metrics --days 30          # MTTA, MTTR, délais cibles, niveaux, charge
 illwatch soc exclude 203.0.113.7 --reason "Résolveur public de l'entreprise"
@@ -33,12 +33,12 @@ def _run[T](work: Callable[[Any], Awaitable[T]]) -> T:
 
 def _hours(value: float | None) -> str:
     if value is None:
-        return "—"
+        return "-"
     return f"{value:.1f} h".replace(".", ",") if value >= 1 else f"{value * 60:.0f} min"
 
 
 def _pct(value: float | None) -> str:
-    return "—" if value is None else f"{value * 100:.0f} %"
+    return "-" if value is None else f"{value * 100:.0f} %"
 
 
 @click.group()
@@ -58,7 +58,7 @@ def soc_metrics_command(days: str) -> None:
     metrics = _run(lambda session: soc_metrics(session, viewer=viewer, days=int(days)))
     mtta = None if metrics.mtta_minutes is None else metrics.mtta_minutes / 60
     console.print(
-        f"[bold]Pilotage SOC — {metrics.window_days} jours[/] · ouverts {metrics.opened} · "
+        f"[bold]Pilotage SOC: {metrics.window_days} jours[/] · ouverts {metrics.opened} · "
         f"clos {metrics.closed} · en cours {metrics.open_now}"
     )
     console.print(
@@ -93,7 +93,7 @@ def soc_metrics_command(days: str) -> None:
     console.print(table)
     tiers = " · ".join(f"{k} {v}" for k, v in metrics.open_by_tier.items())
     steps = " · ".join(f"{k} : {v}" for k, v in metrics.escalations.items()) or "aucune"
-    console.print(f"En cours par niveau : {tiers} — escalades : {steps}")
+    console.print(f"En cours par niveau : {tiers}, escalades : {steps}")
     for breach in metrics.breaches:
         console.print(
             f"[red]Dépassement[/] {breach.kind} · {breach.severity} · {breach.tier} · "

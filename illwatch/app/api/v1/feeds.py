@@ -1,4 +1,4 @@
-"""Routes de gestion des sources de flux — `/api/v1/feeds` (RF-04, T2.2).
+"""Routes de gestion des sources de flux : `/api/v1/feeds` (RF-04, T2.2).
 
 Contrôle d'accès :
 

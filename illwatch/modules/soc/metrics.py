@@ -1,4 +1,4 @@
-"""Pilotage du SOC — M9 (ADR-022) : délais, délais cibles, niveaux, charge, séries.
+"""Pilotage du SOC, M9 (ADR-022) : délais, délais cibles, niveaux, charge, séries.
 
 Définitions (affichées telles quelles dans l'écran Pilotage) :
 
@@ -60,7 +60,7 @@ class SeverityStats:
     closed: int = 0
     mtta_minutes: float | None = None
     mttr_hours: float | None = None
-    ack_within_sla: float | None = None  # part (0–1) des prises en charge dans le délai cible
+    ack_within_sla: float | None = None  # part (0-1) des prises en charge dans le délai cible
     resolved_within_sla: float | None = None
 
 

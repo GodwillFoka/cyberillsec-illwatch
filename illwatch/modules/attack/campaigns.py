@@ -1,4 +1,4 @@
-"""Campagnes : création, rattachement de l'infrastructure, contexte des détections — M10,
+"""Campagnes : création, rattachement de l'infrastructure, contexte des détections : M10,
 incrément 2 (ADR-024).
 
 Rattacher, c'est dire « ces IOC appartiennent à cette opération ». Deux façons : par valeurs

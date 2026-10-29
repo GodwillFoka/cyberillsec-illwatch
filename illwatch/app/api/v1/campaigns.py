@@ -1,4 +1,4 @@
-"""Campagnes — `/api/v1/campaigns` (M10, incrément 2, ADR-024).
+"""Campagnes : `/api/v1/campaigns` (M10, incrément 2, ADR-024).
 
 | Opération                                          | ADMIN | ANALYST | VIEWER |
 |----------------------------------------------------|:-----:|:-------:|:------:|
@@ -215,7 +215,7 @@ async def update_campaign(
 @router.post(
     "/{campaign_id}/indicators",
     response_model=AttachResult,
-    summary="Rattacher des IOC connus (valeurs ou description) — ADMIN, ANALYST",
+    summary="Rattacher des IOC connus (valeurs ou description) : ADMIN, ANALYST",
 )
 async def attach(
     campaign_id: UUID, payload: AttachRequest, session: DbSession, user: Contributor, audit: Audit
@@ -244,7 +244,7 @@ async def attach(
 @router.delete(
     "/{campaign_id}/indicators/{indicator_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Détacher un IOC — ADMIN, ANALYST",
+    summary="Détacher un IOC : ADMIN, ANALYST",
 )
 async def detach(
     campaign_id: UUID, indicator_id: UUID, session: DbSession, _: Contributor
@@ -254,9 +254,7 @@ async def detach(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.delete(
-    "/{campaign_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Supprimer — ADMIN"
-)
+@router.delete("/{campaign_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Supprimer: ADMIN")
 async def delete_campaign(
     campaign_id: UUID, session: DbSession, user: AdminUser, audit: Audit
 ) -> Response:

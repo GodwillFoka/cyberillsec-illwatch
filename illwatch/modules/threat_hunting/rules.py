@@ -1,4 +1,4 @@
-"""Catalogue de règles de threat hunting — RF-25, RF-26 (phase 6, ADR-009).
+"""Catalogue de règles de threat hunting : RF-25, RF-26 (phase 6, ADR-009).
 
 Une règle reçoit le **contexte de chasse** (observables soumis, IOC de la base, inventaire
 d'actifs, listes de référence) et produit des correspondances. Elle est déterministe :

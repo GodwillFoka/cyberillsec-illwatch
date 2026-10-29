@@ -1,4 +1,4 @@
-"""Administration des comptes — `/api/v1/users` (ADMIN), écran Administration (ADR-016).
+"""Administration des comptes : `/api/v1/users` (ADMIN), écran Administration (ADR-016).
 
 Mêmes opérations que `illwatch users …`, avec les mêmes effets : création sous politique de
 mot de passe, désactivation et réinitialisation qui révoquent les sessions, tout consigné au
@@ -204,7 +204,7 @@ async def update_account(
 @router.post(
     "/{user_id}/password",
     response_model=SessionsRevoked,
-    summary="Réinitialiser le mot de passe (ADMIN) — révoque les sessions",
+    summary="Réinitialiser le mot de passe (ADMIN) : révoque les sessions",
 )
 async def reset_password(
     user_id: UUID, payload: PasswordReset, session: DbSession, admin: AdminUser, audit: Audit

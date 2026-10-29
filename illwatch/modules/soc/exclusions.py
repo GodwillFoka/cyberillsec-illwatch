@@ -1,4 +1,4 @@
-"""Liste d'exclusion des IOC faux positifs — M9 (ADR-022), tâche 3.6.
+"""Liste d'exclusion des IOC faux positifs : M9 (ADR-022), tâche 3.6.
 
 Exclure, c'est dire « cette valeur n'est pas malveillante ici » (CDN de l'organisation,
 résolveur public, faux positif d'une source). L'IOC reste en base avec sa provenance, mais

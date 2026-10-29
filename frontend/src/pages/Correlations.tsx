@@ -106,7 +106,7 @@ function EventTable({
       <tbody>
         {sorted.map((event, index) => {
           const seen = parseDate(event.last_seen);
-          const target = event.cve_id ?? text(event.detail, "value") ?? "—";
+          const target = event.cve_id ?? text(event.detail, "value") ?? "-";
           const classes = [fresh.has(event.id) ? "fresh" : "", event.acknowledged_at ? "done" : ""]
             .filter(Boolean)
             .join(" ");
@@ -129,7 +129,7 @@ function EventTable({
                 {target}
               </td>
               <td className="num mono">{formatScore(event.score)}</td>
-              <td className="muted">{seen ? formatAgo(seen) : "—"}</td>
+              <td className="muted">{seen ? formatAgo(seen) : "-"}</td>
             </tr>
           );
         })}
@@ -202,7 +202,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
                 {text(detail, "cve_priority") ? ` · ${levelLabel(text(detail, "cve_priority") ?? "")}` : ""}
               </dd>
               <dt>{t("product")}</dt>
-              <dd>{text(detail, "product") ?? "—"}</dd>
+              <dd>{text(detail, "product") ?? "-"}</dd>
               <dt>{t("version")}</dt>
               <dd>
                 {text(detail, "version") ?? t("notDeclared")}
@@ -215,7 +215,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
                 ) : null}
               </dd>
               <dt>{t("signals")}</dt>
-              <dd>{signals.length ? signals.join(", ") : "—"}</dd>
+              <dd>{signals.length ? signals.join(", ") : "-"}</dd>
               {text(detail, "kev_due_date") && (
                 <>
                   <dt>{t("cisaDue")}</dt>
@@ -239,7 +239,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
               <dt>{t("confidence")}</dt>
               <dd>
                 {t("confidenceLine", {
-                  confidence: num(detail, "confidence") ?? "—",
+                  confidence: num(detail, "confidence") ?? "-",
                   sources: num(detail, "sources") ?? 0,
                 })}
               </dd>
@@ -285,9 +285,9 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
         <h3>{t("history")}</h3>
         <dl className="facts">
           <dt>{t("firstDetected")}</dt>
-          <dd>{first ? formatDateTime(first, utc) : "—"}</dd>
+          <dd>{first ? formatDateTime(first, utc) : "-"}</dd>
           <dt>{t("lastConfirmed")}</dt>
-          <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "—"}</dd>
+          <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "-"}</dd>
           <dt>{t("state")}</dt>
           <dd>
             {qualified

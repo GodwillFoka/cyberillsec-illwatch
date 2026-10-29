@@ -1,7 +1,7 @@
-# Site de documentation ILLWATCH — publié par GitLab Pages (job « pages », sous /docs/ du site)
+# Site de documentation ILLWATCH : publié par GitLab Pages (job « pages », sous /docs/ du site)
 # et par GitHub Pages (.github/workflows/docs.yml)
 # Aperçu local : pip install "mkdocs-material>=9.5,<10" && python scripts/docs_prepare.py && mkdocs serve
-site_name: ILLWATCH — Documentation
+site_name: "ILLWATCH : Documentation"
 site_description: Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)
 site_author: Godwill FOKA
 site_url: https://godwillfoka.github.io/cyberillsec-illwatch/

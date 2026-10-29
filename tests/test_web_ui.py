@@ -1,4 +1,4 @@
-"""Service de l'interface web compilée — ADR-016 (même origine que l'API)."""
+"""Service de l'interface web compilée : ADR-016 (même origine que l'API)."""
 
 import json
 from collections.abc import AsyncIterator, Iterator

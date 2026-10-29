@@ -1,4 +1,4 @@
-"""Modèles ThreatFeed, Indicator et IndicatorSource — flux, IOC et provenance.
+"""Modèles ThreatFeed, Indicator et IndicatorSource : flux, IOC et provenance.
 
 Les contraintes CHECK reprennent à l'identique celles des migrations `a4973a3782e3`
 et `1f3dafc3008c` (format OTX). Le modèle reste la source de vérité du schéma ; comme
@@ -38,7 +38,7 @@ def _in_enum(column: str, enum: type[StrEnum]) -> str:
 
 
 class ThreatFeed(UUIDPrimaryKeyMixin, TimestampMixin, Base):
-    """Source de renseignement distante — RF-04."""
+    """Source de renseignement distante: RF-04."""
 
     __tablename__ = "threat_feeds"
     __table_args__ = (
@@ -59,7 +59,7 @@ class ThreatFeed(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     status: Mapped[str] = mapped_column(String(20), nullable=False, default=FeedStatus.PENDING)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
-    # Fiabilité de la source (A–F, ADR-017) : pondère le score de confiance de ses IOC.
+    # Fiabilité de la source (A-F, ADR-017) : pondère le score de confiance de ses IOC.
     reliability: Mapped[str] = mapped_column(
         String(1), nullable=False, default=SourceReliability.C, server_default="C"
     )
@@ -71,7 +71,7 @@ class ThreatFeed(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 
 class Indicator(UUIDPrimaryKeyMixin, Base):
-    """Indicateur de compromission dédupliqué — RF-07 / RF-08."""
+    """Indicateur de compromission dédupliqué : RF-07 / RF-08."""
 
     __tablename__ = "indicators"
     __table_args__ = (
@@ -110,7 +110,7 @@ class Indicator(UUIDPrimaryKeyMixin, Base):
 
 
 class IndicatorSource(Base):
-    """Provenance multi-sources d'un IOC — ADR-006.
+    """Provenance multi-sources d'un IOC: ADR-006.
 
     Une ligne par couple (IOC, flux) : quand et combien de fois *ce* flux a rapporté
     *cet* IOC. `indicators.feed_id` reste la première source connue ; cette table dit
@@ -139,7 +139,7 @@ class IndicatorSource(Base):
 
 
 class CollectionRun(UUIDPrimaryKeyMixin, Base):
-    """Journal des collectes — une ligne par collecte d'un flux (ADR-016, santé des sources).
+    """Journal des collectes : une ligne par collecte d'un flux (ADR-016, santé des sources).
 
     Alimente l'écran « Sources CTI » : dernière tentative, durée, nouveaux IOC, IOC déjà
     connus, rejets, erreurs sur 7 jours. Purgé au-delà de `RUN_RETENTION_DAYS` par

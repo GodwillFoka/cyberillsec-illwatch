@@ -1,4 +1,4 @@
-"""Enrichissement hors ligne des adresses IP — M8, ADR-017 (incrément 2).
+"""Enrichissement hors ligne des adresses IP : M8, ADR-017 (incrément 2).
 
 `ip_ranges` contient les plages de la base DB-IP Lite (pays, système autonome), importées
 depuis un fichier téléchargé une fois par mois : aucune requête sortante au moment de

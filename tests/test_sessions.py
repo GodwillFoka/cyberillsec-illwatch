@@ -1,4 +1,4 @@
-"""M7 lot 2 — sessions révocables, rotation de clé, rôles PostgreSQL, secrets de connexion."""
+"""M7 lot 2 : sessions révocables, rotation de clé, rôles PostgreSQL, secrets de connexion."""
 
 import asyncio
 import os

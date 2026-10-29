@@ -1,4 +1,4 @@
-"""Calibration de RULE-03 (domaine généré par algorithme) — point en attente de M8.
+"""Calibration de RULE-03 (domaine généré par algorithme) : point en attente de M8.
 
 Mesure, pour les seuils en vigueur et pour une grille de seuils voisins :
 

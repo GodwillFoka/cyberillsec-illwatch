@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILLWATCH — Construire le site de présentation servi par Caddy (ADR-027, lot S6)
+# ILLWATCH : Construire le site de présentation servi par Caddy (ADR-027, lot S6)
 #
 #   ILLWATCH_SITE_DOMAIN=illwatch.exemple.eu ./scripts/build-site.sh
 #
@@ -35,4 +35,4 @@ export ILLWATCH_SITE_COUNTRY="${INSTANCE_COUNTRY:-}"
 export ILLWATCH_SITE_DEFAULT_LANG="${DEFAULT_LANGUAGE:-}"
 export ILLWATCH_SITE_PUBLIC="${ILLWATCH_SITE_PUBLIC:-0}"
 run
-echo "✔ Site construit dans Website/dist pour https://${domain} — docker compose restart caddy"
+echo "✔ Site construit dans Website/dist pour https://${domain} : docker compose restart caddy"

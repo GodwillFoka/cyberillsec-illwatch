@@ -1,4 +1,4 @@
-"""Tests de la machine d'état des incidents — RF-18."""
+"""Tests de la machine d'état des incidents : RF-18."""
 
 import pytest
 

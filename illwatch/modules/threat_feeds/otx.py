@@ -1,4 +1,4 @@
-"""Connecteur AlienVault OTX — T2.9 (pulses abonnés).
+"""Connecteur AlienVault OTX : T2.9 (pulses abonnés).
 
     GET https://otx.alienvault.com/api/v1/pulses/subscribed?limit=50&modified_since=…
     En-tête : X-OTX-API-KEY: <OTX_API_KEY>

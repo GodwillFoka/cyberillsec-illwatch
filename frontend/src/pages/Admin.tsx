@@ -183,7 +183,7 @@ function AccountPanel({ account, isSelf }: { account: Account; isSelf: boolean }
           <dt>{t("email")}</dt>
           <dd>{account.email}</dd>
           <dt>{t("created")}</dt>
-          <dd>{created ? formatDateTime(created, utc) : "—"}</dd>
+          <dd>{created ? formatDateTime(created, utc) : "-"}</dd>
           <dt>{t("sessions")}</dt>
           <dd>{formatNumber(account.active_sessions)}</dd>
         </dl>
@@ -469,17 +469,17 @@ function AuditLog() {
                   return (
                     <tr key={event.id}>
                       <td className="mono muted" title={at ? `${formatAgo(at)}` : undefined}>
-                        {at ? formatDateTime(at, utc) : "—"}
+                        {at ? formatDateTime(at, utc) : "-"}
                       </td>
                       <td>{auditLabel(event.action)}</td>
                       <td>
                         <span className={`badge ${tone}`}>{label}</span>
                       </td>
-                      <td>{event.actor_name ?? "—"}</td>
+                      <td>{event.actor_name ?? "-"}</td>
                       <td className="ellipsis muted" style={{ maxWidth: 320 }} title={detail}>
-                        {detail || "—"}
+                        {detail || "-"}
                       </td>
-                      <td className="mono muted">{event.ip ?? "—"}</td>
+                      <td className="mono muted">{event.ip ?? "-"}</td>
                     </tr>
                   );
                 })}
@@ -574,7 +574,7 @@ function DemoRequests() {
                   const at = parseDate(request.created_at);
                   return (
                     <tr key={request.id}>
-                      <td className="mono muted">{at ? formatDateTime(at, utc) : "—"}</td>
+                      <td className="mono muted">{at ? formatDateTime(at, utc) : "-"}</td>
                       <td>
                         {request.name}
                         <span className="cell-sub">
@@ -589,7 +589,7 @@ function DemoRequests() {
                       </td>
                       <td>{t(`interest.${request.interest}` as Key)}</td>
                       <td className="ellipsis muted" style={{ maxWidth: 280 }} title={request.message ?? undefined}>
-                        {request.message ?? "—"}
+                        {request.message ?? "-"}
                       </td>
                       <td>
                         <span className={`badge ${REQUEST_TONE[request.status] ?? "p3"}`}>
@@ -708,7 +708,7 @@ function SettingsView() {
                     <div key={d.dataset} className="contents">
                       <dt>{d.dataset === "country" ? t("countries") : t("asns")}</dt>
                       <dd>
-                        {t("ranges", { count: d.ranges, ago: at ? formatAgo(at) : "—" })}
+                        {t("ranges", { count: d.ranges, ago: at ? formatAgo(at) : "-" })}
                         <span className="cell-sub mono">{d.source}</span>
                       </dd>
                     </div>

@@ -1,6 +1,6 @@
 """cve engine
 
-Moteur CVE — phase 3 (ADR-007) : priorité SOC stockée, champs KEV et EPSS complets,
+Moteur CVE, phase 3 (ADR-007) : priorité SOC stockée, champs KEV et EPSS complets,
 historique des changements de priorité, alertes et curseurs de synchronisation.
 
 La priorité des CVE déjà présentes est dérivée de leur score avec la grille de l'ADR-001

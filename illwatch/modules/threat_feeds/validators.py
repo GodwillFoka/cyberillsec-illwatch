@@ -1,4 +1,4 @@
-"""Validation et typage automatique des IOC — §3.3.2 du Cahier des Charges."""
+"""Validation et typage automatique des IOC : §3.3.2 du Cahier des Charges."""
 
 import ipaddress
 import re

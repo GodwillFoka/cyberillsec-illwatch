@@ -7,7 +7,7 @@
 
 **Security Monitoring & Cyber Threat Intelligence Platform**
 
-*CyberillSec — A CYBERILL Initiative*
+*CyberillSec : A CYBERILL Initiative*
 
 [![CI](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/ci.yml)
 [![Validation réelle](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/validation-reelle.yml/badge.svg)](https://github.com/GodwillFoka/cyberillsec-illwatch/actions/workflows/validation-reelle.yml)
@@ -23,7 +23,7 @@
 
 *« Engineering Cyber Resilience. Empowering Digital Trust. »*
 
-<sub>Anciennement SENTRY — renommé ILLWATCH le 08/10/2026 ; poste existant : <a href="docs/OPERATIONS.md">OPERATIONS § 7 sexies</a>.</sub>
+<sub>Anciennement SENTRY : renommé ILLWATCH le 08/10/2026 ; poste existant : <a href="docs/OPERATIONS.md">OPERATIONS § 7 sexies</a>.</sub>
 
 [**📖 Documentation**](https://godwillfoka.github.io/cyberillsec-illwatch/) ·
 [Démarrage rapide](#démarrage-rapide) ·
@@ -40,7 +40,7 @@ Dépôts : [GitLab (référence)](https://gitlab.com/GodwillFoka/cyberillsec-ill
 ## En 30 secondes
 
 ILLWATCH est une plateforme de **Cyber Threat Intelligence** open source qui fait le travail
-répétitif d'un analyste SOC — collecter, dédupliquer, prioriser, corréler — pour qu'il ne garde
+répétitif d'un analyste SOC (collecter, dédupliquer, prioriser, corréler) pour qu'il ne garde
 que les décisions :
 
 - **collecte** en continu le renseignement public : CSV, JSON, STIX 2.1, **TAXII 2.1**,
@@ -59,7 +59,7 @@ que les décisions :
 
 | | |
 |---|---|
-| **Version** | `0.2.0.dev0` sur `main` · dernière release : [`v0.1.1`](https://github.com/GodwillFoka/cyberillsec-illwatch/releases) (baseline M1–M6) |
+| **Version** | `0.2.0.dev0` sur `main` · dernière release : [`v0.1.1`](https://github.com/GodwillFoka/cyberillsec-illwatch/releases) (baseline M1-M6) |
 | **Intégré dans `main`** | M1 → M6 (six modules), M7 « Production Hardening » (lots 1 à 3) et l'interface web en cours (vue d'ensemble, triage, incidents) |
 | **Vérifié en continu** | CI à chaque push (qualité, plus de 510 tests sur PostgreSQL réel, interface web, migrations, image, sécurité) ; **validation sur données réelles** chaque lundi (flux IOC, KEV, NVD, EPSS, scénario SOC complet) |
 | **Jalons constatés** (`illwatch status`, 06/10) | M1 ✅ · M2 ◐ (volume et sources ✅, OTX et STIX attendent leurs clés) · **M3 ✅** · M4 ✅ · M5 ✅ (scénario SOC) · M6 ✅ |
@@ -70,7 +70,7 @@ que les décisions :
 
 Un analyste SOC passe 60 à 70 % de son temps à recopier des indicateurs entre une dizaine
 d'outils, à lire des bulletins illisibles et à trier des alertes en double. Les plateformes
-commerciales qui résolvent ce problème coûtent de **40 000 à 150 000 € par an** — hors de portée
+commerciales qui résolvent ce problème coûtent de **40 000 à 150 000 € par an** : hors de portée
 des PME, des ETI et des collectivités. Les plateformes open source complètes exigent une
 infrastructure lourde : OpenCTI, par exemple, demande au minimum **8 Go de RAM pour la plateforme
 et 8 Go pour son moteur de recherche**, plus Redis, RabbitMQ et un stockage objet¹.
@@ -89,7 +89,7 @@ Pendant ce temps, les attaquants exploitent une vulnérabilité publiée en moin
 | Souveraineté | Variable | Auto-hébergé | **Auto-hébergé, UE** |
 
 ILLWATCH ne cherche pas à remplacer un graphe de connaissances CTI complet : il donne à une
-équipe de 1 à 10 personnes ce dont elle a besoin **le lundi matin** — quoi patcher d'abord, quoi
+équipe de 1 à 10 personnes ce dont elle a besoin **le lundi matin** : quoi patcher d'abord, quoi
 bloquer, qu'est-ce qui a changé, et la preuve de ce qui a été fait.
 
 ## Fonctionnalités
@@ -116,8 +116,8 @@ R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + KEV × 25 + Exploit × 10 + Ran
 
 | Composante | Source | Contribution max |
 |---|---|---|
-| CVSS v3.1 — sévérité technique | NVD 2.0 | 30 |
-| EPSS — probabilité d'exploitation à 30 jours | FIRST | 25 |
+| CVSS v3.1 : sévérité technique | NVD 2.0 | 30 |
+| EPSS : probabilité d'exploitation à 30 jours | FIRST | 25 |
 | Exploitation avérée | CISA KEV | 25 |
 | Exploit public documenté | Références NVD « Exploit » | 10 |
 | Campagne ransomware confirmée | CISA KEV | 10 |
@@ -125,7 +125,7 @@ R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + KEV × 25 + Exploit × 10 + Ran
 **R ≥ 80** → P0, patch sous 24 h · **60 ≤ R < 80** → P1, 7 j · **40 ≤ R < 60** → P2, 30 j ·
 **R < 40** → P3. Une CVSS 10.0 sans exploitation observée plafonne à 30 et ne réveille personne
 la nuit : c'est l'exploitation réelle qui pilote la priorité. Chaque point est justifiable
-(`GET /api/v1/cves/{id}` → `breakdown` et `history`) — voir [ADR-001](docs/adr/ADR-001-scoring-composite.md).
+(`GET /api/v1/cves/{id}` → `breakdown` et `history`) : voir [ADR-001](docs/adr/ADR-001-scoring-composite.md).
 
 ## Architecture
 
@@ -168,9 +168,9 @@ protéger.
 | **SSRF** (une URL de flux qui vise le réseau interne) | Liste blanche d'adresses publiques (`is_global`, CGNAT, NAT64, 6to4), résolution DNS vérifiée avant chaque requête, redirections revalidées ou refusées |
 | Réponse hostile (taille, lenteur) | Lecture en flux plafonnée, délai par requête, backoff exponentiel, 429 respecté |
 | Fuite de secrets | Clés jamais en base (gabarits `{ABUSECH_AUTH_KEY}`, en-têtes), masquées dans erreurs et journaux, identifiants TAXII attachés à un seul hôte |
-| Force brute | 429 avant toute vérification du mot de passe : 5 échecs d'une adresse sur un compte, 50 sur un compte (botnet), 20 d'une adresse (pulvérisation) — sans verrouiller le titulaire légitime |
+| Force brute | 429 avant toute vérification du mot de passe : 5 échecs d'une adresse sur un compte, 50 sur un compte (botnet), 20 d'une adresse (pulvérisation), sans verrouiller le titulaire légitime |
 | Falsification de l'historique | Chronologie d'incident et journal d'audit refusant `UPDATE`, `DELETE` et `TRUNCATE` jusque dans PostgreSQL (déclencheurs) |
-| Répudiation | Journal d'audit : connexions, refus d'accès, tentatives SSRF, administration, exports, chasse — acteur, IP, `X-Request-ID` |
+| Répudiation | Journal d'audit : connexions, refus d'accès, tentatives SSRF, administration, exports, chasse, acteur, IP, `X-Request-ID` |
 | Vol de session | Accès de 15 min, jeton de rafraîchissement opaque et rotatif : un rejeu révoque toute la session ; `illwatch users disable` coupe l'accès immédiatement |
 | Compromission du code applicatif | Rôle PostgreSQL applicatif sans droit de structure : ni `ALTER`, ni `TRUNCATE`, ni suppression de déclencheur ; tables d'audit en `SELECT/INSERT` seulement |
 | Exposition HTTP | CSP `default-src 'none'`, `nosniff`, `X-Frame-Options`, `no-store`, HSTS et `/docs` masqué en production, erreurs 500 sans détail interne |
@@ -194,7 +194,7 @@ protéger.
 | Scénario SOC de bout en bout (`scripts/scenario_soc.py`) | **48/48** sur données réelles (M7), rejoué chaque semaine par la CI GitHub |
 | Chasse sur 3 867 IOC réels | **27 ms** |
 
-Deux pipelines indépendants exécutent les mêmes étapes — qualité (lint, typage) → tests (matrice
+Deux pipelines indépendants exécutent les mêmes étapes : qualité (lint, typage) → tests (matrice
 3.12 / 3.14 + migrations sur base vierge) → image Docker → sécurité :
 
 | Pipeline | Ce qu'il ajoute |
@@ -277,7 +277,7 @@ scripts/backup.sh                            # sauvegarde vérifiée, rotation
 
 | API (`/api/v1`) | Rôle requis en écriture |
 |---|---|
-| `auth/token`, `auth/refresh`, `auth/logout`, `users/me` | — |
+| `auth/token`, `auth/refresh`, `auth/logout`, `users/me` | - |
 | `feeds`, `indicators` | ADMIN (flux), ADMIN / ANALYST (IOC) |
 | `cves`, `alerts` | ADMIN / ANALYST (acquittement) |
 | `incidents` | ADMIN / ANALYST |
@@ -358,7 +358,7 @@ plateforme **déployable et démontrable** :
 | Étape | Objectif | État |
 |---|---|---|
 | M1 → M6 | Foundation, Threat Feeds, CVE, Incidents, Dashboard, Hunting | ✅ intégrés, release `v0.1.1` |
-| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, TLS (Caddy), migrations isolées, analyse d'image, sauvegardes | ✅ lots 1–3 fusionnés ; 🟡 interface web lot 1 (ADR-016) en cours ; préproduction VPS UE à constater |
+| **M7** | Production Hardening : audit append-only, couche HTTP, rôles PostgreSQL séparés, sessions révocables, rotation de clé, TLS (Caddy), migrations isolées, analyse d'image, sauvegardes | ✅ lots 1-3 fusionnés ; 🟡 interface web lot 1 (ADR-016) en cours ; préproduction VPS UE à constater |
 | M8 | Detection & Correlation : enrichissement, score de confiance IOC, corrélation IOC × CVE × actif, plancher KEV (ADR-014 à trancher) | ⏳ |
 | M9 | SOC Operations : triage L1/L2/L3, faux positifs, séries temporelles | ⏳ |
 | M10 | CTI Intelligence : acteurs, campagnes, MITRE ATT&CK, export STIX | ⏳ |
@@ -388,11 +388,11 @@ hébergée en UE).
 
 Contributions bienvenues : développeurs, chercheurs, analystes SOC, rédacteurs techniques. Lire
 [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
-Vulnérabilité : [`SECURITY.md`](SECURITY.md) — **pas** d'issue publique.
+Vulnérabilité : [`SECURITY.md`](SECURITY.md), **pas** d'issue publique.
 
 ## Licence
 
-[MIT](LICENSE) © CYBERILL — Godwill FOKA, Berlin.
+[MIT](LICENSE) © CYBERILL : Godwill FOKA, Berlin.
 
 ¹ [Documentation de déploiement OpenCTI](https://docs.opencti.io/latest/deployment/overview/)
 (consultée le 03/10/2026).

@@ -1,4 +1,4 @@
-"""Couche HTTP transverse — M7 Production Hardening (ADR-011).
+"""Couche HTTP transverse: M7 Production Hardening (ADR-011).
 
 Middleware ASGI pur (compatible avec les réponses diffusées en flux des exports) qui :
 
@@ -8,7 +8,7 @@ Middleware ASGI pur (compatible avec les réponses diffusées en flux des export
 2. pose les **en-têtes de sécurité** : `nosniff`, `frame-ancestors 'none'`, `Referrer-Policy`,
    `Permissions-Policy`, `Cache-Control: no-store` sur l'API, HSTS en production ;
 3. écrit une ligne JSON d'**accès** par requête (méthode, chemin sans paramètres, statut,
-   durée, identifiant) — jamais les en-têtes ni le corps, qui portent jetons et mots de passe.
+   durée, identifiant) : jamais les en-têtes ni le corps, qui portent jetons et mots de passe.
 
 Le gestionnaire `unhandled_error` remplace la page d'erreur par défaut : réponse JSON stable
 avec l'identifiant de requête, trace complète dans le journal seulement.

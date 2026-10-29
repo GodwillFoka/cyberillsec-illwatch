@@ -1,4 +1,4 @@
-"""M7 — journal d'audit de sécurité et limitation des connexions par couple compte × IP."""
+"""M7 : journal d'audit de sécurité et limitation des connexions par couple compte × IP."""
 
 import logging
 from uuid import uuid4

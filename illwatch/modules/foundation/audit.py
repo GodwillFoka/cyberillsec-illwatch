@@ -1,4 +1,4 @@
-"""Journal d'audit de sécurité — M7 Production Hardening (ADR-011).
+"""Journal d'audit de sécurité : M7 Production Hardening (ADR-011).
 
 Chaque action sensible produit **une ligne en base** (`audit_events`, en ajout seul) et **une
 ligne JSON** dans le journal applicatif (`illwatch.audit`), que collecte n'importe quel SIEM.

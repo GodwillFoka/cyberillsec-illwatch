@@ -1,4 +1,4 @@
-"""État d'avancement mesuré sur les données — `illwatch status`.
+"""État d'avancement mesuré sur les données : `illwatch status`.
 
 Le code dit ce qu'ILLWATCH *sait faire* ; seule la base dit ce qu'il *a fait*. Ce module
 calcule les indicateurs qui permettent de constater un jalon (M2 : ingestion
@@ -167,12 +167,12 @@ async def _compute_later(session: AsyncSession, status: ProjectStatus) -> None:
     hunt_matches = await session.scalar(select(func.count()).select_from(HuntingMatch)) or 0
     status.later = [
         Criterion(
-            "M4 — Incident mené jusqu'à CLOTURE",
+            "M4 : Incident mené jusqu'à CLOTURE",
             closed >= 1,
             f"{closed} incident(s) clos, {transitions} transition(s) tracée(s)",
         ),
         Criterion(
-            "M6 — Session de chasse terminée avec correspondances",
+            "M6 : Session de chasse terminée avec correspondances",
             hunts >= 1 and hunt_matches >= 1,
             f"{hunts} session(s) terminée(s), {hunt_matches} correspondance(s)",
         ),
@@ -180,7 +180,7 @@ async def _compute_later(session: AsyncSession, status: ProjectStatus) -> None:
 
 
 async def epss_staleness(session: AsyncSession, moment: datetime) -> tuple[bool, timedelta | None]:
-    """(périmé ?, âge de la dernière synchro EPSS réussie — `None` si jamais)."""
+    """(périmé ?, âge de la dernière synchro EPSS réussie : `None` si jamais)."""
     state = await session.get(CollectorState, "epss")
     at = None if state is None else state.last_success_at
     if at is None:

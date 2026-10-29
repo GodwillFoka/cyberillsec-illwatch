@@ -7,7 +7,7 @@ import { rankOf, toneOf } from "./levels.js";
 describe("formats", () => {
   it("formate les nombres à la française", () => {
     assert.equal(formatNumber(528453).replace(/\s/g, " "), "528 453");
-    assert.equal(formatNumber(null), "—");
+    assert.equal(formatNumber(null), "-");
   });
 
   it("affiche l'heure en UTC", () => {
@@ -29,7 +29,7 @@ describe("formats", () => {
 });
 
 describe("échelle de priorité", () => {
-  it("ramène sévérités et priorités à P0–P3", () => {
+  it("ramène sévérités et priorités à P0-P3", () => {
     assert.equal(toneOf("CRITICAL"), "p0");
     assert.equal(toneOf("P1_ELEVE"), "p1");
     assert.equal(rankOf("MEDIUM"), 2);
@@ -37,11 +37,11 @@ describe("échelle de priorité", () => {
   });
 
   it("exprime une durée et une part", () => {
-    assert.equal(formatHours(null), "—");
+    assert.equal(formatHours(null), "-");
     assert.equal(formatHours(0.25), "15\u00a0min");
     assert.equal(formatHours(3.46), "3,5\u00a0h");
     assert.equal(formatHours(50), "2,1\u00a0j");
     assert.equal(formatShare(0.834), "83\u00a0%");
-    assert.equal(formatShare(undefined), "—");
+    assert.equal(formatShare(undefined), "-");
   });
 });

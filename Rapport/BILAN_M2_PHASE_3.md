@@ -1,4 +1,4 @@
-# 🛡️ SENTRY — Bilan : clôture de M2 et phase 3 (moteur CVE)
+# 🛡️ SENTRY, Bilan : clôture de M2 et phase 3 (moteur CVE)
 
 **Date :** 29/09/2026 · **Base :** votre commit `87bcca6` (branche `security/feed-last-error`)
 **Branches livrées :** `feature/sprint3-m2` (`9402bb1`) puis `feature/phase3-cve`
@@ -55,7 +55,7 @@ vrai test d'intégration.** Envoyez-moi leur sortie en cas d'échec d'une source
 | Correctif CSV | Colonne IOC choisie sur le contenu (§5) |
 | Garde-fou | Test : chaque URL du seed passe les règles SSRF de l'API |
 
-### 3.2 Phase 3 — moteur CVE (`feature/phase3-cve`)
+### 3.2 Phase 3 : moteur CVE (`feature/phase3-cve`)
 
 | Tâche | Contenu |
 |---|---|
@@ -113,7 +113,7 @@ de 100 000 CVE.
   (provenance, OTX, worker), **ADR-007** (moteur CVE, ligne de base des alertes, seuil 75).
 - Choisir le canal d'alerte (webhook Slack / Mattermost / Teams via passerelle).
 
-## 8. Étape suivante — phase 4 : incidents (M4, cible 05/11/2026)
+## 8. Étape suivante, phase 4 : incidents (M4, cible 05/11/2026)
 
 API des incidents sur la machine d'état existante (NIST SP 800-61), chronologie immuable,
 liaison incident ↔ IOC et incident ↔ CVE, création d'un incident depuis une alerte CVE. Les

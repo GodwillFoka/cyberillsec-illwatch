@@ -1,4 +1,4 @@
-"""Référentiel MITRE ATT&CK (Enterprise) — M10, ADR-023.
+"""Référentiel MITRE ATT&CK (Enterprise) : M10, ADR-023.
 
 Importé depuis le bundle STIX 2.1 publié par MITRE (`illwatch attack import`) : techniques
 (et sous-techniques), groupes d'attaquants et logiciels malveillants, et les relations

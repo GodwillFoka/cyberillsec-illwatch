@@ -27,7 +27,7 @@ latencies: dict[str, list[float]] = {}
 
 def check(label: str, ok: bool, detail: str = "") -> None:
     results.append((label, ok, detail))
-    print(f"{'✔' if ok else '✘'} {label}{' — ' + detail if detail else ''}")
+    print(f"{'✔' if ok else '✘'} {label}{': ' + detail if detail else ''}")
 
 
 def call(c: httpx.Client, method: str, url: str, key: str, **kw: Any) -> httpx.Response:
@@ -76,7 +76,7 @@ def main() -> int:
         f"{iocs.json().get('total')} IOC",
     )
     if not iocs.json().get("items"):
-        raise PrerequisiteError(f"aucun IOC — {EMPTY_BASE_HINT}")
+        raise PrerequisiteError(f"aucun IOC: {EMPTY_BASE_HINT}")
     ioc = iocs.json()["items"][0]
     detail = call(c, "GET", f"{API}/indicators/{ioc['id']}", "iocs", headers=vie).json()
     check(
@@ -93,7 +93,7 @@ def main() -> int:
         f"{cves.json().get('total')} CVE",
     )
     if not cves.json().get("items"):
-        raise PrerequisiteError(f"aucune CVE — {EMPTY_BASE_HINT}")
+        raise PrerequisiteError(f"aucune CVE: {EMPTY_BASE_HINT}")
     cve = cves.json()["items"][0]
     cdet = call(c, "GET", f"{API}/cves/{cve['id']}", "cves", headers=vie)
     check("Décomposition du score d'une CVE", cdet.status_code == 200, cve["id"])

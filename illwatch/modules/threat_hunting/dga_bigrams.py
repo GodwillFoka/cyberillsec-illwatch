@@ -1,4 +1,4 @@
-"""Coût des bigrammes de lettres en anglais — modèle de langue minimal de RULE-03 (v2).
+"""Coût des bigrammes de lettres en anglais : modèle de langue minimal de RULE-03 (v2).
 
 Table 27 × 27 (début/fin de mot « ^ », puis a…z) : coût d'une transition en dixièmes de bit,
 -log2 P(b | a) × 10, lissage de Laplace. Calculée une fois sur les 78 445 mots du dictionnaire
