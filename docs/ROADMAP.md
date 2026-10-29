@@ -1,113 +1,149 @@
-# ILLWATCH : Feuille de route après la v1.0 fonctionnelle (M7 → M11)
+# ILLWATCH : Feuille de route
 
-**Version :** 10/10/2026 · **Point de départ :** baseline `v0.1.1` (M1-M6 intégrés dans `main`,
-audit `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`)
+| | |
+|---|---|
+| **Version** | **v2.0 du 30/10/2026** |
+| **Version du logiciel** | `0.2.0.dev0` sur `main` ; dernière release `v0.1.1` (baseline M1 à M6) |
+| **Objectif** | v0.2.0 « Production Candidate », puis la suite décrite en [section 5](#5-apres-la-v020) |
 
-**État au 06/10/2026 :** `v0.1.1` taguée ; M7 (lots 1 à 3) **fusionné dans `main`**, qui porte
-la version de développement `0.2.0.dev0`. Validation sur données réelles automatisée sur GitHub
-Actions (hebdomadaire). Décision du 08/10 (ADR-016) : l'interface web passe avant l'hébergement.
-Interface complète (lot 1 et écrans Sources CTI, Administration), identité ILLWATCH v2 (brand book, ADR-018). Préproduction
-publique sur VPS **reportée le 11/10** : une préproduction locale identique tourne en CI à chaque
-modification ; M7 se clôt au passage sur le VPS. M8 démarré en parallèle (ADR-017).
+**Règle de conduite.** Un jalon est clos quand ses **critères de sortie sont constatés**, pas
+quand le code est fusionné. Chaque jalon part d'une branche créée depuis `main` et se termine par
+un bilan dans `Rapport/` et, pour les versions, un tag.
 
-Règle de conduite : un jalon est clos quand ses **critères de sortie sont constatés**, pas quand
-le code est fusionné. Chaque jalon part d'une branche créée depuis `main` à jour et se termine par
-un bilan dans `Rapport/` et un tag.
+![Jalons M1 à M11](assets/schemas/jalons.svg)
 
-```
-M1-M6 intégrés ─▶ audit global ─▶ v0.1.1 ─▶ M7 ─▶ M8 ─▶ M9 ─▶ M10 ─▶ M11 ─▶ v0.2.0
-                                            durcir  corréler  opérer  contextualiser  exploiter
-```
+## Sommaire
 
-## Test d'acceptation principal
+1. [Où en est le projet](#1-ou-en-est-le-projet)
+2. [Jalons M1 à M6 : la plateforme fonctionnelle](#2-jalons-m1-a-m6-la-plateforme-fonctionnelle)
+3. [Jalons M7 à M11 : vers la v0.2.0](#3-jalons-m7-a-m11-vers-la-v020)
+4. [Ce qui reste à faire, dans l'ordre](#4-ce-qui-reste-a-faire-dans-lordre)
+5. [Après la v0.2.0](#5-apres-la-v020)
+6. [Calendrier](#6-calendrier)
 
-Le parcours ci-dessous devient le test d'acceptation de la v0.2.0. Les étapes 1-3, 7-10, 12-14
-sont déjà automatisées par `scripts/scenario_soc.py` ; M8 à M10 ajoutent les étapes 4-6 et 11.
+---
 
-1. Threat feed → 2. ingestion → 3. normalisation → 4. enrichissement → 5. corrélation →
-6. détection → 7. alerte → 8. incident → 9. investigation → 10. chasse → 11. ATT&CK →
-12. dashboard → 13. résolution → 14. piste d'audit.
+## 1. Où en est le projet
 
-## M7 : Production Hardening
+| | État au 30/10/2026 |
+|---|---|
+| **Constaté sur données réelles** | M1 à M6, M8 ; scénario SOC 48/48 ; 528 453 IOC et 26 416 CVE sur le poste de travail |
+| **Livré, à constater sur le poste** | M9 (opérations SOC), M10 (contexte adverse) ; import d'inventaire Excel (ADR-028) |
+| **Livré, attend le serveur européen** | M7 (HTTPS sur domaine public, note SSL Labs), M11 (7 jours de préproduction) |
+| **Qualité** | deux pipelines CI (GitLab, GitHub), plus de 670 tests, couverture d'environ 94 %, validation sur données réelles chaque lundi, préproduction et captures à chaque modification |
+| **Documentation** | guide d'installation, manuel fonctionnel, cahier des charges, vision et feuille de route en version 2.0 ; 28 ADR |
+
+![Croissance de la base d'IOC](assets/schemas/chiffres-ioc.svg)
+
+---
+
+## 2. Jalons M1 à M6 : la plateforme fonctionnelle
+
+| Jalon | Contenu | Critère de sortie | État |
+|---|---|---|---|
+| **M1** Fondation | configuration validée, migrations, comptes, rôles, CLI | schéma, API, rôles, audit | ✅ constaté |
+| **M2** Flux de menaces | 5 formats, 9 sources, dédoublonnage, provenance, worker | au moins 500 IOC, 3 sources saines, OTX et STIX connectés | ✅ constaté le 06/10 |
+| **M3** Moteur CVE | NVD, KEV, EPSS, score composite, alertes | NVD de moins de 24 h, KEV de plus de 1 000, EPSS de plus de 90 % | ✅ constaté le 06/10 |
+| **M4** Incidents | cycle NIST à 6 états, chronologie immuable | un incident mené jusqu'à la clôture | ✅ constaté |
+| **M5** Tableau de bord | synthèse, activité, exports | scénario SOC | ✅ constaté |
+| **M6** Chasse | 6 règles, sessions | session terminée avec correspondances | ✅ constaté (339 en CI) |
+
+Release `v0.1.1` publiée le 06/10/2026 (image `ghcr.io/godwillfoka/cyberillsec-illwatch:0.1.1`).
+
+---
+
+## 3. Jalons M7 à M11 : vers la v0.2.0
+
+Le test d'acceptation de la v0.2.0 suit un parcours complet : source de renseignement, ingestion,
+normalisation, enrichissement, corrélation, détection, alerte, incident, investigation, chasse,
+ATT&CK, tableau de bord, résolution, piste d'audit. Il est automatisé par
+`scripts/scenario_soc.py` et rejoué en CI.
+
+### M7 : Durcissement de production
 
 **But.** Rendre ILLWATCH déployable sans réserve de sécurité connue.
 
-| Lot | Contenu | Critère de sortie |
+| Lot | Contenu | État |
 |---|---|---|
-| 1 ✅ codé, fusionné | Immuabilité étendue (`TRUNCATE`), journal d'audit append-only, `/ready` distinct de `/health`, en-têtes HTTP, identifiant de requête et erreurs JSON uniformes, verrouillage par couple compte/IP, ports Compose sur 127.0.0.1, contraintes de dépendances, sauvegarde/restauration | tests verts ; scénario 44/44 ; audit § 7 sans ✘ : **constaté en local le 03/10** (`Rapport/BILAN_M7_LOT1.md`) |
-| 2 ✅ codé, fusionné | Rôle PostgreSQL applicatif non propriétaire, rôle de migration séparé ; Redis avec mot de passe ; rotation de `SECRET_KEY` (clé courante + clé précédente) ; jetons de rafraîchissement révocables | test : le compte applicatif ne peut ni `ALTER` ni `DROP`, **constaté le 04/10** (`Rapport/BILAN_M7_LOT2.md`) |
-| 3 ✅ codé, fusionné | Reverse proxy TLS (Caddy), analyse d'image (Container Scanning GitLab), migrations en conteneur éphémère, entretien quotidien (sessions, EPSS) | `docker compose -f … -f docker-compose.prod.yml --profile full up` sur un VPS UE, note SSL Labs ≥ A : **TLS constaté en local le 04/10 ; outillage de clôture prêt le 14/10** (`scripts/deploy-vps.sh`, workflow « Clôture M7 ») : **reste à louer le VPS et le domaine** |
-| Interface ✅ (ADR-016) | Socle React + TypeScript, temps réel SSE, journal de collecte, séries temporelles ; écrans vue d'ensemble, triage, incidents, IOC, CVE, chasse, sources, administration, corrélations, inventaire, pilotage | ✅ écrans utilisés sur Kali sur données réelles (13-14/10) ; CI « Interface web » verte (GitHub et GitLab, pipeline #2944488068) |
+| 1 | audit en ajout seul, `/ready`, en-têtes HTTP, identifiant de requête, verrouillage compte × adresse, sauvegarde et restauration | ✅ constaté le 03/10 |
+| 2 | rôles PostgreSQL séparés, Redis protégé, rotation de clé, sessions révocables | ✅ constaté le 04/10 |
+| 3 | Caddy (HTTPS), analyse d'image, migrations éphémères, entretien quotidien | ✅ TLS constaté en local ; outillage `deploy-vps.sh` prêt |
+| Interface (ADR-016) | 12 écrans temps réel, identité ILL Watch v2, 5 langues | ✅ utilisée sur données réelles |
+| Inventaire en fichier (ADR-028) | import et export Excel ou CSV, aperçu, tout ou rien | 🟢 livré le 30/10 |
+| Rédaction | ni tiret long ni tiret moyen, garde-fou en CI | 🟢 livré le 30/10 |
 
-## M8 : Detection & Correlation
+**Critère de sortie** : pile de production sur un serveur européen, note SSL Labs A ou mieux
+(workflow « Clôture M7 »). **Reste** : louer le serveur et le nom de domaine.
 
-**But.** Passer de l'agrégation à la détection : un évènement corrélé produit une alerte priorisée.
+### M8 : Détection et corrélation
 
-**Démarré le 11/10/2026** (ADR-017), en quatre incréments, **tous livrés le 13/10** :
-1. confiance des IOC ✅ (score 0-100 décomposé : sources pondérées par leur fiabilité A-F,
-fraîcheur par type, récurrence) ; 2. enrichissement local (ASN, pays) ✅ (DB-IP Lite importée,
-mise à jour mensuelle automatique, ADR-019) ; 3. corrélation ✅ (inventaire d'actifs, CORR-01
-KEV × actif, CORR-02 exploit × actif, CORR-03 actif dans un IOC, ADR-020) ; 4. mesure ✅ (jeu
-figé versionné : 100 % détectés, 0 % de faux positifs, vérifié par la CI).
+Confiance des IOC (ADR-017), enrichissement hors ligne (ADR-019), inventaire et corrélation
+CORR-01 à 03 (ADR-020), comparaison des versions (ADR-021), plages CIDR, plateforme de l'actif,
+calibration DGA sur Tranco. **Critère** : 100 % des cas attendus détectés sur jeu figé, taux de
+faux positifs publié. ✅ **Clos le 14/10/2026** : 100 % détectés, 0 % de faux positifs ; sur
+données réelles, 38 évènements de la première passe, 37 clos par la comparaison des versions.
 
-- Enrichissement des IOC : ASN/pays ✅ ; réputation multi-sources ✅ (confiance) ; âge des domaines (reporté).
-- Score de confiance d'un IOC ✅.
-- Règles de corrélation : IOC × CVE × actif × KEV → évènement corrélé ✅.
-- Plancher « KEV ⇒ au moins P1 » et EPSS manquant : ✅ ADR-014 accepté (A + B + C) et appliqué.
-- Corrélation par version (plages vulnérables NVD) ✅ ADR-021.
-- Plages CIDR (type réseau) ✅ ; plateforme de l'actif ✅ ; calibration DGA sur Tranco ✅ (workflow mensuel).
+### M9 : Opérations SOC
 
-**Critère de sortie :** sur un jeu de données figé, 100 % des cas de corrélation attendus produisent
-une alerte, taux de faux positifs mesuré et publié. ✅ **M8 clos le 14/10/2026** : jeu figé
-100 % / 0 % (`Rapport/M8_MESURE_13-10-2026.md`) ; données réelles Kali 38 évènements → 0 vrai
-positif après corrélation par version (ADR-021, `Rapport/M8_MESURE_REELLE_13-10-2026.md`).
-Bilan : `Rapport/BILAN_M8.md`.
+Niveaux L1, L2, L3 et escalade, liste d'exclusion des faux positifs, chasse depuis l'incident,
+recommandations de réponse, règles versionnées, écran Pilotage (ADR-022). **Critère** : un
+incident traverse L1, L2 et L3 sans quitter ILLWATCH, MTTR mesuré. 🟢 **Constaté en CI** ; à
+rejouer sur le poste.
 
-## M9 : SOC Operations
+### M10 : Contexte adverse
 
-**But.** Outiller le travail des analystes L1/L2/L3. **Livré le 14/10/2026** (ADR-022).
+Référentiel MITRE ATT&CK (ADR-023), campagnes et attribution par l'infrastructure (ADR-024),
+export STIX 2.1 et serveur TAXII 2.1 (ADR-025). **Critère** : une alerte affiche sa technique
+ATT&CK et, si connu, l'acteur. 🟢 **Constaté en CI** ; à constater sur le poste après
+`illwatch attack import`.
 
-- File de triage L1 : alerte → faux positif (liste d'exclusion, tâche 3.6) ✅ ou escalade ✅.
-- Investigation L2 : enrichissement à la demande ✅, chasse lancée depuis l'incident ✅.
-- L3 : ingénierie de détection (règles versionnées) ✅, recommandations de réponse ✅.
-- Dashboard : séries 7 et 30 jours, charge par analyste, SLA par priorité ✅ (écran Pilotage).
+### M11 : Observabilité et déploiement
 
-**Critère de sortie :** un incident traverse L1 → L2 → L3 sans quitter ILLWATCH, MTTR mesuré.
-✅ **Constaté en CI** (test de bout en bout et scénario d'acceptation) ; à constater sur Kali
-(`Rapport/BILAN_M9.md`).
+`/metrics`, Prometheus et Grafana (10 alertes, 2 tableaux), acceptation en CI sur jeu figé,
+restauration testée chaque mois, environnements de développement, préproduction et production
+(ADR-026). **Critère** : 7 jours de collecte continue en préproduction sans intervention,
+tableaux complets, restauration testée. **Reste** : les 7 jours, sur le serveur de M7.
 
-## M10 : CTI Intelligence Layer
+---
 
-**But.** Donner un contexte adverse à chaque détection. **Démarré le 14/10/2026** (ADR-023).
+## 4. Ce qui reste à faire, dans l'ordre
 
-- Modèle : acteur de menace → campagne → malware → infrastructure → IOC → TTP ✅ (ADR-024).
-- Import MITRE ATT&CK (collection Enterprise) ✅ (bundle STIX publié par MITRE).
-- Rattachement détection → technique → acteur ✅ (technique par règle, acteur cité) ;
-  campagne ✅ (attribution par l'infrastructure, ADR-024).
-- Export STIX 2.1 et serveur TAXII 2.1 sortant ✅ (ADR-025, `/taxii2/`).
+| # | Tâche | Qui | Dépend de | Effort |
+|---|---|---|---|---|
+| 1 | Relire et fusionner la demande de fusion « Inventaire Excel/CSV, ponctuation, documentation v2 » | porteur | CI verte | 1 h |
+| 2 | Sur le poste : `git pull`, `pip install -c constraints.txt -e ".[dev]"`, `illwatch db upgrade`, `./scripts/build-web.sh`, `illwatch attack import`, redémarrer API et worker | porteur | 1 | 30 min |
+| 3 | Déclarer l'inventaire réel avec le modèle Excel, puis `illwatch cves refresh-affected` et `illwatch correlate run` | porteur | 2 | 1 à 2 h |
+| 4 | Constater M9 (escalade L1 à L3, Pilotage) et M10 (ATT&CK, campagne, `curl /taxii2/`) sur le poste ; rédiger les bilans | porteur | 2 | 2 h |
+| 5 | Suspendre RedEye tant que son serveur ne répond pas ; régler le fuseau horaire de la machine virtuelle | porteur | | 15 min |
+| 6 | Louer un serveur européen (2 cœurs, 4 Go, 40 Go) et un nom de domaine ; `deploy-vps.sh install` ; inscrire le domaine dans `deploy/vps-domaine.txt` | porteur | | 2 h |
+| 7 | Constater la note TLS (workflow « Clôture M7 ») : **M7 clos** | CI | 6 | automatique |
+| 8 | 7 jours de préproduction sans intervention, restauration du mois : **M11 clos** | serveur | 6 | 7 jours |
+| 9 | Tag `v0.2.0`, release, image publiée | porteur | 7, 8 | 1 h |
 
-**Critère de sortie :** une alerte affiche sa technique ATT&CK et, si connu, l'acteur associé.
-✅ **Constaté en CI le 14/10** (incrément 1) ; incréments 2 et 3 fusionnés le 15/10 (PR #49, #50).
-À constater sur Kali après `illwatch attack import`.
+---
 
-## M11 : Observability & Deployment
+## 5. Après la v0.2.0
 
-**But.** Exploiter ILLWATCH comme un service.
+| Thème | Contenu | Priorité |
+|---|---|---|
+| Multi-organisation et SSO | plusieurs organisations sur une instance, OIDC | haute |
+| Cyberill TI Cloud | offre hébergée dans l'UE | haute |
+| Assistant d'analyse | modèle de langage et recherche augmentée sur bulletins et incidents | moyenne |
+| Connecteurs de parc | GLPI, CMDB, pour l'inventaire | moyenne |
+| Règles Sigma | import depuis les collections TAXII | moyenne |
+| Facteur CWE dans le score | ADR à rédiger, rééquilibrage des poids | basse |
+| Site de présentation | relecture native des 5 langues, mentions légales, hébergement à côté de l'application | moyenne |
 
-- Métriques Prometheus (API, worker, collecte, base, Redis), tableaux Grafana, alertes.
-- Journaux JSON corrélés par identifiant de requête (amorcé en M7).
-- Environnements dev → staging → production ; job d'acceptation en CI sur jeu figé (le scénario
-  tourne déjà chaque semaine sur données réelles : workflow GitHub « Validation réelle »).
-- Procédure de sauvegarde testée par restauration mensuelle.
+---
 
-**Critère de sortie :** 7 jours de collecte continue en staging sans intervention, tableaux de bord
-complets, restauration testée.
+## 6. Calendrier
 
-**État au 15/10/2026 :** ✅ codé (ADR-026) : `/metrics`, Prometheus + Grafana, 10 alertes,
-acceptation en CI sur jeu figé, restauration testée en CI et chaque mois sur le VPS,
-`docs/ENVIRONNEMENTS.md`. **Reste** : les 7 jours de staging, qui attendent le VPS de M7.
-
-## Au-delà de v0.2.0
-
-Assistant IA (LLM + RAG) sur bulletins et incidents, multi-tenant et SSO (OIDC), Cyberill TI Cloud
-hébergé en UE.
+| Période | Jalons |
+|---|---|
+| juillet à septembre 2026 | cadrage, cahier des charges, M1 à M6 |
+| 03/10 au 06/10/2026 | audit global, M7 lots 1 à 3, release `v0.1.1`, M2 et M3 constatés |
+| 08/10/2026 | renommage SENTRY → ILLWATCH |
+| 10/10 au 15/10/2026 | interface web, M8 clos, M9, M10 et M11 livrés |
+| 22/10 au 24/10/2026 | site de présentation en 5 langues, demandes de démonstration |
+| 30/10/2026 | inventaire en fichier, ponctuation, documentation v2.0 |
+| novembre 2026 (cible) | serveur européen, M7 et M11 clos, `v0.2.0` |

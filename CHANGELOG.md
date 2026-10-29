@@ -8,6 +8,36 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté : Inventaire en fichier Excel ou CSV (ADR-028, 30/10)
+- Écran Inventaire : **Importer un fichier** (modèle Excel téléchargeable, aperçu ligne par ligne,
+  import tout ou rien) et **Exporter (Excel)**, réimportable.
+- API : `POST /api/v1/assets/import` (aperçu, puis `apply=true`), `GET /api/v1/assets/export`,
+  `GET /api/v1/assets/template`. CLI : `illwatch assets import --dry-run`, `assets export`,
+  `assets template`.
+- Formats : `.xlsx`, CSV au séparateur `;`, `,` ou tabulation, UTF-8 ou Windows-1252 ; en-têtes
+  en français ou en anglais ; criticité en clair ou par code. Plafonds : 2 Mo, 5 000 lignes,
+  archive contrôlée avant lecture ; cellules exportées protégées contre l'injection de formule.
+- Dépendance : `openpyxl` 3.1.5.
+
+### Corrigé : Import d'inventaire en ligne de commande (30/10)
+- Un import qui mettait à jour un actif effaçait ses notes : une colonne absente du fichier
+  conserve désormais la valeur existante.
+
+### Modifié : Ni tiret long ni tiret moyen dans tout le dépôt (30/10)
+- Code, textes de l'interface (5 langues), messages de la CLI, documentation, rapports :
+  ponctuation choisie selon le contexte et la langue ; valeur absente affichée « - ».
+- Noms des sources de référence sans tiret (« AlienVault OTX : pulses abonnés ») : migration
+  `b6e2f4a8c1d3` qui renomme sans doublon, et `illwatch seed` qui reconnaît les anciens noms.
+- Garde-fou : `tests/test_ponctuation.py`.
+
+### Ajouté : Documentation v2.0 (30/10)
+- Nouveaux : Guide d'installation et d'exploitation (chaque tâche dans l'application et en ligne
+  de commande), Manuel fonctionnel (acteurs, droits, fonctionnalités, parcours types).
+- Refondus : Cahier des charges v2.0 (exigences RF-01 à RF-57 avec leur statut, exigences non
+  fonctionnelles mesurées), Vision produit v2.0, Feuille de route v2.0.
+- 13 schémas (`docs/assets/schemas/`), captures en français (`docs/assets/captures/`), versions
+  PDF (`docs/pdf/`). Captures CI : écrans en français et panneau d'import.
+
 ### Modifié : Site sans tiret long (24/10)
 - Le tiret long est remplacé dans les cinq langues par une virgule, deux-points, un point ou
   « | » (titres de page) ; la construction refuse toute page qui en contient encore.

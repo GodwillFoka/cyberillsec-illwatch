@@ -2,7 +2,7 @@
 
 Ce guide te prend par la main pour configurer ton poste et livrer ta première fonctionnalité en
 moins d'une heure. Il est écrit pour quelqu'un qui n'a jamais fait de cybersécurité : le
-[lexique du Cahier des charges](CAHIER_DES_CHARGES.md#13-lexique-du-développeur-cyber) explique
+[glossaire du Manuel fonctionnel](MANUEL_FONCTIONNEL.md#14-glossaire) explique
 CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te parlent pas.
 
 ## 1. Prérequis

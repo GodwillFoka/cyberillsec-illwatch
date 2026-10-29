@@ -70,6 +70,9 @@ not_in_nav: |
 
 nav:
   - Accueil: README.md
+  - Guides:
+      - Installation et exploitation: GUIDE_INSTALLATION.md
+      - Manuel fonctionnel: MANUEL_FONCTIONNEL.md
   - Produit:
       - Cahier des charges: CAHIER_DES_CHARGES.md
       - Vision produit: PRODUCT_VISION.md
