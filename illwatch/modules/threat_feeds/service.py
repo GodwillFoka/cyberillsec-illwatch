@@ -97,7 +97,7 @@ def validate_feed_url(url: str, *, max_length: int = MAX_URL_LENGTH) -> str:
 
     Règles :
       * HTTPS uniquement : un flux en clair peut être falsifié en transit
-        (injection de faux IOC): RNF-SEC-01 ;
+        (injection de faux IOC) : RNF-SEC-01 ;
       * aucun identifiant dans l'URL (`https://user:pass@…`) : un secret n'a
         rien à faire dans une colonne lisible par tous les rôles ;
       * hôte public : pas d'IP privée, de loopback, de link-local (dont

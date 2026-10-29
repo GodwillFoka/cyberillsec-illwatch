@@ -127,7 +127,7 @@ class RiskPriority(StrEnum):
 
 
 class HuntStatus(StrEnum):
-    """Session de threat hunting: RF-27."""
+    """Session de threat hunting : RF-27."""
 
     EN_COURS = "EN_COURS"
     TERMINEE = "TERMINEE"

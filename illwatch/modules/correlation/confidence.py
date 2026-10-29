@@ -1,4 +1,4 @@
-"""Score de confiance d'un IOC (0-100): M8, ADR-017.
+"""Score de confiance d'un IOC (0-100) : M8, ADR-017.
 
 La confiance répond à « peut-on agir sur cet indicateur ? », indépendamment de sa gravité
 (qui dit « à quel point ce serait grave »). Trois composantes, chacune justifiable :

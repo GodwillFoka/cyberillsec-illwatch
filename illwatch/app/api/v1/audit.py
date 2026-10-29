@@ -1,4 +1,4 @@
-"""Journal d'audit: `GET /api/v1/audit` (ADMIN), M7 Production Hardening (ADR-011)."""
+"""Journal d'audit : `GET /api/v1/audit` (ADMIN), M7 Production Hardening (ADR-011)."""
 
 from datetime import datetime
 from typing import Annotated, Any

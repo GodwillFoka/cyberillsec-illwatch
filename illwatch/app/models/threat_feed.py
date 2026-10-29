@@ -38,7 +38,7 @@ def _in_enum(column: str, enum: type[StrEnum]) -> str:
 
 
 class ThreatFeed(UUIDPrimaryKeyMixin, TimestampMixin, Base):
-    """Source de renseignement distante: RF-04."""
+    """Source de renseignement distante : RF-04."""
 
     __tablename__ = "threat_feeds"
     __table_args__ = (
