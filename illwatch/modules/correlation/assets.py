@@ -110,6 +110,11 @@ def _apply(asset: Asset, data: AssetInput) -> None:
     asset.is_active = data.is_active
 
 
+def validate_asset(data: AssetInput) -> None:
+    """Contrôle une saisie sans l'écrire (aperçu d'un import) : lève `AssetError` si refusée."""
+    _apply(Asset(), data)
+
+
 async def list_assets(session: AsyncSession) -> list[Asset]:
     return list((await session.scalars(select(Asset).order_by(Asset.name))).all())
 

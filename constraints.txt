@@ -42,6 +42,8 @@ cryptography==50.0.2
     # via
     #   types-pyopenssl
     #   types-redis
+et-xmlfile==2.0.0
+    # via openpyxl
 fastapi==0.142.2
     # via illwatch (pyproject.toml)
 greenlet==3.5.6
@@ -79,6 +81,8 @@ mypy-extensions==1.1.0
     # via mypy
 opentelemetry-api==1.45.1
     # via fastapi
+openpyxl==3.1.5
+    # via illwatch (pyproject.toml)
 packaging==26.3
     # via pytest
 pathspec==1.1.1

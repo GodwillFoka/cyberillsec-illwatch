@@ -1,12 +1,14 @@
 // Inventaire d'actifs (M8, ADR-020) : ce que l'organisation exploite. Le produit est cherché
 // dans les CVE (KEV, exploits publics), les adresses et domaines dans les IOC. L'actif choisi
-// est dans l'adresse (?actif=…) ; « Nouvel actif » ouvre un formulaire vide.
-import { Plus, Trash2 } from "lucide-react";
+// est dans l'adresse (?actif=…) ; « Nouvel actif » ouvre un formulaire vide. « Importer »
+// charge un fichier Excel ou CSV : aperçu ligne par ligne, puis import tout ou rien (ADR-028).
+import { Download, Plus, Trash2, Upload } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
-import { useDeleteAsset, useSaveAsset } from "../api/mutations";
+import { apiDownload } from "../api/http";
+import { useDeleteAsset, useImportAssets, useSaveAsset } from "../api/mutations";
 import { useAssets } from "../api/queries";
-import type { Asset, AssetWrite } from "../api/types";
+import type { Asset, AssetImport, AssetWrite } from "../api/types";
 import { useAuth } from "../auth/AuthProvider";
 import { LevelBadge } from "../components/Badge";
 import { QueryState } from "../components/QueryState";
@@ -203,6 +205,158 @@ function AssetForm({ asset, onSaved, onDeleted }: { asset: Asset | null; onSaved
   );
 }
 
+// --- Import et export en fichier (ADR-028) --------------------------------------------------
+
+function DownloadButton({ path, query, fallback, label }: { path: string; query: Record<string, string>; fallback: string; label: string }) {
+  const [state, setState] = useState<{ busy: boolean; error: string | null }>({ busy: false, error: null });
+  async function run() {
+    setState({ busy: true, error: null });
+    try {
+      await apiDownload(path, query, fallback);
+      setState({ busy: false, error: null });
+    } catch (error) {
+      setState({ busy: false, error: (error as Error).message });
+    }
+  }
+  return (
+    <>
+      <button className="btn" type="button" disabled={state.busy} onClick={() => void run()}>
+        <Download size={20} strokeWidth={1.5} aria-hidden="true" />
+        {label}
+      </button>
+      {state.error && (
+        <span className="reason error-text" role="alert">
+          {t("downloadFailed", { message: state.error })}
+        </span>
+      )}
+    </>
+  );
+}
+
+function ImportPanel({ onClose, onDone }: { onClose: () => void; onDone: (message: string) => void }) {
+  const importer = useImportAssets();
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<AssetImport | null>(null);
+
+  function analyse(event: FormEvent) {
+    event.preventDefault();
+    if (!file) return;
+    setPreview(null);
+    importer.mutate({ file, apply: false }, { onSuccess: setPreview });
+  }
+
+  function confirm() {
+    if (!file) return;
+    importer.mutate(
+      { file, apply: true },
+      {
+        onSuccess: (report) => {
+          if (report.applied) {
+            onDone(t("imported", { created: report.created, updated: report.updated }));
+          } else {
+            setPreview(report);
+          }
+        },
+      },
+    );
+  }
+
+  const toCreate = preview?.rows.filter((r) => r.action === "create").length ?? 0;
+  const toUpdate = preview?.rows.filter((r) => r.action === "update").length ?? 0;
+
+  return (
+    <section className="card gap-bottom" aria-labelledby="import-titre">
+      <div className="card-head">
+        <h2 id="import-titre">{t("importTitle")}</h2>
+        <p>{t("importHelp")}</p>
+      </div>
+      <form className="form" onSubmit={analyse}>
+        <ol className="small">
+          <li>{t("importStep1")}</li>
+          <li>{t("importStep2")}</li>
+          <li>{t("importStep3")}</li>
+        </ol>
+        <div className="row">
+          <DownloadButton
+            path="/assets/template"
+            query={{ format: "xlsx" }}
+            fallback="illwatch-modele-inventaire.xlsx"
+            label={t("template")}
+          />
+          <label className="field grow">
+            {t("chooseFile")}
+            <input
+              type="file"
+              accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+              onChange={(e) => {
+                setFile(e.target.files?.[0] ?? null);
+                setPreview(null);
+                importer.reset();
+              }}
+            />
+          </label>
+        </div>
+        <div className="actions">
+          <button className="btn quiet" type="button" onClick={onClose}>
+            {t("cancel")}
+          </button>
+          <button className="btn primary" type="submit" disabled={!file || importer.isPending}>
+            <Upload size={20} strokeWidth={1.5} aria-hidden="true" />
+            {importer.isPending && !preview ? t("analysing") : t("analyse")}
+          </button>
+        </div>
+      </form>
+
+      {importer.error && (
+        <p className="notice error" role="alert">
+          {t("refused", { message: importer.error.message })}
+        </p>
+      )}
+
+      {preview && (
+        <div className="import-preview">
+          {preview.rejected > 0 ? (
+            <p className="notice error" role="alert">
+              {t.plural("rejected", preview.rejected)}
+            </p>
+          ) : (
+            <p className="notice ok" role="status">
+              {t("ready", { created: toCreate, updated: toUpdate })}
+            </p>
+          )}
+          <table className="table" aria-label={t("previewLabel")}>
+            <thead>
+              <tr>
+                <th className="num">{t("colLine")}</th>
+                <th>{t("colAsset")}</th>
+                <th>{t("colResult")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {preview.rows.map((row) => (
+                <tr key={row.line} className={row.error ? "row-error" : undefined}>
+                  <td className="num mono">{row.line}</td>
+                  <td className="cell-title">{row.name || t("noName")}</td>
+                  <td className={row.error ? "error-text" : "muted"}>
+                    {row.error ?? (row.action === "create" ? t("willCreate") : t("willUpdate"))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {preview.rejected === 0 && preview.rows.length > 0 && (
+            <div className="actions">
+              <button className="btn primary" type="button" disabled={importer.isPending} onClick={confirm}>
+                {importer.isPending ? t("importing") : t.plural("confirmImport", preview.rows.length)}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function Inventory() {
   const { search, navigate } = useLocation();
   const { user } = useAuth();
@@ -214,6 +368,7 @@ export function Inventory() {
   const selected = creating ? null : (assets.find((a) => a.id === requested) ?? (requested ? null : assets[0] ?? null));
   const canEdit = user ? EDITOR_ROLES.has(user.role) : false;
   const [flash, setFlash] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const select = (id: string) => {
     setFlash(null);
@@ -228,12 +383,42 @@ export function Inventory() {
           <p>{t("subtitle")}</p>
         </div>
         {canEdit && (
-          <button className="btn primary" type="button" onClick={() => navigate("/inventaire?nouveau=1", { replace: true })}>
-            <Plus size={20} strokeWidth={1.5} aria-hidden="true" />
-            {t("newAsset")}
-          </button>
+          <div className="actions">
+            <DownloadButton
+              path="/assets/export"
+              query={{ format: "xlsx" }}
+              fallback="illwatch-inventaire.xlsx"
+              label={t("export")}
+            />
+            <button
+              className="btn"
+              type="button"
+              aria-expanded={importing}
+              onClick={() => {
+                setFlash(null);
+                setImporting((open) => !open);
+              }}
+            >
+              <Upload size={20} strokeWidth={1.5} aria-hidden="true" />
+              {t("import")}
+            </button>
+            <button className="btn primary" type="button" onClick={() => navigate("/inventaire?nouveau=1", { replace: true })}>
+              <Plus size={20} strokeWidth={1.5} aria-hidden="true" />
+              {t("newAsset")}
+            </button>
+          </div>
         )}
       </div>
+
+      {importing && canEdit && (
+        <ImportPanel
+          onClose={() => setImporting(false)}
+          onDone={(message) => {
+            setImporting(false);
+            setFlash(message);
+          }}
+        />
+      )}
 
       {flash && (
         <p className="notice ok gap-bottom" role="status">

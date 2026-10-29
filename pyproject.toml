@@ -26,6 +26,7 @@ dependencies = [
     "pyjwt>=2.9.0",
     "pwdlib[argon2]>=0.2.1",
     "python-multipart>=0.0.9",
+    "openpyxl>=3.1.5",
     "taxii2-client==2.3.0",
 ]
 
@@ -92,6 +93,10 @@ exclude = ["alembic/", "tests/"]
 [[tool.mypy.overrides]]
 # taxii2-client ne publie pas d'annotations de types.
 module = ["taxii2client", "taxii2client.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["openpyxl", "openpyxl.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

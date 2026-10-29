@@ -107,6 +107,8 @@ nav:
           - ADR-024 Campagnes: adr/ADR-024-campagnes.md
           - ADR-025 STIX / TAXII: adr/ADR-025-stix-taxii.md
           - ADR-026 Observabilité: adr/ADR-026-observabilite.md
+          - ADR-027 Site de présentation: adr/ADR-027-site-de-presentation.md
+          - ADR-028 Inventaire en fichier: adr/ADR-028-inventaire-en-fichier.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:

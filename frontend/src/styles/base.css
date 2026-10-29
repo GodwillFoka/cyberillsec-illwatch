@@ -749,6 +749,17 @@ button {
   color: var(--ok-fg);
 }
 
+/* Import d'inventaire (ADR-028) : aperçu ligne par ligne avant confirmation. */
+.import-preview {
+  display: grid;
+  gap: var(--s3);
+  margin-top: var(--s4);
+}
+
+.table tr.row-error td {
+  background: var(--p0-bg);
+}
+
 .empty {
   margin: 0;
   padding: var(--s6) var(--s4);

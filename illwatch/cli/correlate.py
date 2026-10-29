@@ -2,7 +2,9 @@
 
     illwatch assets add "Pare-feu siège" --product FortiOS --criticality CRITICAL \\
         --address 198.51.100.10 --domain vpn.example.com
-    illwatch assets import inventaire.csv   # nom;produit;editeur;version;criticite;...
+    illwatch assets template                # modèle Excel à remplir
+    illwatch assets import inventaire.xlsx  # ou .csv ; --dry-run pour un aperçu
+    illwatch assets export -o inventaire.xlsx
     illwatch assets list
     illwatch correlate run                  # une passe maintenant (le worker : chaque heure)
     illwatch correlate list
@@ -10,7 +12,6 @@
 """
 
 import asyncio
-import csv
 from pathlib import Path
 from typing import Any
 
@@ -22,20 +23,6 @@ from illwatch.shared.enums import Severity
 
 console = Console()
 CRITICALITIES = [s.value for s in Severity]
-CSV_COLUMNS = [
-    "nom",
-    "produit",
-    "editeur",
-    "version",
-    "criticite",
-    "adresses",
-    "domaines",
-    "plateforme",
-]
-
-
-def _split(value: str | None) -> tuple[str, ...]:
-    return tuple(v.strip() for v in (value or "").replace(",", " ").split() if v.strip())
 
 
 async def _with_session(work: Any) -> Any:
@@ -113,75 +100,121 @@ def assets_add(
 
 @assets.command("import")
 @click.argument("path", type=click.Path(exists=True, dir_okay=False, path_type=Path))
-def assets_import(path: Path) -> None:
-    """Importe un inventaire CSV (séparateur « ; »), une ligne par actif.
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Aperçu : affiche ce qui serait créé ou mis à jour, sans écrire.",
+)
+def assets_import(path: Path, dry_run: bool) -> None:
+    """Importe un inventaire Excel (.xlsx) ou CSV, une ligne par actif.
 
-    Colonnes : nom;produit;editeur;version;criticite;adresses;domaines;plateforme — adresses et
-    domaines séparés par des espaces ; plateforme facultative (« Debian 12 »). Un actif déjà
-    présent (même nom) est mis à jour.
+    Colonnes : nom, produit (obligatoires), editeur, version, plateforme, criticite, adresses,
+    domaines, notes, en_service. Modèle prêt à remplir : `illwatch assets template`. Un actif
+    déjà présent (même nom) est mis à jour ; si une ligne est refusée, rien n'est importé.
     """
-    from illwatch.modules.correlation.assets import (
-        AssetError,
-        AssetInput,
-        create_asset,
-        find_asset,
-        update_asset,
+    from illwatch.modules.correlation.inventory_file import (
+        InventoryFileError,
+        import_inventory,
+        read_inventory,
     )
     from illwatch.modules.foundation.audit import cli_actor, record_in_session
 
-    with path.open(encoding="utf-8-sig", newline="") as handle:
-        rows = [
-            row
-            for row in csv.DictReader(handle, delimiter=";")
-            if any((v or "").strip() for v in row.values())
-        ]
-    missing = [c for c in ("nom", "produit") if rows and c not in rows[0]]
-    if missing or not rows:
-        raise click.ClickException(
-            f"En-tête attendu : {';'.join(CSV_COLUMNS)} (au moins nom et produit)."
-        )
+    try:
+        parsed = read_inventory(path.read_bytes(), path.name)
+    except InventoryFileError as exc:
+        raise click.ClickException(str(exc)) from exc
 
-    async def _work(session: Any) -> tuple[int, int]:
-        created = updated = 0
-        for number, row in enumerate(rows, start=2):
-            level = (row.get("criticite") or "MEDIUM").strip().upper()
-            if level not in CRITICALITIES:
-                raise click.ClickException(
-                    f"Ligne {number} : criticité « {level} » inconnue ({', '.join(CRITICALITIES)})."
-                )
-            data = AssetInput(
-                name=row.get("nom") or "",
-                product=row.get("produit") or "",
-                vendor=row.get("editeur") or None,
-                version=row.get("version") or None,
-                platform=row.get("plateforme") or None,
-                criticality=Severity(level),
-                addresses=_split(row.get("adresses")),
-                domains=_split(row.get("domaines")),
+    async def _work(session: Any) -> Any:
+        report = await import_inventory(session, parsed, apply=not dry_run)
+        if report.applied:
+            await record_in_session(
+                session,
+                "asset.import",
+                actor_name=cli_actor(),
+                target_type="asset",
+                detail={"file": path.name, "created": report.created, "updated": report.updated},
             )
-            try:
-                existing = await find_asset(session, data.name)
-                if existing is None:
-                    await create_asset(session, data)
-                    created += 1
-                else:
-                    await update_asset(session, existing.id, data)
-                    updated += 1
-            except AssetError as exc:
-                raise click.ClickException(f"Ligne {number} : {exc}") from exc
-        await record_in_session(
-            session,
-            "asset.import",
-            actor_name=cli_actor(),
-            detail={"file": path.name, "created": created, "updated": updated},
-        )
-        return created, updated
+        return report
 
     try:
-        created, updated = asyncio.run(_with_session(_work))
-    except ValueError as exc:
+        report = asyncio.run(_with_session(_work))
+    except InventoryFileError as exc:
         raise click.ClickException(str(exc)) from exc
-    console.print(f"[green]✔[/] {created} actif(s) créé(s), {updated} mis à jour.")
+
+    table = Table(title=f"{path.name} : {len(report.rows)} ligne(s)")
+    for column in ("Ligne", "Actif", "Résultat"):
+        table.add_column(column)
+    for row in report.rows:
+        outcome = (
+            f"[red]refusée : {row.error}[/]"
+            if row.error
+            else "création"
+            if row.action == "create"
+            else "mise à jour"
+        )
+        table.add_row(str(row.line), row.name or "(sans nom)", outcome)
+    console.print(table)
+    if report.rejected:
+        raise click.ClickException(
+            f"{report.rejected} ligne(s) refusée(s) : rien n'a été importé. Corrigez le fichier "
+            "puis relancez."
+        )
+    if report.applied:
+        console.print(
+            f"[green]✔[/] {report.created} actif(s) créé(s), {report.updated} mis à jour."
+        )
+    else:
+        console.print("Aperçu seulement : relancez sans --dry-run pour importer.")
+
+
+@assets.command("export")
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=Path("inventaire.xlsx"),
+    show_default=True,
+    help="Fichier produit : .xlsx (Excel) ou .csv selon l'extension.",
+)
+def assets_export(output: Path) -> None:
+    """Exporte l'inventaire, réimportable tel quel après modification."""
+    from illwatch.modules.correlation.assets import list_assets
+    from illwatch.modules.correlation.inventory_file import inventory_csv, inventory_xlsx
+    from illwatch.modules.foundation.audit import cli_actor, record_in_session
+
+    fmt = "csv" if output.suffix.lower() == ".csv" else "xlsx"
+
+    async def _work(session: Any) -> bytes:
+        rows = await list_assets(session)
+        await record_in_session(
+            session,
+            "data.export",
+            actor_name=cli_actor(),
+            target_type="dataset",
+            target_id="assets",
+            detail={"format": fmt, "rows": len(rows)},
+        )
+        return inventory_csv(rows) if fmt == "csv" else inventory_xlsx(rows)
+
+    output.write_bytes(asyncio.run(_with_session(_work)))
+    console.print(f"[green]✔[/] Inventaire exporté dans {output}.")
+
+
+@assets.command("template")
+@click.option(
+    "-o",
+    "--output",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=Path("modele-inventaire.xlsx"),
+    show_default=True,
+    help="Modèle produit : .xlsx (avec mode d'emploi) ou .csv selon l'extension.",
+)
+def assets_template(output: Path) -> None:
+    """Crée un modèle d'inventaire vide à remplir dans Excel."""
+    from illwatch.modules.correlation.inventory_file import template_csv, template_xlsx
+
+    output.write_bytes(template_csv() if output.suffix.lower() == ".csv" else template_xlsx())
+    console.print(f"[green]✔[/] Modèle créé : {output}. Remplissez l'onglet « Inventaire ».")
 
 
 @assets.command("list")
