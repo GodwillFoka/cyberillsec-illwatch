@@ -254,7 +254,9 @@ async def detach(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.delete("/{campaign_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Supprimer: ADMIN")
+@router.delete(
+    "/{campaign_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Supprimer : ADMIN"
+)
 async def delete_campaign(
     campaign_id: UUID, session: DbSession, user: AdminUser, audit: Audit
 ) -> Response:

@@ -1,4 +1,4 @@
-"""Modèles de la gestion d'incidents: MOD-04 (phase 4, ADR-008).
+"""Modèles de la gestion d'incidents : MOD-04 (phase 4, ADR-008).
 
 - `incidents` : incident de sécurité, sévérité (RF-17), statut piloté par la machine d'état
   NIST SP 800-61 (RF-18), éventuellement ouvert depuis une alerte CVE.
@@ -72,7 +72,7 @@ class Incident(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
 
 class IncidentEvent(UUIDPrimaryKeyMixin, Base):
-    """Événement immuable de la chronologie d'un incident: RF-19."""
+    """Événement immuable de la chronologie d'un incident : RF-19."""
 
     __tablename__ = "incident_events"
     __table_args__ = (

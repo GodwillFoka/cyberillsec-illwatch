@@ -110,7 +110,7 @@ class Indicator(UUIDPrimaryKeyMixin, Base):
 
 
 class IndicatorSource(Base):
-    """Provenance multi-sources d'un IOC: ADR-006.
+    """Provenance multi-sources d'un IOC : ADR-006.
 
     Une ligne par couple (IOC, flux) : quand et combien de fois *ce* flux a rapporté
     *cet* IOC. `indicators.feed_id` reste la première source connue ; cette table dit

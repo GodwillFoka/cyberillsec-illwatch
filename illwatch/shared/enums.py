@@ -83,7 +83,7 @@ class CorrelationRule(StrEnum):
 
 
 class SocTier(StrEnum):
-    """Niveau SOC qui porte l'incident: M9 (ADR-022). L1 qualifie, L2 investigue, L3 traite
+    """Niveau SOC qui porte l'incident : M9 (ADR-022). L1 qualifie, L2 investigue, L3 traite
     (ingénierie de détection, réponse avancée). L'escalade ne fait que monter."""
 
     L1 = "L1"
@@ -103,7 +103,7 @@ class IncidentStatus(StrEnum):
 
 
 class IncidentEventType(StrEnum):
-    """Événements de la chronologie immuable d'un incident: RF-19."""
+    """Événements de la chronologie immuable d'un incident : RF-19."""
 
     CREATED = "CREATED"
     STATUS_CHANGE = "STATUS_CHANGE"
@@ -142,7 +142,7 @@ class HuntTrigger(StrEnum):
 
 
 class AuditOutcome(StrEnum):
-    """Issue d'une action consignée au journal d'audit: M7 (ADR-011)."""
+    """Issue d'une action consignée au journal d'audit : M7 (ADR-011)."""
 
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"  # tentative invalide (mauvais mot de passe, entrée refusée)
