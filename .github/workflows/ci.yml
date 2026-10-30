@@ -109,37 +109,9 @@ jobs:
             s = Settings(); print('.env.example chargé :', s.environment, s.expose_docs)"
       - name: Pytest
         shell: bash
-        timeout-minutes: 15
         run: |
-          # Diagnostic d'un test bloqué : pytest tourne en arrière-plan ; au-delà de 8 min, la
-          # pile de chaque fil (py-spy) et la fin du journal remontent en annotations, puis la
-          # suite est arrêtée. Les annotations émises pendant l'étape restent lisibles même
-          # quand le journal complet ne l'est pas.
-          pip install -q py-spy || true
-          pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml > pytest.txt 2>&1 &
-          PID=$!
-          for i in $(seq 1 96); do
-            if ! kill -0 "$PID" 2>/dev/null; then break; fi
-            sleep 5
-          done
-          if kill -0 "$PID" 2>/dev/null; then
-            LAST=$(grep -E "^tests/.*::" pytest.txt | tail -1)
-            echo "::error title=Test bloqué (Python ${{ matrix.python }})::${LAST:0:500}"
-            for P in $(pgrep -P "$PID") "$PID"; do
-              sudo "$(which py-spy)" dump --pid "$P" 2>&1 | grep -vE "^\s*$" | head -60 | while read -r line; do
-                echo "::warning title=Pile py-spy (pid $P)::${line:0:600}"
-              done || true
-            done
-            tail -20 pytest.txt | while read -r line; do
-              echo "::warning title=Fin du journal pytest::${line:0:600}"
-            done || true
-            kill -9 "$PID" 2>/dev/null || true
-            cat pytest.txt
-            exit 1
-          fi
-          wait "$PID"; CODE=$?
-          cat pytest.txt
-          exit $CODE
+          set -o pipefail
+          pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml 2>&1 | tee pytest.txt
       - name: Résultat lisible (annotation)
         if: always()
         shell: bash
@@ -157,9 +129,6 @@ jobs:
             echo "::error title=Suite interrompue (Python ${{ matrix.python }})::dernier test lancé : ${LAST:0:400}"
             grep -nE "Timeout|File \"/home/runner/work" pytest.txt | tail -25 | while read -r line; do
               echo "::warning title=Pile du test bloqué::${line:0:600}"
-            done || true
-            tail -15 pytest.txt | while read -r line; do
-              echo "::warning title=Fin du journal pytest::${line:0:600}"
             done || true
           fi
       - uses: actions/upload-artifact@v7

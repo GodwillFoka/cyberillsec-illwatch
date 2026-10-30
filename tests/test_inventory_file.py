@@ -118,6 +118,9 @@ def test_lignes_refusees_avec_motif() -> None:
         (b"PK\x03\x04pas une archive", "illisible"),
         (b"x" * (MAX_FILE_BYTES + 1), "trop volumineux"),
     ],
+    # Identifiants explicites : sans eux, pytest nomme le test d'après le contenu (2 Mo de
+    # « x » dans un seul nom), ce qui bloque l'affichage du journal de la CI.
+    ids=["vide", "colonne-manquante", "archive-illisible", "trop-volumineux"],
 )
 def test_fichiers_refuses_en_bloc(content: bytes, message: str) -> None:
     with pytest.raises(InventoryFileError, match=message):
