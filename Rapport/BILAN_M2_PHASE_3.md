@@ -1,4 +1,4 @@
-# 🛡️ SENTRY, Bilan : clôture de M2 et phase 3 (moteur CVE)
+# 🛡️ SENTRY : bilan de clôture de M2 et de la phase 3 (moteur CVE)
 
 **Date :** 29/09/2026 · **Base :** votre commit `87bcca6` (branche `security/feed-last-error`)
 **Branches livrées :** `feature/sprint3-m2` (`9402bb1`) puis `feature/phase3-cve`

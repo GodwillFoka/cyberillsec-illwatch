@@ -1,4 +1,4 @@
-# 🛡️ SENTRY : Revue post-phase 1 et plan du sprint suivant
+# 🛡️ SENTRY : revue après la phase 1 et plan du sprint suivant
 
 **Date :** 27/09/2026 · **Branche :** `feature/threat-feeds-indicators` · **Base :** `main` @ `3f9196f`
 **Jalon visé :** M2 : Ingestion opérationnelle

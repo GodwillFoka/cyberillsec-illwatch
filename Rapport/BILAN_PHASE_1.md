@@ -1,4 +1,4 @@
-# 🛡️ SENTRY : Bilan de clôture de la phase 1 « Foundation »
+# 🛡️ SENTRY : bilan de clôture de la phase 1 « Foundation »
 
 **Version :** 0.1.0 · **Jalon :** M1 : Squelette opérationnel · **Date du bilan :** 24/09/2026
 **Module :** MOD-01 Foundation & Configuration · **Référence :** Cahier des charges v1.0.0, §3.3, §5.2, §5.3

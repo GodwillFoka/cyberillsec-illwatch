@@ -1,4 +1,4 @@
-# 🛡️ SENTRY : Bilan M7 « Production Hardening », lot 2
+# 🛡️ SENTRY : bilan M7 « Production Hardening », lot 2
 
 **Date :** 04/10/2026 · **Branche :** `feature/m7-production-hardening` (lots 1 et 2) ·
 **Décision :** ADR-012 (proposé)

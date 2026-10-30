@@ -1,5 +1,7 @@
 # Guide d'installation et d'exploitation
 
+<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Guide_installation_exploitation_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
+
 **Version 2.0 du 30/10/2026** · ILLWATCH `0.2.0.dev0` · Public : responsable sécurité, administrateur système, analyste SOC
 
 Ce guide installe ILLWATCH sur un ordinateur ou un serveur, le remplit de renseignement, le relie à

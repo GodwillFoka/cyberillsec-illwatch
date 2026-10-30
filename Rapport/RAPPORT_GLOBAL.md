@@ -1,4 +1,4 @@
-# 🛡️ SENTRY : Rapport global d'avancement
+# 🛡️ SENTRY : rapport global d'avancement
 
 **Date :** 03/10/2026 · **Version publiée :** `0.1.0` (M1) · **Candidate :** `1.0.0-rc` sur
 `feature/phases-4-6`

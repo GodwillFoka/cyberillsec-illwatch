@@ -1,4 +1,4 @@
-# ILLWATCH : Audit global du 10/10/2026
+# ILLWATCH : audit global du 10/10/2026
 
 **Périmètre :** dépôt complet sur `main` @ `56f12db` (API, worker, CLI, interface web, migrations,
 CI GitHub et GitLab, documentation, suivi de projet). **Méthode :** revue indépendante (agent

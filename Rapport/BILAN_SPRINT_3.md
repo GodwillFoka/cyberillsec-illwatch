@@ -1,4 +1,4 @@
-# 🛡️ SENTRY, Bilan du Sprint 3 : M2 « Ingestion opérationnelle »
+# 🛡️ SENTRY : bilan du sprint 3, M2 « Ingestion opérationnelle »
 
 **Date :** 28/09/2026 · **Branche :** `feature/sprint3-ingestion` (base `202c6aa`)
 **Rédaction :** Claude (Cowork), pour Godwill FOKA

@@ -1,4 +1,4 @@
-# 🛡️ SENTRY, Plan directeur : état, tâches par étape, attentes et perspectives
+# 🛡️ SENTRY : plan directeur (état, tâches par étape, attentes et perspectives)
 
 **Date :** 27/09/2026, mis à jour le 03/10/2026 · **Version courante :** `0.1.0` (M1) ·
 **Branches de travail :** `feature/threat-feeds-indicators` (à fusionner), puis

@@ -1,5 +1,7 @@
 # ILLWATCH : Feuille de route
 
+<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Feuille_de_route_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
+
 | | |
 |---|---|
 | **Version** | **v2.0 du 30/10/2026** |

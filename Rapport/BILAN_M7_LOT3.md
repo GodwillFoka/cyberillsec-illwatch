@@ -1,4 +1,4 @@
-# 🛡️ SENTRY : Réexécution complète et bilan M7 « Production Hardening », lot 3
+# 🛡️ SENTRY : réexécution complète et bilan M7 « Production Hardening », lot 3
 
 **Date :** 04/10/2026 · **Branches :** `release/v0.1.1` (`702a030`) et
 `feature/m7-production-hardening` (`HEAD`, lots 1 à 3) · **Décisions :** ADR-013 (proposé),

@@ -1,4 +1,4 @@
-# 🛡️ SENTRY : État global après intégration M1-M6
+# 🛡️ SENTRY : état global après intégration de M1 à M6
 
 **Date :** 03/10/2026 · **Référence auditée :** `main` = `266b46e` (« Merge branch
 'feature/phases-4-6' into 'main' ») · **Auteur de l'audit :** Claude (Cowork), pour Godwill FOKA

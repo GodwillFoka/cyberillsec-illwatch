@@ -1,4 +1,4 @@
-# 🛡️ SENTRY : Bilan d'étape : TAXII 2.1 réel, phases 4, 5 et 6
+# 🛡️ SENTRY : bilan d'étape, TAXII 2.1 réel et phases 4, 5 et 6
 
 **Date :** 03/10/2026 · **Branche :** `feature/phases-4-6` (empilée sur `feature/phase3-cve-v2`,
 elle-même sur `feature/taxii-v2`) · **Base :** `9402bb1`

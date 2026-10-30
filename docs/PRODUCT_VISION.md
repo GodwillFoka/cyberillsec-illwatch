@@ -1,5 +1,7 @@
 # ILLWATCH : Vision produit
 
+<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Vision_produit_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
+
 | | |
 |---|---|
 | **Version** | **v2.0 du 30/10/2026** (remplace la v1.0 de juillet 2026, conservée en PDF dans `docs/pdf/`) |

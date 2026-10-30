@@ -1,5 +1,7 @@
 # ILLWATCH : Cahier des charges
 
+<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Cahier_des_charges_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
+
 | | |
 |---|---|
 | **Projet** | ILLWATCH : plateforme de surveillance de sécurité et de renseignement sur les menaces |

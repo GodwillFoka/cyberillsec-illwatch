@@ -1,4 +1,4 @@
-# Bilan M11 : Observability & Deployment (15/10/2026)
+# Bilan M11 « Observability & Deployment » (15/10/2026)
 
 **Décision :** ADR-026 · **Livraison :** PR #51 · **État :** livré, **clôture en attente** des
 7 jours de staging (VPS de M7).
