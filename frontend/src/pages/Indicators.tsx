@@ -23,7 +23,7 @@ import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
 import { currentLocale } from "../i18n/core";
 import { messages } from "../i18n/common.i18n";
-import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, formatHours, formatNumber, parseDate } from "../lib/format";
 import { MAX_BATCH, countryName, iocTypeLabel, iocTypes, splitBatch } from "../lib/iocs";
 import { INCIDENT_STATUS, SEVERITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, asUuid, useLocation } from "../lib/router";
@@ -191,7 +191,7 @@ function IndicatorTable({
           <th>{t("colType")}</th>
           <th>{t("colValue")}</th>
           <th>{t("colConfidence")}</th>
-          <th className="num">{t("colSources")}</th>
+          <th>{t("colSources")}</th>
           <th>{t("colSeen")}</th>
         </tr>
       </thead>
@@ -224,16 +224,44 @@ function IndicatorTable({
               <td>
                 <ConfidenceMeter value={indicator.confidence} level={indicator.confidence_level} />
               </td>
-              <td className="num mono">{formatNumber(indicator.source_count)}</td>
-              <td className="muted">
+              <td className="ellipsis" style={{ maxWidth: 200 }}>
+                <SourcesCell indicator={indicator} />
+              </td>
+              <td className="muted" title={freshTitle(indicator)}>
                 {seen ? `${formatAgo(seen)}` : "-"}
-                {indicator.is_active ? "" : t("expiredSuffix")}
+                <span className={`badge fresh-${indicator.freshness.status}`} style={{ marginLeft: 6 }}>
+                  {t(`fresh.${indicator.freshness.status}` as FreshKey)}
+                </span>
               </td>
             </tr>
           );
         })}
       </tbody>
     </table>
+  );
+}
+
+// --- Transparence (ADR-031) : sources et fraîcheur visibles sans ouvrir la fiche ---------------
+
+type FreshKey = Parameters<typeof t>[0];
+
+function freshTitle(indicator: Indicator): string {
+  return t("freshTitle", {
+    age: formatHours(indicator.freshness.age_days * 24),
+    half: formatNumber(indicator.freshness.half_life_days),
+  });
+}
+
+function SourcesCell({ indicator }: { indicator: Indicator }) {
+  const best = indicator.sources_preview?.[0];
+  if (!best) return <span className="muted">{t("noSource")}</span>;
+  const hidden = indicator.source_count - 1;
+  const names = (indicator.sources_preview ?? []).map((s) => `${s.name} (${s.reliability})`).join(", ");
+  return (
+    <span title={names}>
+      {best.name} <span className="muted mono">({best.reliability})</span>
+      {hidden > 0 ? <span className="muted"> {t("moreSources", { count: hidden })}</span> : null}
+    </span>
   );
 }
 
@@ -395,7 +423,16 @@ function IndicatorPanel({ indicatorId, canAct }: { indicatorId: string; canAct: 
                   <dt>{t("firstSeen")}</dt>
                   <dd>{first ? formatDateTime(first, utc) : "-"}</dd>
                   <dt>{t("lastSeen")}</dt>
-                  <dd>{last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "-"}</dd>
+                  <dd>
+                    {last ? `${formatDateTime(last, utc)} · ${formatAgo(last)}` : "-"}
+                    <span className="cell-sub">
+                      {t("freshnessLine", {
+                        label: t(`fresh.${ioc.freshness.status}` as FreshKey),
+                        age: formatHours(ioc.freshness.age_days * 24),
+                        half: formatNumber(ioc.freshness.half_life_days),
+                      })}
+                    </span>
+                  </dd>
                   <dt>{t("observations")}</dt>
                   <dd className="mono">{formatNumber(ioc.hit_count)}</dd>
                   <dt>{t("validityLabel")}</dt>

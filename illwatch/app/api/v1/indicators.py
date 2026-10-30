@@ -28,6 +28,7 @@ from illwatch.modules.correlation.confidence import (
 from illwatch.modules.enrichment.lookup import enrich_ip
 from illwatch.modules.soc.exclusions import find_exclusion
 from illwatch.modules.threat_feeds import indicators as service
+from illwatch.modules.threat_feeds.freshness import SourceBrief, ioc_freshness, source_briefs
 from illwatch.modules.threat_feeds.indicators import (
     MAX_BATCH_SIZE,
     IndicatorNotFoundError,
@@ -80,6 +81,22 @@ class IngestResponse(BaseModel):
     rejected: list[RejectionOut] = Field(description="Échantillon (100 premiers rejets au plus).")
 
 
+class FreshnessRead(BaseModel):
+    """Fraîcheur rapportée à la demi-vie du type (ADR-031)."""
+
+    status: Literal["fresh", "aging", "stale", "expired"] = Field(
+        description="Récente (moins d'une demi-vie), vieillissante (moins de trois), ancienne, "
+        "ou expirée."
+    )
+    age_days: float = Field(description="Jours depuis la dernière observation.")
+    half_life_days: float = Field(description="Demi-vie du type d'IOC (ADR-017).")
+
+
+class SourceBriefRead(BaseModel):
+    name: str
+    reliability: str = Field(description="Cote de l'Amirauté, de A (sûre) à F.")
+
+
 class IndicatorRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -97,6 +114,11 @@ class IndicatorRead(BaseModel):
     source_count: int = Field(description="Nombre de flux distincts ayant rapporté l'IOC.")
     confidence: int = Field(ge=0, le=100, description="Score de confiance (ADR-017).")
     confidence_level: Literal["ELEVEE", "MOYENNE", "FAIBLE"]
+    freshness: FreshnessRead
+    sources_preview: list[SourceBriefRead] = Field(
+        default_factory=list,
+        description="Jusqu'à trois sources, les plus fiables d'abord (ADR-031).",
+    )
 
 
 class IndicatorSourceRead(BaseModel):
@@ -161,7 +183,15 @@ def _utc(value: datetime) -> datetime:
     return value if value.tzinfo is not None else value.replace(tzinfo=UTC)  # SQLite : naïf
 
 
-_COMPUTED = {"is_active", "source_count", "confidence", "confidence_level"}
+_COMPUTED = {
+    "is_active",
+    "source_count",
+    "confidence",
+    "confidence_level",
+    "freshness",
+    "sources_preview",
+}
+PREVIEW_SOURCES = 3
 
 
 def _confidence(
@@ -176,9 +206,20 @@ def _confidence(
     )
 
 
-def _to_read(indicator: Indicator, now: datetime, reliabilities: list[str]) -> IndicatorRead:
+def _to_read(
+    indicator: Indicator,
+    now: datetime,
+    reliabilities: list[str],
+    briefs: list[SourceBrief] | None = None,
+) -> IndicatorRead:
     expires_at = indicator.expires_at
     score = _confidence(indicator, reliabilities, now)
+    fresh = ioc_freshness(
+        ioc_type=indicator.type,
+        last_seen=_utc(indicator.last_seen),
+        expires_at=None if expires_at is None else _utc(expires_at),
+        now=now,
+    )
     return IndicatorRead.model_validate(
         {
             **{f: getattr(indicator, f) for f in IndicatorRead.model_fields if f not in _COMPUTED},
@@ -186,6 +227,13 @@ def _to_read(indicator: Indicator, now: datetime, reliabilities: list[str]) -> I
             "source_count": len(reliabilities),
             "confidence": score.total,
             "confidence_level": score.level,
+            "freshness": FreshnessRead(
+                status=fresh.status, age_days=fresh.age_days, half_life_days=fresh.half_life_days
+            ),
+            "sources_preview": [
+                SourceBriefRead(name=b.name, reliability=b.reliability)
+                for b in (briefs or [])[:PREVIEW_SOURCES]
+            ],
         }
     )
 
@@ -203,7 +251,11 @@ def _to_detail(indicator: Indicator, now: datetime) -> IndicatorDetail:
         for s in indicator.sources
     ]
     reliabilities = [str(src.reliability) for src in sources]
-    base = _to_read(indicator, now, reliabilities)
+    briefs = sorted(
+        (SourceBrief(src.feed_name, str(src.reliability)) for src in sources),
+        key=lambda b: (b.reliability, b.name),
+    )
+    base = _to_read(indicator, now, reliabilities, briefs)
     score = _confidence(indicator, reliabilities, now)
     return IndicatorDetail(
         **base.model_dump(),
@@ -251,9 +303,11 @@ async def list_indicators(
         active=active,
         value=value,
     )
-    cotes = await source_reliabilities(session, [i.id for i in page.items])
+    ids = [i.id for i in page.items]
+    cotes = await source_reliabilities(session, ids)
+    briefs = await source_briefs(session, ids)
     return IndicatorPage(
-        items=[_to_read(i, now, cotes.get(i.id, [])) for i in page.items],
+        items=[_to_read(i, now, cotes.get(i.id, []), briefs.get(i.id)) for i in page.items],
         total=page.total,
         limit=limit,
         offset=offset,

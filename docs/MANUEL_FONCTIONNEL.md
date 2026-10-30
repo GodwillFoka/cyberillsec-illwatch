@@ -204,6 +204,23 @@ Un IOC soumis à la main compte comme une source de fiabilité C.
 **Lire le résultat.** Élevée (70 et plus), moyenne (40 à 69), faible (moins de 40). La
 corrélation n'utilise que les IOC de confiance 40 et plus (`CORRELATION_MIN_CONFIDENCE`).
 
+### 3.3 bis La fraîcheur, visible d'un coup d'œil (ADR-031)
+
+Un indicateur ancien ne doit pas passer pour une menace d'aujourd'hui. Dans la liste des
+indicateurs, chacun porte donc une étiquette de fraîcheur, calculée avec la demi-vie de son
+type (celle du score de confiance) :
+
+| Étiquette | Signification | Exemple pour une adresse IP (demi-vie de 7 jours) |
+|---|---|---|
+| récent | vu depuis moins d'une demi-vie | vu il y a 3 jours |
+| vieillissant | vu depuis une à trois demi-vies | vu il y a 10 jours |
+| ancien | vu depuis plus de trois demi-vies | vu il y a 4 semaines |
+| expiré | date d'expiration passée | |
+
+La même liste nomme la source la plus fiable et sa cote, puis le nombre des autres sources :
+on sait tout de suite si l'indicateur repose sur une source cotée A ou sur une seule source
+cotée E.
+
 ### 3.4 L'enrichissement des adresses IP
 
 D'où vient cette adresse, et qui l'opère ? La fiche affiche son **pays** et son **système
@@ -286,6 +303,14 @@ Sur les 26 416 CVE du poste de test, le tri ne laisse qu'une petite part à trai
 c'est tout l'intérêt de la méthode.
 
 ![Répartition des CVE par priorité](assets/schemas/chiffres-cve.svg)
+
+### 4.4 bis Des données à jour, ou signalées comme périmées (ADR-031)
+
+Une priorité ne vaut que ce que valent les données qui la calculent. En tête de l'écran **CVE
+et priorités**, une ligne indique quand NIST NVD, CISA KEV et FIRST EPSS ont été synchronisés
+pour la dernière fois. Au-delà de 24 heures pour NVD et KEV, ou de 48 heures pour EPSS, le
+catalogue est signalé comme périmé et un avertissement rappelle que les priorités affichées
+peuvent ne plus refléter la menace actuelle.
 
 ### 4.5 Les alertes
 

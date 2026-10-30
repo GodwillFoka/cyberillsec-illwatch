@@ -9,6 +9,7 @@ import {
   CVE_PAGE_SIZE,
   useCveAlerts,
   useCveDetail,
+  useCatalogueFreshness,
   useCves,
   useLinkedIncidents,
   useSummary,
@@ -22,7 +23,7 @@ import { Breakdown, formatEpss, formatScore } from "../components/CveScore";
 import { Pager } from "../components/Pager";
 import { QueryState } from "../components/QueryState";
 import { messages } from "../i18n/common.i18n";
-import { formatAgo, formatDateTime, formatNumber, parseDate } from "../lib/format";
+import { formatAgo, formatDateTime, formatHours, formatNumber, parseDate } from "../lib/format";
 import { ALERT_REASON, INCIDENT_STATUS, PRIORITY_ORDER, levelLabel } from "../lib/levels";
 import { Link, useLocation } from "../lib/router";
 import { useTimeZone } from "../lib/time";
@@ -445,6 +446,29 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
 
 // --- Page -----------------------------------------------------------------------------------
 
+// --- Fraîcheur des catalogues (ADR-031) ------------------------------------------------------
+
+type CatalogueKey = Parameters<typeof t>[0];
+
+function CatalogueStrip() {
+  const query = useCatalogueFreshness();
+  const rows = query.data ?? [];
+  if (rows.length === 0) return null;
+  const stale = rows.some((row) => row.status !== "fresh");
+  return (
+    <div className={stale ? "notice" : "muted small"} role={stale ? "status" : undefined} style={{ marginBottom: 12 }}>
+      <strong>{t("catalogues")}</strong>
+      {rows.map((row) => (
+        <span key={row.key} className={row.status === "fresh" ? "" : "late"} title={row.last_error ?? undefined}>
+          {" · "}
+          {row.name} {t(`catalogue.${row.status}` as CatalogueKey, { age: formatHours(row.age_hours) })}
+        </span>
+      ))}
+      {stale && <p style={{ margin: "6px 0 0" }}>{t("staleWarning")}</p>}
+    </div>
+  );
+}
+
 export function Cves() {
   const { user } = useAuth();
   const canAct = user ? RESPONDER_ROLES.has(user.role) : false;
@@ -489,6 +513,7 @@ export function Cves() {
           <p>{t("subtitle")}</p>
         </div>
       </div>
+      <CatalogueStrip />
 
       <div className="split">
         <section className="card">

@@ -115,6 +115,7 @@ nav:
           - ADR-028 Inventaire en fichier: adr/ADR-028-inventaire-en-fichier.md
           - ADR-029 Qualité des alertes: adr/ADR-029-qualite-des-alertes.md
           - ADR-030 Priorisation expliquée: adr/ADR-030-priorisation-expliquee.md
+          - ADR-031 Transparence du renseignement: adr/ADR-031-transparence-du-renseignement.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:

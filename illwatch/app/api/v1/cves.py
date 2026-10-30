@@ -11,7 +11,7 @@ d'une CVE expose la **décomposition du score** (ADR-001) : chaque point est jus
 """
 
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
@@ -23,6 +23,7 @@ from illwatch.modules.cve_tracker import queries
 from illwatch.modules.cve_tracker.alerts import AlertNotFoundError, acknowledge
 from illwatch.modules.cve_tracker.queries import CVENotFoundError
 from illwatch.modules.cve_tracker.scoring import compute_risk_breakdown, remediation_sla_hours
+from illwatch.modules.threat_feeds.freshness import catalogue_freshness
 from illwatch.shared.enums import RiskPriority, UserRole
 
 router = APIRouter(prefix="/cves", tags=["vulnérabilités (CVE)"])
@@ -149,6 +150,33 @@ async def list_cves(
     return CVEPage(
         items=[_read(c) for c in page.items], total=page.total, limit=limit, offset=offset
     )
+
+
+class CatalogueFreshnessRead(BaseModel):
+    key: Literal["nvd", "kev", "epss"]
+    name: str
+    last_success_at: datetime | None = Field(description="Dernière synchronisation réussie.")
+    age_hours: float | None
+    max_age_hours: int = Field(description="Au-delà, la donnée est signalée comme périmée.")
+    status: Literal["fresh", "stale", "never"]
+    last_error: str | None
+
+
+@router.get(
+    "/freshness",
+    response_model=list[CatalogueFreshnessRead],
+    summary="Fraîcheur des catalogues NVD, KEV et EPSS (ADR-031)",
+    description=(
+        "Dernière synchronisation réussie de chaque catalogue et son âge. NVD et KEV sont "
+        "signalés périmés au-delà de 24 h, EPSS au-delà de 48 h : une priorité calculée sur "
+        "des données périmées doit être lue avec prudence."
+    ),
+)
+async def freshness(session: DbSession, _: CurrentUser) -> list[CatalogueFreshnessRead]:
+    return [
+        CatalogueFreshnessRead.model_validate(item, from_attributes=True)
+        for item in await catalogue_freshness(session)
+    ]
 
 
 @router.get(
