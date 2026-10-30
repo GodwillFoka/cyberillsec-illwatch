@@ -151,8 +151,22 @@ La demande de fusion « inventaire Excel, ponctuation, documentation v2 » a ét
 
 ## 5. Après la v0.2.0
 
+Une revue d'amélioration du 30 octobre 2026 a déplacé l'accent : avant d'ajouter des modules,
+rendre les résultats plus dignes de confiance et plus utiles au quotidien. Les trois premières
+priorités sont déjà livrées :
+
+| Amélioration | Décision | État |
+|---|---|---|
+| Mesurer la qualité des alertes en situation réelle, par règle et par source | [ADR-029](adr/ADR-029-qualite-des-alertes.md) | 🟢 livré le 30 octobre, à mesurer après un mois d'exploitation réelle |
+| Expliquer la priorisation : criticité, exposition, exploitation, version, échéance | [ADR-030](adr/ADR-030-priorisation-expliquee.md) | 🟢 livré le 30 octobre |
+| Rendre visibles la source, la fraîcheur et la confiance de chaque donnée | [ADR-031](adr/ADR-031-transparence-du-renseignement.md) | 🟢 livré le 30 octobre |
+
+Restent, dans cet ordre, avec les thèmes du tableau suivant :
+
 | Thème | Ce que nous voulons faire | Priorité |
 |---|---|---|
+| Pilote avec des analystes SOC | les observer traiter une alerte, ouvrir un incident, justifier un faux positif, préparer un rapport ; corriger les frictions observées | haute |
+| Accessibilité de l'application | contrôle WCAG automatisé de l'interface SOC en CI, comme pour le site de présentation, et parcours au clavier et au lecteur d'écran | haute |
 | Plusieurs organisations et connexion unique | servir plusieurs organisations depuis une même instance, avec OIDC | haute |
 | Cyberill TI Cloud | une offre hébergée dans l'Union européenne | haute |
 | Assistant d'analyse | un modèle de langage pour lire les bulletins et les incidents | moyenne |

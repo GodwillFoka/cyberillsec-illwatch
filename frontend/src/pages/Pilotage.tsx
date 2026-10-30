@@ -210,7 +210,7 @@ function Quality({ quality }: { quality: AlertQuality }) {
       {quality.rules.length === 0 ? (
         <p className="empty">{t("noSignal")}</p>
       ) : (
-        <table className="table" aria-label={t("qualityTable")}>
+        <table className="table quality-table" aria-label={t("qualityTable")}>
           <thead>
             <tr>
               <th>{t("colRule")}</th>
@@ -259,7 +259,7 @@ function SourceQuality({ quality }: { quality: AlertQuality }) {
       {quality.sources.length === 0 ? (
         <p className="empty">{t("noSource")}</p>
       ) : (
-        <table className="table" aria-label={t("qualitySources")}>
+        <table className="table quality-table" aria-label={t("qualitySources")}>
           <thead>
             <tr>
               <th>{t("colSource")}</th>
@@ -346,12 +346,12 @@ export function Pilotage() {
               <div className="grid">
                 <Severities metrics={metrics} />
                 <QueryState query={quality}>{(q) => <Quality quality={q} />}</QueryState>
+                <QueryState query={quality}>{(q) => <SourceQuality quality={q} />}</QueryState>
                 <Breaches metrics={metrics} />
                 <Daily metrics={metrics} />
               </div>
               <aside className="grid">
                 <Tiers metrics={metrics} />
-                <QueryState query={quality}>{(q) => <SourceQuality quality={q} />}</QueryState>
                 <Workload metrics={metrics} />
               </aside>
             </div>

@@ -2025,3 +2025,16 @@ textarea {
   background: var(--p3-bg);
   color: var(--p3-fg);
 }
+
+/* Qualité des alertes (ADR-029) : le libellé passe à la ligne, la famille dessous. */
+.quality-table td.cell-title {
+  white-space: normal;
+  min-width: 200px;
+}
+.quality-table td.cell-title .cell-sub {
+  display: block;
+}
+.quality-table th,
+.quality-table td.num {
+  white-space: nowrap;
+}
