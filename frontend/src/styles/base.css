@@ -1993,3 +1993,20 @@ textarea {
     display: none;
   }
 }
+
+/* Priorisation expliquée (ADR-030) : un facteur par ligne, son effet en couleur et en texte
+ * (la couleur ne porte jamais seule le sens). */
+.factors .factor .grow > strong,
+.factors .factor .factor-value,
+.factors .factor .cell-sub {
+  display: block;
+}
+.factors .factor.raises > .mono {
+  color: var(--p0-fg);
+}
+.factors .factor.lowers > .mono {
+  color: var(--ok-fg);
+}
+.factors .factor.check > .mono {
+  color: var(--warning);
+}

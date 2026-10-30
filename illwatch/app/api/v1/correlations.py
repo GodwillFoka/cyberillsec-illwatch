@@ -6,20 +6,22 @@ ADMIN et ANALYST (consignés au journal d'audit).
 
 from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from illwatch.app.api.deps import Audit, CurrentUser, DbSession, require_roles
 from illwatch.app.api.v1.attack import AttackContextRead, attack_context
 from illwatch.app.config import get_settings
-from illwatch.app.models import CorrelatedEvent, User
+from illwatch.app.models import CVE, Asset, CorrelatedEvent, User
 from illwatch.modules.attack.service import TechniqueRef, actor_index
 from illwatch.modules.correlation import engine
 from illwatch.modules.correlation import events as service
+from illwatch.modules.correlation.explain import AssetFacts, CveFacts, explain
 from illwatch.modules.incidents.service import IncidentClosedError, LinkTargetNotFoundError
 from illwatch.shared.enums import CorrelationRule, RiskPriority, UserRole
 
@@ -29,6 +31,24 @@ Responder = Annotated[User, Depends(require_roles(UserRole.ADMIN, UserRole.ANALY
 
 DEFAULT_PAGE_SIZE = 50
 MAX_PAGE_SIZE = 200
+
+
+class FactorRead(BaseModel):
+    key: str = Field(description="rule, criticality, exposure, exploitation, version, confidence")
+    label: str
+    value: str
+    effect: Literal["raises", "lowers", "neutral", "check"] = Field(
+        description="Pousse la priorité, la modère, sans effet, ou reste à vérifier."
+    )
+    points: float | None = Field(description="Part du score, quand le facteur en a une.")
+
+
+class ExplanationRead(BaseModel):
+    summary: str = Field(description="Pourquoi cet évènement a sa priorité, en une phrase.")
+    deadline: datetime | None = Field(description="Quand agir au plus tard.")
+    deadline_reason: str
+    factors: list[FactorRead]
+    to_check: list[str] = Field(description="Ce qu'il faut vérifier avant d'agir.")
 
 
 class CorrelationRead(BaseModel):
@@ -50,6 +70,13 @@ class CorrelationRead(BaseModel):
     )
     attack: AttackContextRead | None = Field(
         default=None, description="Technique ATT&CK de la règle, acteurs cités (M10)."
+    )
+    explanation: ExplanationRead | None = Field(
+        default=None,
+        description=(
+            "Priorisation expliquée (ADR-030) : criticité, exposition, exploitation, version, "
+            "échéance et points à vérifier."
+        ),
     )
 
 
@@ -104,10 +131,23 @@ async def _reads(
     """Évènements avec leur contexte ATT&CK (index des acteurs lu une fois par page)."""
     index = await actor_index(session) if pairs else None
     memo: dict[str, tuple[TechniqueRef, ...]] = {}
+    asset_ids = sorted({e.asset_id for e, _ in pairs})
+    cve_ids = sorted({e.cve_id for e, _ in pairs if e.cve_id})
+    assets = (
+        {a.id: a for a in (await session.scalars(select(Asset).where(Asset.id.in_(asset_ids))))}
+        if asset_ids
+        else {}
+    )
+    cves = (
+        {c.id: c for c in (await session.scalars(select(CVE).where(CVE.id.in_(cve_ids))))}
+        if cve_ids
+        else {}
+    )
     out = []
     for event, name in pairs:
         item = _read(event, name)
         detail = event.detail or {}
+        item.explanation = _explanation(event, assets.get(event.asset_id), cves)
         item.attack = await attack_context(
             session,
             rule_ids=[event.rule_id],
@@ -118,6 +158,46 @@ async def _reads(
         )
         out.append(item)
     return out
+
+
+def _explanation(
+    event: CorrelatedEvent, asset: Asset | None, cves: dict[str, CVE]
+) -> ExplanationRead | None:
+    if asset is None:
+        return None
+    cve = cves.get(event.cve_id) if event.cve_id else None
+    facts = (
+        CveFacts(
+            cve_id=cve.id,
+            cvss=None if cve.cvss_score is None else float(cve.cvss_score),
+            epss=None if cve.epss_score is None else float(cve.epss_score),
+            epss_percentile=None if cve.epss_percentile is None else float(cve.epss_percentile),
+            is_kev=cve.is_kev,
+            kev_date_added=cve.kev_date_added,
+            kev_due_date=cve.kev_due_date,
+            has_public_exploit=cve.has_public_exploit,
+            has_ransomware_campaign=cve.has_ransomware_campaign,
+        )
+        if cve is not None
+        else None
+    )
+    result = explain(
+        rule_id=event.rule_id,
+        priority=event.priority,
+        score=float(event.score),
+        first_seen=_utc(event.first_seen) or event.first_seen,
+        detail=event.detail or {},
+        asset=AssetFacts(
+            name=asset.name,
+            criticality=asset.criticality,
+            version=asset.version,
+            platform=asset.platform,
+            addresses=tuple(asset.addresses or ()),
+            domains=tuple(asset.domains or ()),
+        ),
+        cve=facts,
+    )
+    return ExplanationRead.model_validate(result.public())
 
 
 async def _read_one(session: AsyncSession, event: CorrelatedEvent, name: str) -> CorrelationRead:

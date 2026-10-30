@@ -10,6 +10,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté : Priorisation expliquée des évènements corrélés (ADR-030, 30/10)
+- Écran Corrélations, rubrique « Pourquoi cette priorité » : résumé en une phrase, facteurs
+  (règle, criticité, exposition sur Internet, exploitation, version ou confiance de l'IOC) avec
+  leur effet (pousse, modère, à vérifier), échéance (délai de la priorité ou échéance CISA, la
+  plus proche) et points à vérifier avant d'agir.
+- API : champ `explanation` sur `/api/v1/correlations` et `/api/v1/correlations/{id}`.
+- Le score et les priorités ne changent pas.
+
 ### Ajouté : Qualité des alertes en situation réelle (ADR-029, 30/10)
 - Écran Pilotage : pour chaque déclencheur d'alerte CVE, règle de corrélation et règle de
   chasse, signaux de la période et leur issue (confirmés, faux positifs, ignorés, clos par le

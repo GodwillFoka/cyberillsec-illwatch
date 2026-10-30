@@ -63,6 +63,62 @@ function byGravity(a: Correlation, b: Correlation): number {
   return rankOf(a.priority) - rankOf(b.priority) || b.score - a.score || b.last_seen.localeCompare(a.last_seen);
 }
 
+// --- Priorisation expliquée (ADR-030) -----------------------------------------------------------
+
+type Explanation = NonNullable<Correlation["explanation"]>;
+
+const EFFECT_SIGN: Record<Explanation["factors"][number]["effect"], string> = {
+  raises: "↑",
+  lowers: "↓",
+  neutral: "·",
+  check: "?",
+};
+
+function PriorityWhy({ explanation, utc }: { explanation: Explanation; utc: boolean }) {
+  const deadline = parseDate(explanation.deadline ?? null);
+  return (
+    <section>
+      <h3>{t("priorityWhy")}</h3>
+      <p>{explanation.summary}</p>
+      {deadline && (
+        <p className="small">
+          <strong>{t("actBefore")}</strong>{" "}
+          {t("deadlineLine", { date: formatDateTime(deadline, utc), reason: explanation.deadline_reason })}
+        </p>
+      )}
+      <ul className="list factors" aria-label={t("priorityWhy")}>
+        {explanation.factors.map((factor) => (
+          <li key={factor.key} className={`factor ${factor.effect}`}>
+            <span className="mono" aria-hidden="true">
+              {EFFECT_SIGN[factor.effect]}
+            </span>
+            <span className="grow">
+              <strong>{factor.label}</strong>
+              <span className="factor-value">{factor.value}</span>
+              <span className="cell-sub">
+                {t(`effect.${factor.effect}` as Key)}
+                {factor.points !== null && factor.points !== undefined
+                  ? ` · ${t("factorPoints", { points: points(factor.points) })}`
+                  : ""}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {explanation.to_check.length > 0 && (
+        <div className="notice" role="note">
+          <strong>{t("toCheck")}</strong>
+          <ul>
+            {explanation.to_check.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
 // --- File -------------------------------------------------------------------------------------
 
 function EventTable({
@@ -183,7 +239,10 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
         <p className="muted small">{event.title}</p>
       </section>
 
-      {/* 2. Pourquoi : l'actif et ce qui le relie au renseignement */}
+      {/* 2. Pourquoi cette priorité (ADR-030) : facteurs, échéance, points à vérifier */}
+      {event.explanation && <PriorityWhy explanation={event.explanation} utc={utc} />}
+
+      {/* 3. Pourquoi : l'actif et ce qui le relie au renseignement */}
       <section>
         <h3>{t("why")}</h3>
         <dl className="facts">
@@ -263,7 +322,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
         </dl>
       </section>
 
-      {/* 3. Score : chaque point justifié */}
+      {/* 4. Score : chaque point justifié */}
       <section>
         <h3>{t("score")}</h3>
         <dl className="facts">
@@ -280,7 +339,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
         </dl>
       </section>
 
-      {/* 4. Historique */}
+      {/* 5. Historique */}
       <section>
         <h3>{t("history")}</h3>
         <dl className="facts">
@@ -299,7 +358,7 @@ function EventDetail({ event, onPinned }: { event: Correlation; onPinned: (id: s
 
       <AttackSection context={event.attack} />
 
-      {/* 5. Actions */}
+      {/* 6. Actions */}
       <section>
         {incidentId && (
           <p className="notice ok" role="status">
