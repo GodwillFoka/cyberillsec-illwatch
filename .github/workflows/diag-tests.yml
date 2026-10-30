@@ -30,6 +30,8 @@ jobs:
           --health-cmd "redis-cli ping" --health-interval 5s
           --health-timeout 5s --health-retries 10
     env:
+      SECRET_KEY: ci-secret-key-not-for-production
+      ENVIRONMENT: development
       DATABASE_URL: postgresql+asyncpg://illwatch:illwatch@localhost:5432/illwatch_test
       REDIS_URL: redis://localhost:6379/0
     steps:
@@ -59,19 +61,8 @@ jobs:
         run: |
           set +e
           START=$(date +%s)
-          timeout -s KILL 300 bash -c "pytest -p no:cacheprovider --no-cov > /tmp/b.txt 2>&1"
+          timeout -s KILL 300 bash -c "pytest -p no:cacheprovider --no-cov -v > /tmp/b.txt 2>&1"
           RC=$?; DUR=$(( $(date +%s) - START ))
           RES=$(grep -E "passed|failed" /tmp/b.txt | tail -1)
           LAST=$(grep -E "^tests/.*::" /tmp/b.txt | tail -1)
           echo "::error title=B env rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:400}"
-      - name: C. sans .env, tee pytest.txt dans le dépôt
-        shell: bash
-        run: |
-          set +e
-          rm -f .env
-          START=$(date +%s)
-          timeout -s KILL 300 bash -c "pytest -p no:cacheprovider --no-cov 2>&1 | tee pytest.txt > /dev/null"
-          RC=$?; DUR=$(( $(date +%s) - START ))
-          RES=$(grep -E "passed|failed" pytest.txt | tail -1)
-          LAST=$(grep -E "^tests/.*::" pytest.txt | tail -1)
-          echo "::error title=C tee rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:400}"
