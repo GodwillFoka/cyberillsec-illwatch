@@ -82,7 +82,7 @@ excellence, transparence, souveraineté, collaboration, éthique.
    indicateurs actifs et à six règles de détection.
 4. **Répondre et le prouver.** Incidents au cycle NIST, niveaux L1 à L3, délais cibles,
    chronologies que même la base refuse de modifier.
-5. **Garder la maîtrise.** Licence MIT, 0 € en édition communautaire, hébergement européen,
+5. **Garder la maîtrise.** Licence MIT, 0 € en édition communautaire, installé sur vos propres serveurs,
    moins de 256 Mo de mémoire, cinq langues.
 
 ![Répartition des CVE par priorité](assets/schemas/chiffres-cve.svg)

@@ -8,7 +8,7 @@ hide:
 
 <div class="iw-hero-text" markdown>
 
-<span class="iw-kicker">Cyber Threat Intelligence · open source · hébergé en Europe</span>
+<span class="iw-kicker">Cyber Threat Intelligence · open source · sur vos serveurs</span>
 
 # La veille sur les menaces, enfin lisible et actionnable
 
