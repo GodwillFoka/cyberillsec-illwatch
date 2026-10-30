@@ -272,48 +272,31 @@ async def _hunt_rows(session: AsyncSession, start: datetime) -> list[QualityRow]
         .distinct()
         .subquery()
     )
-    totals = dict(
-        (
-            await session.execute(
-                select(base.c.rule_id, func.count(distinct(base.c.observable))).group_by(
-                    base.c.rule_id
-                )
-            )
-        )
-        .tuples()
-        .all()
-    )
+
+    async def _per_rule(query: Any) -> dict[str, int]:
+        return {str(rule): int(n) for rule, n in (await session.execute(query)).tuples().all()}
+
+    observables = func.count(distinct(base.c.observable))
+    totals = await _per_rule(select(base.c.rule_id, observables).group_by(base.c.rule_id))
     if not totals:
         return []
-    confirmed = dict(
-        (
-            await session.execute(
-                select(base.c.rule_id, func.count(distinct(base.c.observable)))
-                .join(IncidentIndicator, IncidentIndicator.indicator_id == base.c.indicator_id)
-                .group_by(base.c.rule_id)
-            )
-        )
-        .tuples()
-        .all()
+    confirmed = await _per_rule(
+        select(base.c.rule_id, observables)
+        .join(IncidentIndicator, IncidentIndicator.indicator_id == base.c.indicator_id)
+        .group_by(base.c.rule_id)
     )
-    excluded = dict(
-        (
-            await session.execute(
-                select(base.c.rule_id, func.count(distinct(base.c.observable)))
-                .join(Exclusion, Exclusion.value == base.c.observable)
-                .group_by(base.c.rule_id)
-            )
-        )
-        .tuples()
-        .all()
+    excluded = await _per_rule(
+        select(base.c.rule_id, observables)
+        .join(Exclusion, Exclusion.value == base.c.observable)
+        .group_by(base.c.rule_id)
     )
     rows: list[QualityRow] = []
     for rule_id in sorted(totals):
         rule = RULES.get(rule_id)
         row = QualityRow(FAMILY_HUNT, rule_id, rule.label() if rule else rule_id)
-        row.signals = int(totals[rule_id])
-        row.confirmed = int(confirmed.get(rule_id, 0))
-        row.false_positive = min(int(excluded.get(rule_id, 0)), row.signals - row.confirmed)
+        row.signals = totals[rule_id]
+        row.confirmed = confirmed.get(rule_id, 0)
+        row.false_positive = min(excluded.get(rule_id, 0), row.signals - row.confirmed)
         row.pending = row.signals - row.confirmed - row.false_positive
         rows.append(row.finish())
     return rows
