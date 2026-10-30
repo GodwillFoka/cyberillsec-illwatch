@@ -42,21 +42,23 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -c constraints.txt -e ".[dev]"
-      - name: Fichier par fichier
+      - name: Suite complète sans couverture
         shell: bash
         run: |
           set +e
-          ALL=""
-          for f in tests/test_*.py; do
-            START=$(date +%s)
-            timeout -s KILL 150 bash -c "ulimit -v 6000000; pytest -q -p no:cacheprovider --no-cov $f" > out.txt 2>&1
-            RC=$?
-            DUR=$(( $(date +%s) - START ))
-            ALL="$ALL ${f#tests/test_}:$RC:${DUR}s"
-            if [ "$RC" -ne 0 ]; then
-              LAST=$(grep -E "::" out.txt | tail -1)
-              ERR=$(grep -E "MemoryError|Error|FAILED|Killed" out.txt | tail -3 | tr '\n' ' ')
-              echo "::error title=$f rc=$RC ${DUR}s::dernier : ${LAST:0:300} // ${ERR:0:600}"
-            fi
-          done
-          echo "::notice title=Bilan (fichier:code:durée)::${ALL}"
+          START=$(date +%s)
+          timeout -s KILL 480 bash -c "ulimit -v 8000000; pytest -p no:cacheprovider --no-cov" > nocov.txt 2>&1
+          RC=$?; DUR=$(( $(date +%s) - START ))
+          RES=$(grep -E "passed|failed" nocov.txt | tail -1)
+          LAST=$(grep -E "^tests/.*::" nocov.txt | tail -2 | tr '\n' ' ')
+          echo "::error title=Sans couverture rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:500}"
+      - name: Suite complète avec couverture
+        shell: bash
+        run: |
+          set +e
+          START=$(date +%s)
+          timeout -s KILL 480 bash -c "ulimit -v 8000000; pytest -p no:cacheprovider" > cov.txt 2>&1
+          RC=$?; DUR=$(( $(date +%s) - START ))
+          RES=$(grep -E "passed|failed" cov.txt | tail -1)
+          LAST=$(grep -E "^tests/.*::" cov.txt | tail -2 | tr '\n' ' ')
+          echo "::error title=Avec couverture rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:500}"
