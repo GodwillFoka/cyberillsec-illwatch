@@ -1,5 +1,9 @@
 # Politique de sécurité
 
+Un outil de cybersécurité doit être irréprochable sur sa propre sécurité. Si vous avez trouvé une
+faille dans ILLWATCH, merci : vous nous aidez à protéger tous ceux qui l'utilisent. Voici comment
+nous la signaler, et ce que nous nous engageons à faire ensuite.
+
 ## Versions supportées
 
 | Version | Supportée |
@@ -8,16 +12,17 @@
 
 ## Signaler une vulnérabilité
 
-**N'ouvrez pas d'issue publique pour une vulnérabilité de sécurité.**
+**N'ouvrez pas d'issue publique pour une vulnérabilité de sécurité.** Une faille exposée avant
+d'être corrigée met en danger toutes les instances en service.
 
-Écrivez à **security@cyberill.com** en incluant :
+Écrivez plutôt à **security@cyberill.com**, en joignant si possible :
 
 - une description de la faille et de son impact ;
-- les étapes de reproduction ou un proof-of-concept ;
+- les étapes pour la reproduire, ou une preuve de concept ;
 - la version ou le commit concerné ;
-- votre évaluation de sévérité si vous en avez une.
+- votre estimation de la sévérité, si vous en avez une.
 
-### Engagements
+### Nos engagements
 
 | Étape | Délai |
 |---|---|
@@ -25,13 +30,15 @@
 | Évaluation initiale et qualification | 7 jours |
 | Correctif ou plan de remédiation | 30 jours (sévérité critique : 7 jours) |
 
-Nous pratiquons la divulgation coordonnée. Votre contribution sera créditée dans le CHANGELOG et
-les notes de version, sauf si vous préférez rester anonyme.
+Nous pratiquons la divulgation coordonnée : nous convenons avec vous du moment où la faille sera
+rendue publique. Votre contribution sera créditée dans le CHANGELOG et les notes de version, sauf
+si vous préférez rester anonyme.
 
 ## Périmètre
 
-Dans le périmètre : le code de ce dépôt, ses dépendances directes, la configuration Docker fournie,
-et toute fuite de secret dans l'historique git.
+**Dans le périmètre** : le code de ce dépôt, ses dépendances directes, la configuration Docker
+fournie, et toute fuite de secret dans l'historique git.
 
-Hors périmètre : les services tiers interrogés par les collecteurs (NVD, CISA, FIRST, OTX), et les
-déploiements opérés par des tiers.
+**Hors périmètre** : les services tiers interrogés par les collecteurs (NVD, CISA, FIRST, OTX), et
+les déploiements opérés par des tiers. Pour ces derniers, adressez-vous directement à leur
+exploitant.

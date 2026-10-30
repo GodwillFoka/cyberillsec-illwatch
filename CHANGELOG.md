@@ -1,12 +1,21 @@
 # Changelog
 
-Toutes les évolutions notables d'ILLWATCH (nommé SENTRY jusqu'au 08/10/2026) sont consignées ici.
-Les entrées antérieures au renommage gardent l'ancien nom.
+Ce journal raconte la vie d'ILLWATCH, modification après modification : ce qui a été ajouté,
+corrigé ou changé, et quand. Si vous mettez à jour une instance, c'est ici que vous saurez ce qui
+vous attend. Le projet s'appelait SENTRY jusqu'au 08/10/2026 ; les entrées antérieures au
+renommage gardent l'ancien nom.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le versionnage
 respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
+
+### Modifié : Documentation réécrite dans un style plus humain (30/10)
+- Site de documentation : accueil, vision, cahier des charges, feuille de route, guide
+  d'installation, manuel fonctionnel, architecture, prise en main, exploitation,
+  environnements, contribution, politique de sécurité ; faits, chiffres et commandes inchangés.
+- Guide d'exploitation renuméroté de 1 à 14, avec un sommaire.
+- Nombre de migrations corrigé : 20, et non 21 (le gabarit `script.py.mako` avait été compté).
 
 ### Ajouté : Inventaire en fichier Excel ou CSV (ADR-028, 30/10)
 - Écran Inventaire : **Importer un fichier** (modèle Excel téléchargeable, aperçu ligne par ligne,

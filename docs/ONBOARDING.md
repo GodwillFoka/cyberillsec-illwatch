@@ -1,11 +1,14 @@
-# Guide d'onboarding : Day-1 Survival Guide
+# Guide d'accueil : ton premier jour sur ILLWATCH
 
-Ce guide te prend par la main pour configurer ton poste et livrer ta première fonctionnalité en
-moins d'une heure. Il est écrit pour quelqu'un qui n'a jamais fait de cybersécurité : le
-[glossaire du Manuel fonctionnel](MANUEL_FONCTIONNEL.md#14-glossaire) explique
-CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te parlent pas.
+Bienvenue dans l'équipe ! Ce guide te prend par la main, de la configuration de ton poste jusqu'à
+ta première fonctionnalité livrée, le tout en moins d'une heure. Pas besoin d'avoir déjà fait de
+la cybersécurité : le [glossaire du Manuel fonctionnel](MANUEL_FONCTIONNEL.md#14-glossaire)
+explique CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Si ces sigles ne te disent rien, commence
+par là, ça vaut les cinq minutes.
 
 ## 1. Prérequis
+
+Avant tout, vérifie que ta machine a ce qu'il faut :
 
 - Linux (Kali Linux, Ubuntu 22.04+ ou Debian 12), macOS, ou WSL2 sous Windows
 - Kali Linux : `sudo apt install -y docker.io docker-compose python3-venv` puis
@@ -15,6 +18,9 @@ CVE, CVSS, EPSS, KEV, IOC et TTP sans jargon. Lis-le d'abord si ces sigles ne te
 - Docker et Docker Compose : `docker compose version`
 
 ## 2. Installation
+
+Huit étapes, à suivre dans l'ordre. Chacune est commentée pour que tu saches ce que tu
+fais, et pas seulement quoi taper.
 
 ```bash
 # 1. Cloner le dépôt
@@ -50,11 +56,14 @@ pytest
 uvicorn illwatch.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Ouvre <http://localhost:8000/docs> : la documentation Swagger interactive doit s'afficher.
-Vérifie aussi <http://localhost:8000/health>, qui doit répondre `{"status":"ok", …}` avec
-`"database":"connected"`.
+Le moment de vérité : ouvre <http://localhost:8000/docs>, la documentation Swagger interactive
+doit s'afficher. Vérifie aussi <http://localhost:8000/health>, qui doit répondre
+`{"status":"ok", …}` avec `"database":"connected"`. Si c'est le cas, ton poste est prêt.
+Bravo.
 
 ## 3. Le dépôt, dossier par dossier
+
+Un petit tour du propriétaire pour savoir où vivent les choses :
 
 ```
 cyberillsec-illwatch/
@@ -90,13 +99,14 @@ cyberillsec-illwatch/
 └── pyproject.toml           Ruff, mypy, pytest, dépendances
 ```
 
-**Où écrire ton code ?** La logique métier va dans `illwatch/modules/<module>/`. La route qui
-l'expose va dans `illwatch/app/api/v1/`. Le test va dans `tests/`. Si tu hésites, relis
-[`ARCHITECTURE.md`](ARCHITECTURE.md).
+**Où écrire ton code ?** La logique métier va dans `illwatch/modules/<module>/`, la route qui
+l'expose dans `illwatch/app/api/v1/`, et le test dans `tests/`. En cas de doute,
+[`ARCHITECTURE.md`](ARCHITECTURE.md) t'explique le pourquoi de ce découpage.
 
 ## 4. Standards d'ingénierie
 
-Quatre piliers, vérifiés automatiquement par la CI.
+Quatre piliers, vérifiés automatiquement par la CI. Ils peuvent sembler stricts au début ; tu
+verras vite qu'ils t'évitent des nuits blanches.
 
 **Typage strict.** Toute signature est typée. `mypy` tourne en mode strict.
 
@@ -119,7 +129,8 @@ exploitable par celui qui lira les logs à 3 h du matin.
 
 ## 5. GitFlow et commits
 
-La branche `main` est sacrée : aucun commit direct. Chaque tâche part de `main` :
+La branche `main` est sacrée : personne n'y commite directement. Chaque tâche part de `main`
+dans sa propre branche :
 
 ```bash
 git checkout main && git pull origin main
@@ -137,6 +148,8 @@ docs(onboarding): update day-1 guide for docker compose setup
 
 ## 6. Ta première tâche, pas à pas
 
+C'est parti. Voici le chemin complet, de l'idée à la fusion :
+
 1. **Synchroniser** : `git checkout main && git pull origin main`
 2. **Brancher** : `git checkout -b feat/T2.1-threat-feed-model`
 3. **Développer** : dans le sous-module concerné
@@ -152,6 +165,8 @@ docs(onboarding): update day-1 guide for docker compose setup
 8. **Fusion** dès que la CI est verte et la revue approuvée
 
 ## 7. Commandes du quotidien
+
+Celles que tu taperas le plus souvent, à garder sous la main :
 
 ```bash
 # Qualité complète, comme la CI
@@ -176,6 +191,8 @@ illwatch db current
 
 ## 8. Problèmes fréquents
 
+Tu bloques ? Tu n'es sûrement pas le premier. Voici ce que nous avons déjà croisé :
+
 | Symptôme | Cause probable | Correctif |
 |---|---|---|
 | `connection refused` sur le port 5433 | Conteneurs non démarrés | `docker compose up -d` puis `docker compose ps` |
@@ -192,10 +209,12 @@ illwatch db current
 
 ## 9. Bilan hebdomadaire
 
-Chaque jeudi soir, sans exception, l'avancement de la semaine est compilé dans `Rapport/NN_date.md`
-et poussé sur le dépôt. Le gabarit est dans [`../Rapport/TEMPLATE.md`](../Rapport/TEMPLATE.md).
+Chaque jeudi soir, sans exception, l'avancement de la semaine est compilé dans
+`Rapport/NN_date.md` et poussé sur le dépôt. C'est le rendez-vous qui permet à chacun de savoir où
+en est le projet. Le gabarit est dans [`Rapport/TEMPLATE.md`](https://gitlab.com/GodwillFoka/cyberillsec-illwatch/-/blob/main/Rapport/TEMPLATE.md).
 
 ---
 
-Une question sans réponse dans ce guide ? Ouvre une issue avec le label `question` : si tu t'es posé
-la question, quelqu'un d'autre se la posera.
+Une question sans réponse dans ce guide ? Ouvre une issue avec le label `question`. Il n'y a pas
+de question bête : si tu te l'es posée, quelqu'un d'autre se la posera aussi, et ta question
+améliorera ce guide.
