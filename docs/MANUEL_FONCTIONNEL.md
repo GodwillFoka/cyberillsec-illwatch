@@ -2,16 +2,17 @@
 
 <div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Manuel_fonctionnel_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
 
-**Version 2.0 du 30/10/2026** · ILLWATCH `0.2.0.dev0` · Public : responsable sécurité, analyste SOC,
-décideur, contributeur
+**Version 2.0, octobre 2026** · ILLWATCH `0.2.0.dev0`
 
-Ce manuel explique **ce que fait** ILLWATCH, **qui** peut faire quoi, et **comment** chaque
-fonctionnalité fonctionne. Les étapes d'installation et les gestes du quotidien sont dans le
-[Guide d'installation et d'exploitation](GUIDE_INSTALLATION.md).
+Un outil de sécurité auquel on ne fait pas confiance finit toujours ignoré. Pour lui faire
+confiance, il faut le comprendre. Ce manuel ouvre donc le capot : **ce que fait** ILLWATCH,
+**qui** a le droit de faire quoi, et **comment** chaque résultat est obtenu, formules comprises.
+Rien n'y est magique, tout s'y explique. Pour installer la plateforme ou retrouver les gestes du
+quotidien, le [Guide d'installation et d'exploitation](GUIDE_INSTALLATION.md) est votre compagnon.
 
-Chaque fonctionnalité est présentée en quatre temps : **à quoi elle sert**, **comment elle
-fonctionne**, **comment l'utiliser** (dans l'application, en ligne de commande, par l'API) et
-**comment lire le résultat**.
+Chaque fonctionnalité suit le même fil, pour que vous trouviez vite ce que vous cherchez :
+**à quoi elle sert**, **comment elle fonctionne**, **comment l'utiliser** (dans l'application, en
+ligne de commande, par l'API) et **comment lire le résultat**.
 
 ## Sommaire
 
@@ -34,9 +35,13 @@ fonctionne**, **comment l'utiliser** (dans l'application, en ligne de commande, 
 
 ## 1. ILLWATCH en un coup d'œil
 
-ILLWATCH fait le travail répétitif d'un analyste de sécurité (collecter, dédoublonner, noter,
-corréler) pour qu'il ne garde que les **décisions** : quoi corriger d'abord, quoi bloquer, quel
-incident ouvrir, et la preuve de ce qui a été fait.
+Un analyste de sécurité passe trop de temps à des tâches de machine : collecter des flux,
+dédoublonner des listes, noter des vulnérabilités, croiser tout cela avec un inventaire. ILLWATCH
+prend ce travail à sa charge pour que l'analyste se consacre à ce que lui seul sait faire :
+**décider**. Quoi corriger d'abord, quoi bloquer, quel incident ouvrir, et garder la preuve de ce
+qui a été fait.
+
+Concrètement, voici les questions que se pose une équipe, et la réponse que lui apporte ILLWATCH :
 
 ![De la source à la décision](assets/schemas/pipeline.svg)
 
@@ -55,6 +60,9 @@ incident ouvrir, et la preuve de ce qui a été fait.
 
 ## 2. Les acteurs et leurs droits
 
+Autour d'ILLWATCH gravitent des personnes, qui décident, et des automates, qui travaillent sans
+relâche. Chacun a sa place, et ses droits sont bornés au strict nécessaire.
+
 ![Les acteurs de la plateforme](assets/schemas/acteurs.svg)
 
 ### 2.1 Les acteurs humains
@@ -67,10 +75,11 @@ incident ouvrir, et la preuve de ce qui a été fait.
 | **Partenaire TAXII** | VIEWER dédié | un SIEM, OpenCTI ou MISP qui lit les IOC partagés par le serveur TAXII |
 | **Visiteur du site** | aucun compte | demande une démonstration par le formulaire public du site de présentation |
 
-!!! note "Rôles et niveaux SOC, deux notions distinctes"
-    Le **rôle** (administrateur, analyste, lecteur) fixe ce qu'un compte a le droit de faire. Le
-    **niveau SOC** (L1, L2, L3) indique où en est un **incident** dans l'escalade : un même
-    analyste peut traiter un incident en L1 le matin et un autre en L3 l'après-midi.
+!!! note "Rôles et niveaux SOC : ne pas confondre"
+    Le **rôle** (administrateur, analyste, lecteur) dit ce qu'une **personne** a le droit de faire.
+    Le **niveau SOC** (L1, L2, L3) dit où en est un **incident** dans l'escalade. Les deux sont
+    indépendants : un même analyste peut traiter un incident en L1 le matin et un autre en L3
+    l'après-midi.
 
 ### 2.2 Les acteurs automatiques
 
@@ -83,9 +92,10 @@ incident ouvrir, et la preuve de ce qui a été fait.
 
 ### 2.3 Qui peut faire quoi
 
-Matrice établie à partir des contrôles réels de l'API (chaque refus est consigné au journal
-d'audit sous `authz.denied`). « App » : dans l'application ; « CLI » : en ligne de commande, où
-l'opérateur du serveur agit sans compte (actions attribuées à l'utilisateur système).
+Cette matrice n'a pas été écrite de mémoire : elle reprend les contrôles réellement appliqués par
+l'API. Toute tentative refusée laisse une trace au journal d'audit, sous `authz.denied`.
+« App » signifie dans l'application ; « CLI », en ligne de commande. Dans ce dernier cas,
+l'opérateur du serveur agit sans compte, et ses actions sont attribuées à l'utilisateur système.
 
 | Action | Admin | Analyste | Lecteur | Méthodes |
 |---|:-:|:-:|:-:|---|
@@ -115,15 +125,15 @@ l'opérateur du serveur agit sans compte (actions attribuées à l'utilisateur s
 
 ### 3.1 Les sources
 
-**À quoi elles servent.** Alimenter la base d'indicateurs de compromission (IOC) avec du
-renseignement public et gratuit.
+**À quoi elles servent.** À nourrir la base d'indicateurs de compromission (IOC) avec du
+renseignement public et gratuit. Vous n'avez pas besoin d'un abonnement coûteux pour commencer.
 
-**Comment ça fonctionne.** Le worker se réveille chaque minute et collecte chaque source dont
-l'intervalle est écoulé, sous un verrou Redis (deux instances ne collectent jamais la même
-source en même temps). Cinq formats sont pris en charge : CSV, JSON, STIX 2.1, TAXII 2.1 et
-l'API AlienVault OTX. Chaque collecte est inscrite au journal des collectes (volumes, durée,
-erreur). Une source en échec passe en *dégradée*, ses essais sont espacés (1, 2, 4 minutes…), et
-les autres sources continuent.
+**Comment ça fonctionne.** Toutes les minutes, le worker se réveille et collecte chaque source
+dont l'intervalle est écoulé. Un verrou Redis garantit que deux instances ne collectent jamais la
+même source en même temps. Cinq formats sont pris en charge : CSV, JSON, STIX 2.1, TAXII 2.1 et
+l'API AlienVault OTX. Chaque collecte laisse une ligne au journal des collectes (volumes, durée,
+erreur éventuelle). Quand une source échoue, elle passe en *dégradée* et ses essais s'espacent
+(1, 2, 4 minutes…) ; pendant ce temps, les autres continuent comme si de rien n'était.
 
 | Source de référence | Format | Contenu | Fiabilité par défaut |
 |---|---|---|---|
@@ -135,9 +145,10 @@ les autres sources continuent.
 | DigitalSide (URL, réseau) | CSV, TAXII 2.1 | URL et IOC réseau ; désactivées par défaut (serveur souvent hors ligne) | C |
 | AlienVault OTX | OTX | pulses de la communauté (clé gratuite) | D |
 
-**Sécurité.** Une source doit être publique et en HTTPS. Avant chaque requête, ILLWATCH vérifie
-que l'adresse résolue est publique (protection SSRF) ; la taille des réponses est plafonnée ; les
-clés ne sont jamais stockées en base et ne partent que vers leur hôte officiel.
+**Sécurité.** Un outil de sécurité ne doit pas devenir une porte d'entrée. Une source doit donc
+être publique et en HTTPS, et avant chaque requête, ILLWATCH vérifie que l'adresse résolue est
+bien publique (protection SSRF). La taille des réponses est plafonnée. Quant aux clés d'accès,
+elles ne sont jamais stockées en base et ne partent que vers leur hôte officiel.
 
 **Utiliser.** Écran **Sources CTI** (voir le [guide, section 4](GUIDE_INSTALLATION.md#4-brancher-les-sources-de-renseignement)) ;
 `illwatch feeds list | probe | add | enable | disable | fetch | fetch-all` ; `/api/v1/feeds`.
@@ -150,7 +161,8 @@ administrateur.
 
 ![Cycle de vie d'un IOC](assets/schemas/cycle-ioc.svg)
 
-**Comment ça fonctionne.**
+**Comment ça fonctionne.** Le même indicateur arrive souvent de plusieurs sources, écrit de
+plusieurs façons. Avant d'entrer en base, il passe par cinq étapes :
 
 1. **Normalisation** : les formes défangées sont refaites (`hxxps://evil[.]com` devient
    `https://evil.com`), domaines, e-mails et empreintes passent en minuscules, les adresses IP
@@ -166,15 +178,17 @@ administrateur.
 5. **Exclusion** : un IOC qualifié de faux positif reste en base, mais n'est plus ni compté, ni
    chassé, ni corrélé, ni partagé.
 
-Une valeur invalide est **refusée et listée**, jamais ignorée en silence.
+Et quand une valeur est invalide, elle est **refusée et listée**, jamais ignorée en silence :
+vous savez toujours ce qui n'est pas entré.
 
 ### 3.3 La confiance d'un IOC
 
 ![Score de confiance d'un IOC](assets/schemas/confiance.svg)
 
-**À quoi elle sert.** Répondre à « peut-on agir sur cet indicateur ? », indépendamment de sa
-gravité. Une adresse confirmée par trois sources fiables et vue hier vaut plus qu'une adresse
-signalée une fois il y a trois semaines.
+**À quoi elle sert.** À répondre à une question que tout analyste se pose avant de bloquer :
+« puis-je me fier à cet indicateur ? ». C'est une autre question que sa gravité. Le bon sens le
+dit : une adresse confirmée hier par trois sources fiables pèse plus qu'une adresse signalée une
+seule fois il y a trois semaines. La confiance traduit ce bon sens en chiffre.
 
 **Comment ça se calcule (0 à 100).**
 
@@ -192,10 +206,11 @@ corrélation n'utilise que les IOC de confiance 40 et plus (`CORRELATION_MIN_CON
 
 ### 3.4 L'enrichissement des adresses IP
 
-La fiche d'une adresse affiche son **pays** et son **système autonome** (opérateur), lus dans la
-base DB-IP Lite importée localement : **aucune requête sortante** à la consultation. Une adresse
-privée, réservée ou de documentation est signalée comme non routable. Mise à jour mensuelle
-automatique après un premier `illwatch enrich update`.
+D'où vient cette adresse, et qui l'opère ? La fiche affiche son **pays** et son **système
+autonome** (opérateur), lus dans la base DB-IP Lite importée sur votre machine. Ce détail compte :
+consulter une adresse ne déclenche **aucune requête sortante**, donc personne à l'extérieur ne
+sait sur quoi vous enquêtez. Une adresse privée, réservée ou de documentation est signalée comme
+non routable. Après un premier `illwatch enrich update`, la base se met à jour seule chaque mois.
 
 ### 3.5 Utiliser l'écran Indicateurs
 
@@ -216,9 +231,10 @@ automatique après un premier `illwatch enrich update`.
 
 ### 4.1 À quoi sert le score
 
-Des dizaines de milliers de vulnérabilités (CVE) sont publiées chaque année. La plupart ne seront
-jamais exploitées. Le score dit **laquelle corriger d'abord**, en s'appuyant sur l'exploitation
-réelle plutôt que sur la seule gravité théorique.
+Des dizaines de milliers de vulnérabilités (CVE) sont publiées chaque année, et aucune équipe ne
+peut tout corriger. La bonne nouvelle, c'est que la plupart ne seront jamais exploitées. Le score
+vous dit **laquelle corriger d'abord**, en regardant ce que font réellement les attaquants plutôt
+que la seule gravité théorique.
 
 ### 4.2 Comment le score se calcule
 
@@ -234,10 +250,11 @@ réelle plutôt que sur la seule gravité théorique.
 | **Exploit public** | référence NVD étiquetée « Exploit » | 10 si présent | 0 ou 10 |
 | **Ransomware** : utilisée par des rançongiciels | CISA KEV | 10 si connu | 0 ou 10 |
 
-Les poids somment exactement à 100 : la borne `min(100, …)` est une sécurité, jamais un écrêtage.
-Le parti pris est clair : **30 points pour la gravité, 70 pour l'exploitation**, prévue (EPSS)
-ou constatée (KEV, exploit, rançongiciel). Ces poids viennent du cahier des charges et sont
-arbitrés par l'ADR-001.
+Les poids font exactement 100 au total : la borne `min(100, …)` est un garde-fou, jamais un
+écrêtage. Le parti pris est assumé : **30 points pour la gravité, 70 pour l'exploitation**, qu'elle
+soit prévue (EPSS) ou déjà constatée (KEV, exploit, rançongiciel). Une faille moyenne que les
+attaquants utilisent aujourd'hui passe avant une faille spectaculaire que personne n'exploite.
+Ces poids viennent du cahier des charges et ont été arbitrés dans l'ADR-001.
 
 ### 4.3 Les priorités et leurs délais
 
@@ -248,10 +265,13 @@ arbitrés par l'ADR-001.
 | **P2** | 40 à 59 | 30 jours | à planifier |
 | **P3** | moins de 40 | 90 jours | maintenance standard |
 
-**Plancher KEV (ADR-014).** Une CVE du catalogue KEV n'est jamais sous P1, quelle que soit la
-formule : une faille exploitée ne peut pas être de la maintenance standard (aligné sur la
-directive CISA BOD 22-01). Si EPSS est momentanément indisponible, la dernière valeur connue est
-conservée ; au-delà de 48 heures, `illwatch status` le signale.
+**Plancher KEV (ADR-014).** Une CVE du catalogue KEV ne descend jamais sous P1, quoi que dise la
+formule. La raison est simple : une faille déjà exploitée ne peut pas relever de la maintenance
+standard. La règle rejoint la directive CISA BOD 22-01. Et si EPSS est momentanément
+indisponible, ILLWATCH garde la dernière valeur connue ; au-delà de 48 heures, `illwatch status`
+vous le signale.
+
+Quelques exemples pour voir la formule à l'œuvre :
 
 | Exemple | CVSS | EPSS | KEV | Exploit | Rançon | Score | Priorité |
 |---|---|---|---|---|---|---|---|
@@ -262,15 +282,19 @@ conservée ; au-delà de 48 heures, `illwatch status` le signale.
 
 ### 4.4 Ce que donne le tri sur données réelles
 
+Sur les 26 416 CVE du poste de test, le tri ne laisse qu'une petite part à traiter en priorité :
+c'est tout l'intérêt de la méthode.
+
 ![Répartition des CVE par priorité](assets/schemas/chiffres-cve.svg)
 
 ### 4.5 Les alertes
 
-Une **alerte** est émise quand le score d'une CVE franchit **75** vers le haut
-(`RISK_ALERT_THRESHOLD`), soit avant même son passage en P0. Elle est enregistrée, journalisée,
-puis envoyée au webhook (5 tentatives au plus). La **première synchronisation** sert de ligne de
-base et n'alerte pas : une équipe qui reçoit 400 alertes le premier jour apprend à les ignorer.
-Chaque changement de priorité est historisé, avec l'ancien et le nouveau score.
+Une **alerte** part quand le score d'une CVE franchit **75** vers le haut
+(`RISK_ALERT_THRESHOLD`), donc avant même son passage en P0 : vous êtes prévenu tôt. Elle est
+enregistrée, journalisée, puis envoyée au webhook (5 tentatives au plus). La **première
+synchronisation**, elle, sert de ligne de base et n'alerte pas. C'est un choix délibéré : une
+équipe qui reçoit 400 alertes le premier jour apprend surtout à les ignorer. Chaque changement de
+priorité est historisé, avec l'ancien et le nouveau score.
 
 ### 4.6 Utiliser
 
@@ -290,9 +314,9 @@ Chaque changement de priorité est historisé, avec l'ancien et le nouveau score
 
 ### 5.1 À quoi elle sert
 
-Passer de « il existe une CVE critique » à « **votre pare-feu du siège** est touché par une CVE
-exploitée ». C'est la fonctionnalité qui transforme une base de renseignement en outil de décision
-pour votre organisation.
+Savoir qu'une CVE critique existe ne vous dit pas quoi faire lundi matin. Savoir que **votre
+pare-feu du siège** est touché par une CVE exploitée, si. La corrélation fait ce chemin pour vous :
+c'est elle qui transforme une base de renseignement en outil de décision pour votre organisation.
 
 ### 5.2 Comment elle fonctionne
 
@@ -311,15 +335,17 @@ priorité suit la même grille que les CVE.
 *Exemple* : une CVE KEV de score 70 sur un actif de criticité élevée donne 60 + 12 + 14 = 86,
 donc P0.
 
-**Comparaison des versions (ADR-021).** Quand l'actif a une version, elle est comparée aux plages
-vulnérables publiées par la NVD : hors plage, l'évènement est clos automatiquement ; sur une autre
-plateforme que celle de l'actif, il est écarté. Sur données réelles, la première passe sans
-comparaison des versions a produit 38 évènements, dont aucun vrai positif ; avec la comparaison,
-37 ont été clos automatiquement et le dernier requalifié.
+**Comparaison des versions (ADR-021).** C'est elle qui fait la différence entre un outil bavard
+et un outil utile. Quand l'actif a une version, ILLWATCH la compare aux plages vulnérables
+publiées par la NVD : hors plage, l'évènement est clos automatiquement ; sur une autre plateforme
+que celle de l'actif, il est écarté. Les données réelles l'ont montré : sans comparaison des
+versions, la première passe a produit 38 évènements, dont aucun vrai positif. Avec elle, 37 ont été
+clos automatiquement et le dernier requalifié.
 
-**Cycle de l'évènement.** Unique par règle et par couple (actif, CVE ou IOC) ; une nouvelle passe
-le met à jour ; acquitté, il est rouvert s'il monte d'un cran de priorité ; qualifié de faux
-positif, il ne revient jamais.
+**Cycle de l'évènement.** Un évènement est unique par règle et par couple (actif, CVE ou IOC) :
+vous ne le verrez pas en double. Une nouvelle passe le met à jour. Si vous l'avez acquitté, il
+revient seulement s'il monte d'un cran de priorité. Qualifié de faux positif, il ne revient
+jamais.
 
 ### 5.3 Utiliser
 
@@ -337,9 +363,11 @@ positif, il ne revient jamais.
 
 ### 5.4 Lire le résultat
 
-Le détail d'un évènement répond à **pourquoi** : règle, actif et criticité, produit reconnu,
-version et plateforme, signaux (KEV, échéance CISA, exploit), confiance et localisation de l'IOC,
-puis la décomposition du score et l'historique (première détection, dernière confirmation).
+Le détail d'un évènement répond d'abord à la question **pourquoi**, parce qu'on n'agit bien que
+sur ce qu'on comprend : la règle, l'actif et sa criticité, le produit reconnu, la version et la
+plateforme, les signaux (KEV, échéance CISA, exploit), la confiance et la localisation de l'IOC.
+Viennent ensuite la décomposition du score et l'historique (première détection, dernière
+confirmation).
 
 ---
 
@@ -347,34 +375,38 @@ puis la décomposition du score et l'historique (première détection, dernière
 
 ### 6.1 Le triage des alertes
 
-**À quoi il sert.** Qualifier chaque alerte CVE : la voir (**acquitter**) ou y répondre
-(**ouvrir l'incident**). L'écran **Triage** présente la file par priorité puis ancienneté ; le
-panneau d'une alerte montre l'origine (catalogue KEV, hausse d'EPSS, mise à jour NVD), le score
+**À quoi il sert.** À trancher, pour chaque alerte CVE : en prendre acte (**acquitter**) ou y
+répondre (**ouvrir l'incident**). L'écran **Triage** range la file par priorité, puis par
+ancienneté, pour que le plus urgent soit toujours en haut. Le panneau d'une alerte vous donne de
+quoi décider : ce qui l'a déclenchée (catalogue KEV, hausse d'EPSS, mise à jour NVD), le score
 avant et après, l'état de la notification, la vulnérabilité et la décomposition du score.
 
 ### 6.2 Le cycle d'un incident
 
 ![Cycle d'un incident et niveaux SOC](assets/schemas/incident.svg)
 
-**Comment ça fonctionne.** Six états selon le NIST SP 800-61 : *Nouveau*, *Analyse*,
-*Confinement*, *Éradication*, *Récupération*, *Clôture*. On avance d'un état à la fois ; un
-retour en *Analyse* est possible depuis le confinement, l'éradication et la récupération ; la
-clôture exige un résumé (cause, mesures, enseignements). La machine d'état est testée à 100 %.
+**Comment ça fonctionne.** Un incident traverse six états, ceux du NIST SP 800-61 : *Nouveau*,
+*Analyse*, *Confinement*, *Éradication*, *Récupération*, *Clôture*. On avance d'un état à la
+fois, sans brûler d'étape. La réalité n'étant pas toujours linéaire, un retour en *Analyse* reste
+possible depuis le confinement, l'éradication et la récupération. Pour clore, il faut écrire un
+résumé (cause, mesures, enseignements) : c'est ce qui permet d'apprendre de chaque incident. La
+machine d'état est testée à 100 %.
 
-**Chronologie immuable.** Chaque ouverture, changement de statut, assignation, commentaire,
-action menée, IOC ou CVE associé, escalade, chasse et exclusion est écrit dans la chronologie.
-Des déclencheurs PostgreSQL refusent toute modification, suppression ou troncature : c'est une
-preuve recevable pour NIS 2 et DORA.
+**Chronologie immuable.** Tout ce qui arrive à l'incident est écrit dans sa chronologie :
+ouverture, changement de statut, assignation, commentaire, action menée, IOC ou CVE associé,
+escalade, chasse, exclusion. Des déclencheurs PostgreSQL refusent toute modification, suppression
+ou troncature. Le jour où un régulateur ou un auditeur vous demande ce qui s'est passé, vous avez
+une preuve recevable au sens de NIS 2 et de DORA.
 
-**Niveaux SOC (ADR-022).** *L1 qualifie* (acquitte, ouvre, écarte les faux positifs), *L2
-investigue* (chasse depuis l'incident, enrichit, associe), *L3 traite* (réponse avancée, règles,
-clôture). L'escalade est motivée et sans retour en arrière.
+**Niveaux SOC (ADR-022).** Chaque niveau a son métier. *L1 qualifie* (acquitte, ouvre, écarte les
+faux positifs), *L2 investigue* (chasse depuis l'incident, enrichit, associe), *L3 traite*
+(réponse avancée, règles, clôture). Toute escalade doit être motivée, et on ne redescend pas.
 
-**Recommandations de réponse.** Déduites des IOC, des CVE et de la phase en cours, elles proposent
-les gestes du NIST pour la phase : ILLWATCH recommande, l'analyste décide et déclare ce qu'il a
-fait (« Action menée »).
+**Recommandations de réponse.** À partir des IOC, des CVE et de la phase en cours, ILLWATCH
+propose les gestes que le NIST recommande pour cette phase. Il suggère, il ne décide pas : c'est
+l'analyste qui choisit, puis déclare ce qu'il a fait (« Action menée »).
 
-**Délais cibles.**
+**Délais cibles.** Plus l'incident est grave, plus l'horloge tourne vite :
 
 | Sévérité | Prise en charge | Résolution |
 |---|---|---|
@@ -383,11 +415,12 @@ fait (« Action menée »).
 | Moyenne | 24 heures | 7 jours |
 | Faible | 72 heures | 30 jours |
 
-La **prise en charge** est le premier geste d'un analyste (assignation, statut, escalade, note).
+L'horloge de **prise en charge** s'arrête au premier geste d'un analyste : une assignation, un
+changement de statut, une escalade ou une note.
 
 ### 6.3 Utiliser
 
-Les gestes, dans l'application et en ligne de commande, sont détaillés dans le
+Chaque geste, dans l'application comme en ligne de commande, est décrit pas à pas dans le
 [guide, section 7.5](GUIDE_INSTALLATION.md#75-conduire-un-incident).
 
 ![Incidents](assets/captures/03-incidents-fr.webp)
@@ -396,13 +429,15 @@ Les gestes, dans l'application et en ligne de commande, sont détaillés dans le
 
 ## 7. Chasse aux menaces
 
-**À quoi elle sert.** Chercher activement des traces de compromission : « une de ces adresses
-vues par notre proxy est-elle connue ? », « un de ces domaines ressemble-t-il à un domaine
-généré par un logiciel malveillant ? ».
+**À quoi elle sert.** Les alertes vous disent ce qui est connu. La chasse part à la recherche de
+ce qui ne l'est pas encore, avec des questions de terrain : « une de ces adresses vues par notre
+proxy est-elle connue ? », « un de ces domaines ressemble-t-il à un domaine généré par un logiciel
+malveillant ? ».
 
-**Comment elle fonctionne.** Deux modes : sur des **observables soumis** (10 000 valeurs au plus,
-normalisées comme des IOC) ou sur **toute la base** d'IOC actifs. Chaque exécution est une
-**session** enregistrée ; une règle en échec rend la session *partielle* sans bloquer les autres.
+**Comment elle fonctionne.** Vous pouvez chasser sur des **observables soumis** (10 000 valeurs au
+plus, normalisées comme des IOC) ou sur **toute la base** d'IOC actifs. Chaque exécution devient
+une **session** enregistrée, que vous pouvez rouvrir plus tard. Si une règle échoue, la session
+est marquée *partielle*, mais les autres règles vont au bout.
 
 | Règle | Détecte | Sévérité |
 |---|---|---|
@@ -413,7 +448,8 @@ normalisées comme des IOC) ou sur **toute la base** d'IOC actifs. Chaque exécu
 | RULE-05 | CVE critique à exploit public touchant un produit de l'inventaire | critique |
 | RULE-06 | observable déjà connu comme IOC actif | celle de l'IOC |
 
-Les règles sont versionnées : chaque session garde la version des règles appliquées.
+Les règles sont versionnées, et chaque session garde la version qu'elle a appliquée : six mois
+plus tard, vous saurez exactement avec quelles règles un résultat a été obtenu.
 
 **Utiliser.** Écran **Chasse** (**Nouvelle chasse**) ; **Chasser depuis l'incident** sur la page
 d'un incident ; `illwatch hunt run --observables proxy.txt` ; chasse quotidienne automatique.
@@ -427,15 +463,18 @@ sévérité, avec un lien vers l'IOC ou la CVE et le contexte ATT&CK.
 
 ## 8. Contexte adverse : MITRE ATT&CK et campagnes
 
-**MITRE ATT&CK** est le référentiel mondial des techniques d'attaque. Une fois importé
-(`illwatch attack import`), chaque détection affiche sa **technique** (règles de chasse,
-corrélations) et, quand la source le nomme en toutes lettres, le **groupe** ou le **logiciel
-malveillant** cité.
+Derrière chaque indicateur, il y a quelqu'un. Comprendre comment il opère aide à anticiper son
+prochain geste.
 
-Une **campagne** regroupe l'infrastructure d'une opération adverse (les IOC rattachés par valeur
-ou par description) et, si on le connaît, l'acteur ATT&CK qui la mène. L'**attribution par
-l'infrastructure** remonte ensuite partout : une correspondance de chasse, une corrélation ou un
-incident qui touche un IOC de la campagne affiche la campagne et son acteur.
+**MITRE ATT&CK** est le référentiel mondial des techniques d'attaque, la langue commune des
+équipes de défense. Une fois importé (`illwatch attack import`), il donne à chaque détection sa
+**technique** (règles de chasse, corrélations) et, quand la source le nomme en toutes lettres, le
+**groupe** ou le **logiciel malveillant** cité.
+
+Une **campagne** rassemble l'infrastructure d'une opération adverse (les IOC rattachés par valeur
+ou par description) et, si on le connaît, l'acteur ATT&CK qui la mène. Cette **attribution par
+l'infrastructure** se propage ensuite partout : dès qu'une correspondance de chasse, une
+corrélation ou un incident touche un IOC de la campagne, la campagne et son acteur s'affichent.
 
 | Action | Dans l'application | En ligne de commande |
 |---|---|---|
@@ -450,6 +489,9 @@ incident qui touche un IOC de la campagne affiche la campagne et son acteur.
 
 ## 9. Partage et exports
 
+Le renseignement gardé pour soi protège une organisation ; partagé, il en protège plusieurs.
+ILLWATCH parle les formats standards, pour que vos données circulent sans ressaisie :
+
 | Besoin | Format | Méthode |
 |---|---|---|
 | Analyse dans un tableur | CSV (RFC 4180), cellules protégées contre l'injection de formule | **Exporter** (Indicateurs), `illwatch dashboard export` |
@@ -458,19 +500,20 @@ incident qui touche un IOC de la campagne affiche la campagne et son acteur.
 | Flux continu vers un SIEM, OpenCTI, MISP | serveur TAXII 2.1 en lecture seule : collections « indicateurs » et « campagnes » | compte **Lecteur** dédié, `https://<domaine>/taxii2/` |
 | Inventaire | Excel ou CSV réimportable | **Exporter (Excel)**, `illwatch assets export` |
 
-Chaque export est consigné au journal d'audit (`data.export`). Les IOC exclus ne sont jamais
-partagés.
+Chaque export laisse une trace au journal d'audit (`data.export`), et les IOC que vous avez
+exclus ne quittent jamais la plateforme.
 
 ---
 
 ## 10. Pilotage et tableau de bord
 
-**Vue d'ensemble.** Ce qui demande votre attention, puis l'état de la plateforme : file
+**Vue d'ensemble.** D'abord ce qui demande votre attention, ensuite l'état de la plateforme : file
 prioritaire, incident le plus grave, IOC actifs, CVE prioritaires, alertes, santé des sources,
 évolution de la menace sur 24 heures, 7 ou 30 jours, CVE par priorité, activité récente, IOC par
-type. Tout se met à jour **en direct** (flux d'évènements du serveur).
+type. Inutile de rafraîchir la page : tout se met à jour **en direct** (flux d'évènements du
+serveur).
 
-**Pilotage SOC.** Sur 7 ou 30 jours : MTTA (délai moyen d'ouverture à prise en charge), MTTR
+**Pilotage SOC.** Pour le responsable qui doit rendre des comptes, sur 7 ou 30 jours : MTTA (délai moyen d'ouverture à prise en charge), MTTR
 (délai moyen de résolution, et médiane), incidents dans le délai cible par sévérité, liste des
 dépassements, incidents par niveau et escalades, charge par analyste, ouverts et clos par jour,
 faux positifs écartés.
@@ -483,6 +526,9 @@ console.
 ---
 
 ## 11. Administration, audit et sécurité
+
+Une plateforme qui centralise votre renseignement et votre surface exposée devient elle-même une
+cible. Elle se défend donc comme telle :
 
 | Mesure | Ce qu'elle garantit |
 |---|---|
@@ -505,6 +551,9 @@ démonstration.
 
 ## 12. Ce que la plateforme fait seule
 
+Pendant que vous dormez, ILLWATCH continue de travailler. Voici ce qu'il fait sans qu'on le lui
+demande, et le réglage qui permet d'en changer le rythme :
+
 | Tâche | Fréquence | Réglage |
 |---|---|---|
 | Collecte de chaque source | selon la source (1 heure par défaut) | `DEFAULT_POLLING_INTERVAL`, écran Sources CTI |
@@ -520,24 +569,34 @@ démonstration.
 
 ## 13. Parcours types
 
+Les fonctionnalités prennent leur sens quand on les voit enchaînées. Voici cinq situations que
+toute équipe de sécurité finit par vivre, et la façon dont ILLWATCH les accompagne.
+
 ### 13.1 Le lundi matin d'un analyste
 
+L'analyste arrive, ouvre ILLWATCH, et en quelques minutes sait où mettre son énergie.
+
 1. **Vue d'ensemble** : 8 alertes, un incident critique en confinement.
-2. **Triage** : deux alertes P1 venues du catalogue KEV ; l'une touche un produit absent du parc,
-   il l'**acquitte** ; l'autre concerne la messagerie, il **ouvre l'incident**.
-3. **Corrélations** : CORR-01 sur « Messagerie » (Exchange Server, version déclarée dans la
-   plage vulnérable) : il ouvre l'incident depuis l'évènement, qui reprend la CVE.
+2. **Triage** : deux alertes P1 venues du catalogue KEV. L'une touche un produit absent du parc :
+   il l'**acquitte**. L'autre concerne la messagerie : il **ouvre l'incident**.
+3. **Corrélations** : CORR-01 sur « Messagerie » (Exchange Server, version déclarée dans la plage
+   vulnérable). Il ouvre l'incident depuis l'évènement, qui reprend la CVE.
 4. **Incidents** : il s'assigne l'incident, le passe en *Analyse*, puis l'**escalade en L2** avec
    le motif « serveur exposé, version vulnérable confirmée ».
 
 ### 13.2 Une CVE critique fait la une
 
-1. **CVE et priorités** : recherche « fortios » ; la CVE est en P0, KEV depuis hier.
-2. **Corrélations** : **Corréler maintenant** ; CORR-01 sur « Pare-feu siège ».
-3. L'incident est ouvert, le correctif appliqué, l'action déclarée dans la chronologie, puis
-   l'incident passe en *Récupération* et en *Clôture* avec son résumé.
+La presse parle d'une faille FortiOS, la direction s'inquiète. Il faut une réponse claire, vite.
+
+1. **CVE et priorités** : recherche « fortios » ; la CVE est en P0, au catalogue KEV depuis hier.
+2. **Corrélations** : **Corréler maintenant** ; CORR-01 se lève sur « Pare-feu siège ».
+3. L'incident est ouvert, le correctif appliqué, l'action déclarée dans la chronologie. L'incident
+   passe ensuite en *Récupération*, puis en *Clôture* avec son résumé. La direction a sa réponse,
+   et la preuve qui va avec.
 
 ### 13.3 Un nouvel équipement entre dans le parc
+
+Un nouveau serveur arrive. Pour qu'il soit surveillé dès aujourd'hui :
 
 1. **Inventaire**, **Exporter (Excel)** ; ajout d'une ligne ; **Importer un fichier**,
    **Analyser** : « 1 actif à créer » ; **Importer**.
@@ -545,21 +604,25 @@ démonstration.
 
 ### 13.4 Un faux positif revient sans cesse
 
-Une adresse de résolveur DNS public déclenche une correspondance à chaque chasse : sur sa fiche,
-**Marquer comme faux positif** avec le motif « résolveur public de l'entreprise ». L'IOC reste en
-base pour l'historique, mais n'est plus ni chassé, ni corrélé, ni partagé ; seul un
-administrateur peut retirer l'exclusion.
+L'adresse du résolveur DNS public de l'entreprise déclenche une correspondance à chaque chasse.
+Au bout de la troisième fois, on règle la question pour de bon : sur sa fiche, **Marquer comme
+faux positif**, avec le motif « résolveur public de l'entreprise ». L'IOC reste en base pour
+l'historique, mais il n'est plus ni chassé, ni corrélé, ni partagé. Seul un administrateur peut
+retirer l'exclusion.
 
 ### 13.5 Un partenaire veut recevoir nos IOC
 
-L'administrateur crée un compte **Lecteur** dédié (`siem-partenaire`), puis transmet l'adresse
-`https://<domaine>/taxii2/` et les identifiants par un canal sûr. Le partenaire lit les
-collections « indicateurs » et « campagnes » ; il ne peut rien modifier, et son compte se
-désactive seul sans toucher aux autres.
+Une entité voisine souhaite profiter de votre renseignement. L'administrateur crée un compte
+**Lecteur** dédié (`siem-partenaire`), puis transmet l'adresse `https://<domaine>/taxii2/` et les
+identifiants par un canal sûr. Le partenaire lit les collections « indicateurs » et
+« campagnes », sans pouvoir rien modifier. Et si la collaboration s'arrête, son compte se
+désactive seul, sans toucher aux autres.
 
 ---
 
 ## 14. Glossaire
+
+La sécurité aime les sigles. Voici ceux que vous croiserez dans ILLWATCH :
 
 | Terme | Définition |
 |---|---|

@@ -8,16 +8,17 @@ hide:
 
 <div class="iw-hero-text" markdown>
 
-<span class="iw-kicker">Cyber Threat Intelligence · open source · hébergé en Europe</span>
+<span class="iw-kicker">Cyber Threat Intelligence · open source · installé sur vos serveurs</span>
 
-# La veille sur les menaces, enfin lisible et actionnable
+# Savoir chaque matin ce qui menace vraiment votre système d'information
 
-ILLWATCH collecte le renseignement public sur les menaces, écarte le bruit, dit quelles
-vulnérabilités corriger en premier et relie chaque alerte à **vos** actifs. Votre équipe garde
-les décisions ; la plateforme fait le travail répétitif.
+Chaque jour, des centaines de failles et des milliers d'indicateurs de menace sont publiés.
+Personne ne peut tout lire. ILLWATCH le fait à votre place : il rassemble ces informations,
+écarte ce qui ne vous concerne pas, vous dit quoi corriger en premier et vous aide à traiter
+les incidents jusqu'au bout. Les décisions restent les vôtres.
 
 [:material-rocket-launch: Installer ILLWATCH](GUIDE_INSTALLATION.md){ .md-button .md-button--primary }
-[:material-book-open-variant: Découvrir les fonctionnalités](MANUEL_FONCTIONNEL.md){ .md-button }
+[:material-book-open-variant: Voir ce qu'il sait faire](MANUEL_FONCTIONNEL.md){ .md-button }
 [:material-file-pdf-box: Documents PDF](#documents-de-reference){ .md-button }
 
 </div>
@@ -30,61 +31,65 @@ les décisions ; la plateforme fait le travail répétitif.
 </div>
 
 <div class="iw-stats" markdown>
-<div><strong>528 453</strong><span>IOC collectés sur le poste de travail</span></div>
-<div><strong>26 416</strong><span>CVE suivies, notées de 0 à 100</span></div>
-<div><strong>93 %</strong><span>du bruit écarté : 6,7 % des CVE à traiter</span></div>
-<div><strong>&lt; 256 Mo</strong><span>de mémoire pour toute la plateforme</span></div>
-<div><strong>0 €</strong><span>licence MIT, auto-hébergé</span></div>
+<div><strong>528 453</strong><span>indicateurs de menace collectés</span></div>
+<div><strong>26 416</strong><span>failles suivies et notées de 0 à 100</span></div>
+<div><strong>93 %</strong><span>de bruit en moins : seules 6,7 % des failles demandent une action</span></div>
+<div><strong>&lt; 256 Mo</strong><span>de mémoire pour faire tourner l'application</span></div>
+<div><strong>0 €</strong><span>de licence : code ouvert (MIT), installé chez vous</span></div>
 </div>
 
-<p class="iw-note">Chiffres mesurés sur données réelles, poste de travail Kali, 07 et 08/10/2026.</p>
+<p class="iw-note">Chiffres mesurés sur des données réelles, sur notre poste de test Kali Linux, les 7 et 8 octobre 2026.</p>
 
 ## Ce que fait ILLWATCH
 
 <div class="grid cards" markdown>
 
--   :material-radar:{ .lg .middle } **Collecter**
+-   :material-radar:{ .lg .middle } **Il collecte**
 
     ---
 
-    Neuf sources publiques ou gratuites (NVD, CISA KEV, FIRST EPSS, AlienVault OTX, abuse.ch,
-    IPsum, C2IntelFeeds, flux TAXII 2.1), collectées en continu, normalisées et dédoublonnées
-    avec leur provenance.
+    Il interroge en continu neuf sources publiques ou gratuites : la base de failles du NIST,
+    le catalogue des failles exploitées de la CISA, les probabilités d'exploitation EPSS,
+    AlienVault OTX, abuse.ch, IPsum, C2IntelFeeds et des flux TAXII 2.1. Chaque information
+    garde la trace de sa source.
 
--   :material-sort-numeric-descending:{ .lg .middle } **Prioriser**
-
-    ---
-
-    Chaque CVE reçoit un score de 0 à 100 fondé sur l'exploitation réelle et une priorité de
-    P0 à P3. Une faille déjà exploitée n'est jamais sous P1.
-
--   :material-link-variant:{ .lg .middle } **Corréler**
+-   :material-sort-numeric-descending:{ .lg .middle } **Il trie**
 
     ---
 
-    Votre inventaire, déclaré en quelques minutes depuis un fichier Excel, est confronté aux
-    CVE et aux IOC, version comprise. Seul ce qui vous concerne remonte.
+    Chaque faille reçoit une note de 0 à 100 et une priorité de P0 (à corriger sous 24 heures)
+    à P3. La note tient compte de ce qui se passe réellement : une faille déjà exploitée par
+    des attaquants ne descend jamais sous P1.
 
--   :material-shield-alert:{ .lg .middle } **Répondre**
-
-    ---
-
-    Triage L1, L2, L3, incidents au cycle NIST SP 800-61 avec chronologie immuable, chasse sur
-    vos journaux, contexte MITRE ATT&CK et campagnes.
-
--   :material-share-variant:{ .lg .middle } **Partager**
+-   :material-link-variant:{ .lg .middle } **Il relie la menace à vos équipements**
 
     ---
 
-    Export STIX 2.1 et serveur TAXII 2.1 en lecture seule pour votre SIEM, OpenCTI ou MISP ;
-    exports CSV et JSON protégés.
+    Vous décrivez votre parc dans un simple fichier Excel. ILLWATCH le compare aux failles et
+    aux indicateurs, version par version, et ne vous signale que ce qui vous touche.
 
--   :material-chart-box:{ .lg .middle } **Piloter et prouver**
+-   :material-shield-alert:{ .lg .middle } **Il organise la réponse**
 
     ---
 
-    Écran Pilotage (MTTA, MTTR, délais cibles), métriques Prometheus et Grafana, journal
-    d'audit en ajout seul pour NIS 2 et DORA.
+    Une file de tri pour vos analystes, des incidents suivis étape par étape selon la méthode
+    du NIST, un historique que personne ne peut modifier, la recherche de traces dans vos
+    journaux et le contexte des attaquants (MITRE ATT&CK).
+
+-   :material-share-variant:{ .lg .middle } **Il partage**
+
+    ---
+
+    Il met ses indicateurs à disposition de vos autres outils (SIEM, OpenCTI, MISP) dans les
+    formats standards STIX 2.1 et TAXII 2.1, et les exporte en CSV ou JSON.
+
+-   :material-chart-box:{ .lg .middle } **Il mesure et il prouve**
+
+    ---
+
+    Délais de prise en charge et de résolution, tableaux de bord Grafana, et un journal
+    d'audit où chaque action reste inscrite : de quoi rendre des comptes au titre de NIS 2 ou
+    de DORA.
 
 </div>
 
@@ -98,17 +103,17 @@ les décisions ; la plateforme fait le travail répétitif.
 
     ---
 
-    Installation de A à Z sur un poste ou un serveur, sources, comptes, premier remplissage,
-    sauvegardes et mises à jour.
+    Le guide vous accompagne pas à pas, d'un poste ou d'un serveur vierge jusqu'à une
+    plateforme qui collecte, avec les sauvegardes et les mises à jour.
 
     [:octicons-arrow-right-24: Guide d'installation et d'exploitation](GUIDE_INSTALLATION.md)
 
--   :material-microsoft-excel:{ .lg .middle } **Je veux déclarer mon parc**
+-   :material-microsoft-excel:{ .lg .middle } **Je veux décrire mon parc**
 
     ---
 
-    Téléchargez le modèle Excel depuis l'écran Inventaire, remplissez une ligne par actif,
-    analysez puis importez.
+    Téléchargez le modèle Excel depuis l'écran Inventaire, remplissez une ligne par
+    équipement, vérifiez l'aperçu, puis importez.
 
     [:octicons-arrow-right-24: Déclarer votre inventaire](GUIDE_INSTALLATION.md#5-declarer-votre-inventaire-methode-excel)
 
@@ -116,8 +121,8 @@ les décisions ; la plateforme fait le travail répétitif.
 
     ---
 
-    Les acteurs (administrateur, analystes L1 à L3, lecteur, partenaire TAXII, worker), leurs
-    droits et chaque fonctionnalité expliquée.
+    Qui peut faire quoi (administrateur, analystes, lecteurs, partenaires), et comment chaque
+    fonctionnalité se comporte, avec des exemples concrets.
 
     [:octicons-arrow-right-24: Manuel fonctionnel](MANUEL_FONCTIONNEL.md)
 
@@ -125,26 +130,26 @@ les décisions ; la plateforme fait le travail répétitif.
 
     ---
 
-    La spécification opposable : exigences fonctionnelles et non fonctionnelles, leur statut
-    réel, l'architecture et les critères d'acceptation.
+    Ce que la plateforme doit faire, ce qu'elle fait déjà, ce qui reste à faire, et comment
+    on le vérifie.
 
-    [:octicons-arrow-right-24: Cahier des charges v2.0](CAHIER_DES_CHARGES.md)
+    [:octicons-arrow-right-24: Cahier des charges](CAHIER_DES_CHARGES.md)
 
--   :material-compass:{ .lg .middle } **Je veux la stratégie**
+-   :material-compass:{ .lg .middle } **Je veux comprendre le projet**
 
     ---
 
-    Le problème, les cibles, la proposition de valeur, la concurrence, le modèle et la
-    trajectoire jusqu'en 2035.
+    Pourquoi ILLWATCH existe, pour qui, ce qui le distingue des autres outils et où il va
+    d'ici 2035.
 
-    [:octicons-arrow-right-24: Vision produit v2.0](PRODUCT_VISION.md)
+    [:octicons-arrow-right-24: Vision produit](PRODUCT_VISION.md)
 
 -   :material-code-braces:{ .lg .middle } **Je veux contribuer**
 
     ---
 
-    Organisation du code, standards, première tâche, et les 28 décisions d'architecture avec
-    leurs coûts assumés.
+    Comment le code est organisé, comment préparer votre poste, et les 28 décisions
+    d'architecture qui expliquent les choix faits jusqu'ici.
 
     [:octicons-arrow-right-24: Prise en main](ONBOARDING.md) · [Architecture](ARCHITECTURE.md)
 
@@ -154,48 +159,52 @@ les décisions ; la plateforme fait le travail répétitif.
 
 ![Jalons M1 à M11](assets/schemas/jalons.svg)
 
-| Étape | État au 30/10/2026 |
+Le projet avance par jalons. Un jalon n'est considéré comme terminé que lorsque son résultat a
+été vérifié sur des données réelles, pas simplement quand le code est écrit.
+
+| Étape | Où nous en sommes au 30/10/2026 |
 |---|---|
-| **M1 à M6** : fondation, flux, CVE, incidents, tableau de bord, chasse | :material-check-circle:{ .iw-ok } constatés sur données réelles, release `v0.1.1` |
-| **M8** : détection et corrélation | :material-check-circle:{ .iw-ok } clos le 14/10 (100 % détectés sur le jeu figé) |
-| **M9 et M10** : opérations SOC, contexte ATT&CK, partage STIX et TAXII | :material-progress-check:{ .iw-wip } livrés, constatés en CI, à rejouer sur le poste |
-| **M7 et M11** : durcissement de production, observabilité | :material-server-network:{ .iw-wait } livrés, attendent le serveur européen et 7 jours de préproduction |
-| **v0.2.0** « Production Candidate » | :material-flag-outline:{ .iw-wait } après M7 et M11 |
+| **M1 à M6** : socle, flux de menaces, failles, incidents, tableau de bord, chasse | :material-check-circle:{ .iw-ok } vérifiés sur données réelles, version `v0.1.1` publiée |
+| **M8** : détection et corrélation | :material-check-circle:{ .iw-ok } terminé le 14/10 : 100 % des cas attendus détectés sur le jeu de test |
+| **M9 et M10** : opérations SOC, contexte des attaquants, partage STIX et TAXII | :material-progress-check:{ .iw-wip } livrés et vérifiés en intégration continue, à rejouer sur le poste de test |
+| **M7 et M11** : durcissement pour la production, supervision | :material-server-network:{ .iw-wait } livrés ; il manque le serveur européen et sept jours de préproduction |
+| **v0.2.0**, première version candidate à la production | :material-flag-outline:{ .iw-wait } dès que M7 et M11 seront clos |
 
 [:material-map-marker-path: Feuille de route](ROADMAP.md){ .md-button }
 [:material-file-document-multiple: Rapports et bilans](rapport/index.md){ .md-button }
 
-## Un aperçu de l'application
+## À quoi ressemble l'application
 
 <div class="iw-shots" markdown>
 
 <figure markdown>
 ![Vue d'ensemble](assets/captures/01-vue-ensemble-fr.webp)
-<figcaption>Vue d'ensemble : ce qui demande votre attention maintenant.</figcaption>
+<figcaption>La vue d'ensemble : ce qui demande votre attention maintenant.</figcaption>
 </figure>
 
 <figure markdown>
 ![Triage des alertes](assets/captures/02-triage-fr.webp)
-<figcaption>Triage : alertes priorisées et score décomposé.</figcaption>
+<figcaption>Le triage : les alertes rangées par priorité, avec le détail de chaque note.</figcaption>
 </figure>
 
 <figure markdown>
 ![Import de l'inventaire](assets/captures/11c-inventaire-apercu-fr.webp)
-<figcaption>Inventaire : aperçu d'un import Excel avant validation.</figcaption>
+<figcaption>L'inventaire : l'aperçu d'un fichier Excel avant de l'importer.</figcaption>
 </figure>
 
 <figure markdown>
 ![Corrélations](assets/captures/10-correlations-fr.webp)
-<figcaption>Corrélations : le renseignement rapporté à vos actifs.</figcaption>
+<figcaption>Les corrélations : la menace rapportée à vos propres équipements.</figcaption>
 </figure>
 
 </div>
 
-<p class="iw-note">Captures prises sur la préproduction locale avec le jeu de démonstration (données fictives).</p>
+<p class="iw-note">Captures réalisées sur notre environnement de préproduction, avec des données de démonstration fictives.</p>
 
 ## Documents de référence
 
-Tous les documents v2.0 du 30/10/2026 existent en ligne sur ce site et en PDF mis en page.
+Chaque document existe en deux versions : à lire en ligne sur ce site, ou à télécharger en PDF
+mis en page.
 
 <div class="grid cards" markdown>
 
@@ -203,8 +212,8 @@ Tous les documents v2.0 du 30/10/2026 existent en ligne sur ce site et en PDF mi
 
     ---
 
-    Installation, inventaire par Excel, travail quotidien en double méthode (application et
-    ligne de commande), administration, serveur, dépannage.
+    Installer ILLWATCH, décrire votre parc avec Excel, l'utiliser au quotidien depuis
+    l'application ou la ligne de commande, l'administrer et le dépanner.
 
     [:octicons-download-16: PDF](pdf/ILLWATCH_Guide_installation_exploitation_v2.pdf) ·
     [Lire en ligne](GUIDE_INSTALLATION.md)
@@ -213,48 +222,48 @@ Tous les documents v2.0 du 30/10/2026 existent en ligne sur ce site et en PDF mi
 
     ---
 
-    Acteurs et matrice des droits, chaque fonctionnalité en quatre temps, parcours types,
-    glossaire.
+    Les personnes et les systèmes qui interviennent, leurs droits, chaque fonctionnalité
+    expliquée simplement, des journées types et un glossaire.
 
     [:octicons-download-16: PDF](pdf/ILLWATCH_Manuel_fonctionnel_v2.pdf) ·
     [Lire en ligne](MANUEL_FONCTIONNEL.md)
 
--   :material-file-pdf-box:{ .lg .middle } **Cahier des charges v2.0**
+-   :material-file-pdf-box:{ .lg .middle } **Cahier des charges**
 
     ---
 
-    Exigences RF-01 à RF-57 avec leur statut, exigences non fonctionnelles mesurées, modèle de
-    données, interfaces, risques.
+    Toutes les exigences, numérotées de RF-01 à RF-57, avec leur état réel, les exigences de
+    performance et de sécurité mesurées, le modèle de données et les risques.
 
     [:octicons-download-16: PDF](pdf/ILLWATCH_Cahier_des_charges_v2.pdf) ·
     [Lire en ligne](CAHIER_DES_CHARGES.md)
 
--   :material-file-pdf-box:{ .lg .middle } **Vision produit v2.0**
+-   :material-file-pdf-box:{ .lg .middle } **Vision produit**
 
     ---
 
-    Problème, cibles, valeur, marché et concurrence, modèle open source, trajectoire et vision
-    2035.
+    Le problème que nous voulons résoudre, pour qui, notre place face aux autres outils, notre
+    modèle open source et le cap jusqu'en 2035.
 
     [:octicons-download-16: PDF](pdf/ILLWATCH_Vision_produit_v2.pdf) ·
     [Lire en ligne](PRODUCT_VISION.md)
 
--   :material-file-pdf-box:{ .lg .middle } **Feuille de route v2.0**
+-   :material-file-pdf-box:{ .lg .middle } **Feuille de route**
 
     ---
 
-    Jalons M1 à M11 avec leurs preuves, ce qui reste à faire dans l'ordre, calendrier et
-    suite après la v0.2.0.
+    Les onze jalons avec leurs preuves, ce qu'il reste à faire et dans quel ordre, le
+    calendrier et la suite après la version 0.2.0.
 
     [:octicons-download-16: PDF](pdf/ILLWATCH_Feuille_de_route_v2.pdf) ·
     [Lire en ligne](ROADMAP.md)
 
--   :material-archive:{ .lg .middle } **Documents fondateurs (archive)**
+-   :material-archive:{ .lg .middle } **Documents fondateurs (archives)**
 
     ---
 
-    Cahier des charges v1.0.0 et vision produit v1.0 de juillet 2026, sous le nom d'origine
-    SENTRY, conservés tels quels.
+    Le cahier des charges et la vision de juillet 2026, écrits quand le projet s'appelait
+    encore SENTRY. Nous les gardons tels quels, pour l'histoire du projet.
 
     [:octicons-download-16: Cahier des charges v1.0](pdf/SENTRY_Cahier_des_Charges.pdf) ·
     [Vision v1.0](pdf/CYBERILL-SENTRY-PRODUCT-VISION_3.pdf)
@@ -263,22 +272,22 @@ Tous les documents v2.0 du 30/10/2026 existent en ligne sur ce site et en PDF mi
 
 ## Documentation technique
 
-| Document | Pour qui | Contenu |
+| Document | Pour qui | Ce que vous y trouverez |
 |---|---|---|
-| [Architecture](ARCHITECTURE.md) | développeurs | couches, flux de données, décisions structurantes, sécurité |
-| [Exploitation](OPERATIONS.md) | opérateurs | sondes, journaux, audit, sauvegarde, TLS, mise à jour, référence des commandes |
-| [Environnements](ENVIRONNEMENTS.md) | opérateurs | développement, préproduction, production, passage en production |
-| [Prise en main](ONBOARDING.md) | contributeurs | poste de développement, standards, première tâche |
-| [Décisions d'architecture](adr/README.md) | tous | 28 décisions tracées avec leur contexte et leurs conséquences |
-| [Changelog](changelog.md) | tous | évolutions par version |
+| [Architecture](ARCHITECTURE.md) | développeurs | comment le code est découpé, comment circulent les données, les grands choix et la sécurité |
+| [Exploitation](OPERATIONS.md) | administrateurs | surveiller, sauvegarder, sécuriser, mettre à jour, et toutes les commandes utiles |
+| [Environnements](ENVIRONNEMENTS.md) | administrateurs | développement, préproduction, production, et comment passer de l'un à l'autre |
+| [Prise en main](ONBOARDING.md) | contributeurs | préparer votre poste, les règles du code, votre première contribution |
+| [Décisions d'architecture](adr/README.md) | tout le monde | les 28 décisions importantes, avec leur contexte et leurs conséquences |
+| [Journal des versions](changelog.md) | tout le monde | ce qui a changé, version après version |
 
-!!! info "Hiérarchie des sources"
-    En cas de contradiction entre deux documents, l'ordre de préséance est : un **ADR** accepté,
-    qui tranche explicitement le point ; puis le **cahier des charges**, seul document approuvé
-    pour le développement ; puis la **vision produit** ; enfin les PDF d'origine, conservés pour
-    archive. Un écart constaté et non tranché fait l'objet d'un ADR, jamais d'une décision
-    silencieuse dans le code.
+!!! info "Si deux documents se contredisent"
+    Une **décision d'architecture** (ADR) acceptée l'emporte, car elle tranche explicitement
+    la question. Vient ensuite le **cahier des charges**, qui fait foi pour le développement,
+    puis la **vision produit**. Les PDF d'origine ne sont gardés que pour mémoire. Quand nous
+    découvrons un écart, nous le tranchons dans une nouvelle décision écrite, jamais en
+    silence dans le code.
 
-<p class="iw-note">Code : <a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch">GitLab (référence)</a> ·
-<a href="https://github.com/GodwillFoka/cyberillsec-illwatch">GitHub (miroir)</a> · image
-<code>ghcr.io/godwillfoka/cyberillsec-illwatch</code>. ILLWATCH s'appelait SENTRY jusqu'au 08/10/2026.</p>
+<p class="iw-note">Code source : <a href="https://gitlab.com/GodwillFoka/cyberillsec-illwatch">GitLab (dépôt de référence)</a> ·
+<a href="https://github.com/GodwillFoka/cyberillsec-illwatch">GitHub (miroir)</a> · image Docker
+<code>ghcr.io/godwillfoka/cyberillsec-illwatch</code>. Le projet s'appelait SENTRY jusqu'au 8 octobre 2026.</p>

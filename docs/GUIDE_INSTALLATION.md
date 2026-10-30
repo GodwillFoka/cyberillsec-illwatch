@@ -2,22 +2,24 @@
 
 <div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Guide_installation_exploitation_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
 
-**Version 2.0 du 30/10/2026** · ILLWATCH `0.2.0.dev0` · Public : responsable sécurité, administrateur système, analyste SOC
+**Version 2.0, octobre 2026** · ILLWATCH `0.2.0.dev0`
 
-Ce guide installe ILLWATCH sur un ordinateur ou un serveur, le remplit de renseignement, le relie à
-**vos** actifs, puis l'exploite au quotidien. Pour comprendre en profondeur ce que fait chaque
-fonctionnalité, voir le [Manuel fonctionnel](MANUEL_FONCTIONNEL.md).
+Vous avez une machine, une heure devant vous et l'envie de savoir enfin ce qui menace vraiment
+votre système d'information. Ce guide vous accompagne du premier `git clone` jusqu'au travail de
+tous les jours : installer ILLWATCH, le nourrir de renseignement, le relier à **vos** actifs, puis
+le faire vivre dans la durée. Si vous voulez comprendre le *pourquoi* de chaque fonctionnalité
+(formules, règles, cycle de vie), le [Manuel fonctionnel](MANUEL_FONCTIONNEL.md) prend le relais.
 
 !!! tip "Comment lire ce guide"
-    Chaque tâche est présentée de la façon la plus simple d'abord. Quand elle existe, vous
-    trouverez ensuite deux méthodes :
+    Chaque tâche commence par la façon la plus simple de la faire. Quand c'est possible, vous
+    avez ensuite le choix entre deux chemins :
 
-    - **Dans l'application** : l'écran, le bouton et le résultat attendu ;
-    - **En ligne de commande** : la commande exacte, à lancer dans un terminal où
-      l'environnement Python d'ILLWATCH est activé.
+    - **Dans l'application** : l'écran, le bouton, et ce que vous devez voir apparaître ;
+    - **En ligne de commande** : la commande exacte, à taper dans un terminal où l'environnement
+      Python d'ILLWATCH est activé.
 
-    Les deux méthodes produisent exactement le même résultat et sont consignées de la même façon
-    au journal d'audit.
+    Les deux chemins mènent au même résultat, et le journal d'audit les enregistre de la même
+    façon. Prenez celui qui vous est le plus naturel.
 
 ## Sommaire
 
@@ -38,6 +40,9 @@ fonctionnalité, voir le [Manuel fonctionnel](MANUEL_FONCTIONNEL.md).
 
 ## 1. Avant de commencer
 
+Quelques minutes de lecture ici vous éviteront de mauvaises surprises plus tard : ce qui va
+tourner, la machine qu'il vous faut et le temps à prévoir.
+
 ### Ce qui va tourner sur votre machine
 
 ![Deux façons de faire tourner ILLWATCH](assets/schemas/deploiement.svg)
@@ -49,9 +54,10 @@ fonctionnalité, voir le [Manuel fonctionnel](MANUEL_FONCTIONNEL.md).
 | **API** | REST `/api/v1`, interface web, `/metrics`, serveur TAXII | environnement Python (`uvicorn`) |
 | **Worker** | collecte continue, CVE toutes les 6 h, corrélation chaque heure, chasse et entretien quotidiens | environnement Python (`illwatch feeds worker`) |
 
-Ce guide décrit l'installation **sur un poste** (colonne de gauche du schéma) : c'est la façon la
-plus directe de commencer. Le passage sur un serveur exposé en HTTPS est décrit à la
-[section 10](#10-passer-sur-un-serveur).
+Nous commençons par une installation **sur un poste** (colonne de gauche du schéma) : c'est le
+chemin le plus court pour voir ILLWATCH travailler sur vos données. Quand vous serez prêt à
+l'ouvrir à votre équipe en HTTPS, la [section 10](#10-passer-sur-un-serveur) vous guide vers un
+serveur.
 
 ### Configuration matérielle conseillée
 
@@ -60,8 +66,8 @@ plus directe de commencer. Le passage sur un serveur exposé en HTTPS est décri
 | Essai, démonstration | 2 cœurs | 4 Go | 10 Go |
 | Exploitation réelle (500 000 IOC et plus) | 2 à 4 cœurs | 4 à 8 Go | 40 Go |
 
-ILLWATCH lui-même tient dans moins de 256 Mo de mémoire ; le reste sert à PostgreSQL et au
-système.
+Pas besoin d'une machine de guerre : ILLWATCH lui-même tient dans moins de 256 Mo de mémoire.
+Le reste revient à PostgreSQL et au système.
 
 ### Les durées à prévoir
 
@@ -76,9 +82,10 @@ système.
 
 ## 2. Installer ILLWATCH
 
-Les commandes sont écrites pour **Linux** (Kali, Debian 13, Ubuntu 24.04). Sous **Windows**,
-installez WSL2 avec Ubuntu 24.04 et Docker Desktop, puis suivez les mêmes commandes dans le
-terminal Ubuntu. Sous **macOS**, installez Python et Node.js avec Homebrew, et Docker Desktop.
+Les commandes qui suivent sont écrites pour **Linux** (Kali, Debian 13, Ubuntu 24.04). Vous êtes
+sous **Windows** ? Installez WSL2 avec Ubuntu 24.04 et Docker Desktop, puis tapez les mêmes
+commandes dans le terminal Ubuntu. Sous **macOS**, Homebrew vous fournit Python et Node.js, et
+Docker Desktop fait le reste.
 
 ### 2.1 Préparer la machine
 
@@ -89,8 +96,9 @@ sudo systemctl enable --now docker
 sudo usermod -aG docker $USER      # puis fermez la session et reconnectez-vous
 ```
 
-Le groupe `docker` permet d'utiliser Docker sans `sudo` ; il ne prend effet qu'après une
-reconnexion. Vérifiez ensuite les versions :
+Le groupe `docker` vous évite de taper `sudo` devant chaque commande Docker, mais il ne prend
+effet qu'après une reconnexion : c'est l'oubli le plus fréquent. Une fois reconnecté, vérifiez
+les versions :
 
 ```bash
 python3 --version          # 3.12 ou plus
@@ -117,16 +125,20 @@ pip install -c constraints.txt -e ".[dev]"
 illwatch version
 ```
 
-GitLab est le dépôt de référence ; GitHub en est le miroir. L'environnement virtuel `.venv`
-isole les bibliothèques d'ILLWATCH de celles du système, et `constraints.txt` installe exactement
-les versions vérifiées par l'intégration continue.
+GitLab est le dépôt de référence, GitHub son miroir : les deux contiennent le même code.
+L'environnement virtuel `.venv` tient les bibliothèques d'ILLWATCH à l'écart de celles du système,
+et `constraints.txt` installe exactement les versions que l'intégration continue a vérifiées.
+Vous partez donc d'un terrain connu.
 
 !!! warning "Le réflexe à prendre"
-    Dans **chaque nouveau terminal**, commencez par
+    À **chaque nouveau terminal**, commencez par
     `cd ~/cyberillsec-illwatch && source .venv/bin/activate`.
-    Sans cela, la commande `illwatch` est introuvable.
+    Si vous l'oubliez, le terminal vous répondra que la commande `illwatch` n'existe pas.
 
 ### 2.3 Écrire la configuration (`.env`)
+
+Toute la configuration tient dans un seul fichier. Partez du modèle, protégez-le, puis
+renseignez vos valeurs :
 
 ```bash
 cp .env.example .env
@@ -148,9 +160,13 @@ nano .env
 | `ALERT_WEBHOOK_URL` | adresse d'un webhook Slack ou Mattermost (facultatif) | recevoir les alertes CVE |
 | `RISK_ALERT_THRESHOLD` | `75` (valeur par défaut) | score à partir duquel une CVE déclenche une alerte |
 
+`TAXII_AUTH` regroupe les accès aux serveurs TAXII, un serveur par entrée, séparés par `;` :
+
 ```bash
 TAXII_AUTH=osint.digitalside.it=guest:guest;feeds.redeyesecurity.com=bearer:rdi_VOTRE_JETON
 ```
+
+Les clés des sources sont gratuites ; comptez quelques minutes pour chacune.
 
 | Clé | Où l'obtenir (gratuit) |
 |---|---|
@@ -159,13 +175,14 @@ TAXII_AUTH=osint.digitalside.it=guest:guest;feeds.redeyesecurity.com=bearer:rdi_
 | abuse.ch | auth.abuse.ch |
 | RedEye | inscription par e-mail auprès de RedEye Security |
 
-Les adresses de la base et de Redis du modèle conviennent telles quelles pour un poste : les
-deux services n'écoutent que sur `127.0.0.1`, rien n'est exposé au réseau.
+Inutile de toucher aux adresses de la base et de Redis : celles du modèle conviennent pour un
+poste. Les deux services n'écoutent que sur `127.0.0.1`, rien n'est donc exposé au réseau.
 
 !!! danger "Secrets"
-    Le fichier `.env` contient vos clés. Ne l'envoyez jamais par messagerie et ne l'ajoutez jamais
-    au dépôt Git (il est ignoré par défaut). Pour reprendre les clés d'un autre poste, copiez-les
-    par un moyen sûr (clé USB, `scp`, gestionnaire de mots de passe).
+    Le fichier `.env` contient vos clés : traitez-le comme un mot de passe. Ne l'envoyez jamais
+    par messagerie et ne l'ajoutez jamais au dépôt Git (il est ignoré par défaut). Pour reprendre
+    les clés d'un autre poste, passez par un moyen sûr : clé USB, `scp` ou gestionnaire de mots de
+    passe.
 
 ### 2.4 Démarrer la base de données
 
@@ -174,13 +191,16 @@ docker compose up -d postgres redis
 docker compose ps          # les deux services doivent être « healthy »
 ```
 
-Au premier démarrage, PostgreSQL crée deux rôles : `illwatch`, propriétaire, réservé aux
-migrations, et `illwatch_app`, utilisé par l'application, **sans droit de modifier la
-structure**. Les volumes `illwatch_pgdata` et `illwatch_redisdata` survivent aux redémarrages.
+Au premier démarrage, PostgreSQL crée deux rôles, et cette séparation est volontaire :
+`illwatch`, le propriétaire, ne sert qu'aux migrations ; `illwatch_app`, celui qu'utilise
+l'application, **n'a pas le droit de modifier la structure**. Si l'application était un jour
+compromise, elle ne pourrait pas réécrire la base. Vos données vivent dans les volumes
+`illwatch_pgdata` et `illwatch_redisdata`, qui survivent aux redémarrages.
 
 ### 2.5 Créer le schéma, les sources et les comptes
 
-Choisissez **une** des deux options.
+Deux situations possibles : vous partez de zéro, ou vous déménagez une instance existante.
+Choisissez **une seule** des deux options.
 
 **Option A : instance neuve**
 
@@ -202,12 +222,13 @@ scripts/restore.sh backups/illwatch-AAAAMMJJThhmmssZ.dump
 illwatch db upgrade       # migrations éventuelles et droits du rôle applicatif
 ```
 
-Ne lancez ni `seed` ni `users create` : sources, comptes et historique arrivent avec la
-sauvegarde.
+Dans ce cas, ne lancez ni `seed` ni `users create` : sources, comptes et historique arrivent
+avec la sauvegarde.
 
 !!! warning "Toujours `illwatch db upgrade`"
-    N'utilisez jamais `alembic upgrade head` seul : il ne donne pas au rôle applicatif ses droits
-    sur les nouvelles tables, et l'application échoue ensuite sur `permission denied for table`.
+    Résistez à la tentation de lancer `alembic upgrade head` seul. Il crée bien les tables, mais
+    ne donne pas au rôle applicatif ses droits dessus, et l'application tombe ensuite sur
+    `permission denied for table`. `illwatch db upgrade` fait les deux.
 
 ### 2.6 Construire l'interface web
 
@@ -215,13 +236,14 @@ sauvegarde.
 ./scripts/build-web.sh
 ```
 
-Le script exporte le schéma de l'API, installe les dépendances verrouillées, génère les types et
-compile l'interface dans `frontend/dist/`, que l'API sert ensuite à la racine du site. Relancez-le
-après chaque mise à jour du code.
+En une commande, le script exporte le schéma de l'API, installe les dépendances verrouillées,
+génère les types et compile l'interface dans `frontend/dist/`. L'API la sert ensuite à la racine
+du site. Pensez à le relancer après chaque mise à jour du code.
 
 ### 2.7 Lancer le service
 
-Il faut deux processus permanents. `tmux` les garde actifs même si vous fermez le terminal :
+ILLWATCH vit grâce à deux processus permanents : l'API, qui vous répond, et le worker, qui
+travaille en fond. `tmux` les garde en vie même quand vous fermez le terminal :
 
 ```bash
 cd ~/cyberillsec-illwatch
@@ -234,13 +256,14 @@ illwatch feeds worker
 # Ctrl+B puis D pour détacher ; « tmux attach -t illwatch » pour revenir
 ```
 
-Vérification :
+Assurez-vous que tout répond :
 
 ```bash
 curl -s localhost:8000/ready | jq      # « ready », base et schéma à jour, Redis joignable
 ```
 
-Ouvrez **http://localhost:8000/** : l'écran de connexion s'affiche.
+Ouvrez maintenant **http://localhost:8000/** dans votre navigateur. Si l'écran de connexion
+s'affiche, l'installation est terminée.
 
 ---
 
@@ -252,23 +275,24 @@ Ouvrez **http://localhost:8000/** : l'écran de connexion s'affiche.
 
 *Figure : l'écran de connexion (choix de la langue en haut).*
 
-Saisissez l'identifiant et le mot de passe créés à l'étape 2.5. La langue se choisit sur
-l'écran de connexion et à tout moment dans la barre supérieure (français, anglais, allemand,
-espagnol, chinois).
+Entrez l'identifiant et le mot de passe créés à l'étape 2.5. Votre équipe ne parle pas toute
+français ? La langue se choisit dès l'écran de connexion, puis à tout moment dans la barre
+supérieure : français, anglais, allemand, espagnol ou chinois.
 
 ![Vue d'ensemble](assets/captures/01-vue-ensemble-fr.webp)
 
 *Figure : la vue d'ensemble, premier écran après la connexion (jeu de démonstration).*
 
-L'écran est organisé en trois bandeaux : **À traiter maintenant** (file des alertes, incident le
-plus grave), **Situation** (IOC actifs, CVE prioritaires, alertes, santé des sources) et
-**Contexte** (activité récente, santé des sources, IOC par type). Les chiffres se mettent à jour
-en direct ; le bouton « Mettre en pause » fige l'affichage pendant une lecture.
+L'écran se lit de haut en bas, du plus urgent au plus général : **À traiter maintenant** (la
+file des alertes, l'incident le plus grave), **Situation** (IOC actifs, CVE prioritaires,
+alertes, santé des sources), puis **Contexte** (activité récente, santé des sources, IOC par
+type). Les chiffres bougent en direct ; si vous voulez lire tranquillement, le bouton « Mettre en
+pause » fige l'affichage.
 
 ### 3.2 Créer les comptes de l'équipe
 
-Un compte par personne, jamais de compte partagé : le journal d'audit attribue chaque action à
-son auteur.
+Une règle simple : un compte par personne, jamais de compte partagé. Le jour où il faudra
+comprendre qui a fait quoi, le journal d'audit pourra attribuer chaque action à son auteur.
 
 | Rôle | Peut faire |
 |---|---|
@@ -293,17 +317,18 @@ illwatch users create --username lecteur --email soc@exemple.org --role viewer
 
 ![De la source à la décision](assets/schemas/pipeline.svg)
 
-`illwatch seed` a déclaré neuf sources vérifiées : abuse.ch URLhaus et Feodo Tracker,
+Un outil de veille ne vaut que par ce qu'il lit. Bonne nouvelle : vous n'avez rien à chercher,
+`illwatch seed` a déjà déclaré neuf sources vérifiées : abuse.ch URLhaus et Feodo Tracker,
 C2IntelFeeds (adresses et domaines), IPsum, RedEye et DigitalSide (TAXII 2.1), DigitalSide
-(URL) et AlienVault OTX. Les catalogues de vulnérabilités (NVD, CISA KEV, FIRST EPSS) ne sont pas
-des « sources » au sens de cet écran : le moteur CVE les interroge directement.
+(URL) et AlienVault OTX. Vous ne verrez pas ici les catalogues de vulnérabilités (NVD, CISA KEV,
+FIRST EPSS) : le moteur CVE les interroge directement, sans passer par cet écran.
 
 ### 4.1 Vérifier l'état des sources
 
-**Dans l'application** : écran **Sources CTI**. Chaque source affiche son état (*saine*,
-*dégradée*, *en attente*, *suspendue*), son dernier succès, ses nouveaux IOC et son taux de
-réussite sur 7 jours. Un clic ouvre le détail : adresse, format, fiabilité, fréquence et
-dernières collectes.
+**Dans l'application** : écran **Sources CTI**. D'un coup d'œil, chaque source vous dit comment
+elle va (*saine*, *dégradée*, *en attente*, *suspendue*), quand elle a réussi pour la dernière
+fois, combien d'IOC nouveaux elle a apportés et son taux de réussite sur 7 jours. Un clic ouvre
+le détail : adresse, format, fiabilité, fréquence et dernières collectes.
 
 ![Sources CTI](assets/captures/08-sources-fr.webp)
 
@@ -326,22 +351,26 @@ illwatch feeds probe "AlienVault OTX : pulses abonnés"   # répond ? identifian
 | Collecter tout de suite | (le worker collecte automatiquement) | `illwatch feeds fetch "<nom>"` ou `fetch-all --force` |
 | Supprimer | détail, **Supprimer** (les IOC sont conservés) | (application ou API) |
 
-La **fiabilité** suit l'échelle de l'Amirauté, de A (« sûre ») à F (« impossible à juger ») :
-elle pondère la confiance des IOC de la source. Une adresse de flux doit être publique et en
-HTTPS ; les adresses internes sont refusées (protection contre la falsification de requêtes
-côté serveur, SSRF).
+La **fiabilité** reprend l'échelle de l'Amirauté, familière aux analystes du renseignement, de
+A (« sûre ») à F (« impossible à juger »). Elle pèse sur la confiance accordée aux IOC de la
+source : une source A compte plus qu'une source E. Par sécurité, une adresse de flux doit être
+publique et en HTTPS ; ILLWATCH refuse les adresses internes, pour qu'on ne puisse pas s'en
+servir contre votre propre réseau (falsification de requêtes côté serveur, SSRF).
 
 !!! note "Source en panne"
-    Une source injoignable passe en *dégradée* sans bloquer les autres ; le worker espace ses
-    essais (1, 2, 4 minutes…) jusqu'à l'intervalle normal. `illwatch feeds probe` dit pourquoi.
+    Une source injoignable passe en *dégradée*, sans bloquer les autres. Le worker ne s'acharne
+    pas : il espace ses essais (1, 2, 4 minutes…) jusqu'à retrouver l'intervalle normal. Pour en
+    connaître la raison, `illwatch feeds probe` vous la donne.
 
 ---
 
 ## 5. Déclarer votre inventaire (méthode Excel)
 
 La **corrélation** (voir le [Manuel fonctionnel](MANUEL_FONCTIONNEL.md#5-correlation-le-renseignement-rapporte-a-vos-actifs))
-confronte le renseignement à **vos** produits, adresses et domaines. Sans inventaire, elle ne
-produit rien. La façon la plus simple de le déclarer est un fichier Excel.
+confronte le renseignement à **vos** produits, adresses et domaines. C'est elle qui transforme
+« une faille existe quelque part » en « cette faille touche votre pare-feu ». Sans inventaire,
+elle n'a rien à comparer et reste muette. Le plus simple pour le déclarer ? Un fichier Excel,
+l'outil que vous utilisez sans doute déjà pour suivre votre parc.
 
 ![Déclarer son inventaire avec Excel](assets/schemas/import-inventaire.svg)
 
@@ -364,7 +393,8 @@ illwatch assets template -o modele.csv       # ou un modèle CSV
 
 ### 5.2 Remplir le fichier
 
-Une ligne par actif. Seuls **nom** et **produit** sont obligatoires.
+Une ligne par actif. Seuls **nom** et **produit** sont obligatoires, mais chaque colonne
+remplie rend la corrélation plus précise.
 
 | Colonne | Contenu | Exemple |
 |---|---|---|
@@ -389,17 +419,21 @@ Exemple d'inventaire rempli :
 | Serveur d'intégration | Jenkins | Jenkins | 2.452 | Faible | | ci.example.com |
 
 !!! tip "Bien nommer les produits"
-    Le produit est cherché **en mot entier** dans la description des CVE. Écrivez-le comme
-    l'éditeur le nomme dans ses avis : « Exchange Server », « FortiOS », « Confluence ». Un nom
-    trop vague comme « Windows » produit du bruit ; précisez « Windows Server 2019 ».
-    **Renseignez la version** : sans elle, la corrélation ne peut pas écarter les versions non
-    vulnérables (sur données réelles, la première passe sans version a produit environ 80 % de
-    faux positifs).
+    ILLWATCH cherche le produit **en mot entier** dans la description des CVE. Écrivez-le donc
+    comme l'éditeur le nomme dans ses avis : « Exchange Server », « FortiOS », « Confluence ».
+    Un nom trop vague comme « Windows » ramène du bruit ; préférez « Windows Server 2019 ».
+    Et surtout, **renseignez la version** : sans elle, la corrélation ne peut pas écarter les
+    versions qui ne sont pas vulnérables. Nous l'avons constaté sur données réelles : la première
+    passe sans version a produit environ 80 % de faux positifs.
 
-Le modèle met toutes les colonnes au format texte (Excel ne transforme donc pas « 7.10 » en 7,1)
-et propose des listes de choix pour la criticité et `en_service`.
+Le modèle vous épargne un piège classique : toutes les colonnes sont au format texte, si bien
+qu'Excel ne transforme pas « 7.10 » en 7,1. Des listes de choix guident aussi la saisie de la
+criticité et de `en_service`.
 
 ### 5.3 Analyser, puis importer
+
+L'import se fait en deux temps, pour que vous voyiez exactement ce qui va changer avant que quoi
+que ce soit ne soit écrit.
 
 **Dans l'application** :
 
@@ -420,10 +454,11 @@ illwatch assets import inventaire.xlsx --dry-run   # aperçu, rien n'est écrit
 illwatch assets import inventaire.xlsx             # import
 ```
 
-**Règles de l'import**
+**Ce qu'il faut savoir sur l'import**
 
-- **Tout ou rien** : si une seule ligne est refusée, rien n'est importé. L'aperçu donne le numéro
-  de ligne et le motif ; corrigez le fichier puis analysez-le de nouveau.
+- **Tout ou rien** : si une seule ligne est refusée, rien n'est importé. Votre inventaire ne se
+  retrouve jamais à moitié chargé. L'aperçu vous donne le numéro de la ligne et le motif ;
+  corrigez le fichier, puis analysez-le de nouveau.
 - **Un actif est reconnu par son nom** : présent, il est mis à jour ; absent, il est créé.
   Renommer un actif dans le fichier crée donc un nouvel actif.
 - **Une colonne absente du fichier ne change rien** : un fichier sans colonne `notes` ne vide pas
@@ -432,6 +467,8 @@ illwatch assets import inventaire.xlsx             # import
   `,` ou tabulation, en UTF-8 ou Windows-1252 (les deux encodages d'Excel). En-têtes en français
   ou en anglais (`name`, `product`, `vendor`…), sans tenir compte des majuscules ni des accents.
 - Limites : 2 Mo et 5 000 lignes par fichier.
+
+Les refus les plus courants, et comment les corriger :
 
 | Motif de refus | Correction |
 |---|---|
@@ -444,6 +481,8 @@ illwatch assets import inventaire.xlsx             # import
 
 ### 5.4 Les autres façons de déclarer un actif
 
+Excel n'est pas la seule porte d'entrée. Selon votre situation :
+
 | Méthode | Quand l'utiliser | Comment |
 |---|---|---|
 | Formulaire | un actif isolé | *Inventaire*, **Nouvel actif**, remplir, **Déclarer l'actif** |
@@ -452,13 +491,15 @@ illwatch assets import inventaire.xlsx             # import
 
 ### 5.5 Mettre l'inventaire à jour
 
-Exportez-le, modifiez-le dans Excel, réimportez-le :
+Votre parc bouge, votre inventaire doit suivre. Le plus simple : exportez-le, modifiez-le dans
+Excel, puis réimportez-le.
 
 **Dans l'application** : *Inventaire*, **Exporter (Excel)**. **En ligne de commande** :
-`illwatch assets export -o inventaire.xlsx`. L'export est consigné au journal d'audit : il décrit
-la surface exposée de l'organisation.
+`illwatch assets export -o inventaire.xlsx`. Chaque export est consigné au journal d'audit, et
+pour cause : ce fichier décrit la surface exposée de votre organisation.
 
-Après une première déclaration, récupérez les plages de versions vulnérables des CVE utiles :
+Après une première déclaration, allez chercher les plages de versions vulnérables des CVE qui
+vous concernent :
 
 ```bash
 illwatch cves refresh-affected      # environ 6 secondes par CVE sans clé NVD
@@ -468,8 +509,8 @@ illwatch cves refresh-affected      # environ 6 secondes par CVE sans clé NVD
 
 ## 6. Remplir la base
 
-Le worker remplit tout seul la base, mais la première fois, lancez les synchronisations à la
-main pour ne pas attendre :
+Avec le temps, le worker remplit la base tout seul. Mais la première fois, rien ne vous oblige à
+attendre : lancez les synchronisations à la main, dans cet ordre.
 
 ```bash
 illwatch cves sync                  # KEV, puis NVD (30 derniers jours + toutes les CVE KEV), puis EPSS
@@ -489,18 +530,21 @@ illwatch status                     # état réel, jalons atteints
 | `correlate run` | inventaire × CVE × IOC | chaque heure par le worker |
 
 !!! note "Rattraper l'historique OTX"
-    Si un avertissement signale une collecte OTX tronquée, relancez
-    `illwatch feeds fetch "AlienVault OTX : pulses abonnés"` jusqu'à sa disparition, puis remettez
-    `OTX_MAX_PAGES=20` dans `.env`.
+    OTX a beaucoup d'historique. Si un avertissement signale une collecte tronquée, relancez
+    `illwatch feeds fetch "AlienVault OTX : pulses abonnés"` jusqu'à ce qu'il disparaisse, puis
+    remettez `OTX_MAX_PAGES=20` dans `.env`.
 
 ---
 
 ## 7. Le travail quotidien
 
-Cette section décrit **comment** faire. Le **pourquoi** de chaque fonctionnalité (formules,
-règles, cycle de vie) est dans le [Manuel fonctionnel](MANUEL_FONCTIONNEL.md).
+ILLWATCH est installé et nourri. Place maintenant à ce pour quoi il existe : vous aider à décider
+vite et bien. Cette section décrit **comment** faire ; le **pourquoi** de chaque fonctionnalité
+(formules, règles, cycle de vie) se trouve dans le [Manuel fonctionnel](MANUEL_FONCTIONNEL.md).
 
 ### 7.1 Le matin : par où commencer
+
+Un café, un quart d'heure, et ce parcours en cinq écrans :
 
 1. **Vue d'ensemble** : la file prioritaire et l'incident le plus grave.
 2. **Triage** : qualifier les nouvelles alertes CVE.
@@ -510,8 +554,9 @@ règles, cycle de vie) est dans le [Manuel fonctionnel](MANUEL_FONCTIONNEL.md).
 
 ### 7.2 Trier les alertes CVE
 
-Une alerte naît quand le score d'une CVE franchit 75 points. Le triage consiste à **acquitter**
-(vu, pas d'action) ou à **ouvrir l'incident de réponse**.
+Une alerte naît quand le score d'une CVE franchit 75 points. Devant chacune, une seule question :
+faut-il agir ? Si non, vous l'**acquittez** (vue, pas d'action) ; si oui, vous **ouvrez
+l'incident de réponse**.
 
 ![Triage](assets/captures/02-triage-fr.webp)
 
@@ -526,10 +571,13 @@ Une alerte naît quand le score d'une CVE franchit 75 points. Le triage consiste
 
 ### 7.3 Lire les priorités des vulnérabilités
 
-**Dans l'application** : écran **CVE et priorités**. Recherche par identifiant ou par produit
-(« fortios », « log4j »), filtres par priorité et « Exploitées (KEV) ». La fiche d'une CVE
-montre ses signaux, la décomposition de son score, son historique de priorité, ses alertes et ses
-incidents, et permet d'**Ouvrir un incident pour cette CVE**.
+Un bulletin vient de tomber et vous voulez savoir s'il faut s'en inquiéter ?
+
+**Dans l'application** : écran **CVE et priorités**. Cherchez par identifiant ou par produit
+(« fortios », « log4j »), filtrez par priorité ou sur « Exploitées (KEV) ». La fiche d'une CVE
+vous montre ses signaux, la décomposition de son score, l'évolution de sa priorité, ses alertes
+et ses incidents. Si elle mérite une réponse, **Ouvrir un incident pour cette CVE** est à portée
+de clic.
 
 **En ligne de commande** :
 
@@ -542,11 +590,14 @@ illwatch cves show CVE-2021-44228
 
 ### 7.4 Traiter les corrélations
 
-**Dans l'application** : écran **Corrélations**. Chaque évènement dit *pourquoi* il existe (règle,
-actif, produit, version, signaux), décompose son score, et propose trois actions :
-**Acquitter**, **Ouvrir l'incident**, ou **Qualifier de faux positif** (l'évènement ne sera
-plus rouvert, et l'IOC en cause passe en liste d'exclusion). **Corréler maintenant** lance une
-passe sans attendre le worker.
+C'est l'écran qui parle de **vous**. Chaque ligne relie une menace à l'un de vos actifs.
+
+**Dans l'application** : écran **Corrélations**. Aucun évènement n'arrive sans explication :
+chacun dit *pourquoi* il existe (règle, actif, produit, version, signaux) et décompose son score.
+Vous avez ensuite trois choix : **Acquitter**, **Ouvrir l'incident**, ou **Qualifier de faux
+positif**. Dans ce dernier cas, l'évènement ne reviendra plus et l'IOC en cause rejoint la liste
+d'exclusion. Pas envie d'attendre le worker ? **Corréler maintenant** lance une passe tout de
+suite.
 
 ![Corrélations](assets/captures/10-correlations-fr.webp)
 
@@ -562,7 +613,8 @@ illwatch correlate list --all      # y compris acquittés et clos
 
 ### 7.5 Conduire un incident
 
-Un incident suit le cycle NIST SP 800-61 : **Nouveau, Analyse, Confinement, Éradication,
+Quand une menace se confirme, l'incident devient votre fil conducteur. Il suit le cycle du NIST
+SP 800-61, que toute équipe de réponse connaît : **Nouveau, Analyse, Confinement, Éradication,
 Récupération, Clôture**.
 
 ![Investigation d'un incident](assets/captures/04-incident-fr.webp)
@@ -582,17 +634,19 @@ Récupération, Clôture**.
 | Chasser depuis l'incident | **Chasser depuis l'incident** | (application ou API) |
 | Écarter un faux positif | sur un IOC associé, **Exclure (faux positif)** | `illwatch soc exclude <valeur> --reason "…"` |
 
-La chronologie est **immuable** : la base refuse toute modification ou suppression d'un
-évènement passé. Une fois l'incident clos, seuls les commentaires restent possibles.
+La chronologie est **immuable** : la base elle-même refuse qu'on modifie ou supprime un
+évènement passé. Le jour d'un retour d'expérience ou d'un audit, ce qui est écrit est ce qui
+s'est passé. Une fois l'incident clos, on ne peut plus qu'y ajouter des commentaires.
 
 ### 7.6 Chasser les menaces
 
-Une chasse confronte des **observables** (un export de pare-feu, de proxy ou d'EDR, la liste
-d'un bulletin) ou toute la base aux six règles de détection.
+N'attendez pas qu'une alerte vienne à vous. Une chasse confronte des **observables** (un export
+de pare-feu, de proxy ou d'EDR, la liste d'un bulletin), ou toute la base, aux six règles de
+détection.
 
-**Dans l'application** : écran **Chasse**, **Nouvelle chasse** : collez les observables (une
+**Dans l'application** : écran **Chasse**, **Nouvelle chasse**. Collez vos observables (une
 valeur par ligne, 10 000 au plus), indiquez si besoin l'inventaire pour la règle des CVE
-exploitables, cochez les règles, puis **Lancer la chasse**. Sans observable, la chasse porte sur
+exploitables, cochez les règles, puis **Lancer la chasse**. Sans observable, la chasse balaie
 toute la base d'IOC actifs (bouton **Chasser sur toute la base**).
 
 **En ligne de commande** :
@@ -604,15 +658,18 @@ illwatch hunt run --observables proxy.txt --asset FortiOS --rule RULE-06
 illwatch hunt show <id de session>
 ```
 
-Une chasse sur toute la base est aussi lancée **chaque jour** par le worker.
+Et même si vous oubliez, le worker lance de lui-même une chasse sur toute la base **chaque
+jour**.
 
 ### 7.7 Consulter et qualifier les indicateurs (IOC)
 
-**Dans l'application** : écran **Indicateurs**. Recherche d'une valeur (les formes défangées
-comme `evil[.]com` sont acceptées), filtres par état, type, sévérité et source. La fiche montre la
-confiance décomposée, la provenance de chaque source, l'enrichissement (pays, opérateur) et les
-incidents liés. Actions : **Marquer comme faux positif**, **Soumettre des IOC** (un lot de
-valeurs), **Exporter** (CSV, consigné au journal d'audit).
+Une adresse suspecte dans un journal ? Vérifiez ce qu'ILLWATCH en sait.
+
+**Dans l'application** : écran **Indicateurs**. Cherchez une valeur, même défangée comme
+`evil[.]com` (ILLWATCH la reconnaît), et filtrez par état, type, sévérité ou source. La fiche
+détaille la confiance accordée, ce qu'en dit chaque source, l'enrichissement (pays, opérateur)
+et les incidents liés. Trois actions s'offrent à vous : **Marquer comme faux positif**,
+**Soumettre des IOC** (un lot de valeurs) et **Exporter** (CSV, consigné au journal d'audit).
 
 ![Fiche d'une adresse IP](assets/captures/05b-indicateur-ip-fr.webp)
 
@@ -629,9 +686,12 @@ illwatch dashboard export iocs --format csv -o iocs.csv
 
 ### 7.8 Regrouper par campagne
 
-**Dans l'application** : écran **Campagnes**, **Nouvelle campagne** (nom, acteur ATT&CK
-facultatif), puis **Rattacher de l'infrastructure** : les IOC dont la description contient un
-texte (nom d'un pulse OTX, d'un rapport), ou une liste de valeurs.
+Des dizaines d'IOC isolés racontent souvent une seule histoire. Les regrouper en campagne vous
+aide à voir l'attaquant derrière les indicateurs.
+
+**Dans l'application** : écran **Campagnes**, **Nouvelle campagne** (un nom, et l'acteur
+ATT&CK si vous le connaissez), puis **Rattacher de l'infrastructure** : soit les IOC dont la
+description contient un texte (nom d'un pulse OTX, d'un rapport), soit une liste de valeurs.
 
 **En ligne de commande** :
 
@@ -643,13 +703,20 @@ illwatch campaigns list
 
 ### 7.9 Piloter le SOC
 
-**Dans l'application** : écran **Pilotage** (7 ou 30 jours) : délai moyen de prise en charge
-(MTTA) et de résolution (MTTR), délais cibles par sévérité et dépassements, incidents par niveau
-L1, L2, L3, charge par analyste, ouverts et clos par jour, faux positifs écartés.
+Votre direction vous demandera tôt ou tard : « Est-ce qu'on va assez vite ? » L'écran Pilotage
+vous donne la réponse, chiffres à l'appui.
+
+**Dans l'application** : écran **Pilotage**, sur 7 ou 30 jours. Vous y trouvez le délai moyen de
+prise en charge (MTTA) et de résolution (MTTR), les délais cibles par sévérité et leurs
+dépassements, les incidents par niveau L1, L2 et L3, la charge de chaque analyste, les incidents
+ouverts et clos par jour, et les faux positifs écartés.
 
 **En ligne de commande** : `illwatch soc metrics --days 30` et `illwatch dashboard show`.
 
 ### 7.10 Exporter et partager
+
+Le renseignement prend toute sa valeur quand il circule : vers votre SIEM, vers un partenaire,
+vers un tableur.
 
 | Besoin | Dans l'application | En ligne de commande |
 |---|---|---|
@@ -657,12 +724,15 @@ L1, L2, L3, charge par analyste, ouverts et clos par jour, faux positifs écart�
 | Bundle STIX 2.1 | (API `GET /api/v1/stix/bundle`) | `illwatch stix export -o illwatch-stix.json` |
 | Partage TAXII 2.1 vers un SIEM, OpenCTI ou MISP | créer un compte **Lecteur** dédié | `illwatch users create --username siem --role viewer --email …` |
 
-Côté consommateur : découverte `https://<domaine>/taxii2/`, racine `…/taxii2/illwatch/`,
-authentification Basic avec le compte lecteur. Les IOC exclus ne sont jamais partagés.
+Côté consommateur, trois informations suffisent : la découverte `https://<domaine>/taxii2/`, la
+racine `…/taxii2/illwatch/`, et une authentification Basic avec le compte lecteur. Rassurez-vous,
+les IOC que vous avez exclus ne sont jamais partagés.
 
 ---
 
 ## 8. Administrer la plateforme
+
+Quelques gestes d'administrateur, à connaître avant d'en avoir besoin.
 
 ### 8.1 Comptes et sessions
 
@@ -676,8 +746,9 @@ authentification Basic avec le compte lecteur. Les IOC exclus ne sont jamais par
 
 ### 8.2 Journal d'audit
 
-Toutes les connexions, refus d'accès, actions d'administration, exports, chasses et
-modifications sont consignés **en ajout seul** (la base refuse modification et suppression).
+Connexions, refus d'accès, actions d'administration, exports, chasses, modifications : tout est
+consigné **en ajout seul**. La base refuse qu'on modifie ou supprime une ligne, y compris à un
+administrateur.
 
 **Dans l'application** : *Administration*, onglet **Journal d'audit**, filtres par famille
 d'actions et par résultat.
@@ -685,25 +756,31 @@ d'actions et par résultat.
 ![Journal d'audit](assets/captures/09c-journal-fr.webp)
 
 *Figure : le journal d'audit.*
- **En ligne de commande** :
+
+**En ligne de commande** :
 
 ```bash
 illwatch audit list
 illwatch audit list --action auth. --outcome FAILURE --since 24
 ```
 
-À surveiller : rafales d'échecs de connexion (force brute), accès refusés répétés (compte qui
-sonde ses droits), exports inhabituels (exfiltration).
+Trois signaux méritent votre attention : des rafales d'échecs de connexion (quelqu'un tente de
+deviner un mot de passe), des accès refusés répétés (un compte qui sonde ses droits) et des
+exports inhabituels (une possible exfiltration).
 
 ### 8.3 Paramètres en vigueur et demandes de démonstration
 
-*Administration*, onglet **Paramètres** : la configuration effective, sans aucun secret. Onglet
-**Demandes de démo** : les demandes reçues par le formulaire du site de présentation, à marquer
-*recontactée* ou *close* (`illwatch demo-requests list`).
+*Administration*, onglet **Paramètres** : la configuration réellement appliquée, sans jamais
+afficher un secret. Onglet **Demandes de démo** : les demandes arrivées par le formulaire du site
+de présentation, à marquer *recontactée* ou *close* au fil de vos échanges
+(`illwatch demo-requests list`).
 
 ---
 
 ## 9. Exploiter dans la durée
+
+Une plateforme de sécurité qui tombe en panne le jour d'un incident ne sert à rien. Ces quelques
+habitudes la gardent fiable.
 
 ### 9.1 Sauvegarder
 
@@ -718,11 +795,14 @@ Planification quotidienne (`crontab -e`) :
 17 2 * * * cd $HOME/cyberillsec-illwatch && scripts/backup.sh $HOME/illwatch-backups >> $HOME/illwatch-backup.log 2>&1
 ```
 
-Restaurer (arrêter l'API et le worker avant) : `scripts/restore.sh <fichier.dump>` puis
-`illwatch db upgrade`. Testez une restauration chaque mois sur une base jetable : une
-sauvegarde jamais restaurée n'est pas une sauvegarde.
+Pour restaurer, arrêtez d'abord l'API et le worker, puis lancez `scripts/restore.sh <fichier.dump>`
+et `illwatch db upgrade`. Et prenez l'habitude de tester une restauration chaque mois sur une base
+jetable : une sauvegarde qu'on n'a jamais restaurée n'est qu'un espoir.
 
 ### 9.2 Mettre à jour
+
+Sauvegarde d'abord, mise à jour ensuite : dans cet ordre, vous pouvez toujours revenir en
+arrière.
 
 ```bash
 git pull --ff-only
@@ -743,23 +823,28 @@ illwatch db upgrade
 | `curl -s localhost:8000/metrics \| grep '^illwatch_'` | métriques Prometheus |
 | `illwatch status` | jalons, sources, fraîcheur EPSS |
 
-Sur un serveur, Prometheus et Grafana suivent ces métriques (tableaux « Service » et « Collecte
-et SOC ») et alertent si une source ou le worker s'arrête.
+Sur un serveur, Prometheus et Grafana surveillent ces métriques pour vous (tableaux « Service »
+et « Collecte et SOC ») et vous préviennent si une source ou le worker s'arrête.
 
 ![Tableau Grafana](assets/captures/14-grafana-service.webp)
 
 *Figure : le tableau Grafana « ILLWATCH : Service ».*
 
-Le worker fait chaque jour l'entretien : purge des sessions expirées, purge du journal des
-collectes au-delà de 90 jours, contrôle de fraîcheur d'EPSS (avertissement au-delà de 48 h).
+Le ménage, lui, se fait tout seul : chaque jour, le worker purge les sessions expirées, efface le
+journal des collectes au-delà de 90 jours et vérifie la fraîcheur d'EPSS (avec un avertissement
+au-delà de 48 h).
 
 ### 9.4 Au redémarrage de l'ordinateur
 
-PostgreSQL et Redis repartent seuls. L'API et le worker sont à relancer (section 2.7).
+PostgreSQL et Redis repartent d'eux-mêmes. L'API et le worker, en revanche, attendent que vous
+les relanciez (section 2.7).
 
 ---
 
 ## 10. Passer sur un serveur
+
+Votre poste vous a convaincu ? Il est temps d'ouvrir ILLWATCH à toute l'équipe, en HTTPS. Le
+chemin se fait en deux étapes : une répétition générale en local, puis le vrai serveur.
 
 ### 10.1 Répéter en local : la préproduction
 
@@ -770,13 +855,15 @@ PostgreSQL et Redis repartent seuls. L'API et le worker sont à relancer (sectio
 ./scripts/preprod-local.sh down     # arrêt, données conservées
 ```
 
-Adresse : **https://illwatch.localhost:8443** (certificat interne de Caddy, à accepter). Cette
-pile tourne à côté de l'installation du poste, avec ses propres conteneurs et volumes.
+Rendez-vous sur **https://illwatch.localhost:8443** (le certificat interne de Caddy est à
+accepter une fois). Cette pile tourne à côté de votre installation, avec ses propres conteneurs
+et volumes : vous pouvez tout casser sans rien perdre.
 
 ### 10.2 Serveur européen (VPS)
 
-Prérequis : un VPS dans l'Union européenne (Debian 12 ou 13, Ubuntu 24.04 ; 2 cœurs, 4 Go,
-40 Go), un nom de domaine dont l'enregistrement A pointe vers lui, les ports 80 et 443 ouverts.
+Il vous faut un VPS dans l'Union européenne (Debian 12 ou 13, Ubuntu 24.04 ; 2 cœurs, 4 Go,
+40 Go), un nom de domaine dont l'enregistrement A pointe vers lui, et les ports 80 et 443
+ouverts. Le reste tient en trois commandes :
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/GodwillFoka/cyberillsec-illwatch/main/scripts/deploy-vps.sh
@@ -784,13 +871,16 @@ sudo bash deploy-vps.sh install illwatch.votre-domaine.eu vous@exemple.eu
 sudo bash /opt/illwatch/scripts/deploy-vps.sh check
 ```
 
-L'installation pose Docker, le pare-feu, les secrets (fichier `.env` en 600), le certificat
-Let's Encrypt, le compte `admin` (mot de passe affiché **une seule fois**), la sauvegarde
-quotidienne, Prometheus et Grafana. Mise à jour : `deploy-vps.sh update`.
+Le script s'occupe de tout : Docker, le pare-feu, les secrets (fichier `.env` en 600), le
+certificat Let's Encrypt, le compte `admin`, la sauvegarde quotidienne, Prometheus et Grafana.
+Notez bien le mot de passe d'`admin` : il ne s'affiche **qu'une seule fois**. Pour les mises à
+jour, `deploy-vps.sh update` suffit.
 
 ---
 
 ## 11. Dépannage
+
+Quelque chose coince ? Les cas ci-dessous couvrent l'essentiel de ce que nous avons rencontré.
 
 | Symptôme | Cause | Correction |
 |---|---|---|
@@ -810,6 +900,8 @@ quotidienne, Prometheus et Grafana. Mise à jour : `deploy-vps.sh update`.
 ---
 
 ## 12. Aide-mémoire
+
+Les commandes du quotidien, sur une seule page. À garder sous la main.
 
 | Je veux… | Commande |
 |---|---|
