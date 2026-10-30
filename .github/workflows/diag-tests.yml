@@ -42,23 +42,36 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -c constraints.txt -e ".[dev]"
-      - name: Suite complète sans couverture
+      - name: A. comme ci.yml (.env présent, tee pytest.txt)
+        shell: bash
+        run: |
+          set +e
+          cp .env.example .env
+          START=$(date +%s)
+          timeout -s KILL 300 bash -c "pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml 2>&1 | tee pytest.txt > /dev/null"
+          RC=$?; DUR=$(( $(date +%s) - START ))
+          RES=$(grep -E "passed|failed" pytest.txt | tail -1)
+          LAST=$(grep -E "^tests/.*::" pytest.txt | tail -1)
+          echo "::error title=A env+tee rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:400}"
+          rm -f pytest.txt
+      - name: B. .env présent, sortie hors du dépôt
         shell: bash
         run: |
           set +e
           START=$(date +%s)
-          timeout -s KILL 480 bash -c "ulimit -v 8000000; pytest -p no:cacheprovider --no-cov" > nocov.txt 2>&1
+          timeout -s KILL 300 bash -c "pytest -p no:cacheprovider --no-cov > /tmp/b.txt 2>&1"
           RC=$?; DUR=$(( $(date +%s) - START ))
-          RES=$(grep -E "passed|failed" nocov.txt | tail -1)
-          LAST=$(grep -E "^tests/.*::" nocov.txt | tail -2 | tr '\n' ' ')
-          echo "::error title=Sans couverture rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:500}"
-      - name: Suite complète avec couverture
+          RES=$(grep -E "passed|failed" /tmp/b.txt | tail -1)
+          LAST=$(grep -E "^tests/.*::" /tmp/b.txt | tail -1)
+          echo "::error title=B env rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:400}"
+      - name: C. sans .env, tee pytest.txt dans le dépôt
         shell: bash
         run: |
           set +e
+          rm -f .env
           START=$(date +%s)
-          timeout -s KILL 480 bash -c "ulimit -v 8000000; pytest -p no:cacheprovider" > cov.txt 2>&1
+          timeout -s KILL 300 bash -c "pytest -p no:cacheprovider --no-cov 2>&1 | tee pytest.txt > /dev/null"
           RC=$?; DUR=$(( $(date +%s) - START ))
-          RES=$(grep -E "passed|failed" cov.txt | tail -1)
-          LAST=$(grep -E "^tests/.*::" cov.txt | tail -2 | tr '\n' ' ')
-          echo "::error title=Avec couverture rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:500}"
+          RES=$(grep -E "passed|failed" pytest.txt | tail -1)
+          LAST=$(grep -E "^tests/.*::" pytest.txt | tail -1)
+          echo "::error title=C tee rc=$RC ${DUR}s::${RES:0:200} // dernier : ${LAST:0:400}"
