@@ -2009,6 +2009,7 @@ textarea {
 }
 .factors .factor.check > .mono {
   color: var(--warning);
+}
 
 /* Fraîcheur d'un IOC (ADR-031) : le texte porte le sens, la couleur le souligne. */
 .badge.fresh-fresh {
