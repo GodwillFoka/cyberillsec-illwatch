@@ -1,5 +1,8 @@
 # Code de conduite du contributeur
 
+Nous construisons un outil pour protéger les organisations. La communauté qui le construit
+mérite la même attention. Ce code dit simplement comment nous voulons travailler ensemble.
+
 ## Notre engagement
 
 En tant que membres, contributeurs et responsables de ce projet, nous nous engageons à faire de la

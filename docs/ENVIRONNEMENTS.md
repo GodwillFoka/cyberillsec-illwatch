@@ -1,7 +1,8 @@
 # Environnements : développement → staging → production (M11, ADR-026)
 
-Une seule image, une seule base de code ; seuls changent la configuration (`ENVIRONMENT`,
-secrets, domaine) et les données.
+Un principe guide tout ce qui suit : ce qui part en production est exactement ce qui a été
+éprouvé avant. Il n'existe donc qu'une seule image et une seule base de code. D'un environnement
+à l'autre, seuls changent la configuration (`ENVIRONMENT`, secrets, domaine) et les données.
 
 | | Développement | Staging | Production |
 |---|---|---|---|
@@ -15,24 +16,34 @@ secrets, domaine) et les données.
 | Sauvegarde | Manuelle (`scripts/backup.sh`) | Quotidienne, test de restauration mensuel | Quotidienne, test de restauration mensuel |
 | Mise à jour | `git pull` | `deploy-vps.sh update` depuis `main` | `deploy-vps.sh update` depuis un **tag** déjà validé en staging |
 
+Le staging travaille sur des données **réelles**, et ce n'est pas un détail : c'est là que se
+révèlent les sources qui changent de format, les volumes qui grossissent et les lenteurs qu'aucun
+jeu de test n'anticipe.
+
 ## Contrôles automatiques (CI, à chaque modification)
 
-La préproduction locale (workflow « Préproduction ») monte l'image de production derrière
-Caddy, charge le **jeu de démonstration figé**, puis : contrôles HTTPS et sécurité, captures
+Avant même d'atteindre un serveur, chaque modification passe par une répétition générale. La
+préproduction locale (workflow « Préproduction ») monte l'image de production derrière Caddy,
+charge le **jeu de démonstration figé**, puis enchaîne : contrôles HTTPS et sécurité, captures
 d'écran, **scénario d'acceptation SOC** (`scripts/scenario_soc.py`), sauvegarde et restauration,
 Prometheus (configuration, collecte, alertes) et Grafana (tableaux provisionnés et capturés).
-La validation sur **données réelles** tourne chaque semaine (workflow « Validation réelle »).
+Une fois par semaine, la validation sur **données réelles** prend le relais (workflow
+« Validation réelle »).
 
 ## Passage en production
 
+Une version ne monte en production qu'après avoir fait ses preuves :
+
 1. Le tag candidat tourne **7 jours** en staging sans intervention (critère de sortie de M11) :
-   aucune alerte `IllwatchFeedStale` / `IllwatchNoCollection` non expliquée, tableaux remplis.
-2. Test de restauration du mois passé (`/var/log/illwatch-restore-test.log`).
-3. `deploy-vps.sh update` en production (sauvegarde automatique avant mise à jour).
+   aucune alerte `IllwatchFeedStale` / `IllwatchNoCollection` restée sans explication, et des
+   tableaux remplis.
+2. La restauration du mois écoulé a réussi (`/var/log/illwatch-restore-test.log`).
+3. `deploy-vps.sh update` en production, qui prend de lui-même une sauvegarde avant la mise à jour.
 
 ## Accès à Grafana et Prometheus
 
-Ils n'écoutent que sur la boucle locale du VPS :
+Par prudence, ils n'écoutent que sur la boucle locale du VPS : rien n'est exposé sur Internet.
+Pour les consulter, ouvrez un tunnel SSH :
 
 ```bash
 ssh -L 3000:127.0.0.1:3000 -L 9090:127.0.0.1:9090 <utilisateur>@<vps>

@@ -250,10 +250,12 @@ def _reports_index(target: Path) -> str:
         "",
         "# Rapports et bilans",
         "",
-        '<p class="iw-lead">Le suivi du projet, tel qu\'il a été écrit au fil des étapes : '
-        "rapports d'avancement, bilans de jalon, audits indépendants et mesures. Chaque document "
-        "est daté et garde le nom du projet à sa date (SENTRY jusqu'au 08/10/2026, ILLWATCH "
-        "ensuite).</p>",
+        "<p class=\"iw-lead\">L'histoire du projet, racontée au moment où elle s'écrivait : "
+        "rapports d'avancement, bilans de jalon, audits indépendants et mesures. Les faits "
+        "n'ont pas été modifiés après coup : chaque document est daté et garde le nom que "
+        "portait le projet à cette date (SENTRY jusqu'au 08/10/2026, ILLWATCH ensuite). Vous "
+        "y verrez les réussites, mais aussi les erreurs et la façon dont elles ont été "
+        "corrigées.</p>",
         "",
     ]
     if live is not None:

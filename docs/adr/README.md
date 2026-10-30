@@ -1,8 +1,13 @@
-# Architecture Decision Records
+# Décisions d'architecture (ADR)
 
-Un ADR trace une décision structurante : son contexte, l'arbitrage rendu, sa justification et ses
-conséquences. On en écrit un quand la décision est coûteuse à revenir dessus, quand deux documents
-se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet dans six mois.
+Un jour, quelqu'un ouvrira le code et se demandera : « mais pourquoi ont-ils fait ça ? ». Les ADR
+(*Architecture Decision Records*) sont là pour lui répondre. Chacun garde la trace d'une décision
+structurante : le contexte qui l'a imposée, l'arbitrage rendu, ses raisons et ce qu'elle coûte.
+
+Nous en écrivons un dans trois cas : quand revenir sur la décision coûterait cher, quand deux
+documents se contredisent, ou quand le choix risque de surprendre une personne qui rejoint le
+projet dans six mois. Les ADR ne se réécrivent pas : une décision dépassée est complétée ou
+remplacée par une nouvelle, ce qui garde l'histoire lisible.
 
 | ADR | Titre | Statut |
 |---|---|---|
@@ -36,6 +41,8 @@ se contredisent, ou quand le choix surprendra quelqu'un qui arrive sur le projet
 | [028](ADR-028-inventaire-en-fichier.md) | Inventaire en fichier : import et export Excel ou CSV, aperçu puis import tout ou rien, modèle téléchargeable | Accepté |
 
 ## Gabarit
+
+Pour écrire le vôtre, partez de ce modèle :
 
 ```markdown
 # ADR-NNN : Titre

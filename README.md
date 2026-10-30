@@ -335,7 +335,7 @@ Les cinq premiers documents existent aussi en PDF dans `docs/pdf/`.
 cyberillsec-illwatch/
 ├── .gitlab-ci.yml          # Pipeline GitLab : qualité, tests 3.12/3.14, migrations, image, sécurité
 ├── .github/workflows/      # CI miroir, validation réelle, documentation (Pages), publication (GHCR)
-├── alembic/versions/       # 21 migrations, historique immuable
+├── alembic/versions/       # 20 migrations, historique immuable
 ├── deploy/Caddyfile        # Reverse proxy TLS de production
 ├── docker-compose.yml      # Développement : PostgreSQL 16, Redis 7, API, worker
 ├── docker-compose.prod.yml # Production : Caddy, migrations isolées, secrets obligatoires

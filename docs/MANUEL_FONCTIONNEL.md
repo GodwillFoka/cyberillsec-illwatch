@@ -16,7 +16,7 @@ ligne de commande, par l'API) et **comment lire le résultat**.
 
 ## Sommaire
 
-1. [ILLWATCH en un coup d'œil](#1-illwatch-en-un-coup-d-il)
+1. [ILLWATCH en un coup d'œil](#1-illwatch-en-un-coup-dil)
 2. [Les acteurs et leurs droits](#2-les-acteurs-et-leurs-droits)
 3. [Le renseignement : sources et indicateurs](#3-le-renseignement-sources-et-indicateurs)
 4. [Les vulnérabilités : score et priorités](#4-les-vulnerabilites-score-et-priorites)
