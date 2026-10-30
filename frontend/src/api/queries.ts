@@ -33,6 +33,7 @@ import type {
   Exclusion,
   SocMetrics,
   AlertQuality,
+  CatalogueFreshness,
   Campaign,
   CampaignDetail,
 } from "./types";
@@ -224,6 +225,16 @@ export interface CveFilters {
 }
 
 export const CVE_PAGE_SIZE = 50;
+
+/** Fraîcheur des catalogues NVD, KEV et EPSS (ADR-031). */
+export function useCatalogueFreshness() {
+  const refetchInterval = useFallbackInterval();
+  return useQuery({
+    queryKey: ["cves", "freshness"],
+    queryFn: ({ signal }) => apiGet<CatalogueFreshness[]>("/cves/freshness", {}, signal),
+    refetchInterval,
+  });
+}
 
 export function useCves(filters: CveFilters, offset: number) {
   return useQuery({

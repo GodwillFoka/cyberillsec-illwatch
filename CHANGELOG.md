@@ -10,6 +10,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté : Transparence du renseignement (ADR-031, 30/10)
+- Écran Indicateurs : la source la plus fiable (nom et cote) et le nombre des autres, et une
+  étiquette de fraîcheur (récent, vieillissant, ancien, expiré) rapportée à la demi-vie du type ;
+  la fiche précise l'âge et la demi-vie.
+- Écran CVE et priorités : fraîcheur des catalogues NVD, CISA KEV et FIRST EPSS en tête de page,
+  avec un avertissement dès qu'un catalogue est périmé (24 h pour NVD et KEV, 48 h pour EPSS).
+- API : champs `freshness` et `sources_preview` sur les IOC ; `GET /api/v1/cves/freshness`.
+
 ### Ajouté : Priorisation expliquée des évènements corrélés (ADR-030, 30/10)
 - Écran Corrélations, rubrique « Pourquoi cette priorité » : résumé en une phrase, facteurs
   (règle, criticité, exposition sur Internet, exploitation, version ou confiance de l'IOC) avec

@@ -41,6 +41,7 @@ remplacée par une nouvelle, ce qui garde l'histoire lisible.
 | [028](ADR-028-inventaire-en-fichier.md) | Inventaire en fichier : import et export Excel ou CSV, aperçu puis import tout ou rien, modèle téléchargeable | Accepté |
 | [029](ADR-029-qualite-des-alertes.md) | Qualité des alertes en situation réelle : issue des signaux par règle et par source, précision, bruit, délai de traitement | Accepté |
 | [030](ADR-030-priorisation-expliquee.md) | Priorisation expliquée : facteurs (criticité, exposition, exploitation, version), échéance, points à vérifier, sans changer le score | Accepté |
+| [031](ADR-031-transparence-du-renseignement.md) | Transparence du renseignement : fraîcheur des IOC selon la demi-vie de leur type, sources visibles dans la liste, fraîcheur des catalogues NVD, KEV et EPSS | Accepté |
 
 ## Gabarit
 
