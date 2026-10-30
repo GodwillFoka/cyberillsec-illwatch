@@ -284,7 +284,7 @@ analyser des observables.
 
 ## 6. Modèle de données
 
-La base compte 28 tables, créées par 21 migrations. À chaque modification, l'intégration continue
+La base compte 28 tables, créées par 20 migrations. À chaque modification, l'intégration continue
 vérifie qu'elles s'appliquent, s'annulent et se réappliquent sans erreur. Les règles métier
 importantes sont garanties par la base elle-même : clés étrangères, unicité, valeurs autorisées
 pour chaque liste, et déclencheurs qui empêchent de modifier les historiques.
