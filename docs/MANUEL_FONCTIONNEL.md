@@ -369,6 +369,23 @@ plateforme, les signaux (KEV, échéance CISA, exploit), la confiance et la loca
 Viennent ensuite la décomposition du score et l'historique (première détection, dernière
 confirmation).
 
+
+**Pourquoi cette priorité (ADR-030).** En tête du détail, une rubrique répond à la question qui
+compte au moment de choisir : *pourquoi traiter celui-ci d'abord ?* Une phrase résume la
+priorité et ce qui la justifie. Chaque facteur est ensuite listé avec son effet : il **pousse**
+la priorité, la **modère**, n'a **pas d'effet notable**, ou reste **à vérifier**.
+
+| Facteur | Ce qu'il dit |
+|---|---|
+| Criticité de l'actif | celle déclarée dans l'inventaire ; critique ou élevée pousse la priorité |
+| Exposition | adresses et domaines exposés déclarés ; sans exposition déclarée, à vérifier |
+| Exploitation | catalogue KEV et date d'entrée, rançongiciel, exploit public, probabilité EPSS et percentile |
+| Version | confirmée dans la plage vulnérable, ou à vérifier (non déclarée, conditionnelle, plages inconnues) |
+| Confiance (IOC) | score de confiance et nombre de sources ; une seule source reste à confirmer |
+
+La rubrique indique aussi **avant quand agir** : la date la plus proche entre le délai de la
+priorité (compté depuis la première détection) et l'échéance fixée par la CISA. Le score, lui,
+ne change pas : l'exposition est montrée pour que l'analyste la pèse, pas ajoutée au calcul.
 ---
 
 ## 6. Triage et incidents
