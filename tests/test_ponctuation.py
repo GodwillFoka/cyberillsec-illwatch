@@ -5,17 +5,52 @@ externe qui en contient (nom d'une ancienne source, fichier d'exemple) s'écrit 
 (`\\u2014`), jamais avec le caractère lui-même.
 """
 
+import shutil
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-SKIPPED_DIRS = {".git", ".venv", "node_modules", "dist", "site", "htmlcov", "__pycache__", "build"}
+# Dossiers produits par les outils, jamais versionnés. La CI GitLab range ses caches pip et npm
+# dans le dossier du projet (`.cache/pip`, `.npm`) : ils contiennent des pages tierces.
+SKIPPED_DIRS = {
+    ".git",
+    ".venv",
+    ".cache",
+    ".npm",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "node_modules",
+    "dist",
+    "site",
+    "htmlcov",
+    "__pycache__",
+    "build",
+}
 FORBIDDEN = ("\u2014", "\u2013")
+
+
+def _candidates() -> list[Path]:
+    """Fichiers suivis par git (les fichiers ignorés, comme `.env.preprod`, restent hors champ).
+    Sans git (image `python:slim` de la CI GitLab), parcours du dépôt hors dossiers d'outils."""
+    git = shutil.which("git")
+    if git and (ROOT / ".git").exists():
+        listed = subprocess.run(  # noqa: S603 : commande fixe, aucune entrée externe
+            [git, "ls-files", "-z"], cwd=ROOT, capture_output=True, check=False
+        )
+        if listed.returncode == 0:
+            return [ROOT / name for name in listed.stdout.decode().split("\0") if name]
+    return [
+        path
+        for path in ROOT.rglob("*")
+        if not SKIPPED_DIRS.intersection(path.relative_to(ROOT).parts)
+    ]
 
 
 def _text_files() -> list[Path]:
     files = []
-    for path in ROOT.rglob("*"):
-        if not path.is_file() or SKIPPED_DIRS.intersection(path.relative_to(ROOT).parts):
+    for path in _candidates():
+        if not path.is_file():
             continue
         try:
             raw = path.read_bytes()
