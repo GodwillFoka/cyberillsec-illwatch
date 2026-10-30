@@ -103,8 +103,8 @@ ignore_missing_imports = true
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-v --cov=illwatch --cov-report=term-missing"
-# Un test bloqué plus de 5 min affiche la pile de chaque fil (diagnostic en CI).
-faulthandler_timeout = 300
+# Un test bloqué plus de 2 min affiche la pile de chaque fil (diagnostic en CI).
+faulthandler_timeout = 120
 
 [tool.coverage.run]
 # SQLAlchemy async exécute le code dans des greenlets : sans cette option, les

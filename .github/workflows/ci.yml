@@ -109,6 +109,9 @@ jobs:
             s = Settings(); print('.env.example chargé :', s.environment, s.expose_docs)"
       - name: Pytest
         shell: bash
+        # Limite propre à l'étape : si un test bloque, les étapes suivantes (annotations,
+        # fin du journal) s'exécutent quand même.
+        timeout-minutes: 12
         run: |
           set -o pipefail
           pytest --cov-report=term-missing --cov-report=xml --junitxml=report.xml 2>&1 | tee pytest.txt
@@ -129,6 +132,9 @@ jobs:
             echo "::error title=Suite interrompue (Python ${{ matrix.python }})::dernier test lancé : ${LAST:0:400}"
             grep -nE "Timeout|File \"/home/runner/work" pytest.txt | tail -25 | while read -r line; do
               echo "::warning title=Pile du test bloqué::${line:0:600}"
+            done || true
+            tail -15 pytest.txt | while read -r line; do
+              echo "::warning title=Fin du journal pytest::${line:0:600}"
             done || true
           fi
       - uses: actions/upload-artifact@v7
