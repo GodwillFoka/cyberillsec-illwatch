@@ -1,6 +1,7 @@
 """`illwatch soc` : pilotage du SOC et liste d'exclusion (M9, ADR-022).
 
 illwatch soc metrics --days 30          # MTTA, MTTR, délais cibles, niveaux, charge
+illwatch soc quality --days 30          # qualité des alertes par règle et par source (ADR-029)
 illwatch soc exclude 203.0.113.7 --reason "Résolveur public de l'entreprise"
 illwatch soc exclusions                 # liste d'exclusion en vigueur
 """
@@ -99,6 +100,68 @@ def soc_metrics_command(days: str) -> None:
             f"[red]Dépassement[/] {breach.kind} · {breach.severity} · {breach.tier} · "
             f"{breach.title} ({breach.age_hours:.0f} h / cible {breach.target_hours} h)"
         )
+
+
+@soc.command("quality")
+@click.option("--days", type=click.Choice(["7", "30", "90"]), default="30", show_default=True)
+def soc_quality_command(days: str) -> None:
+    """Qualité des alertes en situation réelle : issue des signaux par règle et par source."""
+    from illwatch.modules.soc.quality import alert_quality
+
+    report = _run(lambda session: alert_quality(session, days=int(days)))
+    total = report.total
+    console.print(
+        f"[bold]Qualité des alertes : {report.window_days} jours[/] · {total.signals} signaux · "
+        f"précision {_pct(total.precision)} · bruit {_pct(total.noise)} · "
+        f"traitement médian {_hours(total.handling_hours_median)}"
+    )
+    table = Table(title="Par règle ou déclencheur")
+    for column in (
+        "Règle",
+        "Libellé",
+        "Signaux",
+        "Confirmés",
+        "Faux positifs",
+        "Ignorés",
+        "Clos (moteur)",
+        "En attente",
+        "Précision",
+        "Bruit",
+        "Traitement médian",
+    ):
+        table.add_column(column)
+    for row in report.rules:
+        table.add_row(
+            row.key,
+            row.label,
+            str(row.signals),
+            str(row.confirmed),
+            str(row.false_positive),
+            str(row.ignored),
+            str(row.auto_closed),
+            str(row.pending),
+            _pct(row.precision),
+            _pct(row.noise),
+            _hours(row.handling_hours_median),
+        )
+    console.print(table)
+    sources = Table(title="Par source d'IOC")
+    for column in ("Source", "Fiabilité", "IOC déclencheurs", "Confirmés", "Exclus", "Précision"):
+        sources.add_column(column)
+    for src in report.sources:
+        sources.add_row(
+            src.name,
+            src.reliability or "-",
+            str(src.triggered),
+            str(src.confirmed),
+            str(src.false_positive),
+            _pct(src.precision),
+        )
+    console.print(sources)
+    console.print(
+        "Précision : confirmés / (confirmés + faux positifs). "
+        "Bruit : (faux positifs + ignorés) / signaux traités par un analyste."
+    )
 
 
 @soc.command("exclude")

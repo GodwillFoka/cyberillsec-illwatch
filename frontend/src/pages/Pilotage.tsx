@@ -1,8 +1,9 @@
 // Pilotage SOC (M9, ADR-022) : délais de prise en charge (MTTA) et de résolution (MTTR),
 // respect des délais cibles par sévérité, incidents en dépassement, niveaux L1/L2/L3,
 // escalades, charge par analyste et activité jour par jour, sur 7 ou 30 jours.
-import { useSocMetrics } from "../api/queries";
-import type { SocMetrics } from "../api/types";
+// Qualité des alertes (ADR-029) : issue des signaux par règle et par source, sur la même période.
+import { useAlertQuality, useSocMetrics } from "../api/queries";
+import type { AlertQuality, QualityRow, SocMetrics } from "../api/types";
 import { LevelBadge } from "../components/Badge";
 import { Kpi } from "../components/Kpi";
 import { QueryState } from "../components/QueryState";
@@ -177,6 +178,121 @@ function Daily({ metrics }: { metrics: SocMetrics }) {
   );
 }
 
+const FAMILY_LABEL: Record<QualityRow["family"], () => string> = {
+  cve_alert: () => t("familyCve"),
+  correlation: () => t("familyCorrelation"),
+  hunt: () => t("familyHunt"),
+  total: () => "",
+};
+
+/** Précision : vert dès 80 %, rouge sous 50 %, neutre sans signal qualifié. */
+const precisionClass = (value: number | null) =>
+  value === null ? "" : value >= 0.8 ? " ok" : value < 0.5 ? " late" : "";
+
+function Quality({ quality }: { quality: AlertQuality }) {
+  const total = quality.total;
+  return (
+    <section className="card">
+      <h2>{t("quality")}</h2>
+      <p className="muted" style={{ marginTop: 0 }}>
+        {t("qualityNote")}
+      </p>
+      <p>
+        <strong>{t("qualityKpi")}</strong>{" "}
+        <span className={`mono${precisionClass(total.precision)}`}>{formatShare(total.precision)}</span>
+        <span className="muted">
+          {" · "}
+          {t("qualityKpiContext", { signals: formatNumber(total.signals), noise: formatShare(total.noise) })}
+          {" · "}
+          {t("colHandling")} {formatHours(total.handling_hours_median)}
+        </span>
+      </p>
+      {quality.rules.length === 0 ? (
+        <p className="empty">{t("noSignal")}</p>
+      ) : (
+        <table className="table" aria-label={t("qualityTable")}>
+          <thead>
+            <tr>
+              <th>{t("colRule")}</th>
+              <th className="num">{t("colSignals")}</th>
+              <th className="num">{t("colConfirmed")}</th>
+              <th className="num">{t("colFalsePositive")}</th>
+              <th className="num">{t("colIgnored")}</th>
+              <th className="num">{t("colPending")}</th>
+              <th className="num">{t("colPrecision")}</th>
+              <th className="num">{t("colHandling")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quality.rules.map((row) => (
+              <tr key={`${row.family}:${row.key}`}>
+                <td className="cell-title">
+                  <span className="mono">{row.key}</span> {row.label}
+                  <span className="cell-sub">
+                    {FAMILY_LABEL[row.family]()}
+                    {row.auto_closed > 0 ? ` · ${t("autoClosed", { count: row.auto_closed })}` : ""}
+                  </span>
+                </td>
+                <td className="num mono">{formatNumber(row.signals)}</td>
+                <td className="num mono">{formatNumber(row.confirmed)}</td>
+                <td className="num mono">{formatNumber(row.false_positive)}</td>
+                <td className="num mono">{formatNumber(row.ignored)}</td>
+                <td className="num mono">{formatNumber(row.pending)}</td>
+                <td className={`num mono${precisionClass(row.precision)}`}>{formatShare(row.precision)}</td>
+                <td className="num mono">{formatHours(row.handling_hours_median)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+}
+
+function SourceQuality({ quality }: { quality: AlertQuality }) {
+  return (
+    <section className="card">
+      <h2>{t("qualitySources")}</h2>
+      <p className="muted small" style={{ marginTop: 0 }}>
+        {t("qualitySourcesNote")}
+      </p>
+      {quality.sources.length === 0 ? (
+        <p className="empty">{t("noSource")}</p>
+      ) : (
+        <table className="table" aria-label={t("qualitySources")}>
+          <thead>
+            <tr>
+              <th>{t("colSource")}</th>
+              <th className="num">{t("colTriggered")}</th>
+              <th className="num">{t("colConfirmed")}</th>
+              <th className="num">{t("colExcluded")}</th>
+              <th className="num">{t("colPrecision")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quality.sources.map((src) => (
+              <tr key={src.feed_id}>
+                <td className="cell-title">
+                  {src.name}
+                  {src.reliability ? (
+                    <span className="cell-sub">
+                      {t("colReliability")} {src.reliability}
+                    </span>
+                  ) : null}
+                </td>
+                <td className="num mono">{formatNumber(src.triggered)}</td>
+                <td className="num mono">{formatNumber(src.confirmed)}</td>
+                <td className="num mono">{formatNumber(src.false_positive)}</td>
+                <td className={`num mono${precisionClass(src.precision)}`}>{formatShare(src.precision)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+}
+
 export function Pilotage() {
   // La période est dans l'adresse (?jours=30) : partageable, retrouvée après un rechargement.
   const { search, navigate } = useLocation();
@@ -184,6 +300,7 @@ export function Pilotage() {
   const setDays = (value: Period) =>
     navigate(value === 30 ? "/pilotage?jours=30" : "/pilotage", { replace: true });
   const query = useSocMetrics(days);
+  const quality = useAlertQuality(days);
   return (
     <>
       <div className="page-head">
@@ -228,11 +345,13 @@ export function Pilotage() {
             <div className="page-grid" style={{ marginTop: 16 }}>
               <div className="grid">
                 <Severities metrics={metrics} />
+                <QueryState query={quality}>{(q) => <Quality quality={q} />}</QueryState>
                 <Breaches metrics={metrics} />
                 <Daily metrics={metrics} />
               </div>
               <aside className="grid">
                 <Tiers metrics={metrics} />
+                <QueryState query={quality}>{(q) => <SourceQuality quality={q} />}</QueryState>
                 <Workload metrics={metrics} />
               </aside>
             </div>

@@ -32,6 +32,7 @@ import type {
   SeriesWindow,
   Exclusion,
   SocMetrics,
+  AlertQuality,
   Campaign,
   CampaignDetail,
 } from "./types";
@@ -413,6 +414,16 @@ export function useSocMetrics(days: 7 | 30) {
   return useQuery({
     queryKey: ["dashboard", "soc", days],
     queryFn: ({ signal }) => apiGet<SocMetrics>("/dashboard/soc", { days }, signal),
+    refetchInterval,
+  });
+}
+
+/** Qualité des alertes en situation réelle, par règle et par source (ADR-029). */
+export function useAlertQuality(days: 7 | 30 | 90) {
+  const refetchInterval = useFallbackInterval();
+  return useQuery({
+    queryKey: ["dashboard", "quality", days],
+    queryFn: ({ signal }) => apiGet<AlertQuality>("/dashboard/quality", { days }, signal),
     refetchInterval,
   });
 }

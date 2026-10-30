@@ -39,6 +39,7 @@ remplacée par une nouvelle, ce qui garde l'histoire lisible.
 | [026](ADR-026-observabilite.md) | M11 : métriques Prometheus, Grafana, alertes, environnements, acceptation en CI, restauration mensuelle | Accepté |
 | [027](ADR-027-site-de-presentation.md) | Site de présentation international `Website/` : 5 langues, choix automatique (navigateur puis pays), générateur sans dépendance, CSP stricte | Accepté |
 | [028](ADR-028-inventaire-en-fichier.md) | Inventaire en fichier : import et export Excel ou CSV, aperçu puis import tout ou rien, modèle téléchargeable | Accepté |
+| [029](ADR-029-qualite-des-alertes.md) | Qualité des alertes en situation réelle : issue des signaux par règle et par source, précision, bruit, délai de traitement | Accepté |
 
 ## Gabarit
 
