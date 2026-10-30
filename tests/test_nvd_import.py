@@ -1,4 +1,4 @@
-"""Import NVD 2.0 hors ligne (`illwatch cves import`) — lecture en flux, données NVD réelles.
+"""Import NVD 2.0 hors ligne (`illwatch cves import`) : lecture en flux, données NVD réelles.
 
 Le fixture `nvd_feed_2021_extrait.json` est un extrait non modifié du flux annuel 2021 au
 format API 2.0 (miroir fkie-cad) : Log4Shell, ProxyLogon, PrintNightmare et une CVE rejetée.

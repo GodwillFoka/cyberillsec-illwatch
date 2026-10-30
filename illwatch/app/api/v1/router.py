@@ -31,51 +31,51 @@ from illwatch.app.api.v1 import (
 
 api_router = APIRouter()
 
-# Phase 1 — MOD-01 : authentification
+# Phase 1, MOD-01 : authentification
 api_router.include_router(auth.router)
 
-# ADR-027 — langue d'affichage du visiteur (publique : écran de connexion, site)
+# ADR-027 : langue d'affichage du visiteur (publique : écran de connexion, site)
 api_router.include_router(locale.router)
-# ADR-027, lot S4 — demandes de démonstration (POST public, suivi ADMIN)
+# ADR-027, lot S4 : demandes de démonstration (POST public, suivi ADMIN)
 api_router.include_router(demo_requests.router)
 
-# Phase 2 — MOD-02 : sources de flux (T2.2) et indicateurs (RF-07, RF-08)
+# Phase 2, MOD-02 : sources de flux (T2.2) et indicateurs (RF-07, RF-08)
 api_router.include_router(feeds.router)
 api_router.include_router(indicators.router)
 
-# Phase 3 — MOD-03 : moteur CVE (RF-11 à RF-15) et alertes (RF-16)
+# Phase 3, MOD-03 : moteur CVE (RF-11 à RF-15) et alertes (RF-16)
 api_router.include_router(cves.router)
 api_router.include_router(cves.alerts_router)
 
-# Phase 4 — MOD-04 : gestion d'incidents (RF-17 à RF-20)
+# Phase 4, MOD-04 : gestion d'incidents (RF-17 à RF-20)
 api_router.include_router(incidents.router)
 api_router.include_router(incidents.alert_router)
 
-# Phase 5 — MOD-05 : tableau de bord SOC (RF-21 à RF-24)
+# Phase 5, MOD-05 : tableau de bord SOC (RF-21 à RF-24)
 api_router.include_router(dashboard.router)
 
-# Phase 6 — MOD-06 : threat hunting (RF-25 à RF-28)
+# Phase 6, MOD-06 : threat hunting (RF-25 à RF-28)
 api_router.include_router(hunting.router)
 
-# M8 — Detection & Correlation : inventaire d'actifs et évènements corrélés (ADR-020)
+# M8, Detection & Correlation : inventaire d'actifs et évènements corrélés (ADR-020)
 api_router.include_router(assets.router)
 api_router.include_router(correlations.router)
 
-# M9 — SOC Operations : liste d'exclusion des IOC faux positifs (ADR-022)
+# M9, SOC Operations : liste d'exclusion des IOC faux positifs (ADR-022)
 api_router.include_router(exclusions.router)
 
-# M10 — CTI Intelligence Layer : référentiel MITRE ATT&CK (ADR-023)
+# M10, CTI Intelligence Layer : référentiel MITRE ATT&CK (ADR-023)
 api_router.include_router(attack.router)
 api_router.include_router(campaigns.router)
-# M10 — export STIX 2.1 (ADR-025) ; le serveur TAXII 2.1 est monté hors /api (main.py)
+# M10 : export STIX 2.1 (ADR-025) ; le serveur TAXII 2.1 est monté hors /api (main.py)
 api_router.include_router(stix.router)
 
-# M7 — Production Hardening : journal d'audit de sécurité (ADR-011)
+# M7, Production Hardening : journal d'audit de sécurité (ADR-011)
 api_router.include_router(audit.router)
 
-# ADR-016 — écran Administration : comptes (mêmes effets que `illwatch users`)
+# ADR-016, écran Administration : comptes (mêmes effets que `illwatch users`)
 api_router.include_router(users.router)
 api_router.include_router(settings.router)
 
-# ADR-016 — interface web : flux temps réel (Server-Sent Events)
+# ADR-016, interface web : flux temps réel (Server-Sent Events)
 api_router.include_router(stream.router)

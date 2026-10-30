@@ -8,23 +8,53 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
-### Modifié — Site sans tiret long (24/10)
+### Ajouté : Inventaire en fichier Excel ou CSV (ADR-028, 30/10)
+- Écran Inventaire : **Importer un fichier** (modèle Excel téléchargeable, aperçu ligne par ligne,
+  import tout ou rien) et **Exporter (Excel)**, réimportable.
+- API : `POST /api/v1/assets/import` (aperçu, puis `apply=true`), `GET /api/v1/assets/export`,
+  `GET /api/v1/assets/template`. CLI : `illwatch assets import --dry-run`, `assets export`,
+  `assets template`.
+- Formats : `.xlsx`, CSV au séparateur `;`, `,` ou tabulation, UTF-8 ou Windows-1252 ; en-têtes
+  en français ou en anglais ; criticité en clair ou par code. Plafonds : 2 Mo, 5 000 lignes,
+  archive contrôlée avant lecture ; cellules exportées protégées contre l'injection de formule.
+- Dépendance : `openpyxl` 3.1.5.
+
+### Corrigé : Import d'inventaire en ligne de commande (30/10)
+- Un import qui mettait à jour un actif effaçait ses notes : une colonne absente du fichier
+  conserve désormais la valeur existante.
+
+### Modifié : Ni tiret long ni tiret moyen dans tout le dépôt (30/10)
+- Code, textes de l'interface (5 langues), messages de la CLI, documentation, rapports :
+  ponctuation choisie selon le contexte et la langue ; valeur absente affichée « - ».
+- Noms des sources de référence sans tiret (« AlienVault OTX : pulses abonnés ») : migration
+  `b6e2f4a8c1d3` qui renomme sans doublon, et `illwatch seed` qui reconnaît les anciens noms.
+- Garde-fou : `tests/test_ponctuation.py`.
+
+### Ajouté : Documentation v2.0 (30/10)
+- Nouveaux : Guide d'installation et d'exploitation (chaque tâche dans l'application et en ligne
+  de commande), Manuel fonctionnel (acteurs, droits, fonctionnalités, parcours types).
+- Refondus : Cahier des charges v2.0 (exigences RF-01 à RF-57 avec leur statut, exigences non
+  fonctionnelles mesurées), Vision produit v2.0, Feuille de route v2.0.
+- 13 schémas (`docs/assets/schemas/`), captures en français (`docs/assets/captures/`), versions
+  PDF (`docs/pdf/`). Captures CI : écrans en français et panneau d'import.
+
+### Modifié : Site sans tiret long (24/10)
 - Le tiret long est remplacé dans les cinq langues par une virgule, deux-points, un point ou
   « | » (titres de page) ; la construction refuse toute page qui en contient encore.
 
-### Corrigé — Style absent sur GitLab Pages (24/10)
+### Corrigé : Style absent sur GitLab Pages (24/10)
 - Le site utilisait des chemins absolus (`/cyberillsec-illwatch/assets/site.css`) calculés
   depuis `CI_PAGES_URL` : servi depuis une autre adresse (domaine unique de GitLab Pages,
   fichier ouvert en local), la feuille de style et les images ne se chargeaient pas. Tous les
   liens et ressources sont désormais relatifs à la page ; la construction refuse tout lien
   interne absolu (sauf la page 404).
 
-### Corrigé — Rafraîchissement refusé juste après la connexion (24/10)
+### Corrigé : Rafraîchissement refusé juste après la connexion (24/10)
 - `POST /auth/token`, `/auth/refresh` et `/auth/logout` valident la transaction avant de
   répondre : un client qui rafraîchissait aussitôt pouvait recevoir un 401 (jeton pas encore
   enregistré), d'où l'échec intermittent du scénario SOC en préproduction.
 
-### Ajouté — Site complet, demandes de démonstration, GitLab (ADR-027 décision 14, 23/10)
+### Ajouté : Site complet, demandes de démonstration, GitLab (ADR-027 décision 14, 23/10)
 - Site : pages Plateforme (fonctionnement animé, modules, explorateur MITRE ATT&CK, exemple
   TAXII 2.1), Sécurité (architecture, mesures), Tarifs (prix indicatifs en évaluation),
   À propos, Démonstration (formulaire), Impressum et Datenschutz, en cinq langues.
@@ -35,7 +65,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - CI « Site web » : 80 pages contrôlées, formulaire testé contre une API factice, accessibilité
   WCAG 2.2 AA (axe-core).
 
-### Ajouté — Captures et contenus en anglais (ADR-027 décision 12, 23/10)
+### Ajouté : Captures et contenus en anglais (ADR-027 décision 12, 23/10)
 - Textes écrits par le serveur (corrélations, règles et résultats de chasse, recommandations
   de réponse, chronologie des incidents, jeu de démonstration) dans la langue de l'instance :
   français par défaut, anglais dès que `DEFAULT_LANGUAGE` vaut une autre langue.
@@ -45,7 +75,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   chiffres animés, solutions, comparaison, offres, FAQ), captures en anglais, bouton
   « Demander une démo » (`ILLWATCH_SITE_CONTACT`, modèle de ticket `demo` à défaut).
 
-### Ajouté — Langue selon le pays, interface multilingue (ADR-027, 23/10)
+### Ajouté : Langue selon le pays, interface multilingue (ADR-027, 23/10)
 - `GET /api/v1/locale` (public) : langue du visiteur d'après le **pays** de son adresse IP
   (base DB-IP Lite locale, aucun service tiers), ou d'après `INSTANCE_COUNTRY` sur un réseau
   interne ; le navigateur départage les pays bilingues (Suisse, Belgique, Canada, Cameroun…) ;
@@ -61,7 +91,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - CI : `certifi` 2026.10.19 (PYSEC-2026-4320) et `opentelemetry-api` 1.45.1 (CVE-2026-114603) ;
   pip-audit annote désormais chaque vulnérabilité ; données du site exclues par erreur de Git.
 
-### Ajouté — Site de présentation, lot S1 (ADR-027)
+### Ajouté : Site de présentation, lot S1 (ADR-027)
 - Dossier `Website/` : site de présentation international, distinct de la documentation et de
   l'application, en **cinq langues** (français, anglais, allemand, espagnol, chinois simplifié).
 - Choix automatique de la langue à la première visite : choix mémorisé, langue du navigateur,
@@ -77,7 +107,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   langues, contrôle de la détection de langue.
 - Feuille de route du site : `Website/ROADMAP.md`.
 
-### Ajouté — M11 Observability & Deployment (ADR-026)
+### Ajouté : M11 Observability & Deployment (ADR-026)
 - `GET /metrics` (format Prometheus, sans dépendance) : requêtes HTTP par modèle de route et
   statut, durées ; IOC actifs, sources (état, dernier succès), collectes 24 h,
   synchronisations, incidents ouverts, évènements non acquittés, refus d'authentification,
@@ -89,22 +119,22 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - `scripts/restore-test.sh` : test de restauration mensuel (cron du VPS).
 - `docs/ENVIRONNEMENTS.md` : développement → staging → production.
 
-### Ajouté — M10, incrément 3 : partage STIX 2.1 / TAXII 2.1 (ADR-025)
+### Ajouté, M10, incrément 3 : partage STIX 2.1 / TAXII 2.1 (ADR-025)
 - Serveur TAXII 2.1 en lecture seule `/taxii2/` : collections « indicateurs » (IOC actifs,
   pagination, `added_after`) et « campagnes » (acteurs ATT&CK, relations, infrastructure) ;
   authentification Bearer ou Basic (limiteur de tentatives, audit des échecs).
 - Export STIX 2.1 : `GET /api/v1/stix/bundle`, `illwatch stix export` ; identifiants
-  déterministes, confiance 0–100, IOC exclus jamais partagés.
+  déterministes, confiance 0-100, IOC exclus jamais partagés.
 - Écran Campagnes : infrastructure repliée au-delà de 20 IOC ; colonne d'activité masquée
   sur mobile.
 
-### Ajouté — M10, incrément 2 : campagnes (ADR-024)
+### Ajouté, M10, incrément 2 : campagnes (ADR-024)
 - Campagnes : infrastructure (IOC rattachés par valeur ou par description) et acteur ATT&CK ;
   écran Campagnes, `/api/v1/campaigns`, `illwatch campaigns create | attach | list`.
 - Attribution par l'infrastructure dans les chasses, corrélations et incidents (campagne et
   acteur), avant les acteurs cités par leur nom. Migration `e2c7a5b9d184`.
 
-### Ajouté — M10, incrément 1 : contexte MITRE ATT&CK (ADR-023)
+### Ajouté, M10, incrément 1 : contexte MITRE ATT&CK (ADR-023)
 - Référentiel ATT&CK Enterprise importé (`illwatch attack import | status | show`) :
   techniques, groupes, logiciels, relations « utilise » ; migration `d4a8f2c6e019`.
 - Technique ATT&CK par règle (RULE-01 à 05, CORR-01 et 02) ; acteur proposé quand la source
@@ -112,7 +142,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Contexte affiché dans les correspondances de chasse, les évènements corrélés et les
   incidents ; `GET /attack/status`, `GET /attack/techniques/{id}` ; extrait de démonstration.
 
-### Ajouté — M9 SOC Operations (ADR-022)
+### Ajouté : M9 SOC Operations (ADR-022)
 - Niveaux SOC L1/L2/L3 : escalade motivée, consignée dans la chronologie, sans retour en
   arrière ; filtre et colonne « Niveau » ; `illwatch incidents escalate`.
 - Faux positifs : liste d'exclusion des IOC (`/api/v1/exclusions`, `illwatch soc exclude`),
@@ -126,13 +156,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   `illwatch soc metrics`.
 - Scénario d'acceptation : parcours L1 → L2 → L3 et MTTR mesuré. Migration `c9f1a3e5b742`.
 
-### Ajouté — préparation de la clôture de M7 (VPS UE)
+### Ajouté : préparation de la clôture de M7 (VPS UE)
 - `scripts/deploy-vps.sh install | check | update` : installation complète sur un VPS neuf
   (Docker, pare-feu, secrets, Let's Encrypt, compte admin, sauvegardes) et contrôles.
 - Workflow « Clôture M7 » : note TLS (testssl.sh, grille SSL Labs) et en-têtes du domaine
   inscrit dans `deploy/vps-domaine.txt`.
 
-### Ajouté — clôture de M8 et points en attente
+### Ajouté : clôture de M8 et points en attente
 - Plages CIDR : type d'IOC `NETWORK` (/16 à /31 en IPv4, /32 à /127 en IPv6 ; plages internes
   et trop larges refusées ; /32 rangée comme adresse) ; OTX `CIDR` et motifs STIX acceptés ;
   RULE-06 et CORR-03 par inclusion d'une adresse dans une plage.
@@ -147,7 +177,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   (÷ 7,5) et **64,1 % de détection** (+ 14 points) ; « stackoverflow » n'est plus signalé.
 - `Rapport/BILAN_M8.md` : M8 clos.
 
-### Corrigé — corrélation par version (ADR-021)
+### Corrigé : corrélation par version (ADR-021)
 - Les plages vulnérables NVD (`configurations`) sont conservées par CVE (`cves.affected`,
   migration `e5b8c1d4a907`) ; la version déclarée de l'actif y est comparée : hors plage ou
   autre produit, aucun évènement. Supprime les faux positifs constatés sur données réelles
@@ -158,18 +188,18 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - `illwatch correlate list --all` : colonnes Version et État (ouvert, acquitté, clos (auto)).
 - Jeu figé : 18 cas, 8 attendus (pièges de version ajoutés) ; `Rapport/M8_MESURE_REELLE_13-10-2026.md`.
 
-### Corrigé — débordements de l'interface
+### Corrigé : débordements de l'interface
 - Libellés et messages longs (types d'IOC, erreurs TAXII, URL, titres) passent à la ligne au
   lieu de sortir de leur cadre ; recherche et titres de détail lisibles sur mobile ; les
   captures CI couvrent toute la hauteur, tous les écrans en mobile, et un détecteur signale
   tout texte qui déborde.
 
-### Ajouté — M8, incréments 3 et 4 : corrélation et mesure (ADR-020)
+### Ajouté, M8, incréments 3 et 4 : corrélation et mesure (ADR-020)
 - Inventaire d'actifs (produit, éditeur, version, criticité, adresses, domaines) : écran
   Inventaire, API `/api/v1/assets`, `illwatch assets add | import | list | remove`.
 - Corrélation : CORR-01 (CVE KEV × actif), CORR-02 (CVE P0/P1 avec exploit public × actif),
   CORR-03 (adresse ou domaine de l'organisation dans un IOC de confiance suffisante) ; score
-  0–100 justifié point par point ; un évènement par couple, mis à jour, rouvert s'il s'aggrave ;
+  0-100 justifié point par point ; un évènement par couple, mis à jour, rouvert s'il s'aggrave ;
   worker toutes les heures ; écran Corrélations (acquitter, ouvrir l'incident) ; API
   `/api/v1/correlations` ; `illwatch correlate run | list` ; compteur dans le menu et la synthèse.
 - Mesure sur jeu figé versionné (15 cas, 7 attendus, 8 pièges) : 100 % détectés, 0 % de faux
@@ -177,7 +207,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Enrichissement : mise à jour mensuelle automatique des bases DB-IP par le worker.
 - Migration `c4d9e2a7f613` (tables `assets`, `correlated_events`).
 
-### Ajouté — M8, incrément 2 : enrichissement hors ligne des IP (ADR-019)
+### Ajouté, M8, incrément 2 : enrichissement hors ligne des IP (ADR-019)
 - Pays et système autonome de chaque IPv4/IPv6 dans la fiche d'un indicateur, lus dans la base
   DB-IP Lite importée localement (aucune requête sortante à la consultation) ; adresses non
   routables signalées ; attribution « IP Geolocation by DB-IP ».
@@ -186,12 +216,12 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   (`enrichment.import`) ; bases importées visibles dans Administration → Paramètres.
 - Démonstration : enrichissement fictif des plages de documentation (RFC 5737, AS RFC 5398).
 
-### Modifié — interface chargée à la demande
+### Modifié : interface chargée à la demande
 - Chaque écran est un fichier séparé, chargé à l'ouverture ; ECharts et React dans leurs
   propres fichiers : l'écran de connexion n'attend plus les graphiques, plus d'avertissement
   « chunk > 900 kB » au build.
 
-### Modifié — identité ILLWATCH v2 (brand book, ADR-018)
+### Modifié : identité ILLWATCH v2 (brand book, ADR-018)
 - Nom affiché « ILLWATCH », endossement « PAR CYBERILL » (interface, API, CLI, documentation) ;
   identifiants techniques inchangés (`illwatch`, `ILLWATCH_*`).
 - Logos, symbole écu-radar, favicon, icône d'application et avatar du kit dans `docs/assets/` ;
@@ -207,15 +237,15 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   des incidents et les correspondances de chasse ; « Indicateurs (IOC) » à la première occurrence.
 - Sélecteurs segmentés à 40 px ; survol des graphiques en Signal.
 
-### Ajouté — M8 Detection & Correlation démarré (ADR-017)
-- Fiabilité de chaque source sur l'échelle de l'Amirauté (A–F) : colonne
+### Ajouté : M8 Detection & Correlation démarré (ADR-017)
+- Fiabilité de chaque source sur l'échelle de l'Amirauté (A-F) : colonne
   `threat_feeds.reliability` (migration `d2f7a9c4e318`, « C » par défaut ; cotes de référence
   appliquées une fois : abuse.ch et IPsum B, OTX D), réglable par l'administrateur.
-- Score de confiance des IOC (0–100) calculé à la lecture : sources pondérées par leur
+- Score de confiance des IOC (0-100) calculé à la lecture : sources pondérées par leur
   fiabilité (60), fraîcheur à demi-vie par type (30), récurrence (10) ; niveaux élevée /
   moyenne / faible ; décomposition dans le détail d'un IOC (`confidence_breakdown`).
 
-### Ajouté — écrans Sources CTI et Administration
+### Ajouté : écrans Sources CTI et Administration
 - Sources CTI : synthèse, sources triées par besoin d'attention, fiche (adresse, fréquence,
   essais, récolte, frise et journal des collectes), réglages ADMIN (fréquence, fiabilité,
   suspension, suppression confirmée), ajout d'une source.
@@ -225,12 +255,12 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   `POST /users/{id}/revoke-sessions` (jamais sans administrateur actif, lignes verrouillées) ;
   `GET /settings` (présence des secrets seulement).
 
-### Modifié — système de design v7 « Veille de nuit » (remplacé le jour même par la v8)
+### Modifié : système de design v7 « Veille de nuit » (remplacé le jour même par la v8)
 - Nouveau logo (œil-radar), IBM Plex, icônes dans le menu, palette recalibrée (contrastes AA à
   AAA), graphiques en couleurs pleines, écran de connexion en deux parties, affichage téléphone
   (menu en onglets horizontaux). `docs/DESIGN_SYSTEM.md` à jour.
 
-### Ajouté — préproduction locale
+### Ajouté : préproduction locale
 - `scripts/preprod-local.sh` (up, check, demo, logs, down, purge) et
   `docker-compose.preprod.yml` : pile de production isolée, Caddy HTTPS sur
   `https://illwatch.localhost:8443`, contrôles automatiques (HTTPS et certificat, en-têtes,
@@ -240,7 +270,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   écran et téléphone) publiées sur la branche `captures` ; échec sur erreur d'écran, de
   console, violation CSP ou débordement de mise en page.
 
-### Modifié — interface : React 19, Vite 7
+### Modifié, interface : React 19, Vite 7
 - React 19.3, Vite 7.3, `@vitejs/plugin-react` 5.2 : `npm audit` à **0 vulnérabilité, outils
   de développement compris** (les deux alertes Vite 5 / esbuild disparaissent). Node.js ≥ 20.19.
 - Polices IBM Plex Sans et IBM Plex Mono (remplacent Inter et JetBrains Mono) ; icônes
@@ -248,11 +278,11 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Workflow « Verrouillage npm » : sur une branche `deps/**`, le fichier de verrouillage est
   régénéré par npm en CI à partir d'une demande versionnée (`.github/npm-request.txt`).
 
-### Ajouté — construction de l'interface
+### Ajouté : construction de l'interface
 - `scripts/build-web.sh` : schéma OpenAPI, dépendances, types générés et construction en une
   commande (un `npm run build` seul après un changement d'API compilait avec l'ancien schéma).
 
-### Ajouté — interface : écran Chasse (lot 1 complet)
+### Ajouté, interface : écran Chasse (lot 1 complet)
 - Sessions de chasse (50 dernières, `?session=`) : origine, état, durée, périmètre, erreurs.
 - Correspondances par pages de 100, les plus graves d'abord, filtres règle (avec effectifs) et
   sévérité ; liens vers les fiches IOC et CVE.
@@ -260,7 +290,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   choix des règles ; sans observable, toute la base.
 - API : `GET /hunting/sessions/{id}/matches` (pagination, filtres, effectifs par règle).
 
-### Corrigé — revue indépendante des écrans IOC, CVE et chasse
+### Corrigé : revue indépendante des écrans IOC, CVE et chasse
 - Sécurité : `?ioc=` et `?session=` n'acceptent qu'un UUID et tous les segments de chemin
   d'API sont encodés (lectures et écritures) ; une adresse forgée ne peut plus faire appeler une autre route (l'export
   complet, par exemple) avec la session de la victime.
@@ -271,7 +301,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Recherche d'IOC par valeur indépendante des filtres masqués ; pagination ramenée à une page
   valide quand la liste rétrécit.
 
-### Ajouté — interface : écran CVE et priorités
+### Ajouté, interface : écran CVE et priorités
 - Liste par score composite, recherche par identifiant ou texte (`?q=`), filtre de priorité
   avec effectifs, CVE exploitées (KEV) ; pagination par 50.
 - Fiche : signaux (CVSS et vecteur, EPSS et centile, KEV, exploit public, rançongiciels),
@@ -283,7 +313,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Recherche de CVE : `%`, `_` et `\` saisis sont cherchés tels quels (n'agissent plus comme
   jokers SQL).
 
-### Ajouté — interface : écran Indicateurs (IOC)
+### Ajouté, interface : écran Indicateurs (IOC)
 - Recherche exacte normalisée (`evil[.]com` trouve `evil.com`), partageable (`?valeur=`) ;
   filtres type, sévérité minimale, source, validité ; pagination par 50.
 - Fiche : copie de la valeur, statut, provenance par source (ADR-006), incidents associés,
@@ -295,7 +325,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Temps réel : une collecte relit la liste des IOC ; depuis un incident, chaque IOC mène à
   sa fiche.
 
-### Ajouté — vérification
+### Ajouté : vérification
 - `scripts/ci-local.sh` couvre tout le pipeline en une commande : contrôle préalable du réseau
   (DNS de github.com, pypi.org, registry.npmjs.org, avec le remède) et des outils, interface
   web (`npm ci`, audit, types générés, `tsc`, tests, construction), image Docker en option
@@ -304,7 +334,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Workflow GitHub « Branches » : supprime la branche d'une PR fusionnée et balaie chaque
   semaine les branches entièrement contenues dans `main` (`main` et `release/*` exclues).
 
-### Corrigé — audit global du 10/10 (revue indépendante)
+### Corrigé : audit global du 10/10 (revue indépendante)
 - Test de chasse daté (aurait cassé la CI le 02/11/2026) : données relatives à l'horloge réelle.
 - Bus temps réel : l'écoute Redis se reconnecte seule (1 → 30 s) et demande une relecture ;
   une publication impossible est livrée aux abonnés du processus ; Redis absent au démarrage
@@ -324,7 +354,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Documentation : README, feuille de route, état d'avancement, ONBOARDING (`illwatch db
   upgrade`), architecture, design system, addendum à l'ADR-016.
 
-### Ajouté — écran Incidents (10/10)
+### Ajouté : écran Incidents (10/10)
 - Liste des incidents (ouverts ou tous, filtres statut et sévérité, les plus graves d'abord) et
   ouverture manuelle d'un incident (ADMIN, ANALYST).
 - Page d'incident : cycle de vie NIST en six étapes, chronologie immuable, transitions
@@ -333,7 +363,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   assignation, CVE et IOC associés.
 - Erreurs de validation de l'API (422) affichées en clair.
 
-### Ajouté — écran Triage (10/10)
+### Ajouté : écran Triage (10/10)
 - File des alertes CVE triée par priorité puis ancienneté (« À traiter » ou « Toutes »),
   navigation au clavier, alerte choisie dans l'adresse (`/triage?alerte=…`).
 - Panneau de détail en cinq sections : priorité, statut (score, émission, notification),
@@ -342,7 +372,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Actions « Acquitter » et « Ouvrir l'incident » (ADMIN, ANALYST ; désactivées avec la raison
   pour VIEWER) ; après acquittement, la file passe à l'alerte suivante.
 
-### Sécurité — dépendances de l'interface (10/10)
+### Sécurité : dépendances de l'interface (10/10)
 - `npm audit` (premier `npm install` sur Kali) : React Router 6 (redirections ouvertes, XSS,
   toute la branche 6) et ECharts < 6.1.0 (XSS). React Router est **retiré** au profit d'un
   routage interne de 60 lignes qui refuse toute adresse non interne ; ECharts passe en 6.1.0.
@@ -354,7 +384,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - CI : `npm audit --omit=dev --audit-level=high` bloque désormais toute vulnérabilité élevée
   ou critique dans le code livré au navigateur.
 
-### Ajouté — interface web, socle et vue d'ensemble (10/10)
+### Ajouté : interface web, socle et vue d'ensemble (10/10)
 - `frontend/` : React + TypeScript (Vite), TanStack Query, ECharts ; types générés depuis le
   schéma OpenAPI (`illwatch openapi`, `npm run gen:api`).
 - Connexion avec renouvellement anticipé du jeton ; flux temps réel SSE avec pause, reprise,
@@ -368,13 +398,13 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Image Docker multi-étapes (Node pour compiler, aucun Node à l'exécution) ; job CI
   « Interface web » (types, tests, build).
 
-### Modifié — retrait progressif des sources en panne (10/10)
+### Modifié : retrait progressif des sources en panne (10/10)
 - Une source en échec n'est plus retentée à chaque cycle du worker (constat Kali du 09/10 :
   DigitalSide injoignable sollicitée toutes les 3 minutes, 4 essais et 67 s à chaque fois).
   Après n échecs consécutifs, la tentative suivante attend 1, 2, 4, 8… minutes, jamais plus que
   l'intervalle normal de la source. Compté depuis `collection_runs` ; `fetch-all` l'ignore.
 
-### Corrigé — journal des collectes (08/10)
+### Corrigé : journal des collectes (08/10)
 - Une écriture refusée dans `collection_runs` (droits du rôle applicatif absents après un
   `alembic upgrade` lancé seul) faisait échouer tout le cycle du worker et laissait les verrous
   de collecte tenus jusqu'à expiration. Le journal est désormais écrit dans un point de
@@ -382,7 +412,7 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   journalisé. Le verrou est toujours rendu.
 - `alembic upgrade` lancé seul avertit que les droits du rôle applicatif restent à poser.
 
-### Ajouté — interface web, lot 1 côté serveur (08/10)
+### Ajouté : interface web, lot 1 côté serveur (08/10)
 - Journal des collectes : chaque collecte d'un flux laisse une ligne `collection_runs` (début,
   durée, nouveaux, mis à jour, rejetés, erreur, avertissement) ; conservation 90 jours, purge par
   l'entretien quotidien du worker. Migration `b8e3f61a2c47`.
@@ -402,14 +432,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   et le worker (repli en mémoire si Redis est injoignable). Les événements sont déduits des
   écritures en base et publiés **après le commit** uniquement.
 
-### Décidé — interface web (08/10)
+### Décidé : interface web (08/10)
 - ADR-016 accepté : interface React + TypeScript (Vite, TanStack Query, types générés depuis
   OpenAPI), temps réel par Server-Sent Events, servie par le même conteneur que l'API.
 - Système de design v6 adopté (`docs/DESIGN_SYSTEM.md`) : indigo CYBERILLSEC, orange d'action,
-  échelle de priorité unique P0–P3, Inter et JetBrains Mono.
+  échelle de priorité unique P0-P3, Inter et JetBrains Mono.
 - L'hébergement de préproduction (fin de M7) attend la première version de l'interface.
 
-### Modifié — SENTRY devient ILLWATCH (08/10)
+### Modifié : SENTRY devient ILLWATCH (08/10)
 - Le nom « Sentry » étant déjà pris (plateforme de suivi d'erreurs), le projet est renommé
   **ILLWATCH**. Tout est renommé, sans compatibilité ascendante :
   - paquet Python `illwatch` (ex-`sentry-cti`), commande `illwatch`, journaux `illwatch.*` ;
@@ -430,21 +460,21 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 - Les anciens mots de passe de développement (`sentry`, `sentry-app-dev`, `sentry-dev-redis`)
   restent refusés en production.
 
-### Sécurité — détection de secrets (07/10)
+### Sécurité : détection de secrets (07/10)
 - Revue de tout l'historique Git avec gitleaks : 17 constats, **tous des faux positifs**
   (mots de passe factices de `tests/`, comptes jetables de la validation réelle) ; aucun `.env`,
   aucune clé privée jamais commité.
 - `.gitleaks.toml` : exclusions justifiées ; un vrai jeton reste détecté (contrôle fait).
 - CI GitHub : gitleaks sur tout l'historique à chaque push (version épinglée, somme vérifiée).
 
-### Sécurité — image Docker (07/10)
+### Sécurité : image Docker (07/10)
 - `curl` retiré de l'image : il ne servait qu'au `HEALTHCHECK` (désormais en Python) et portait
   8 des 52 vulnérabilités « High » relevées par Container Scanning (aucune corrigée par Debian).
   Les 44 autres, toutes dans le socle Debian 13.7 et sans correctif, sont acceptées et
   documentées (guide d'exploitation § 7 quinquies). Aucune Critical.
 - CI GitHub : l'image est vérifiée sans curl et sa sonde de santé est exécutée.
 
-### Modifié — priorité des CVE (ADR-014 accepté le 07/10)
+### Modifié : priorité des CVE (ADR-014 accepté le 07/10)
 - **Plancher KEV** : une CVE du catalogue CISA KEV est classée au moins **P1**, même si la
   formule la place en P2 ou P3 ; le score reste celui de la formule (ADR-001). Motif historisé
   `…+floor_kev`, exposé dans l'API (`breakdown.kev_floor`) et `sentry cves show`.
@@ -452,14 +482,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
   **À lancer une fois après la mise à jour** (612 CVE KEV en P2/P3 sur la base de référence).
 - Panne EPSS : la conservation de la dernière valeur connue est verrouillée par un test.
 
-### Performances — gros volume (07/10)
+### Performances : gros volume (07/10)
 Mesuré sur 480 669 IOC (poste Kali) : export des IOC en 89 s, tableau de bord en 2 à 4 s.
 - **Export** : pagination par clé (`WHERE id > dernière clé`) au lieu d'`OFFSET`, dont le
   coût était quadratique ; lecture des seules colonnes exportées ; envoi par paquets de 500
   lignes au lieu d'une écriture réseau par ligne.
 - **Tableau de bord** : deux lectures de la table des IOC au lieu de cinq (agrégats filtrés).
 
-### Corrigé — rattrapage OTX de nuit (07/10)
+### Corrigé : rattrapage OTX de nuit (07/10)
 - Une URL au port invalide (`http://hote:99999/`) levait une `ValueError` brute qui faisait
   échouer **tout le lot** d'IOC ; la collecte relisait alors les mêmes pages à l'infini
   (24 passages sans progrès). La valeur est désormais rejetée seule, comme toute valeur
@@ -467,7 +497,7 @@ Mesuré sur 480 669 IOC (poste Kali) : export des IOC en 89 s, tableau de bord e
 - « Reprise à la page N » n'est plus annoncé quand l'ingestion échoue : l'avancement n'étant
   pas enregistré, le message était trompeur.
 
-### Corrigé — collecte OTX (06/10, soirée)
+### Corrigé : collecte OTX (06/10, soirée)
 Constaté lors de la première collecte réelle d'un compte OTX abonné à plus de 1 000 pulses :
 - **Fin du « tout ou rien »** : une erreur réseau après la première page (ex. `ReadTimeout`
   après 17 min) annulait toute la collecte ; les pages déjà lues sont désormais ingérées et
@@ -479,7 +509,7 @@ Constaté lors de la première collecte réelle d'un compte OTX abonné à plus 
 - `sentry cves sync` annonçait « NVD sans clé » même avec `NVD_API_KEY` : le rythme affiché
   suit désormais la configuration.
 
-### Corrigé — clone neuf sur Kali (06/10)
+### Corrigé : clone neuf sur Kali (06/10)
 Un clone neuf suivi du démarrage rapide du README a révélé des défauts invisibles en CI, où
 aucun `.env` n'existe :
 - **Tests et CI locale isolés du `.env`** : `MIGRATION_DATABASE_URL` du `.env` de poste
@@ -504,20 +534,20 @@ aucun `.env` n'existe :
   requête SQL manuelle.
 - CI GitHub : étape « clone neuf » qui copie `.env.example` en `.env` avant les tests.
 
-### Ajouté — Miroir GitHub et distribution (06/10, ADR-015)
+### Ajouté : Miroir GitHub et distribution (06/10, ADR-015)
 - CI GitHub Actions miroir de `.gitlab-ci.yml` : ruff, mypy, pytest 3.12/3.14 sur PostgreSQL 16
   et Redis 7, migrations aller-retour, image Docker, fichiers Compose, pip-audit et bandit.
 - **Validation réelle** hebdomadaire (`validation-reelle.yml`) : instance complète alimentée par
   les vraies sources (flux IOC, KEV, NVD, EPSS, Tor), tests `live`, scénario SOC d'acceptation
-  et `sentry status` publiés dans le résumé du job — ferme la dette D3 de l'audit du 03/10.
+  et `sentry status` publiés dans le résumé du job : ferme la dette D3 de l'audit du 03/10.
 - **Documentation publiée** sur GitHub Pages (MkDocs Material, charte SENTRY) :
-  https://godwillfoka.github.io/cyberillsec-sentry/ — `mkdocs.yml`, `scripts/docs_prepare.py`.
+  https://godwillfoka.github.io/cyberillsec-sentry/ : `mkdocs.yml`, `scripts/docs_prepare.py`.
 - **Image Docker** sur `ghcr.io/godwillfoka/cyberillsec-sentry` (`:edge` depuis `main`,
   `:X.Y.Z` et `:latest` sur tag) et **release GitHub** dont les notes viennent de ce fichier.
 - `docker-compose.prod.yml` : `SENTRY_IMAGE` permet de déployer l'image publiée (`--no-build`).
 - Gabarits d'issues et de pull request GitHub ; Dependabot pour les actions et l'image de base.
 
-### Corrigé — checkup du 06/10
+### Corrigé : checkup du 06/10
 - Version déclarée à deux endroits (`sentry/__init__.py` et `config.py`) : source unique.
 - Badges du README pointant vers des pipelines GitLab privés (images cassées hors GitLab).
 - Actions GitHub en Node 20 (dépréciées) remplacées par leurs versions Node 24 ; runners
@@ -529,7 +559,7 @@ aucun `.env` n'existe :
 ### Modifié
 - `main` intègre `release/v0.1.1` et M7 (lots 1 à 3) ; version de développement `0.2.0.dev0`.
 
-### Ajouté — M7 Production Hardening, lot 3 (ADR-013)
+### Ajouté : M7 Production Hardening, lot 3 (ADR-013)
 - `docker-compose.prod.yml` : Caddy (TLS Let's Encrypt, HTTP/2-3) seul service exposé,
   conteneur `migrate` éphémère (rôle propriétaire), API et worker en rôle applicatif,
   secrets obligatoires, `X-Forwarded-For` accepté de Caddy seul.
@@ -548,7 +578,7 @@ aucun `.env` n'existe :
 - Scénario de la baseline : contrôle SSRF non probant et compte bloqué entre deux exécutions.
 
 
-### Ajouté — M7 Production Hardening, lot 2 (ADR-012)
+### Ajouté : M7 Production Hardening, lot 2 (ADR-012)
 - Rôle PostgreSQL applicatif sans droit de structure (`sentry db app-role`), droits
   réappliqués après chaque migration ; migrations via `MIGRATION_DATABASE_URL`.
 - Jetons de rafraîchissement opaques et rotatifs, lignée révoquée au rejeu ;
@@ -569,7 +599,7 @@ aucun `.env` n'existe :
   d'accès d'uvicorn doublé.
 
 
-### Ajouté — M7 Production Hardening, lot 1 (ADR-011)
+### Ajouté : M7 Production Hardening, lot 1 (ADR-011)
 - Journal d'audit `audit_events` en ajout seul : connexions (réussies, échouées, bloquées),
   refus d'accès, administration des sources, soumission d'IOC, acquittement, chasse, exports,
   création de compte. `GET /api/v1/audit` (ADMIN), `sentry audit list`.
@@ -590,7 +620,7 @@ aucun `.env` n'existe :
   chronologie « immuable » pouvait être vidée d'une instruction (audit du 03/10/2026).
 
 
-## [0.1.1] — 2026-10-03 — Baseline M1–M6 intégrée
+## [0.1.1] (2026-10-03) Baseline M1-M6 intégrée
 
 ### Corrigé
 - `mypy --strict` échouait avec SQLAlchemy 2.0 (`Select` à deux paramètres de type, valide
@@ -600,25 +630,25 @@ aucun `.env` n'existe :
 - `scripts/scenario_soc.py` : test d'acceptation SOC de bout en bout contre une instance réelle
   (40 vérifications, latences mesurées).
 - `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md` : audit global de `main` (Git, CI, migrations,
-  validation réelle M2–M6, sécurité, dette, risques).
+  validation réelle M2-M6, sécurité, dette, risques).
 - `docs/ROADMAP.md` : trajectoire M7 → M11 et critères de sortie.
 
 
-### Ajouté — Phase 6 (v1.0 « Threat Hunting »)
+### Ajouté : Phase 6 (v1.0 « Threat Hunting »)
 - Moteur de règles déterministe, catalogue RULE-01 à RULE-06 (Tor, DNS dynamique, DGA,
   ransomware, CVE exploitables sur l'inventaire, IOC connu) ; chasse sur observables soumis ou sur
   la base ; sessions et correspondances enregistrées ; chasse planifiée par le worker.
 - API `/api/v1/hunting/rules|sessions` ; CLI `sentry hunt rules|run|show`. ADR-009.
 
-### Ajouté — Phase 5 (M5 « Dashboard & reporting »)
+### Ajouté : Phase 5 (M5 « Dashboard & reporting »)
 - `/api/v1/dashboard/summary|recent|export` ; `sentry dashboard show|export` ; MTTR ; exports
   CSV RFC 4180 / JSON RFC 8259 diffusés en flux, protégés contre l'injection CSV.
 
-### Ajouté — Phase 4 (M4 « Gestion des incidents »)
+### Ajouté : Phase 4 (M4 « Gestion des incidents »)
 - Service, API `/api/v1/incidents` et CLI `sentry incidents` ; chronologie immuable (ORM et
   déclencheur PostgreSQL) ; liens IOC/CVE ; incident ouvert depuis une alerte CVE. ADR-008.
 
-### Ajouté — TAXII 2.1 réel et sources vérifiées
+### Ajouté : TAXII 2.1 réel et sources vérifiées
 - Backend `taxii2-client` 2.3.0 durci (SSRF, redirections refusées, délai, taille, erreurs
   typées), Basic / Bearer / en-tête par hôte, `TAXII_CLIENT=library|builtin`. ADR-010.
 - `sentry taxii discover`, `sentry feeds probe`, `sentry feeds enable|disable`.
@@ -633,7 +663,7 @@ aucun `.env` n'existe :
 - Bundles Git (≈ 480 Ko) versionnés par erreur : retirés et ignorés.
 - Numéros d'exigence RF-15 / RF-16 du moteur CVE.
 
-### Ajouté — Phase 3 (M3 « Moteur CVE & alerting »)
+### Ajouté : Phase 3 (M3 « Moteur CVE & alerting »)
 - **NVD 2.0** : synchronisation initiale (catalogue KEV + CVE modifiées depuis
   `NVD_INITIAL_DAYS`) puis incrémentale (fenêtres `lastModStartDate` de 120 j, curseur en base),
   pagination, débit respecté (6 s sans clé, 0,6 s avec `NVD_API_KEY`). CVSS v3.1 → v3.0 → v4.0 ;
@@ -650,26 +680,26 @@ aucun `.env` n'existe :
   `CVE_SYNC_INTERVAL_SECONDS` ; `sentry status` affiche les critères M3.
 - ADR-007.
 
-### Ajouté — Clôture M2 (branche `feature/sprint3-m2`)
+### Ajouté : Clôture M2 (branche `feature/sprint3-m2`)
 - **TAXII 2.1** (tâche 1.8) : format `TAXII`, pagination `more`/`next`, `added_after`,
   identifiants par hôte `TAXII_AUTH` (accès invité DigitalSide par défaut).
 - `sentry seed` : sources publiques sans clé (C2IntelFeeds IP et domaines, DigitalSide URL et
   TAXII) ; 3 sources saines et ≥ 500 IOC atteignables sans inscription.
 
-### Corrigé — Clôture M2
+### Corrigé : Clôture M2
 - CSV : la colonne IOC est choisie sur le contenu. C2IntelFeeds (`#ip,ioc`) était rejeté à
   100 % car la colonne `ioc` contient un libellé.
 
-### Ajouté — Sprint 3 (M2 « Ingestion opérationnelle », branche `feature/sprint3-ingestion`)
+### Ajouté : Sprint 3 (M2 « Ingestion opérationnelle », branche `feature/sprint3-ingestion`)
 - **Provenance multi-sources (ADR-006)** : table `indicator_sources` (migration `1f3dafc3008c`,
   reprise de l'existant). `GET /api/v1/indicators/{id}` renvoie `sources` (flux, dates et
   compteur par source) ; la liste expose `source_count` ; le filtre `feed_id` couvre toutes les
   sources. `sentry status` compte les IOC confirmés par au moins deux flux.
-- **T2.9 — Connecteur AlienVault OTX** : format de flux `OTX`, pulses abonnés paginés,
+- **T2.9, Connecteur AlienVault OTX** : format de flux `OTX`, pulses abonnés paginés,
   `modified_since` incrémental, plafond `OTX_MAX_PAGES`. Clé `OTX_API_KEY` en en-tête, envoyée
   uniquement à `otx.alienvault.com` (refus 422 à l'enregistrement d'un flux OTX ailleurs).
   Source OTX ajoutée à `sentry seed`.
-- **T2.6 — Planificateur** : `sentry feeds worker` et service `worker` dans Docker Compose
+- **T2.6, Planificateur** : `sentry feeds worker` et service `worker` dans Docker Compose
   (profil `full`). Verrou Redis par flux, aussi utilisé par `fetch` et `fetch-all`.
 - **Journal JSON** (UC-01 étape 8) : une ligne `feed.collected` par collecte (volumes, durée,
   erreur, avertissement, pic mémoire `peak_rss_mb`), `worker.cycle` par cycle.
@@ -680,14 +710,14 @@ aucun `.env` n'existe :
 - `sentry status` : avancement mesuré en base (schéma, santé des sources, IOC actifs/expirés
   par type, critères du jalon M2 cochés ou non).
 - Pipeline : tests exécutés sous Python 3.12 et 3.14.
-- **T2.3 — Collecteur de flux (UC-01)** : récupération HTTP sécurisée (revalidation de l'URL,
+- **T2.3, Collecteur de flux (UC-01)** : récupération HTTP sécurisée (revalidation de l'URL,
   résolution DNS avec refus de toute adresse interne, redirections revalidées une à une, taille
   plafonnée par `FEED_MAX_BYTES`), backoff exponentiel sur erreurs réseau et 5xx, report au cycle
   suivant sur HTTP 429. Analyseurs CSV (en-têtes commentés abuse.ch), JSON et STIX 2.1. Chaque
   flux est isolé : un échec passe le flux en `DEGRADED` sans bloquer les autres (RSK-02).
-- **T2.7 — CLI `sentry feeds`** : `list`, `add`, `fetch <nom|id>`, `fetch-all [--force]`. Code de
+- **T2.7 : CLI `sentry feeds`** : `list`, `add`, `fetch <nom|id>`, `fetch-all [--force]`. Code de
   sortie non nul si une collecte échoue (planification cron / timer systemd).
-- **T2.2 — CRUD des sources de flux (RF-04)** : `GET/POST /api/v1/feeds`,
+- **T2.2, CRUD des sources de flux (RF-04)** : `GET/POST /api/v1/feeds`,
   `GET/PATCH/DELETE /api/v1/feeds/{id}`. Lecture pour tous les rôles authentifiés, écriture
   réservée aux `ADMIN`. Liste paginée (`limit` ≤ 200, `offset`) et filtrable (`is_active`,
   `status`, `feed_type`), triée par nom.
@@ -742,7 +772,7 @@ aucun `.env` n'existe :
 - Couverture de tests sous-estimée : `coverage` ne suivait pas les greenlets de SQLAlchemy async
   (`concurrency = ["greenlet", "thread"]`).
 
-## [0.1.0] — 2026-09-24
+## [0.1.0] : 2026-09-24
 
 Jalon M1 : squelette opérationnel validé (clôture de la phase 1 Foundation).
 
@@ -754,7 +784,7 @@ Jalon M1 : squelette opérationnel validé (clôture de la phase 1 Foundation).
   `incident_events` conformes au §4.4 (RF-02).
 - Moteur de Score de Risque Composite déterministe avec décomposition auditable (RF-14).
 - Machine d'état des incidents à 6 étapes avec garde-fous de transition (RF-18).
-- Détection et normalisation des IOC — IPv4/IPv6, domaines, URL, hashs, e-mails (RF-07, RF-08).
+- Détection et normalisation des IOC : IPv4/IPv6, domaines, URL, hashs, e-mails (RF-07, RF-08).
 - CLI `sentry` : `version`, `config`, `db check`, `db init` (RF-03).
 - Endpoint `/health` avec diagnostic de connexion base de données.
 - Orchestration Docker Compose PostgreSQL 16 + Redis 7.2 et image applicative non privilégiée.

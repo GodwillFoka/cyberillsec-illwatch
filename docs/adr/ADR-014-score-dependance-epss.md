@@ -1,6 +1,6 @@
-# ADR-014 — Score composite : dépendance à EPSS et plancher KEV
+# ADR-014, Score composite : dépendance à EPSS et plancher KEV
 
-- **Statut :** **accepté le 07/10/2026** — options **A + B + C** (décision de Godwill FOKA)
+- **Statut :** **accepté le 07/10/2026** : options **A + B + C** (décision de Godwill FOKA)
 - **Date :** 2026-10-04
 - **Concerne :** ADR-001 (formule du score), `illwatch/modules/cve_tracker/scoring.py`
 
@@ -60,14 +60,14 @@ C (dépend de la volatilité réelle d'EPSS, à mesurer sur 30 jours de données
 
 ## Mise en œuvre
 
-- **B — plancher KEV** : `compute_risk_breakdown` relève la priorité à P1 pour une CVE KEV que la
+- **B, plancher KEV** : `compute_risk_breakdown` relève la priorité à P1 pour une CVE KEV que la
   formule classe P2 ou P3. **Le score n'est pas modifié** (formule de l'ADR-001 intacte,
   historique comparable) ; `RiskBreakdown.kev_floor` le signale, l'API l'expose
   (`breakdown.kev_floor`) et `illwatch cves show` l'affiche. Chaque changement de priorité dû au
   plancher est historisé avec le motif suffixé `+floor_kev` (ex. `kev+floor_kev`).
 - **Reclassement de l'existant** : `illwatch cves rescore` recalcule toutes les priorités une fois,
   sans alerte (le score ne change pas, aucun seuil ne peut être franchi).
-- **C — dernière valeur EPSS connue** : la synchronisation n'efface jamais un score EPSS ; une
+- **C, dernière valeur EPSS connue** : la synchronisation n'efface jamais un score EPSS ; une
   panne de l'API FIRST laisse donc les scores et les P0 en place. Ce comportement est désormais
   verrouillé par un test (`test_panne_epss_ne_fait_pas_tomber_les_p0`). L'âge de la donnée est
   suivi globalement (`collector_state` `epss`, alerte `cve.epss_stale`, `illwatch status`) : un

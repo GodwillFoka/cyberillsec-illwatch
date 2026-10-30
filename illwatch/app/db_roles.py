@@ -1,4 +1,4 @@
-"""Séparation des rôles PostgreSQL — M7 Production Hardening, lot 2 (ADR-012).
+"""Séparation des rôles PostgreSQL : M7 Production Hardening, lot 2 (ADR-012).
 
 Deux rôles :
 

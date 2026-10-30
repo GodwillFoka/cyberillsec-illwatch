@@ -1,4 +1,4 @@
-# ILLWATCH — Bilan de M9 « SOC Operations » — 14/10/2026
+# ILLWATCH : bilan de M9 « SOC Operations » (14/10/2026)
 
 ## Critère de sortie
 

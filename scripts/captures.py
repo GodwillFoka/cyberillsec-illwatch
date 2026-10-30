@@ -54,6 +54,14 @@ SCREENS = [
     ("12b-pilotage-30j", "/pilotage?jours=30"),
     ("13-campagnes", "/campagnes"),
 ]
+# Fichier d'inventaire de l'aperçu d'import : « HQ firewall » existe dans le jeu de démonstration.
+INVENTORY_SAMPLE = (
+    "nom;produit;editeur;version;criticite;adresses;domaines\n"
+    "HQ firewall;FortiOS;Fortinet;7.2.5;Critique;198.51.100.10;vpn.example.com\n"
+    "Remote access gateway;Ivanti Connect Secure;Ivanti;22.7R2;Élevée;198.51.100.20;\n"
+    "Build server;Jenkins;Jenkins;2.452;Moyenne;;ci.example.com\n"
+).encode()
+
 # Téléphone : tous les écrans (les débordements y sont les plus fréquents).
 MOBILE = {name for name, _ in SCREENS}
 
@@ -227,6 +235,44 @@ def main() -> int:
             shoot(page, OUT / "04-incident.png")
         else:
             problems.append("aucun incident à ouvrir")
+
+        # Import d'inventaire (ADR-028) : panneau ouvert, puis aperçu d'un fichier valide (une
+        # mise à jour d'un actif de démonstration, deux créations). L'import n'est pas confirmé :
+        # le jeu de démonstration reste intact.
+        def import_panel(suffix: str, open_label: str, analyse_label: str) -> None:
+            page.goto(f"{BASE}/inventaire")
+            settle(page)
+            page.get_by_role("button", name=open_label).click()
+            settle(page)
+            shoot(page, OUT / f"11b-inventaire-import{suffix}.png")
+            page.locator("input[type=file]").set_input_files(
+                {"name": "inventaire.csv", "mimeType": "text/csv", "buffer": INVENTORY_SAMPLE}
+            )
+            page.get_by_role("button", name=analyse_label).click()
+            page.wait_for_selector(".import-preview")
+            settle(page)
+            check(page, f"11c-inventaire-apercu{suffix}")
+            shoot(page, OUT / f"11c-inventaire-apercu{suffix}.png")
+
+        import_panel("", "Import a file", "Analyse")
+
+        # Documentation en français : chaque écran aussi capturé en français.
+        page.evaluate("localStorage.setItem('illwatch.lang', 'fr')")
+        for name, path in SCREENS:
+            if name in ("01-vue-ensemble", "02-triage"):
+                continue  # capturés ci-dessous avec les autres langues
+            page.goto(f"{BASE}{path}")
+            settle(page)
+            check(page, f"{name}-fr")
+            shoot(page, OUT / f"{name}-fr.png")
+        page.goto(f"{BASE}/incidents")
+        settle(page)
+        link = page.locator("table a[href^='/incidents/']").first
+        if link.count():
+            link.click()
+            settle(page)
+            shoot(page, OUT / "04-incident-fr.png")
+        import_panel("-fr", "Importer un fichier", "Analyser")
 
         # Interface multilingue (ADR-027) : la vue d'ensemble et le triage dans les quatre autres
         # langues, choix mémorisé comme le ferait le sélecteur ; erreurs de console contrôlées.

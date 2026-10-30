@@ -1,4 +1,4 @@
-# ADR-003 — Authentification JWT livrée dès la phase 1
+# ADR-003 : Authentification JWT livrée dès la phase 1
 
 - **Statut :** accepté
 - **Date :** 2026-09-23
@@ -28,7 +28,7 @@ commande `illwatch users create`.
   refusés) ; le rôle est relu en base à chaque requête, un jeton ne suffit pas à garder un droit
   retiré.
 - **Flux OAuth2 *password*** : bouton *Authorize* de Swagger utilisable tel quel.
-- *Écarté* — OIDC / SSO (Keycloak) : prévu au-delà de la v1.0 avec le multi-tenant ; trop lourd
+- *Écarté*, OIDC / SSO (Keycloak) : prévu au-delà de la v1.0 avec le multi-tenant ; trop lourd
   pour la cible < 256 Mo.
 
 ## Conséquences

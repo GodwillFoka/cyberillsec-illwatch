@@ -1,4 +1,4 @@
-# 🛡️ SENTRY — Rapport global d'avancement
+# 🛡️ SENTRY : rapport global d'avancement
 
 **Date :** 03/10/2026 · **Version publiée :** `0.1.0` (M1) · **Candidate :** `1.0.0-rc` sur
 `feature/phases-4-6`
@@ -24,7 +24,7 @@ réelles.
 
 | Phase | Code | Jalon | Reste à faire |
 |---|---|---|---|
-| P1 Foundation | 100 % | ✅ **M1 atteint** (`v0.1.0`, 24/09) | — |
+| P1 Foundation | 100 % | ✅ **M1 atteint** (`v0.1.0`, 24/09) | - |
 | P2 Threat Feeds | 100 % | à constater | clé OTX, jeton RedEye, worker 24 h |
 | P3 CVE Tracker | 100 % | à constater | clé NVD, première synchro complète |
 | P4 Incidents | ≈ 85 % | à constater | 3.6 liste d'exclusion des faux positifs |
@@ -58,8 +58,8 @@ de RedEye, jamais éprouvés contre leurs vraies réponses.
 
 ### MOD-03 CVE Tracker
 - NVD 2.0 incrémental, catalogue CISA KEV, FIRST EPSS.
-- Score composite déterministe 0–100 (ADR-001), recalculé à chaque changement d'entrée,
-  priorité P0–P3 et délai de remédiation, historique d'audit des scores.
+- Score composite déterministe 0-100 (ADR-001), recalculé à chaque changement d'entrée,
+  priorité P0-P3 et délai de remédiation, historique d'audit des scores.
 - Alertes au franchissement de seuil, webhook, acquittement.
 
 ### MOD-04 Incidents
@@ -96,20 +96,20 @@ de RedEye, jamais éprouvés contre leurs vraies réponses.
 
 | Indicateur | M1 (24/09) | 29/09 | **03/10** | Cible |
 |---|---|---|---|---|
-| Tests | 95 | 326 | **388** | — |
+| Tests | 95 | 326 | **388** | - |
 | Couverture | 94 % | ≈ 95 % | **94 %** | ≥ 80 % |
-| Routes `/api/v1` | 3 | 14 | **28** | — |
-| Commandes CLI | 9 | 19 | **34** | — |
-| Tables / migrations | — / 1 | 10 / 4 | **14 / 6** | — |
-| ADR | 3 | 7 | **10** | — |
-| Liste des CVE, P95 (30 000 CVE) | — | 8 ms | 8 ms | 250 ms |
-| Pic mémoire (37 000 IOC réels) | — | 120 Mo | 120 Mo | 256 Mo |
+| Routes `/api/v1` | 3 | 14 | **28** | - |
+| Commandes CLI | 9 | 19 | **34** | - |
+| Tables / migrations | : / 1 | 10 / 4 | **14 / 6** | - |
+| ADR | 3 | 7 | **10** | - |
+| Liste des CVE, P95 (30 000 CVE) | - | 8 ms | 8 ms | 250 ms |
+| Pic mémoire (37 000 IOC réels) | - | 120 Mo | 120 Mo | 256 Mo |
 
 ## 6. Écart au planning
 
 | Jalon | Plan initial | Plan recalé (ADR-004) | Constat au 03/10 |
 |---|---|---|---|
-| M1 Foundation | 05/08 | — | ✅ 24/09 |
+| M1 Foundation | 05/08 | - | ✅ 24/09 |
 | M2 Threat Feeds | 19/08 | 08/10 | code ✅, constat à faire |
 | M3 CVE | 02/09 | 22/10 | code ✅, constat à faire |
 | M4 Incidents | 16/09 | 05/11 | code ✅ (≈ 5 semaines d'avance) |

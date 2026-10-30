@@ -1,1 +1,1 @@
-"""Modules métier indépendants — couche SERVICES de la Clean Architecture."""
+"""Modules métier indépendants : couche SERVICES de la Clean Architecture."""

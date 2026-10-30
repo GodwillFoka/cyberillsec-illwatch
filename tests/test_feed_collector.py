@@ -1,4 +1,4 @@
-"""Orchestration de la collecte — UC-01, isolation des pannes (RSK-02)."""
+"""Orchestration de la collecte : UC-01, isolation des pannes (RSK-02)."""
 
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta

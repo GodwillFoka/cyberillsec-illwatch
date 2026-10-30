@@ -1,11 +1,11 @@
-"""Tableau de bord SOC — MOD-05, RF-21 à RF-24 (phase 5).
+"""Tableau de bord SOC : MOD-05, RF-21 à RF-24 (phase 5).
 
 Trois produits, tous calculés en base à la demande (pas de cache : les chiffres d'un SOC
 doivent être ceux de l'instant) :
 
 - `compute_summary` (RF-21) : IOC actifs, ratio de sévérité des CVE, incidents ouverts par
   criticité, temps moyen de résolution, alertes en attente, santé des collecteurs.
-- `recent_activity` (RF-22) : fil consolidé des dernières heures — nouveaux IOC, CVE passées
+- `recent_activity` (RF-22) : fil consolidé des dernières heures, nouveaux IOC, CVE passées
   en P0/P1, alertes, incidents ouverts.
 - `export_rows` (RF-24) : jeux de données exportables en JSON (RFC 8259) ou CSV (RFC 4180),
   lus par paquets pour une mémoire bornée. Les cellules CSV qui commencent par `= + - @`
@@ -296,7 +296,7 @@ async def recent_activity(
             "alert",
             _utc(a.created_at) or moment,
             str(a.id),
-            tr("Alerte", "Alert") + f" {a.cve_id} — score {float(a.score):.1f}",
+            tr("Alerte", "Alert") + f" {a.cve_id}: score {float(a.score):.1f}",
             a.priority,
         )
         for a in alerts.scalars()

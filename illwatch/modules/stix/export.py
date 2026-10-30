@@ -1,7 +1,7 @@
-"""Export STIX 2.1 du renseignement d'ILLWATCH — M10, incrément 3 (ADR-025).
+"""Export STIX 2.1 du renseignement d'ILLWATCH : M10, incrément 3 (ADR-025).
 
 - **Indicateurs** : un objet `indicator` par IOC actif (non expiré, non exclu), motif STIX
-  selon son type, confiance 0–100 (ADR-017), sévérité en étiquette, validité (`valid_until`)
+  selon son type, confiance 0-100 (ADR-017), sévérité en étiquette, validité (`valid_until`)
   à l'expiration. Identifiants **déterministes** (UUID v5 du type et de la valeur) : un même
   IOC garde le même identifiant d'un export à l'autre, ce que les consommateurs TAXII
   utilisent pour dédupliquer.

@@ -1,4 +1,4 @@
-// Score de risque composite — copie fidèle de illwatch/modules/cve_tracker/scoring.py
+// Score de risque composite : copie fidèle de illwatch/modules/cve_tracker/scoring.py
 // (ADR-001, plancher KEV de l'ADR-014). La parité est vérifiée des deux côtés sur le même jeu
 // de cas : tests/score-vectors.json (node --test) et tests/test_site_score_parity.py (pytest).
 //

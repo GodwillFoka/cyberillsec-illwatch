@@ -1,4 +1,4 @@
-"""Événements déduits des écritures en base — ADR-016.
+"""Événements déduits des écritures en base : ADR-016.
 
 Plutôt que d'appeler `emit` dans chaque service (et d'en oublier un), les événements sont
 déduits de ce que la transaction écrit, au moment du `flush` : une alerte CVE insérée donne

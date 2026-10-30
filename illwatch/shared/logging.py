@@ -1,4 +1,4 @@
-"""Journal structuré JSON — UC-01 étape 8, RNF d'exploitabilité.
+"""Journal structuré JSON : UC-01 étape 8, RNF d'exploitabilité.
 
 Une ligne JSON par événement, sur la sortie d'erreur : lisible par `jq`, par journald
 et par n'importe quel collecteur (Loki, Elastic, Graylog) sans analyseur dédié.

@@ -1,4 +1,4 @@
-"""Modèles du threat hunting — MOD-06, RF-27 et RF-28 (phase 6, ADR-009).
+"""Modèles du threat hunting : MOD-06, RF-27 et RF-28 (phase 6, ADR-009).
 
 - `hunting_sessions` : une exécution du moteur (manuelle ou planifiée), son périmètre
   (observables soumis, inventaire d'actifs, règles), son statut et son bilan.

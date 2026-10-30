@@ -1,4 +1,4 @@
-"""CLI `illwatch demo-requests` — demandes reçues du site de présentation (ADR-027, lot S4).
+"""CLI `illwatch demo-requests` : demandes reçues du site de présentation (ADR-027, lot S4).
 
 illwatch demo-requests list [--status NEW]
 illwatch demo-requests purge [--older-than 365]

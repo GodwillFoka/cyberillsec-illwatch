@@ -1,4 +1,4 @@
-"""Limitation des tentatives de connexion — protection contre la force brute (RNF-SEC).
+"""Limitation des tentatives de connexion : protection contre la force brute (RNF-SEC).
 
 Trois compteurs par fenêtre simple (`LOGIN_WINDOW_SECONDS`, 15 min par défaut), avec
 `N = LOGIN_MAX_FAILURES` (5) :

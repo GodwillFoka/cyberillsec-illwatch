@@ -1,4 +1,4 @@
-"""Tests de détection et normalisation des IOC — RF-07 / RF-08."""
+"""Tests de détection et normalisation des IOC : RF-07 / RF-08."""
 
 import pytest
 

@@ -84,7 +84,7 @@ function Timeline({ events }: { events: IncidentEvent[] }) {
         const at = parseDate(event.created_at);
         return (
           <li key={event.id}>
-            <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
+            <span className="mono muted">{at ? formatDateTime(at, utc) : "-"}</span>
             <div>
               <span className="kind">
                 {eventLabel(event.event_type)} · <Author id={event.author_id} />
@@ -385,7 +385,7 @@ function IncidentHunting({ incident, canAct }: { incident: IncidentDetail; canAc
             return (
               <li key={h.id}>
                 <Link to={`/chasse?session=${encodeURIComponent(h.id)}`}>
-                  {at ? formatDateTime(at, utc) : "—"}
+                  {at ? formatDateTime(at, utc) : "-"}
                 </Link>{" "}
                 <span className="muted">
                   {t("huntLine", { matches: formatNumber(h.matches_count), status: huntStatus(h.status) })}
@@ -558,7 +558,7 @@ export function IncidentPage({ incidentId }: { incidentId: string }) {
                   </h1>
                   <p>
                     {INCIDENT_STATUS[incident.status]} · {TIER_LABEL[incident.tier] ?? incident.tier}
-                    {t("opened", { ago: opened ? formatAgo(opened) : "—" })}
+                    {t("opened", { ago: opened ? formatAgo(opened) : "-" })}
                     {opened ? ` (${formatDateTime(opened, utc)})` : ""}
                     {closed ? t("closedAt", { at: formatDateTime(closed, utc) }) : ""}
                     {incident.source_alert_id ? t("fromAlert") : ""}

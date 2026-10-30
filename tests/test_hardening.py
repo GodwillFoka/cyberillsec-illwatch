@@ -1,4 +1,4 @@
-"""M7 Production Hardening — en-têtes, identifiant de requête, erreurs, sondes, réglages."""
+"""M7 Production Hardening : en-têtes, identifiant de requête, erreurs, sondes, réglages."""
 
 import os
 from collections.abc import Iterator

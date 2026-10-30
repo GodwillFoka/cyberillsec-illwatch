@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — observabilité (M11, ADR-026) : Prometheus + Grafana
+# ILLWATCH, observabilité (M11, ADR-026) : Prometheus + Grafana
 #
 # Surcouche de la pile de production :
 #   COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml:docker-compose.observability.yml

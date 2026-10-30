@@ -1,4 +1,4 @@
-"""Routes des indicateurs de compromission — `/api/v1/indicators` (RF-07, RF-08).
+"""Routes des indicateurs de compromission : `/api/v1/indicators` (RF-07, RF-08).
 
 | Opération                         | ADMIN | ANALYST | VIEWER |
 |-----------------------------------|:-----:|:-------:|:------:|

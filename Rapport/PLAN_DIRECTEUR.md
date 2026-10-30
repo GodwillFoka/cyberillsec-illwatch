@@ -1,4 +1,4 @@
-# 🛡️ SENTRY — Plan directeur : état, tâches par étape, attentes et perspectives
+# 🛡️ SENTRY : plan directeur (état, tâches par étape, attentes et perspectives)
 
 **Date :** 27/09/2026, mis à jour le 03/10/2026 · **Version courante :** `0.1.0` (M1) ·
 **Branches de travail :** `feature/threat-feeds-indicators` (à fusionner), puis
@@ -8,7 +8,7 @@
 > `Rapport/BILAN_M2_PHASE_3.md` et `Rapport/RAPPORT_GLOBAL.md`. Les étapes 1 et 2 ne restent
 > ouvertes que pour leur constat sur données réelles (`sentry status`).
 
-> **Mise à jour du 03/10, après fusion.** M1–M6 sont intégrés dans `main` (`266b46e`). Audit
+> **Mise à jour du 03/10, après fusion.** M1-M6 sont intégrés dans `main` (`266b46e`). Audit
 > global : `Rapport/ETAT_GLOBAL_SENTRY_2026-10-03.md`. Les tâches ❌/◐ des étapes 3 à 5 sont
 > reprises dans M7 (durcissement) et M9 (faux positifs, séries 7 j) : voir `docs/ROADMAP.md`.
 
@@ -23,7 +23,7 @@ close que si tous ses critères d'acceptation sont constatés, pas seulement cod
 
 ---
 
-## 1. Rapport de l'étape en cours — Sprint 2 « Threat Feeds : du CRUD à la collecte »
+## 1. Rapport de l'étape en cours, Sprint 2 « Threat Feeds : du CRUD à la collecte »
 
 ### 1.1 Résumé
 
@@ -43,8 +43,8 @@ appliqué. C'est le premier point à régler.
 | T2.5 | RF-08, RNF-PERF-02 | Ingestion `INSERT … ON CONFLICT` : 1 000 IOC < 5 s ; sémantique fixée par l'ADR-005 |
 | T2.7 | RF-03 | `sentry feeds list / add / fetch / fetch-all` |
 | T2.8 | RSK-02 | Tests de pannes, 5xx, 429, redirections, DNS rebinding, isolation par flux |
-| — | Qualité | Pipelines de branche GitLab, job `migrations`, `scripts/ci-local.sh`, garde-fou base `_test` |
-| — | Secrets | Clé abuse.ch hors base (gabarit `{ABUSECH_AUTH_KEY}`), masquée dans les erreurs |
+| - | Qualité | Pipelines de branche GitLab, job `migrations`, `scripts/ci-local.sh`, garde-fou base `_test` |
+| - | Secrets | Clé abuse.ch hors base (gabarit `{ABUSECH_AUTH_KEY}`), masquée dans les erreurs |
 
 ### 1.3 Métriques
 
@@ -83,7 +83,7 @@ appliqué. C'est le premier point à régler.
 
 Légende : **P0** bloquant · **P1** nécessaire au jalon · **P2** souhaitable.
 
-### Étape 0 — Remettre le dépôt en état (½ journée) · *immédiat*
+### Étape 0 : Remettre le dépôt en état (½ journée) · *immédiat*
 
 **But.** Repartir d'un historique propre et d'un pipeline GitLab vert avant tout nouveau code.
 
@@ -99,7 +99,7 @@ Légende : **P0** bloquant · **P1** nécessaire au jalon · **P2** souhaitable.
 
 **Rapport de fin :** court, dans le bilan hebdomadaire du jeudi (`Rapport/02_01-10-2026.md`).
 
-### Étape 1 — Sprint 3 : M2 « Ingestion opérationnelle » · cible **08/10/2026**
+### Étape 1, Sprint 3 : M2 « Ingestion opérationnelle » · cible **08/10/2026**
 
 **But.** Des IOC réels, de plusieurs sources, collectés sans intervention.
 **Objectif mesurable.** ≥ 500 IOC réels issus d'au moins 3 sources dont OTX ; collecte
@@ -124,10 +124,10 @@ automatique toutes les 15 min ; provenance multi-sources.
 déduplication fonctionnelle ; ≥ 500 IOC réels.
 **Rapport de fin :** `Rapport/BILAN_PHASE_2.md` + tag `v0.2.0`.
 
-### Étape 2 — Phase 3 : M3 « Moteur CVE & alerting » · cible **22/10/2026**
+### Étape 2, Phase 3 : M3 « Moteur CVE & alerting » · cible **22/10/2026**
 
 **But.** Savoir en quelques secondes quelle vulnérabilité patcher d'abord.
-**Acquis :** score composite RF-14 et grille P0–P3 déjà codés et testés.
+**Acquis :** score composite RF-14 et grille P0-P3 déjà codés et testés.
 
 | # | Tâche | Prio | Critère de fin |
 |---|---|---|---|
@@ -145,7 +145,7 @@ volumes mesurés · constat : `sentry cves sync` puis `sentry status` (critères
 **Attentes M3.** NVD synchronisée, EPSS intégré, score vérifié par tests, alerte sur CVE critique.
 **Rapport de fin :** `Rapport/BILAN_PHASE_3.md` + `v0.3.0`.
 
-### Étape 3 — Phase 4 : M4 « Gestion des incidents » · cible **05/11/2026**
+### Étape 3, Phase 4 : M4 « Gestion des incidents » · cible **05/11/2026**
 
 **But.** Suivre un incident de la détection à la clôture, avec une chronologie opposable.
 **Acquis :** machine d'état NIST à 6 étapes codée et testée.
@@ -161,7 +161,7 @@ volumes mesurés · constat : `sentry cves sync` puis `sentry status` (critères
 
 **Rapport de fin :** `Rapport/BILAN_PHASE_4.md` + `v0.4.0`.
 
-### Étape 4 — Phase 5 : M5 « Dashboard & reporting » · cible **12/11/2026**
+### Étape 4, Phase 5 : M5 « Dashboard & reporting » · cible **12/11/2026**
 
 **But.** Une vue SOC qui répond à « que dois-je traiter maintenant ? ».
 
@@ -176,12 +176,12 @@ volumes mesurés · constat : `sentry cves sync` puis `sentry status` (critères
 
 **Rapport de fin :** `Rapport/BILAN_PHASE_5.md` + `v0.5.0`.
 
-### Étape 5 — Phase 6 : v1.0 « Threat Hunting » · cible **19/11/2026**
+### Étape 5, Phase 6 : v1.0 « Threat Hunting » · cible **19/11/2026**
 
 | # | Tâche | Prio | Critère de fin |
 |---|---|---|---|
 | 5.1 ✅ | Moteur de règles par motifs (RF-25) | P0 | règles évaluées sur les IOC |
-| 5.2 ✅ | 5 règles opérationnelles (RF-26) — 6 livrées | P0 | 5 règles testées |
+| 5.2 ✅ | 5 règles opérationnelles (RF-26) : 6 livrées | P0 | 5 règles testées |
 | 5.3 ✅ | `/api/v1/hunt/rules`, `/hunt/run`, résultats persistés (RF-27, RF-28) | P0 | session enregistrée |
 | 5.4 ✅ | CLI `sentry hunt run / list-rules / results` | P1 | parcours testé |
 | 5.5 ◐ | Documentation utilisateur, guide de déploiement, notes de version | P0 | relus |
@@ -190,7 +190,7 @@ volumes mesurés · constat : `sentry cves sync` puis `sentry status` (critères
 **Attentes v1.0.** 6 modules intégrés, couverture ≥ 80 %, documentation à jour, tag `v1.0.0`.
 **Rapport de fin :** `Rapport/BILAN_V1.md`.
 
-### Étape 6 — Après la v1.0
+### Étape 6 : Après la v1.0
 
 | Axe | Contenu | Condition préalable |
 |---|---|---|
@@ -239,12 +239,12 @@ volumes mesurés · constat : `sentry cves sync` puis `sentry status` (critères
 
 Chaque rapport de fin d'étape reprend ces rubriques, dans cet ordre :
 
-1. **Verdict** — l'étape est-elle close ? Sinon, ce qui manque exactement.
+1. **Verdict** : l'étape est-elle close ? Sinon, ce qui manque exactement.
 2. **But et objectif mesurable** rappelés.
-3. **Critères d'acceptation** — tableau critère / résultat / preuve (commande, test, capture).
+3. **Critères d'acceptation** : tableau critère / résultat / preuve (commande, test, capture).
 4. **Livrables** par tâche.
-5. **Métriques** — tests, couverture, performance, mémoire, avant/après.
+5. **Métriques** : tests, couverture, performance, mémoire, avant/après.
 6. **Défauts** trouvés, corrigés, et connus non bloquants.
 7. **Analyse SWOAT** de l'étape.
 8. **Décisions** prises (ADR) et en attente.
-9. **Étape suivante** — but, attentes, risques.
+9. **Étape suivante** : but, attentes, risques.

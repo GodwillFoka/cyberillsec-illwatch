@@ -1,4 +1,4 @@
-"""CLI `illwatch feeds` — T2.7 : gestion et collecte des sources de flux.
+"""CLI `illwatch feeds`, T2.7 : gestion et collecte des sources de flux.
 
     illwatch feeds list                  # état de toutes les sources
     illwatch feeds add --name … --url … --type CSV [--interval 3600]
@@ -117,7 +117,7 @@ def feeds_list() -> None:
         table.add_column(column)
     for f in rows:
         style = _STATUS_STYLE.get(FeedStatus(f.status), "white")
-        last = f.last_successful_run.strftime("%Y-%m-%d %H:%M") if f.last_successful_run else "—"
+        last = f.last_successful_run.strftime("%Y-%m-%d %H:%M") if f.last_successful_run else "-"
         table.add_row(
             f.name,
             f.feed_type,
@@ -209,7 +209,7 @@ def feeds_probe(reference: str, feed_type: str | None) -> None:
         raise SystemExit(1)
 
     report = asyncio.run(probe_source(target[0], target[1], settings=get_settings()))
-    table = Table(title=f"Sonde — {target[1]}", show_header=False)
+    table = Table(title=f"Sonde: {target[1]}", show_header=False)
     table.add_row("URL", target[0])
     table.add_row("Joignable", "[green]oui[/]" if report.reachable else "[red]non[/]")
     table.add_row("Durée", f"{report.duration_ms} ms")

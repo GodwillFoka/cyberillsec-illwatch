@@ -1,7 +1,7 @@
 [project]
 name = "illwatch"
 version = "0.2.0.dev0"
-description = "ILLWATCH — Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)"
+description = "ILLWATCH : Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
@@ -26,6 +26,7 @@ dependencies = [
     "pyjwt>=2.9.0",
     "pwdlib[argon2]>=0.2.1",
     "python-multipart>=0.0.9",
+    "openpyxl>=3.1.5",
     "taxii2-client==2.3.0",
 ]
 
@@ -62,7 +63,7 @@ include = ["illwatch*"]
 "illwatch.modules.correlation" = ["benchmark.json"]
 
 # ----------------------------------------------------------------------------
-# Qualité de code — §6.3 du Cahier des Charges
+# Qualité de code : §6.3 du Cahier des Charges
 # ----------------------------------------------------------------------------
 
 [tool.ruff]
@@ -94,10 +95,16 @@ exclude = ["alembic/", "tests/"]
 module = ["taxii2client", "taxii2client.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["openpyxl", "openpyxl.*"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-v --cov=illwatch --cov-report=term-missing"
+# Un test bloqué plus de 5 min affiche la pile de chaque fil (diagnostic en CI).
+faulthandler_timeout = 300
 
 [tool.coverage.run]
 # SQLAlchemy async exécute le code dans des greenlets : sans cette option, les

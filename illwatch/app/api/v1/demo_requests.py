@@ -1,4 +1,4 @@
-"""Demandes de démonstration — `/api/v1/demo-requests` (ADR-027, lot S4).
+"""Demandes de démonstration : `/api/v1/demo-requests` (ADR-027, lot S4).
 
 - `POST` (public) : formulaire du site de présentation. Entrées bornées et validées,
   consentement obligatoire, débit limité par adresse IP (5 par heure, compteur Redis, adresse

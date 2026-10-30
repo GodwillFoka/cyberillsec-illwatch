@@ -216,8 +216,8 @@ export function Incidents() {
                             : t("anAnalyst")
                           : t("nobody")}
                       </td>
-                      <td className="muted">{opened ? `${formatAgo(opened)}` : "—"}</td>
-                      <td className="muted">{updated ? `${formatAgo(updated)}` : "—"}</td>
+                      <td className="muted">{opened ? `${formatAgo(opened)}` : "-"}</td>
+                      <td className="muted">{updated ? `${formatAgo(updated)}` : "-"}</td>
                     </tr>
                   );
                 })}

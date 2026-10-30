@@ -5,7 +5,7 @@ import { labels } from "./labels.i18n.js";
 
 /** Durée lisible : 45 → « 45 s », 900 → « 15 min », 3600 → « 1 h », 90000 → « 1 j 1 h ». */
 export function formatDuration(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) return "—";
+  if (!Number.isFinite(seconds) || seconds < 0) return "-";
   if (seconds < 60) return labels("unit.s", { n: Math.round(seconds) });
   const minutes = Math.round(seconds / 60);
   if (minutes < 60) return labels("unit.min_plain", { n: minutes });

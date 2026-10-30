@@ -1,4 +1,4 @@
-"""Inventaire d'actifs et évènements corrélés — M8, ADR-020 (incrément 3).
+"""Inventaire d'actifs et évènements corrélés : M8, ADR-020 (incrément 3).
 
 `assets` : ce que l'organisation exploite (produit cherché dans les CVE, adresses et domaines
 cherchés dans les IOC) et sa criticité. `correlated_events` : un évènement par règle et par

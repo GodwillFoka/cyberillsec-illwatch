@@ -1,4 +1,4 @@
-"""CLI `illwatch incidents` — gestion des incidents (phase 4).
+"""CLI `illwatch incidents` : gestion des incidents (phase 4).
 
     illwatch incidents list [--open] [--severity CRITICAL]
     illwatch incidents show <id>
@@ -240,4 +240,4 @@ def incidents_from_alert(alert_id: str) -> None:
 
     incident, created = _run(_open)
     verb = "ouvert" if created else "déjà ouvert"
-    console.print(f"[green]Incident {verb} :[/] {incident.id} — {incident.title}")
+    console.print(f"[green]Incident {verb} :[/] {incident.id}: {incident.title}")

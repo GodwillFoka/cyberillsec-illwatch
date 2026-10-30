@@ -288,9 +288,9 @@ export function Campaigns() {
                           }}
                         >
                           <td className="cell-title">{c.name}</td>
-                          <td>{c.actor ? c.actor.name : <span className="muted">{c.actor_id ?? "—"}</span>}</td>
+                          <td>{c.actor ? c.actor.name : <span className="muted">{c.actor_id ?? "-"}</span>}</td>
                           <td className="num mono">{formatNumber(c.indicators)}</td>
-                          <td className="muted hide-narrow">{seen ? formatAgo(seen) : "—"}</td>
+                          <td className="muted hide-narrow">{seen ? formatAgo(seen) : "-"}</td>
                         </tr>
                       );
                     })}

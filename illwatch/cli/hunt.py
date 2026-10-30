@@ -1,4 +1,4 @@
-"""CLI `illwatch hunt` — threat hunting (phase 6, RF-25 à RF-28).
+"""CLI `illwatch hunt` : threat hunting (phase 6, RF-25 à RF-28).
 
     illwatch hunt rules                                    # catalogue
     illwatch hunt run                                      # chasse sur la base d'IOC
@@ -66,7 +66,7 @@ def hunt_rules() -> None:
 
 def _print(h: HuntingSession) -> None:
     console.print(
-        f"[bold]Session {h.id}[/] — {h.status} · {h.observables_count} observable(s), "
+        f"[bold]Session {h.id}[/]: {h.status} · {h.observables_count} observable(s), "
         f"{h.rejected_count} rejeté(s) · {h.matches_count} correspondance(s)"
     )
     if h.errors:

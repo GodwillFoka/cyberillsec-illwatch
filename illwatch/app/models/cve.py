@@ -1,4 +1,4 @@
-"""Modèles du moteur CVE — MOD-03 (phase 3, ADR-007).
+"""Modèles du moteur CVE : MOD-03 (phase 3, ADR-007).
 
 - `cves` : vulnérabilité enrichie NVD + CISA KEV + FIRST EPSS, score composite (ADR-001)
   et priorité SOC dérivée, recalculés à chaque changement d'entrée.

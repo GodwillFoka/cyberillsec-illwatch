@@ -1,4 +1,4 @@
-# ADR-021 — Corrélation par version : plages vulnérables NVD
+# ADR-021, Corrélation par version : plages vulnérables NVD
 
 - **Statut :** **accepté le 13/10/2026** (décision de Godwill FOKA : « Va y fait ce que tu dois faire »)
 - **Date :** 2026-10-13
@@ -19,7 +19,7 @@ Shellshock (bash) remonté sur OpenSSH, CVE-2022-0543 (paquet Debian de Redis 5/
    CVE sont réduites à la liste de ses `cpeMatch` vulnérables (`vendor`, `product`, `version`,
    bornes `versionStart/End Including/Excluding`), au plus 500 entrées, dans `cves.affected`
    (JSON, migration `e5b8c1d4a907`). `NULL` = configuration inconnue (jamais lue).
-2. **Verdict par couple (actif, CVE)** — `illwatch/modules/correlation/versions.py` :
+2. **Verdict par couple (actif, CVE)** : `illwatch/modules/correlation/versions.py` :
    - `vulnerable` : produit reconnu et version dans une plage → évènement ;
    - `hors_plage` : produit reconnu, version hors de toutes ses plages → **pas d'évènement** ;
    - `autre_produit` : la CVE a des plages, aucune ne vise ce produit (la description le cite

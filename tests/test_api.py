@@ -1,4 +1,4 @@
-"""Tests d'intégration des endpoints web — critère de validation du jalon M1."""
+"""Tests d'intégration des endpoints web : critère de validation du jalon M1."""
 
 from httpx import AsyncClient
 

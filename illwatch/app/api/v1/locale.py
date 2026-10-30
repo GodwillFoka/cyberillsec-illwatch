@@ -1,4 +1,4 @@
-"""Langue d'affichage du visiteur — `GET /api/v1/locale` (ADR-027).
+"""Langue d'affichage du visiteur : `GET /api/v1/locale` (ADR-027).
 
 Public (avant connexion : écran de connexion, site de présentation). Ce que la route sait du
 visiteur reste minimal et ne quitte jamais le serveur :

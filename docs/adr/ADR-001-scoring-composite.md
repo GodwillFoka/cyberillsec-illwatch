@@ -1,4 +1,4 @@
-# ADR-001 — Formule du score de risque composite
+# ADR-001 : Formule du score de risque composite
 
 - **Statut :** accepté
 - **Date :** 2026-09-19
@@ -28,7 +28,7 @@ Seuils : 70 / 40 / 20.
 
 Trois écarts concrets :
 
-1. le poids du facteur ransomware — 10 points contre 5 ;
+1. le poids du facteur ransomware : 10 points contre 5 ;
 2. l'existence d'un sixième facteur CWE valant 5 points, absent du CdC ;
 3. les seuils de la grille de décision SOC, qui déplacent la frontière du « critique » de 80 à 70.
 
@@ -50,7 +50,7 @@ Le facteur CWE n'est pas implémenté en v1.0 et part au backlog v2.0.
    une spécification opposable.
 2. **Le facteur CWE n'est pas alimentable en v1.0.** Aucun des collecteurs prévus aux phases 2 et 3
    (NVD, KEV, EPSS, OTX) ne fournit de pondération de dangerosité par CWE exploitable directement.
-   L'implémenter en v1.0 reviendrait à inventer un barème arbitraire — ce qui contredirait le
+   L'implémenter en v1.0 reviendrait à inventer un barème arbitraire : ce qui contredirait le
    caractère *déterministe* exigé par RF-14.
 3. **Somme normalisée.** Les contributions maximales du CdC somment exactement à 100
    (30 + 25 + 25 + 10 + 10), ce qui rend la borne `min(100, …)` défensive plutôt qu'écrêtante. La
@@ -86,7 +86,7 @@ Le facteur CWE n'est pas implémenté en v1.0 et part au backlog v2.0.
 
 ## Références
 
-- [Cahier des charges §3.3.3](../CAHIER_DES_CHARGES.md#mod-03--cve-tracker--vulnerability-intelligence)
-- [Product Vision Document, Tome 3](../PRODUCT_VISION.md#tome-3--architecture-fonctionnelle)
+- [Cahier des charges, RF-14](../CAHIER_DES_CHARGES.md#31-modules-de-la-v10-m1-a-m6) et [Manuel fonctionnel, score](../MANUEL_FONCTIONNEL.md#42-comment-le-score-se-calcule)
+- [Vision produit](../PRODUCT_VISION.md)
 - Implémentation : [`illwatch/modules/cve_tracker/scoring.py`](../../illwatch/modules/cve_tracker/scoring.py)
 - Tests : [`tests/test_scoring.py`](../../tests/test_scoring.py)

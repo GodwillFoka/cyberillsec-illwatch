@@ -1,4 +1,4 @@
-# ADR-010 — Client TAXII 2.1 : `taxii2-client` durci, transport maison en repli
+# ADR-010, Client TAXII 2.1 : `taxii2-client` durci, transport maison en repli
 
 - **Statut :** proposé
 - **Date :** 2026-10-03

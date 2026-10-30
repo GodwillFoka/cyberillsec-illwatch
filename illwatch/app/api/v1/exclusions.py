@@ -1,4 +1,4 @@
-"""Liste d'exclusion des IOC — `/api/v1/exclusions` (M9, ADR-022, tâche 3.6).
+"""Liste d'exclusion des IOC : `/api/v1/exclusions` (M9, ADR-022, tâche 3.6).
 
 | Opération                                   | ADMIN | ANALYST | VIEWER |
 |---------------------------------------------|:-----:|:-------:|:------:|
@@ -74,7 +74,7 @@ async def list_exclusions(
     "",
     response_model=ExclusionRead,
     status_code=status.HTTP_201_CREATED,
-    summary="Exclure une valeur (faux positif) — ADMIN, ANALYST",
+    summary="Exclure une valeur (faux positif) : ADMIN, ANALYST",
 )
 async def create_exclusion(
     payload: ExclusionWrite, session: DbSession, user: Contributor, audit: Audit
@@ -109,7 +109,7 @@ async def create_exclusion(
 @router.delete(
     "/{exclusion_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Retirer une exclusion — ADMIN",
+    summary="Retirer une exclusion : ADMIN",
 )
 async def delete_exclusion(
     exclusion_id: UUID, session: DbSession, user: AdminUser, audit: Audit

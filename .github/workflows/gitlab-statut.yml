@@ -1,5 +1,5 @@
 # ============================================================================
-# ILLWATCH — Statut du pipeline GitLab, remonté dans GitHub
+# ILLWATCH : Statut du pipeline GitLab, remonté dans GitHub
 # Lit le dernier pipeline GitLab de main (API GitLab) et le publie en annotations du
 # check « Statut GitLab » : travaux, états, fin du journal de chaque travail en échec.
 # Contourne la lecture directe de GitLab quand elle est impossible depuis la session de travail.

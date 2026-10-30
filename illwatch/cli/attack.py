@@ -1,4 +1,4 @@
-"""`illwatch attack` — référentiel MITRE ATT&CK Enterprise (M10, ADR-023).
+"""`illwatch attack` : référentiel MITRE ATT&CK Enterprise (M10, ADR-023).
 
     illwatch attack import                     # télécharge la dernière version publiée par MITRE
     illwatch attack import --file enterprise-attack.json   # poste sans accès direct
@@ -227,5 +227,5 @@ def campaigns_list() -> None:
         table.add_column(column)
     for row in rows:
         types = ", ".join(f"{k} {v}" for k, v in sorted(row.by_type.items()))
-        table.add_row(row.campaign.name, row.campaign.actor_id or "—", str(row.indicators), types)
+        table.add_row(row.campaign.name, row.campaign.actor_id or "-", str(row.indicators), types)
     console.print(table)

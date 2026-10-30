@@ -1,6 +1,6 @@
 """threat hunting
 
-Threat hunting — phase 6 (ADR-009) : sessions de chasse et correspondances (RF-27, RF-28).
+Threat hunting, phase 6 (ADR-009) : sessions de chasse et correspondances (RF-27, RF-28).
 
 Revision ID: c4d9e1f20a83
 Revises: 8a1c2e4f6b70

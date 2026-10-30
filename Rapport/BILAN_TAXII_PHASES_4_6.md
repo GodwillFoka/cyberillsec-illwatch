@@ -1,8 +1,8 @@
-# 🛡️ SENTRY — Bilan d'étape : TAXII 2.1 réel, phases 4, 5 et 6
+# 🛡️ SENTRY : bilan d'étape, TAXII 2.1 réel et phases 4, 5 et 6
 
 **Date :** 03/10/2026 · **Branche :** `feature/phases-4-6` (empilée sur `feature/phase3-cve-v2`,
 elle-même sur `feature/taxii-v2`) · **Base :** `9402bb1`
-**Verdict :** code des six modules livré et testé ; **aucun jalon M2–M6 n'est constaté** tant
+**Verdict :** code des six modules livré et testé ; **aucun jalon M2-M6 n'est constaté** tant
 que la branche n'est pas fusionnée et que le worker n'a pas tourné sur données réelles.
 
 ---
@@ -11,14 +11,14 @@ que la branche n'est pas fusionnée et que le worker n'a pas tourné sur donnée
 
 | Volet | Livré | Statut |
 |---|---|---|
-| Backend TAXII 2.1 (`taxii2-client` 2.3.0) | T1–T11 du cahier de la tâche | ✅ codé, testé hors ligne ; test réel prêt (`-m live`) |
+| Backend TAXII 2.1 (`taxii2-client` 2.3.0) | T1-T11 du cahier de la tâche | ✅ codé, testé hors ligne ; test réel prêt (`-m live`) |
 | Vérification des sources TAXII | 6 sources examinées, 1 retenue (RedEye), DigitalSide désactivée | ✅ |
-| Phase 4 — Incidents | API, CLI, liaisons IOC/CVE, chronologie immuable par trigger PostgreSQL, alerte → incident | ✅ (3.6 faux positifs ❌) |
-| Phase 5 — Dashboard SOC | synthèse, activité 24 h, exports JSON/CSV en flux, console Rich | ✅ (séries 7 j ❌) |
-| Phase 6 — Threat Hunting | 6 règles, sessions enregistrées, API, CLI, chasse planifiée dans le worker | ✅ |
+| Phase 4 : Incidents | API, CLI, liaisons IOC/CVE, chronologie immuable par trigger PostgreSQL, alerte → incident | ✅ (3.6 faux positifs ❌) |
+| Phase 5 : Dashboard SOC | synthèse, activité 24 h, exports JSON/CSV en flux, console Rich | ✅ (séries 7 j ❌) |
+| Phase 6 : Threat Hunting | 6 règles, sessions enregistrées, API, CLI, chasse planifiée dans le worker | ✅ |
 | Sécurité | limitation des connexions (429 + Retry-After), anti-injection CSV, SSRF TAXII | ✅ (HTTPS/en-têtes ❌) |
 
-## 2. TAXII 2.1 — résultats par sous-tâche
+## 2. TAXII 2.1 : résultats par sous-tâche
 
 | # | Exigence | Réalisation | Preuve |
 |---|---|---|---|
@@ -75,7 +75,7 @@ d'essai d'une page, sans écriture en base).
 Confiance : élevée pour DigitalSide, MITRE, CISA (constats directs ou documentation officielle) ;
 moyenne pour RedEye (documentation lue, jeton non obtenu, donc format réel non éprouvé).
 
-## 5. Phases 4 à 6 — contenu
+## 5. Phases 4 à 6 : contenu
 
 **Incidents (ADR-008).** Machine d'état NIST SP 800-61 à 6 étapes ; transition interdite → 409 ;
 clôture exigeant un post-mortem ; chronologie immuable doublement verrouillée (écouteurs ORM
@@ -105,7 +105,7 @@ worker (`HUNT_INTERVAL_SECONDS`, 24 h par défaut).
 | Tables | 10 | **14** |
 | Migrations | 4 | **6** |
 | ADR | 7 | **10** |
-| Lignes de code applicatif / de tests | — | ≈ 10 100 / ≈ 5 800 |
+| Lignes de code applicatif / de tests | - | ≈ 10 100 / ≈ 5 800 |
 
 `ruff check`, `ruff format --check`, `mypy --strict` : propres.
 

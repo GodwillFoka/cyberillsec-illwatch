@@ -1,4 +1,4 @@
-"""Jetons de rafraîchissement — M7 Production Hardening, lot 2 (ADR-012).
+"""Jetons de rafraîchissement : M7 Production Hardening, lot 2 (ADR-012).
 
 Le jeton d'accès (JWT, 15 min) n'est pas révocable ; le jeton de rafraîchissement l'est.
 Il est **opaque** (256 bits aléatoires), seule son empreinte SHA-256 est stockée : une fuite

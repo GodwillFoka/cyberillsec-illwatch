@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILLWATCH — Réplique locale du pipeline GitLab (.gitlab-ci.yml)
+# ILLWATCH : Réplique locale du pipeline GitLab (.gitlab-ci.yml)
 #
 # À lancer avant chaque push : un pipeline rouge sur GitLab coûte un aller-retour,
 # celui-ci coûte une minute. Mêmes étapes, même ordre, même seuils.
@@ -42,7 +42,7 @@ step() { printf '\n\033[1;36m▶ %s\033[0m\n' "$1"; }
 ok()   { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }
 fail() { printf '\033[1;31m✘ %s\033[0m\n' "$1" >&2; exit 1; }
 
-step "Étape 0 — Réseau et outils"
+step "Étape 0 : Réseau et outils"
 # Les coupures DNS de la VM (09-10/10) font échouer pip, npm et git avec des messages obscurs :
 # on les détecte d'abord, avec le remède.
 for host in github.com pypi.org registry.npmjs.org; do
@@ -58,7 +58,7 @@ if [[ $WITH_UI == 1 ]]; then
 fi
 ok "réseau et outils"
 
-step "Étape 1 — Qualité : lint, formatage, typage strict"
+step "Étape 1, Qualité : lint, formatage, typage strict"
 ruff check .
 ruff format --check .
 mypy illwatch
@@ -76,13 +76,13 @@ pg() {
   fi
 }
 
-step "Étape 2a — Tests sur PostgreSQL (base dédiée ${TEST_DB})"
+step "Étape 2a : Tests sur PostgreSQL (base dédiée ${TEST_DB})"
 pg -tAc "SELECT 1 FROM pg_database WHERE datname='${TEST_DB}'" | grep -q 1 \
   || pg -qc "CREATE DATABASE ${TEST_DB}" >/dev/null
 DATABASE_URL="${PG_URL_BASE}/${TEST_DB}" pytest -q
 ok "tests"
 
-step "Étape 2b — Migrations : montée, alembic check, descente, remontée"
+step "Étape 2b, Migrations : montée, alembic check, descente, remontée"
 # Base dédiée et jetable : ne touche jamais aux données de la base de travail.
 MIG_DB="illwatch_ci_migrations"
 pg -qc "DROP DATABASE IF EXISTS ${MIG_DB}" -c "CREATE DATABASE ${MIG_DB}" >/dev/null
@@ -96,7 +96,7 @@ ok "migrations"
 unset DATABASE_URL
 
 if [[ $WITH_UI == 1 ]]; then
-  step "Étape 2c — Interface web : schéma, audit, types, tests, build (comme la CI)"
+  step "Étape 2c, Interface web : schéma, audit, types, tests, build (comme la CI)"
   illwatch openapi -o frontend/openapi.json
   (
     cd frontend
@@ -112,7 +112,7 @@ if [[ $WITH_UI == 1 ]]; then
 fi
 
 if [[ $WITH_DOCKER == 1 ]]; then
-  step "Étape 3 — Build : l'image doit se construire et la CLI répondre"
+  step "Étape 3, Build : l'image doit se construire et la CLI répondre"
   docker build -t illwatch:ci-local .
   docker run --rm --entrypoint illwatch illwatch:ci-local version
   ok "image"

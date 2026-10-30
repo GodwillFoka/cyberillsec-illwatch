@@ -4,11 +4,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { ui } from "../components/components.i18n";
 
-import { apiDelete, apiPost, apiSend } from "./http";
+import { apiDelete, apiPost, apiSend, apiUpload } from "./http";
 import type {
   Account,
   Alert,
   Asset,
+  AssetImport,
   AssetWrite,
   Correlation,
   CorrelationRun,
@@ -288,6 +289,15 @@ export function useSaveAsset(assetId: string | null) {
       ? apiSend<Asset>("PUT", `/assets/${encodeURIComponent(assetId)}`, body)
       : apiPost<Asset>("/assets", body),
   );
+}
+
+/** Import d'un inventaire Excel ou CSV : aperçu (`apply: false`) puis import, tout ou rien. */
+export function useImportAssets() {
+  return useCorrelationMutation(({ file, apply }: { file: File; apply: boolean }) => {
+    const form = new FormData();
+    form.append("file", file);
+    return apiUpload<AssetImport>("/assets/import", form, { apply });
+  });
 }
 
 export function useDeleteAsset() {

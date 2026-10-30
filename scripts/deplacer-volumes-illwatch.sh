@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILLWATCH — Passage aux volumes à nom fixe (08/10/2026)
+# ILLWATCH : Passage aux volumes à nom fixe (08/10/2026)
 #
 # Jusqu'ici, Docker Compose préfixait conteneurs et volumes par le nom du DOSSIER
 # (cyberillsec-sentry_illwatch_pgdata) : renommer le dossier aurait démarré une base vide.

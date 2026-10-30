@@ -1,4 +1,4 @@
-# ADR-008 — Gestion d'incidents : chronologie immuable et incident issu d'une alerte
+# ADR-008 : Gestion d'incidents : chronologie immuable et incident issu d'une alerte
 
 - **Statut :** proposé
 - **Date :** 2026-10-03
@@ -30,4 +30,4 @@ d'audit, pas un journal technique.
 - **Positives** : chronologie opposable ; passage alerte → réponse sans ressaisie.
 - **Négatives** : une erreur de saisie dans un commentaire ne se corrige que par un nouveau
   commentaire ; supprimer un incident de test exige un accès administrateur à la base (désactiver
-  le déclencheur) — c'est voulu.
+  le déclencheur) : c'est voulu.

@@ -1,4 +1,4 @@
-# M8 — Mesure sur données réelles (Kali, 13/10/2026)
+# ILLWATCH : mesure de la corrélation sur données réelles (M8, Kali, 13/10/2026)
 
 ## Conditions
 

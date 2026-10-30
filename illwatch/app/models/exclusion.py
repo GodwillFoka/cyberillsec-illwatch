@@ -1,7 +1,7 @@
-"""Liste d'exclusion des IOC — M9 (ADR-022), tâche 3.6 du plan directeur.
+"""Liste d'exclusion des IOC : M9 (ADR-022), tâche 3.6 du plan directeur.
 
 Un IOC qualifié de faux positif par un analyste (« ce domaine est notre CDN ») est exclu :
-il reste en base avec sa provenance (historique, enquêtes), mais n'est plus **actif** — ni
+il reste en base avec sa provenance (historique, enquêtes), mais n'est plus **actif**: ni
 compté, ni chassé, ni corrélé. L'exclusion porte sur le couple (type, valeur normalisée) : une
 nouvelle observation par une source ne la lève pas. Elle peut expirer (réexamen) et se
 retire par un administrateur.

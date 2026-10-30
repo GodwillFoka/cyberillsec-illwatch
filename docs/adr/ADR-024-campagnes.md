@@ -1,4 +1,4 @@
-# ADR-024 — M10, incrément 2 : campagnes et infrastructure
+# ADR-024, M10, incrément 2 : campagnes et infrastructure
 
 - **Statut :** **accepté le 15/10/2026** (décision de Godwill FOKA : « attaque M10 »)
 - **Date :** 2026-10-15

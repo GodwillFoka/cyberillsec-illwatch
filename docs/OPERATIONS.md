@@ -1,4 +1,4 @@
-# ILLWATCH — Guide d'exploitation
+# ILLWATCH : Guide d'exploitation
 
 **Public :** la personne qui installe, surveille, sauvegarde et met à jour une instance.
 **Référence :** M7 Production Hardening (ADR-011, ADR-012, ADR-013). Testé sur Kali Linux (rolling) et Debian 12.
@@ -21,7 +21,7 @@ Démarrage complet : `docker compose --profile full up -d`. Développement : `do
 |---|---|---|
 | PostgreSQL propriétaire (`illwatch`) | `MIGRATION_DATABASE_URL` | structure : migrations uniquement |
 | PostgreSQL applicatif (`illwatch_app`) | `DATABASE_URL`, `DATABASE_APP_ROLE` | données ; `SELECT, INSERT` seulement sur `incident_events` et `audit_events` |
-| Redis | `REDIS_URL` (`redis://:MOT_DE_PASSE@…`), `REDIS_PASSWORD` (serveur Compose) | — |
+| Redis | `REDIS_URL` (`redis://:MOT_DE_PASSE@…`), `REDIS_PASSWORD` (serveur Compose) | - |
 
 Volume Compose neuf : le rôle `illwatch_app` est créé au premier démarrage
 (`scripts/db/init-app-role.sh`, mot de passe `POSTGRES_APP_PASSWORD`). Volume existant, une fois :
@@ -191,7 +191,7 @@ champs `purged` et `runs_purged`), contrôle de fraîcheur d'EPSS (`cve.epss_sta
 au-delà de 48 h). `illwatch status` affiche le même avertissement : sans EPSS récent, aucune CVE
 ne peut atteindre P0.
 
-## 6 bis bis. Enrichissement des IP (pays, opérateur — ADR-019)
+## 6 bis bis. Enrichissement des IP (pays, opérateur : ADR-019)
 
 La fiche d'une IP affiche son pays et son système autonome, lus dans la base **DB-IP Lite**
 importée localement : aucune requête sortante à la consultation.
@@ -360,7 +360,7 @@ illwatch cves rescore     # reclasse toutes les CVE, sans alerte ; motifs histor
 ## 7 quinquies. Analyse d'image : risque résiduel accepté
 
 Analyse GitLab Container Scanning du 07/10/2026 (`python:3.12-slim`, Debian 13.7, commit
-`ad69dc6`) : **0 Critical**, 52 High, 81 Medium, 105 Low, 2 Unknown — toutes dans des paquets
+`ad69dc6`) : **0 Critical**, 52 High, 81 Medium, 105 Low, 2 Unknown, toutes dans des paquets
 système Debian, **aucune avec correctif publié**, aucune dans une dépendance Python.
 
 | Famille (CVE distinctes) | Décision | Justification |
@@ -483,6 +483,6 @@ sudo ./scripts/restore-test.sh /srv/illwatch-backups           # test de restaur
 ```
 
 Sur le VPS, Prometheus (9090) et Grafana (3000) n'écoutent qu'en local : tunnel SSH (voir
-`docs/ENVIRONNEMENTS.md`). Tableaux « ILLWATCH — Service » et « ILLWATCH — Collecte et SOC ».
+`docs/ENVIRONNEMENTS.md`). Tableaux « ILLWATCH (Service » et « ILLWATCH) Collecte et SOC ».
 Alerte à surveiller pendant les 7 jours de staging : `IllwatchFeedStale` (source sans succès
 depuis 3 intervalles) et `IllwatchNoCollection` (worker arrêté).

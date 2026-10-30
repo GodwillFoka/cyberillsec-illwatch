@@ -1,4 +1,4 @@
-"""CLI `illwatch status` — niveau d'avancement mesuré (base, sources, IOC, jalon M2)."""
+"""CLI `illwatch status` : niveau d'avancement mesuré (base, sources, IOC, jalon M2)."""
 
 import asyncio
 
@@ -57,7 +57,7 @@ def status() -> None:
         iocs.add_row(f"  {ioc_type}", str(count))
     console.print(iocs)
 
-    m2 = Table(title="Jalon M2 — Ingestion opérationnelle")
+    m2 = Table(title="Jalon M2 : Ingestion opérationnelle")
     m2.add_column("Critère")
     m2.add_column("État")
     m2.add_column("Constat")
@@ -78,7 +78,7 @@ def status() -> None:
     cves.add_row("Alertes / non acquittées", f"{state.alerts_total} / {state.alerts_open}")
     console.print(cves)
 
-    m3 = Table(title="Jalon M3 — Moteur CVE & alerting")
+    m3 = Table(title="Jalon M3: Moteur CVE & alerting")
     m3.add_column("Critère")
     m3.add_column("État")
     m3.add_column("Constat")
@@ -92,7 +92,7 @@ def status() -> None:
     for warning in state.warnings:
         console.print(f"[yellow]⚠ {warning}[/]")
 
-    later = Table(title="Jalons M4 et M6 — Incidents et threat hunting")
+    later = Table(title="Jalons M4 et M6 : Incidents et threat hunting")
     later.add_column("Critère")
     later.add_column("État")
     later.add_column("Constat")

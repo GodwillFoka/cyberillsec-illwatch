@@ -1,4 +1,4 @@
-"""Énumérations transverses — vocabulaire métier partagé par tous les modules."""
+"""Énumérations transverses : vocabulaire métier partagé par tous les modules."""
 
 from enum import StrEnum
 
@@ -19,7 +19,7 @@ class UserRole(StrEnum):
 
 
 class FeedType(StrEnum):
-    """Formats de flux supportés — RF-06.
+    """Formats de flux supportés : RF-06.
 
     `OTX` désigne l'API AlienVault OTX (pulses abonnés) : JSON paginé, clé en en-tête.
     `TAXII` désigne une collection TAXII 2.1 (objets STIX 2.1 paginés, `added_after`).
@@ -39,7 +39,7 @@ class FeedStatus(StrEnum):
 
 
 class SourceReliability(StrEnum):
-    """Fiabilité d'une source (échelle de l'Amirauté, OTAN AJP-2.1) — M8, ADR-017.
+    """Fiabilité d'une source (échelle de l'Amirauté, OTAN AJP-2.1) : M8, ADR-017.
 
     A : totalement fiable · B : habituellement fiable · C : assez fiable ·
     D : pas toujours fiable · E : peu fiable · F : fiabilité inconnue.
@@ -54,7 +54,7 @@ class SourceReliability(StrEnum):
 
 
 class IndicatorType(StrEnum):
-    """Types d'IOC supportés — RF-07 / §3.3.2."""
+    """Types d'IOC supportés : RF-07 / §3.3.2."""
 
     IPV4 = "IPV4"
     IPV6 = "IPV6"
@@ -68,14 +68,14 @@ class IndicatorType(StrEnum):
 
 
 class EnrichmentDataset(StrEnum):
-    """Bases d'enrichissement hors ligne des adresses IP — M8, ADR-017 (incrément 2)."""
+    """Bases d'enrichissement hors ligne des adresses IP : M8, ADR-017 (incrément 2)."""
 
     COUNTRY = "country"  # plage → pays (ISO 3166-1 alpha-2)
     ASN = "asn"  # plage → système autonome et son opérateur
 
 
 class CorrelationRule(StrEnum):
-    """Règles de corrélation — M8, ADR-020 (incrément 3)."""
+    """Règles de corrélation : M8, ADR-020 (incrément 3)."""
 
     KEV_ASSET = "CORR-01"  # CVE exploitée activement (KEV) sur un produit de l'inventaire
     EXPLOIT_ASSET = "CORR-02"  # CVE P0/P1 avec exploit public sur un produit de l'inventaire
@@ -83,7 +83,7 @@ class CorrelationRule(StrEnum):
 
 
 class SocTier(StrEnum):
-    """Niveau SOC qui porte l'incident — M9 (ADR-022). L1 qualifie, L2 investigue, L3 traite
+    """Niveau SOC qui porte l'incident : M9 (ADR-022). L1 qualifie, L2 investigue, L3 traite
     (ingénierie de détection, réponse avancée). L'escalade ne fait que monter."""
 
     L1 = "L1"
@@ -92,7 +92,7 @@ class SocTier(StrEnum):
 
 
 class IncidentStatus(StrEnum):
-    """Machine d'état à 6 étapes — RF-18 (NIST SP 800-61 Rev. 2)."""
+    """Machine d'état à 6 étapes : RF-18 (NIST SP 800-61 Rev. 2)."""
 
     NOUVEAU = "NOUVEAU"
     ANALYSE = "ANALYSE"
@@ -103,7 +103,7 @@ class IncidentStatus(StrEnum):
 
 
 class IncidentEventType(StrEnum):
-    """Événements de la chronologie immuable d'un incident — RF-19."""
+    """Événements de la chronologie immuable d'un incident : RF-19."""
 
     CREATED = "CREATED"
     STATUS_CHANGE = "STATUS_CHANGE"
@@ -118,7 +118,7 @@ class IncidentEventType(StrEnum):
 
 
 class RiskPriority(StrEnum):
-    """Grille de décision SOC — §3.3.3 du Cahier des Charges."""
+    """Grille de décision SOC : §3.3.3 du Cahier des Charges."""
 
     P0_CRITIQUE = "P0_CRITIQUE"
     P1_ELEVE = "P1_ELEVE"
@@ -127,7 +127,7 @@ class RiskPriority(StrEnum):
 
 
 class HuntStatus(StrEnum):
-    """Session de threat hunting — RF-27."""
+    """Session de threat hunting : RF-27."""
 
     EN_COURS = "EN_COURS"
     TERMINEE = "TERMINEE"
@@ -142,7 +142,7 @@ class HuntTrigger(StrEnum):
 
 
 class AuditOutcome(StrEnum):
-    """Issue d'une action consignée au journal d'audit — M7 (ADR-011)."""
+    """Issue d'une action consignée au journal d'audit : M7 (ADR-011)."""
 
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"  # tentative invalide (mauvais mot de passe, entrée refusée)

@@ -20,7 +20,7 @@ import { t } from "./Sources.i18n";
 
 const STATUS_TONE: Record<string, string> = { HEALTHY: "ok", DEGRADED: "p0", PENDING: "p3" };
 
-/** Taux entier (0–100) en pourcentage de la langue : « 83 % », « 83% ». */
+/** Taux entier (0-100) en pourcentage de la langue : « 83 % », « 83% ». */
 const percent = (rate: number) => formatShare(rate / 100);
 
 const FEED_TYPES = ["JSON", "CSV", "STIX", "OTX", "TAXII"];
@@ -120,9 +120,9 @@ function SourceTable({
                 <StatusBadge health={feed} />
               </td>
               <td className="muted">{success ? formatAgo(success) : t("never")}</td>
-              <td className="num mono">{feed.last_inserted === null ? "—" : formatNumber(feed.last_inserted)}</td>
+              <td className="num mono">{feed.last_inserted === null ? "-" : formatNumber(feed.last_inserted)}</td>
               <td className={`num mono${rate !== null && rate < 80 ? " error-text" : ""}`}>
-                {rate === null ? "—" : percent(rate)}
+                {rate === null ? "-" : percent(rate)}
               </td>
             </tr>
           );
@@ -277,11 +277,11 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
           <dt>{t("lastSuccess")}</dt>
           <dd>{success ? `${formatDateTime(success, utc)}, ${formatAgo(success)}` : t("never")}</dd>
           <dt>{t("duration")}</dt>
-          <dd className="mono">{health.last_duration_ms === null ? "—" : formatMs(health.last_duration_ms)}</dd>
+          <dd className="mono">{health.last_duration_ms === null ? "-" : formatMs(health.last_duration_ms)}</dd>
           <dt>{t("lastHarvest")}</dt>
           <dd>
             {health.last_inserted === null
-              ? "—"
+              ? "-"
               : t("harvest", {
                   inserted: health.last_inserted,
                   updated: health.last_updated ?? 0,
@@ -312,7 +312,7 @@ function SourcePanel({ health, isAdmin }: { health: FeedHealth; isAdmin: boolean
                   const at = parseDate(run.started_at);
                   return (
                     <li key={run.id}>
-                      <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
+                      <span className="mono muted">{at ? formatDateTime(at, utc) : "-"}</span>
                       <span className={`grow ellipsis run-msg ${run.succeeded ? "ok" : "ko"}`}>
                         {run.succeeded
                           ? `${t("runOk", { inserted: run.inserted, updated: run.updated })}${run.rejected ? t("runRejected", { count: run.rejected }) : ""}`

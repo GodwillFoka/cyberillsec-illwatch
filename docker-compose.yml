@@ -1,4 +1,4 @@
-# Infrastructure de développement local — T1.4 du planning
+# Infrastructure de développement local : T1.4 du planning
 # Nom de projet fixe (08/10) : conteneurs et volumes ne dépendent plus du nom du dossier.
 name: illwatch
 services:

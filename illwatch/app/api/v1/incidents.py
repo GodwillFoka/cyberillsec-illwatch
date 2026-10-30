@@ -1,4 +1,4 @@
-"""Routes de gestion des incidents — `/api/v1/incidents` (MOD-04, RF-17 à RF-20).
+"""Routes de gestion des incidents : `/api/v1/incidents` (MOD-04, RF-17 à RF-20).
 
 | Opération                                          | ADMIN | ANALYST | VIEWER |
 |----------------------------------------------------|:-----:|:-------:|:------:|

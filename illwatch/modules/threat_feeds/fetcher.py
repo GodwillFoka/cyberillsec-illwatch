@@ -1,4 +1,4 @@
-"""Récupération HTTP des flux — T2.3, UC-01 (étapes 2-3, scénarios 2a et 3a).
+"""Récupération HTTP des flux : T2.3, UC-01 (étapes 2-3, scénarios 2a et 3a).
 
 Sécurité (SSRF) : `validate_feed_url` vérifie l'URL *telle qu'écrite* à l'enregistrement.
 Ici, on revérifie au moment de la requête, là où l'attaque se produit réellement :

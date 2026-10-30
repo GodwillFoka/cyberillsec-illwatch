@@ -1,4 +1,4 @@
-# 📊 SENTRY — Rapport d'avancement hebdomadaire [Semaine NN/9]
+# 📊 SENTRY : Rapport d'avancement hebdomadaire [Semaine NN/9]
 
 **Date :** JJ/MM/AAAA · **Auteur :** [Nom] · **Jalon cible :** [M1 … M5 / v1.0]
 
@@ -9,9 +9,9 @@ ce qui est décidé.
 
 ## 2. Détail technique des tâches traitées
 
-- [x] **Tâche X.X** — description technique, commits associés, fichiers créés ou modifiés.
-- [x] **Tâche X.X** — tests rédigés et résultats d'exécution.
-- [ ] **Tâche X.X** — reportée : raison et nouvelle échéance.
+- [x] **Tâche X.X** : description technique, commits associés, fichiers créés ou modifiés.
+- [x] **Tâche X.X** : tests rédigés et résultats d'exécution.
+- [ ] **Tâche X.X**, reportée : raison et nouvelle échéance.
 
 ## 3. Analyse SWOT de la semaine
 
@@ -34,8 +34,8 @@ ce qui est décidé.
 | Tests passants | XX / XX | 100 % |
 | Conformité `ruff` | OK / KO | 100 % |
 | `mypy --strict` | OK / KO | 0 erreur |
-| Commits sur la semaine | XX | — |
-| Pull requests fusionnées | XX | — |
+| Commits sur la semaine | XX | - |
+| Pull requests fusionnées | XX | - |
 
 ## 6. Prochaine semaine
 

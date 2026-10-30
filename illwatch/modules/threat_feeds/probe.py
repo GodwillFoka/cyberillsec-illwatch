@@ -1,4 +1,4 @@
-"""Sonde de source — « vérifier qu'une API existe et répond avant de l'intégrer ».
+"""Sonde de source : « vérifier qu'une API existe et répond avant de l'intégrer ».
 
 Une sonde exécute **une** collecte d'essai (une page au plus pour TAXII et OTX), analyse la
 réponse et classe les IOC obtenus, **sans rien écrire en base**. Elle répond aux questions

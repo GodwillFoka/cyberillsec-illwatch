@@ -1,4 +1,4 @@
-"""Analyse des formats de flux — RF-06 (CSV, JSON, STIX 2.1)."""
+"""Analyse des formats de flux : RF-06 (CSV, JSON, STIX 2.1)."""
 
 from datetime import UTC, datetime
 from pathlib import Path

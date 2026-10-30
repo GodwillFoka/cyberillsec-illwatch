@@ -1,4 +1,4 @@
-"""Export STIX 2.1 — `/api/v1/stix` (M10, incrément 3, ADR-025).
+"""Export STIX 2.1 : `/api/v1/stix` (M10, incrément 3, ADR-025).
 
 Un bundle à télécharger ou à importer dans une autre plateforme. Pour un partage continu,
 préférer le serveur TAXII 2.1 (`/taxii2/`), paginé et incrémental (`added_after`).

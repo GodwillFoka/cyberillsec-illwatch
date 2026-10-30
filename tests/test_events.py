@@ -1,4 +1,4 @@
-"""Bus d'événements et flux SSE — ADR-016 (interface temps réel)."""
+"""Bus d'événements et flux SSE : ADR-016 (interface temps réel)."""
 
 import asyncio
 from datetime import UTC, datetime

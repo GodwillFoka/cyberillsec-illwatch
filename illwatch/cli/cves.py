@@ -1,4 +1,4 @@
-"""CLI `illwatch cves` — moteur CVE (phase 3, tâche 2.6).
+"""CLI `illwatch cves` : moteur CVE (phase 3, tâche 2.6).
 
     illwatch cves sync [--only kev|nvd|epss]  # synchronisation KEV + NVD + EPSS, recalcul, alertes
     illwatch cves list [--priority P0_CRITIQUE] [--kev] [--min-score 60] [--search log4j]
@@ -263,8 +263,8 @@ def cves_list(
             cve.id,
             f"{float(cve.composite_risk_score):.1f}",
             f"[{_PRIORITY_STYLE[prio]}]{prio}[/]",
-            "—" if cve.cvss_score is None else str(cve.cvss_score),
-            "—" if cve.epss_score is None else f"{float(cve.epss_score):.3f}",
+            "-" if cve.cvss_score is None else str(cve.cvss_score),
+            "-" if cve.epss_score is None else f"{float(cve.epss_score):.3f}",
             "oui" if cve.is_kev else "",
             "oui" if cve.has_public_exploit else "",
             "oui" if cve.has_ransomware_campaign else "",
@@ -298,7 +298,7 @@ def cves_show(cve_id: str) -> None:
         has_ransomware_campaign=c.has_ransomware_campaign,
     )
     console.print(
-        f"[bold]{c.id}[/] — [{_PRIORITY_STYLE[prio]}]{prio}[/], "
+        f"[bold]{c.id}[/]: [{_PRIORITY_STYLE[prio]}]{prio}[/], "
         f"remédiation sous {remediation_sla_hours(prio)} h"
     )
     console.print(c.description)
@@ -317,7 +317,7 @@ def cves_show(cve_id: str) -> None:
         console.print("Priorité relevée à P1 : plancher KEV (ADR-014), score inchangé.")
     for h in history:
         console.print(
-            f"  {h.changed_at:%Y-%m-%d %H:%M} {h.old_priority or '—'} → "
+            f"  {h.changed_at:%Y-%m-%d %H:%M} {h.old_priority or '-'} → "
             f"{h.new_priority} ({h.reason})"
         )
 

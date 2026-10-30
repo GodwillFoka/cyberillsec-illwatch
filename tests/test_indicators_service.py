@@ -1,4 +1,4 @@
-"""Cycle de vie des IOC — ingestion dédupliquée (RF-08, ADR-005)."""
+"""Cycle de vie des IOC : ingestion dédupliquée (RF-08, ADR-005)."""
 
 import time
 from datetime import UTC, datetime, timedelta

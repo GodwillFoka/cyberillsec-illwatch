@@ -1,4 +1,4 @@
-"""Inventaire d'actifs — M8, ADR-020. Saisi par les analystes (API, écran Inventaire, CLI).
+"""Inventaire d'actifs : M8, ADR-020. Saisi par les analystes (API, écran Inventaire, CLI).
 
 Chaque champ est normalisé à l'écriture : la corrélation compare ensuite des valeurs propres
 (adresses IP canoniques, domaines en minuscules sans point final).
@@ -108,6 +108,11 @@ def _apply(asset: Asset, data: AssetInput) -> None:
     asset.domains = normalize_domains(data.domains)
     asset.notes = (data.notes or "").strip()[:2000] or None
     asset.is_active = data.is_active
+
+
+def validate_asset(data: AssetInput) -> None:
+    """Contrôle une saisie sans l'écrire (aperçu d'un import) : lève `AssetError` si refusée."""
+    _apply(Asset(), data)
 
 
 async def list_assets(session: AsyncSession) -> list[Asset]:

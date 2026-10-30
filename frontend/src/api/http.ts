@@ -175,6 +175,13 @@ export async function apiSend<T>(method: "POST" | "PUT" | "PATCH", path: string,
   return (await response.json()) as T;
 }
 
+/** Envoi d'un fichier (formulaire multipart) ; le navigateur pose lui-même l'en-tête Content-Type. */
+export async function apiUpload<T>(path: string, form: FormData, query?: Query): Promise<T> {
+  const response = await apiFetch(path, { method: "POST", body: form }, query);
+  if (!response.ok) throw await errorFrom(response);
+  return (await response.json()) as T;
+}
+
 /** Téléchargement authentifié (export) : le fichier est enregistré sous le nom donné par le serveur. */
 export async function apiDownload(path: string, query: Query, fallbackName: string): Promise<string> {
   const response = await apiFetch(path, {}, query);

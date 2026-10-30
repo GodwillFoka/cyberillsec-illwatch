@@ -1,4 +1,4 @@
-# ADR-018 — Identité ILLWATCH : le brand book v2 fait autorité sur l'interface
+# ADR-018, Identité ILLWATCH : le brand book v2 fait autorité sur l'interface
 
 - **Statut :** **accepté le 11/10/2026** (décision de Godwill FOKA : appliquer le brand book à l'interface)
 - **Date :** 2026-10-11

@@ -1,4 +1,4 @@
-"""Modèles relationnels SQLAlchemy — §4.4 du Cahier des Charges.
+"""Modèles relationnels SQLAlchemy : §4.4 du Cahier des Charges.
 
 L'import de tous les modèles ici garantit qu'Alembic découvre l'intégralité du
 métamodèle via `Base.metadata`.

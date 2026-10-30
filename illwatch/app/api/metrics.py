@@ -1,4 +1,4 @@
-"""`GET /metrics` — exposition Prometheus (M11, ADR-026).
+"""`GET /metrics`: exposition Prometheus (M11, ADR-026).
 
 Accès : jeton `METRICS_TOKEN` (en-tête `Authorization: Bearer …`) s'il est défini ; sinon,
 adresses locales ou privées seulement (Prometheus dans le réseau Docker). Caddy ne relaie pas

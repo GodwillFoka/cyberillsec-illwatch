@@ -91,7 +91,7 @@ async def test_la_cle_n_apparait_jamais_dans_last_error(
 
 async def test_seed_corrige_l_ancienne_url_urlhaus(db_session: AsyncSession) -> None:
     old = ThreatFeed(
-        name="abuse.ch URLhaus — URL malveillantes récentes",
+        name="abuse.ch URLhaus : URL malveillantes récentes",
         url="https://urlhaus.abuse.ch/downloads/csv_recent/",
         feed_type=FeedType.CSV,
         status=FeedStatus.DEGRADED,

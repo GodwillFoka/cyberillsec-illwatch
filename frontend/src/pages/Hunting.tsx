@@ -55,7 +55,7 @@ function StatusBadge({ status }: { status: string }) {
 function durationOf(hunt: Hunt): string {
   const start = parseDate(hunt.started_at);
   const end = parseDate(hunt.finished_at);
-  if (!start || !end) return "—";
+  if (!start || !end) return "-";
   return formatMs(end.getTime() - start.getTime());
 }
 
@@ -234,7 +234,7 @@ function HuntTable({
               onClick={() => onSelect(hunt.id)}
               onKeyDown={(event) => onKey(event, index)}
             >
-              <td className="muted">{started ? `${formatAgo(started)}` : "—"}</td>
+              <td className="muted">{started ? `${formatAgo(started)}` : "-"}</td>
               <td>{triggerLabel(hunt.trigger)}</td>
               <td>
                 <StatusBadge status={hunt.status} />
@@ -311,7 +311,7 @@ function Matches({ huntId, rules }: { huntId: string; rules: HuntRule[] }) {
                       )}
                     </div>
                     <div className="muted">
-                      <span className="mono">{match.rule_id}</span> · {names.get(match.rule_id) ?? ""} —{" "}
+                      <span className="mono">{match.rule_id}</span> · {names.get(match.rule_id) ?? ""} :{" "}
                       {match.detail} <TechniqueChips context={match.attack} />
                       {match.cve_id && (
                         <>
@@ -353,7 +353,7 @@ function HuntPanel({ hunt, rules }: { hunt: Hunt; rules: HuntRule[] }) {
           <span>{huntTitle(hunt.trigger)}</span>
         </div>
         <p className="muted" style={{ margin: "4px 0 0" }}>
-          {started ? `${formatDateTime(started, utc)} · ${durationOf(hunt)}` : "—"}
+          {started ? `${formatDateTime(started, utc)} · ${durationOf(hunt)}` : "-"}
         </p>
       </section>
 
@@ -366,7 +366,7 @@ function HuntPanel({ hunt, rules }: { hunt: Hunt; rules: HuntRule[] }) {
             {hunt.rejected_count > 0 ? t("rejected", { count: hunt.rejected_count }) : ""}
           </dd>
           <dt>{t("assets")}</dt>
-          <dd>{hunt.assets || "—"}</dd>
+          <dd>{hunt.assets || "-"}</dd>
           <dt>{t("rulesLabel")}</dt>
           <dd>{ruleIds.map((id) => names.get(id) ?? id).join(", ")}</dd>
           <dt>{t("matches")}</dt>

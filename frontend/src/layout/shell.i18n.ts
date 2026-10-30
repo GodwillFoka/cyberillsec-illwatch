@@ -93,7 +93,7 @@ export const shell = defineMessages({
   de: {
     signature: "Die Bedrohung sehen, bevor sie Sie sieht.",
     tagline:
-      "Threat Intelligence, Priorisierung von Schwachstellen und Reaktion auf Vorfälle – an einem einzigen Überwachungsplatz.",
+      "Threat Intelligence, Priorisierung von Schwachstellen und Reaktion auf Vorfälle: an einem einzigen Überwachungsplatz.",
     owner: "CTI-Überwachung · Triage · Vorfallreaktion",
     loginTitle: "Anmeldung",
     loginNotice: "Nur für berechtigte Analysten. Jede Anmeldung wird protokolliert.",

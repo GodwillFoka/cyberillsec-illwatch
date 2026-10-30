@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILLWATCH — Test de restauration (M11) : la sauvegarde la plus récente est-elle utilisable ?
+# ILLWATCH, Test de restauration (M11) : la sauvegarde la plus récente est-elle utilisable ?
 #
 #   scripts/restore-test.sh [DOSSIER]      (défaut : /srv/illwatch-backups)
 #

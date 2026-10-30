@@ -1,4 +1,4 @@
-"""Lecture du moteur CVE pour l'API et la CLI — tâche 2.4 (RNF-PERF-01 : P95 < 250 ms).
+"""Lecture du moteur CVE pour l'API et la CLI, tâche 2.4 (RNF-PERF-01 : P95 < 250 ms).
 
 Les filtres portent sur des colonnes indexées (`priority`, `composite_risk_score`,
 `last_modified_date`) ; la recherche plein texte reste un `ILIKE` borné par la pagination.

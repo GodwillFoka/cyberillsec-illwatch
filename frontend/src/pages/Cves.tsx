@@ -54,7 +54,7 @@ function Signals({ cve }: { cve: Cve }) {
   if (cve.is_kev) tags.push("KEV");
   if (cve.has_public_exploit) tags.push("EXPLOIT");
   if (cve.has_ransomware_campaign) tags.push("RANSOM");
-  if (tags.length === 0) return <span className="muted">—</span>;
+  if (tags.length === 0) return <span className="muted">-</span>;
   return (
     <span className="row tight">
       {tags.map((tag) => (
@@ -220,7 +220,7 @@ function CveTable({
               <td>
                 <Signals cve={cve} />
               </td>
-              <td className="muted">{modified ? `${formatAgo(modified)}` : "—"}</td>
+              <td className="muted">{modified ? `${formatAgo(modified)}` : "-"}</td>
             </tr>
           );
         })}
@@ -338,9 +338,9 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                   <dt>{t("ransomware")}</dt>
                   <dd>{cve.has_ransomware_campaign ? t("knownCampaigns") : t("noneKnown")}</dd>
                   <dt>{t("published")}</dt>
-                  <dd>{published ? formatDateTime(published, utc) : "—"}</dd>
+                  <dd>{published ? formatDateTime(published, utc) : "-"}</dd>
                   <dt>{t("modified")}</dt>
-                  <dd>{modified ? `${formatDateTime(modified, utc)} · ${formatAgo(modified)}` : "—"}</dd>
+                  <dd>{modified ? `${formatDateTime(modified, utc)} · ${formatAgo(modified)}` : "-"}</dd>
                 </dl>
                 {cve.kev_required_action && (
                   <p className="muted">{t("requiredAction", { action: cve.kev_required_action })}</p>
@@ -364,7 +364,7 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                       const at = parseDate(change.changed_at);
                       return (
                         <li key={`${change.changed_at}-${change.new_priority}`}>
-                          <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
+                          <span className="mono muted">{at ? formatDateTime(at, utc) : "-"}</span>
                           <span>
                             {change.old_priority ? levelLabel(change.old_priority) : t("newPriority")} →{" "}
                             {levelLabel(change.new_priority)} ({formatScore(change.new_score)}, {change.reason})
@@ -386,7 +386,7 @@ function CvePanel({ cveId, canAct }: { cveId: string; canAct: boolean }) {
                           const at = parseDate(alert.created_at);
                           return (
                             <li key={alert.id}>
-                              <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
+                              <span className="mono muted">{at ? formatDateTime(at, utc) : "-"}</span>
                               <Link to={`/triage?alerte=${alert.id}`}>
                                 {ALERT_REASON[alert.reason] ?? alert.reason}
                               </Link>

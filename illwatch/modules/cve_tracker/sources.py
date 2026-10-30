@@ -1,4 +1,4 @@
-"""Sources du moteur CVE : NVD 2.0, CISA KEV, FIRST EPSS — tâches 2.1 et 2.2 (phase 3).
+"""Sources du moteur CVE : NVD 2.0, CISA KEV, FIRST EPSS, tâches 2.1 et 2.2 (phase 3).
 
 Chaque source a un analyseur pur (octets → enregistrements) et une fonction de collecte qui
 passe par le fetcher sécurisé du module de flux (DNS vérifié, taille bornée, backoff, 429).
@@ -370,7 +370,7 @@ def parse_kev(content: bytes) -> dict[str, KevEntry]:
         summary = item.get("shortDescription") or ""
         catalog[cve_id[:30]] = KevEntry(
             id=cve_id[:30],
-            description=f"{name} — {summary}".strip(" —")[:MAX_DESCRIPTION],
+            description=": ".join(part for part in (name, summary) if part)[:MAX_DESCRIPTION],
             date_added=added,
             due_date=_date(item.get("dueDate")),
             required_action=item.get("requiredAction") or None,

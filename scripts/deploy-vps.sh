@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# ILLWATCH — Déploiement sur un VPS (clôture de M7 : « … up sur un VPS UE, SSL Labs ≥ A »)
+# ILLWATCH, Déploiement sur un VPS (clôture de M7 : « … up sur un VPS UE, SSL Labs ≥ A »)
 #
 # Sur un serveur Debian 12/13 ou Ubuntu 24.04 neuf, en root (ou sudo), avec un nom DNS
 # (enregistrement A, et AAAA si IPv6) qui pointe déjà sur ce serveur :
@@ -148,7 +148,7 @@ cmd_install() {
   password=$(secret 12)
   if docker compose exec -T api illwatch users create --username admin --role admin \
     --email "${email:-admin@${domain}}" --password "${password}" >/dev/null 2>&1; then
-    ok "compte « admin » créé — mot de passe (à ranger dans KeePassXC, affiché une seule fois) :"
+    ok "compte « admin » créé : mot de passe (à ranger dans KeePassXC, affiché une seule fois) :"
     printf '    %s\n' "${password}"
   else
     ok "compte « admin » déjà présent (mot de passe inchangé)"

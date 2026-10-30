@@ -1,4 +1,4 @@
-"""Évènements corrélés : lecture, acquittement, ouverture d'incident — M8, ADR-020."""
+"""Évènements corrélés : lecture, acquittement, ouverture d'incident : M8, ADR-020."""
 
 import contextlib
 from dataclasses import dataclass

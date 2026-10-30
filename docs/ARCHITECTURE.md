@@ -29,7 +29,7 @@ Il valide les paramètres d'entrée, appelle la couche `modules/`, et retourne u
 La raison n'est pas esthétique. Le moteur de scoring et la machine d'état des incidents sont les
 deux endroits où une erreur a des conséquences opérationnelles réelles : une CVE mal priorisée n'est
 pas patchée, un incident mal fermé perd sa traçabilité forensique. Les garder dans des fonctions
-pures, sans dépendance à HTTP ni à la base, permet de les tester exhaustivement — ce que reflètent
+pures, sans dépendance à HTTP ni à la base, permet de les tester exhaustivement : ce que reflètent
 les 100 % de couverture sur `scoring.py` et `state_machine.py`.
 
 ## Découpage des paquets
@@ -53,7 +53,7 @@ Une importation qui remonte cette liste est un défaut d'architecture, pas un ra
 
 La collecte est une charge I/O-bound : des dizaines de requêtes HTTP vers des API distantes dont
 certaines répondent en plusieurs secondes. Un modèle synchrone bloquerait un worker par flux. Tout
-le chemin — `httpx`, SQLAlchemy async, asyncpg, FastAPI — est asynchrone, ce qui permet de tenir
+le chemin (`httpx`, SQLAlchemy async, asyncpg, FastAPI) est asynchrone, ce qui permet de tenir
 l'objectif RNF-MEM-01 (≤ 256 Mo) avec un seul process.
 
 Corollaire : aucun appel bloquant ne doit entrer dans la boucle d'événements. Une bibliothèque
@@ -63,7 +63,7 @@ synchrone incontournable passe par `asyncio.to_thread`.
 
 Chaque collecteur tourne dans un worker indépendant (RSK-02). L'échec d'un flux ne doit jamais faire
 tomber les autres ni l'API. Un flux en échec passe en `status = DEGRADED` avec son erreur tracée, et
-le cycle suivant le réessaie — il n'est pas désactivé automatiquement.
+le cycle suivant le réessaie : il n'est pas désactivé automatiquement.
 
 ### Déduplication portée par la base
 
@@ -82,9 +82,9 @@ Les clés API sont optionnelles : ILLWATCH fonctionne sans, plus lentement.
 
 Le schéma n'est jamais modifié à la main ni par `create_all()` en production. Toute évolution passe
 par une révision Alembic committée, `alembic/env.py` lisant l'URL depuis la configuration Pydantic
-plutôt que depuis `alembic.ini` — pour qu'il n'existe qu'une seule source de vérité.
+plutôt que depuis `alembic.ini` : pour qu'il n'existe qu'une seule source de vérité.
 
-## Flux de données — pipeline de collecte
+## Flux de données : pipeline de collecte
 
 ```
    Sources externes            ILLWATCH                          Sorties
@@ -139,8 +139,8 @@ users ──┬──< incidents ──┬──< incident_events        (immuab
         │                ├──< incident_indicators >── indicators
         │                └──< incident_cves ──────>── cves
         ├──< hunting_sessions ──< hunting_matches ──> indicators | cves
-        ├──< audit_events                             (journal d'audit, ajout seul — ADR-011)
-        └──< refresh_tokens                           (sessions révocables — ADR-012)
+        ├──< audit_events                             (journal d'audit, ajout seul : ADR-011)
+        └──< refresh_tokens                           (sessions révocables : ADR-012)
 
 threat_feeds ──< indicators ──< indicator_sources >── threat_feeds   (provenance, ADR-006)
 
@@ -157,7 +157,7 @@ Index critiques : `uq_indicator_type_value` (déduplication), `idx_indicators_la
 | Mesure | Mise en œuvre |
 |---|---|
 | Aucun secret dans le code ni en base | Configuration Pydantic depuis l'environnement ; gabarits d'URL et en-têtes ; masquage dans erreurs et journaux |
-| SSRF | Liste blanche d'adresses publiques, DNS vérifié avant chaque requête, redirections revalidées (httpx) ou refusées (taxii2-client) — `threat_feeds/fetcher.py`, `taxii.py` |
+| SSRF | Liste blanche d'adresses publiques, DNS vérifié avant chaque requête, redirections revalidées (httpx) ou refusées (taxii2-client) : `threat_feeds/fetcher.py`, `taxii.py` |
 | Réponses hostiles | Taille plafonnée lue en flux, délai par requête, backoff, 429 respecté |
 | Authentification | JWT HS256 de 15 min avec `kid` (rotation de clé sans déconnexion), Argon2id, rôle relu en base ; jeton de rafraîchissement opaque, rotatif, lignée révoquée au rejeu ; 429 après 5 échecs compte × IP, 50 par compte, 20 par IP |
 | Moindre privilège en base | Rôle applicatif sans droit de structure, `SELECT/INSERT` seulement sur les tables en ajout seul ; migrations par le rôle propriétaire (`app/db_roles.py`, ADR-012) |

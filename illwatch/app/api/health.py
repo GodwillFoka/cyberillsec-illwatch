@@ -1,4 +1,4 @@
-"""Sondes d'exploitation — `GET /health` (vivacité) et `GET /ready` (disponibilité).
+"""Sondes d'exploitation : `GET /health` (vivacité) et `GET /ready` (disponibilité).
 
 - **/health** : le processus répond et la base est joignable (critère M1, `HEALTHCHECK` Docker).
   Répond toujours 200 : un orchestrateur ne doit pas redémarrer l'API pour une panne de base.

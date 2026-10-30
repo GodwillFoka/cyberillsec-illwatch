@@ -1,4 +1,4 @@
-"""Service de l'interface web compilée — ADR-016 (même origine, même conteneur que l'API).
+"""Service de l'interface web compilée : ADR-016 (même origine, même conteneur que l'API).
 
 - `/assets/*` : fichiers produits par Vite, nommés d'après leur contenu (`index-3f2a1c.js`) :
   mis en cache un an, immuables.

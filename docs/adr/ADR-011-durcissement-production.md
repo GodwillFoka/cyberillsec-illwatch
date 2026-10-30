@@ -1,4 +1,4 @@
-# ADR-011 — Durcissement de production (M7, lot 1)
+# ADR-011 : Durcissement de production (M7, lot 1)
 
 - **Statut :** proposé
 - **Date :** 2026-10-03
@@ -49,7 +49,7 @@ et une dette d'outillage : dépendances bornées par le bas seulement, d'où un 
 7. **Production** : documentation interactive masquée par défaut (`DOCS_ENABLED`), refus de
    démarrer avec `CORS_ORIGINS=*`.
 8. **Infrastructure** : ports Compose liés à `127.0.0.1` ; `constraints.txt` (résolution
-   universelle 3.12–3.14) utilisé par la CI et l'image ; scripts `backup.sh` / `restore.sh`.
+   universelle 3.12-3.14) utilisé par la CI et l'image ; scripts `backup.sh` / `restore.sh`.
 
 ## Justification
 

@@ -1,7 +1,7 @@
-# 🛡️ SENTRY — Revue post-phase 1 et plan du sprint suivant
+# 🛡️ SENTRY : revue après la phase 1 et plan du sprint suivant
 
 **Date :** 27/09/2026 · **Branche :** `feature/threat-feeds-indicators` · **Base :** `main` @ `3f9196f`
-**Jalon visé :** M2 — Ingestion opérationnelle
+**Jalon visé :** M2 : Ingestion opérationnelle
 
 ---
 
@@ -20,7 +20,7 @@
 | 26/09 | `d848343` | `fokagodwill@gmail.com` | Migration `a4973a3782e3` (CHECK + `expires_at`) **sans le modèle** |
 | 26/09 | `f0aa045`, `3f9196f` | idem | Fusion directe dans `main` puis correction de lint → `alembic check` rouge sur `main` |
 | 27/09 | `0ec2a6e` | idem | `Indicator.expires_at` ajouté au modèle → `alembic check` repasse |
-| 27/09 | — | — | ⚠️ Fusion de `origin/feature/feeds-crud` **entamée et bloquée** (`MERGE_HEAD`, `HEAD.lock`) |
+| 27/09 | - | - | ⚠️ Fusion de `origin/feature/feeds-crud` **entamée et bloquée** (`MERGE_HEAD`, `HEAD.lock`) |
 | 27/09 | `36a5c69` → `15a9693` | Claude (Cowork) | Présente série : modèle complet, T2.2, IOC, CI, collecteur T2.3 + CLI T2.7 |
 
 **Lecture.** Le code progresse bien. L'hygiène Git, elle, coûte cher : trois identités d'auteur,
@@ -30,12 +30,12 @@ consommé une session de diagnostic.
 
 ## 2. Validation de l'état P1 → P2
 
-### Phase 1 — Foundation : ✅ close (`v0.1.0`)
+### Phase 1, Foundation : ✅ close (`v0.1.0`)
 
 Configuration validée au démarrage, authentification JWT/Argon2id, CLI RF-03, migrations
 vérifiées sur PostgreSQL, Docker, CI en 4 étapes. Aucune régression constatée depuis.
 
-### Phase 2 — Threat Feeds : état après la présente série
+### Phase 2, Threat Feeds : état après la présente série
 
 | Tâche | Exigence | État | Preuve |
 |---|---|---|---|
@@ -78,7 +78,7 @@ vérifiées sur PostgreSQL, Docker, CI en 4 étapes. Aucune régression constat�
 | 5 | Contraintes CHECK absentes du modèle (tests SQLite permissifs) | Moyenne | CHECK déclarées dans le modèle |
 | 6 | Import inutilisé dans la migration, doc et feuille de route périmées | Mineure | Nettoyage |
 
-## 4. Prochain sprint — « Sprint 3 : de la collecte à la donnée exploitable »
+## 4. Prochain sprint, « Sprint 3 : de la collecte à la donnée exploitable »
 
 **But.** Atteindre M2 sur des données réelles, puis rendre la collecte autonome.
 

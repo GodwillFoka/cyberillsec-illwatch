@@ -1,4 +1,4 @@
-"""Score de confiance d'un IOC (0–100) — M8, ADR-017.
+"""Score de confiance d'un IOC (0-100) : M8, ADR-017.
 
 La confiance répond à « peut-on agir sur cet indicateur ? », indépendamment de sa gravité
 (qui dit « à quel point ce serait grave »). Trois composantes, chacune justifiable :
@@ -7,7 +7,7 @@ La confiance répond à « peut-on agir sur cet indicateur ? », indépendamment
    (échelle de l'Amirauté). Probabilité qu'au moins une source dise vrai :
    1 − Π(1 − wᵢ), avec A = 0,90 … F = 0,10. Deux sources « C » valent plus qu'une seule.
 2. **Fraîcheur** (30 points) : décroissance exponentielle depuis la dernière observation,
-   avec une demi-vie propre au type — une IP change de main en quelques jours, une empreinte
+   avec une demi-vie propre au type : une IP change de main en quelques jours, une empreinte
    de fichier reste vraie des mois.
 3. **Récurrence** (10 points) : observations répétées, en échelle logarithmique.
 

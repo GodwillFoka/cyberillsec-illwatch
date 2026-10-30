@@ -1,4 +1,4 @@
-"""Contexte MITRE ATT&CK — `/api/v1/attack` (M10, ADR-023).
+"""Contexte MITRE ATT&CK: `/api/v1/attack` (M10, ADR-023).
 
 Lecture pour tout utilisateur authentifié. Les détections (correspondances de chasse,
 évènements corrélés, incidents) portent leur contexte ATT&CK dans leur propre réponse ;

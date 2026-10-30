@@ -1,4 +1,4 @@
-# ADR-007 — Moteur CVE : sources, recalcul, ligne de base des alertes
+# ADR-007, Moteur CVE : sources, recalcul, ligne de base des alertes
 
 - **Statut :** proposé
 - **Date :** 2026-09-29

@@ -1,4 +1,4 @@
-# ILLWATCH — Système de design (v8 « Identité ILLWATCH »)
+# ILLWATCH : Système de design (v8 « Identité ILLWATCH »)
 
 v6 adoptée le 08/10/2026 (ADR-016) ; v7 « Veille de nuit » le 11/10/2026 ; **v8 le 11/10/2026** :
 application du **brand book ILLWATCH v2** (ADR-018), qui fait autorité pour la marque, la
@@ -12,19 +12,21 @@ Référence vivante : `frontend/src/styles/tokens.css` (jetons) et `base.css` (c
 de nuit. Le thème **Nuit** est celui de l'application ; la couleur ne sert qu'à informer. Quatre
 couleurs ont un sens fixe, partout :
 
-- **indigo** (maison CYBERILL) : où vous êtes, ce qui est sélectionné — toujours avec du blanc dessus ;
-- **Signal** : la veille — liens, anneau de focus, courbes des graphiques, rayon du radar ;
+- **indigo** (maison CYBERILL) : où vous êtes, ce qui est sélectionné, toujours avec du blanc dessus ;
+- **Signal** : la veille, liens, anneau de focus, courbes des graphiques, rayon du radar ;
 - **orange** : l'action principale (une par vue), le point de menace du symbole, le repère de
   sélection de 3 px ;
-- **échelle P0–P3** : la gravité, et rien d'autre.
+- **échelle P0-P3** : la gravité, et rien d'autre.
 
 La confiance d'un IOC (ADR-017) n'utilise pas l'échelle de gravité : jauge Signal à 5 crans.
 
 ## Marque
 
-- **Ponctuation du site** : pas de tiret long (« — ») dans un texte visible (décision du
-  24/10/2026) ; virgule, deux-points ou point dans une phrase, « | » dans un titre de page.
-  La construction du site échoue si une page en contient.
+- **Ponctuation** : ni tiret long (U+2014) ni tiret moyen (U+2013), nulle part : site
+  (décision du 24/10/2026), puis application, documentation, rapports et code (30/10/2026).
+  Dans une phrase : virgule, deux-points, parenthèses ou point ; pour un intervalle : « de 40 à
+  60 » ou « 40-60 » ; pour une valeur absente : « - » ; dans un titre de page : « | ». La
+  construction du site et le test `tests/test_ponctuation.py` échouent si un fichier en contient.
 - **Nom** : « ILLWATCH », en un seul mot et en capitales (décision du 23/10/2026) ; jamais
   « ILL Watch », IllWatch ou Ill Watch dans un texte ; le dessin du logo (ILL + Watch) reste
   inchangé pour l'instant. Endossement :
@@ -42,7 +44,7 @@ La confiance d'un IOC (ADR-017) n'utilise pas l'échelle de gravité : jauge Sig
 - **Motif radar** : arcs Signal à faible opacité, jamais sous du texte ; à la connexion seulement,
   un seul balayage de 1,2 s au chargement, jamais en boucle.
 
-## Couleurs — thème Nuit (application)
+## Couleurs : thème Nuit (application)
 
 | Jeton | Valeur | Usage | Contraste |
 |---|---|---|---|

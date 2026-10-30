@@ -90,7 +90,7 @@ function AlertTable({
               <td className="mono">{alert.cve_id}</td>
               <td className="num mono">{score(alert.score)}</td>
               <td className="muted">{ALERT_REASON[alert.reason] ?? alert.reason}</td>
-              <td className="muted">{created ? formatAge(created) : "—"}</td>
+              <td className="muted">{created ? formatAge(created) : "-"}</td>
               <td>
                 {alert.acknowledged_at ? (
                   <span className="badge p3">{t("acknowledged")}</span>
@@ -162,7 +162,7 @@ function AlertDetail({
             {alert.previous_score !== null ? t("before", { score: score(alert.previous_score) }) : ""}
           </dd>
           <dt>{t("raised")}</dt>
-          <dd>{created ? `${formatDateTime(created, utc)} · ${formatAgo(created)}` : "—"}</dd>
+          <dd>{created ? `${formatDateTime(created, utc)} · ${formatAgo(created)}` : "-"}</dd>
           <dt>{t("acknowledgement")}</dt>
           <dd>{acknowledged ? formatDateTime(acknowledged, utc) : t("notAcknowledged")}</dd>
           <dt>{t("notification")}</dt>
@@ -222,7 +222,7 @@ function AlertDetail({
               const at = parseDate(change.changed_at);
               return (
                 <li key={`${change.changed_at}-${change.new_priority}`}>
-                  <span className="mono muted">{at ? formatDateTime(at, utc) : "—"}</span>
+                  <span className="mono muted">{at ? formatDateTime(at, utc) : "-"}</span>
                   <span>
                     {change.old_priority ? levelLabel(change.old_priority) : t("newPriority")} →{" "}
                     {levelLabel(change.new_priority)} ({score(change.new_score)}, {change.reason})

@@ -1,4 +1,4 @@
-// Échelle de priorité unique P0–P3 (docs/DESIGN_SYSTEM.md, brand book ILLWATCH v2), appliquée aux sévérités et priorités.
+// Échelle de priorité unique P0-P3 (docs/DESIGN_SYSTEM.md, brand book ILLWATCH v2), appliquée aux sévérités et priorités.
 // Libellés traduits à la lecture (ADR-027) : voir labels.i18n.ts.
 import { labelTable, labels } from "./labels.i18n.js";
 

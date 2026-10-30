@@ -1,4 +1,4 @@
-"""Référentiel ATT&CK : import, techniques d'une détection, acteurs cités — M10, ADR-023.
+"""Référentiel ATT&CK : import, techniques d'une détection, acteurs cités : M10, ADR-023.
 
 Attribution prudente : un acteur n'est proposé que si son nom (ou un alias) figure en toutes
 lettres dans le renseignement attaché à la détection (description de l'IOC par sa source,

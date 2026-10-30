@@ -1,6 +1,6 @@
 """feed reliability
 
-M8 Detection & Correlation (ADR-017) : fiabilité de chaque source (échelle de l'Amirauté A–F),
+M8 Detection & Correlation (ADR-017) : fiabilité de chaque source (échelle de l'Amirauté, de A à F),
 qui pondère le score de confiance de ses IOC. Valeur par défaut « C » (assez fiable) pour les
 sources existantes ; les sources de référence déjà présentes reçoivent ici, une seule fois, la
 cote du seed (abuse.ch et IPsum : B, OTX : D). Ensuite, seul l'administrateur la change :
@@ -24,10 +24,10 @@ depends_on: str | Sequence[str] | None = None
 
 # Noms exacts des sources de référence (illwatch/modules/foundation/seed.py, 11/10/2026).
 REFERENCE_RATINGS = {
-    "abuse.ch URLhaus — URL malveillantes récentes": "B",
-    "abuse.ch Feodo Tracker — serveurs C2 botnet": "B",
-    "IPsum — IP malveillantes (≥ 5 listes noires)": "B",
-    "AlienVault OTX — pulses abonnés": "D",
+    "abuse.ch URLhaus \u2014 URL malveillantes récentes": "B",
+    "abuse.ch Feodo Tracker \u2014 serveurs C2 botnet": "B",
+    "IPsum \u2014 IP malveillantes (≥ 5 listes noires)": "B",
+    "AlienVault OTX \u2014 pulses abonnés": "D",
 }
 
 

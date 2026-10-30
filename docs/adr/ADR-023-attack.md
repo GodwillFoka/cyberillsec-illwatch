@@ -1,4 +1,4 @@
-# ADR-023 — M10, incrément 1 : contexte MITRE ATT&CK des détections
+# ADR-023, M10, incrément 1 : contexte MITRE ATT&CK des détections
 
 - **Statut :** **accepté le 14/10/2026** (décision de Godwill FOKA : « fais ce que tu peux faire »)
 - **Date :** 2026-10-14

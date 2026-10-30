@@ -1,4 +1,4 @@
-# ILLWATCH — Bilan de M8 « Detection & Correlation » — clos le 14/10/2026
+# ILLWATCH : bilan de M8 « Detection & Correlation », clos le 14/10/2026
 
 ## Critère de sortie
 
@@ -16,7 +16,7 @@
 
 | Incrément | Contenu | ADR | PR |
 |---|---|---|---|
-| 1 | Confiance des IOC 0–100 (fiabilité des sources A–F, fraîcheur par type, récurrence) | 017 | #31-32 |
+| 1 | Confiance des IOC 0-100 (fiabilité des sources A-F, fraîcheur par type, récurrence) | 017 | #31-32 |
 | 2 | Enrichissement hors ligne des IP (pays, système autonome, DB-IP Lite, mise à jour mensuelle) | 019 | #34-35 |
 | 3 | Inventaire d'actifs, corrélation CORR-01 (KEV × actif), CORR-02 (exploit × actif), CORR-03 (actif dans un IOC), score justifié | 020 | #36 |
 | 4 | Mesure sur jeu figé, `illwatch correlate evaluate` | 020 | #36 |

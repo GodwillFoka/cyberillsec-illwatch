@@ -1,4 +1,4 @@
-"""Pilotage programmatique d'Alembic — utilisé par la CLI (`illwatch db …`) et les tests.
+"""Pilotage programmatique d'Alembic : utilisé par la CLI (`illwatch db …`) et les tests.
 
 Localisation de `alembic.ini`, dans l'ordre :
   1. variable d'environnement `ILLWATCH_ALEMBIC_INI` ;

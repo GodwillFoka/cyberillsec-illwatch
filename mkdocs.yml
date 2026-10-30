@@ -1,7 +1,7 @@
-# Site de documentation ILLWATCH — publié par GitLab Pages (job « pages », sous /docs/ du site)
+# Site de documentation ILLWATCH : publié par GitLab Pages (job « pages », sous /docs/ du site)
 # et par GitHub Pages (.github/workflows/docs.yml)
 # Aperçu local : pip install "mkdocs-material>=9.5,<10" && python scripts/docs_prepare.py && mkdocs serve
-site_name: ILLWATCH — Documentation
+site_name: "ILLWATCH : Documentation"
 site_description: Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec, a CYBERILL initiative)
 site_author: Godwill FOKA
 site_url: https://godwillfoka.github.io/cyberillsec-illwatch/
@@ -66,10 +66,14 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 not_in_nav: |
+  /PROMPT_PRESENTATION_GLOBALE.md
   /pdf/**
 
 nav:
   - Accueil: README.md
+  - Guides:
+      - Installation et exploitation: GUIDE_INSTALLATION.md
+      - Manuel fonctionnel: MANUEL_FONCTIONNEL.md
   - Produit:
       - Cahier des charges: CAHIER_DES_CHARGES.md
       - Vision produit: PRODUCT_VISION.md
@@ -107,6 +111,8 @@ nav:
           - ADR-024 Campagnes: adr/ADR-024-campagnes.md
           - ADR-025 STIX / TAXII: adr/ADR-025-stix-taxii.md
           - ADR-026 Observabilité: adr/ADR-026-observabilite.md
+          - ADR-027 Site de présentation: adr/ADR-027-site-de-presentation.md
+          - ADR-028 Inventaire en fichier: adr/ADR-028-inventaire-en-fichier.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:

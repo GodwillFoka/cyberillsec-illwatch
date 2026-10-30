@@ -1,4 +1,4 @@
-"""Verrous de collecte — T2.6 : deux instances ne collectent jamais le même flux ensemble.
+"""Verrous de collecte, T2.6 : deux instances ne collectent jamais le même flux ensemble.
 
 Plusieurs collecteurs peuvent tourner en même temps : un `illwatch feeds worker` et un
 `fetch-all` lancé à la main, deux conteneurs derrière un orchestrateur… Sans verrou, un

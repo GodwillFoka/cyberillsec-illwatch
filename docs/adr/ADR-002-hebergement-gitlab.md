@@ -1,4 +1,4 @@
-# ADR-002 — GitLab comme dépôt principal, abandon de GitHub
+# ADR-002 : GitLab comme dépôt principal, abandon de GitHub
 
 - **Statut :** accepté
 - **Date :** 2026-09-19
@@ -9,9 +9,9 @@
 
 Les deux documents fondateurs désignaient GitHub comme dépôt principal :
 
-- le Cahier des charges v1.0.0 en en-tête — *« DÉPÔT GITHUB : github.com/GodwillFoka/illwatch
+- le Cahier des charges v1.0.0 en en-tête, *« DÉPÔT GITHUB : github.com/GodwillFoka/illwatch
   (Miroir GitLab : gitlab.com/GodwillFoka/illwatch) »* ;
-- son critère de validation du jalon v1.0 — *« tag Git v1.0.0 poussé sur GitHub et GitLab »* ;
+- son critère de validation du jalon v1.0 : *« tag Git v1.0.0 poussé sur GitHub et GitLab »* ;
 - le Product Vision Document, Tome 10, qui liste GitHub comme canal de communication principal.
 
 Or ILLWATCH se positionne explicitement sur la souveraineté numérique européenne. Le Tome 1 fait de
@@ -35,10 +35,10 @@ Dépôt de référence : `gitlab.com/GodwillFoka/cyberillsec-illwatch`.
    ILLWATCH face à CrowdStrike et Recorded Future. Un différenciateur que le projet ne s'applique pas
    à lui-même est un différenciateur qui ne tient pas en réunion commerciale.
 2. **GitLab est de droit européen sur l'offre SaaS UE**, et l'édition Community est auto-hébergeable
-   — ce qui laisse ouverte la migration vers une instance CYBERILL sans changer d'outillage.
+   : ce qui laisse ouverte la migration vers une instance CYBERILL sans changer d'outillage.
 3. **La CI est native et intégrée.** `.gitlab-ci.yml` couvre en un fichier ce que GitHub Actions
    faisait en un workflow plus Dependabot, et GitLab fournit nativement le SAST, la détection de
-   secrets et le scan de dépendances — pertinent pour un projet de sécurité qui doit pouvoir montrer
+   secrets et le scan de dépendances : pertinent pour un projet de sécurité qui doit pouvoir montrer
    qu'il s'applique ses propres contrôles.
 4. **Un seul dépôt plutôt qu'un dépôt et son miroir.** Un miroir se désynchronise, personne ne sait
    lequel fait foi, et les issues se dispersent sur deux plateformes. Le coût de maintenance d'un
@@ -52,7 +52,7 @@ Dépôt de référence : `gitlab.com/GodwillFoka/cyberillsec-illwatch`.
 - Une seule source de vérité : un dépôt, un pipeline, un tracker d'issues.
 - Analyses de sécurité (SAST, secrets, dépendances) acquises sans outillage tiers.
 
-**Négatives — et elles sont réelles**
+**Négatives : et elles sont réelles**
 
 - **Découvrabilité.** L'écrasante majorité des contributeurs open source est sur GitHub. La vision
   2035 vise « 5 000+ contributeurs » ; ce choix rend cet objectif nettement plus difficile. C'est le
@@ -63,7 +63,7 @@ Dépôt de référence : `gitlab.com/GodwillFoka/cyberillsec-illwatch`.
 
 **Atténuation de la découvrabilité**
 
-Si la traction contributeurs devient un blocage mesuré — et seulement à ce moment-là — un miroir
+Si la traction contributeurs devient un blocage mesuré (et seulement à ce moment-là) un miroir
 GitHub en lecture seule pourra être remis en place, avec un README y renvoyant explicitement vers
 GitLab pour les issues et les merge requests. Cette réintroduction éventuelle fera l'objet d'un ADR
 de suivi, pas d'une dérive silencieuse.
@@ -77,6 +77,6 @@ de suivi, pas d'une dérive silencieuse.
 
 ## Références
 
-- [Cahier des charges — en-tête et §5.2](../CAHIER_DES_CHARGES.md)
-- [Product Vision Document — Tomes 1, 2 et 10](../PRODUCT_VISION.md)
+- [Cahier des charges : en-tête et §5.2](../CAHIER_DES_CHARGES.md)
+- [Product Vision Document : Tomes 1, 2 et 10](../PRODUCT_VISION.md)
 - Pipeline : [`.gitlab-ci.yml`](../../.gitlab-ci.yml)

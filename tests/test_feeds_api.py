@@ -1,4 +1,4 @@
-"""Tests d'intégration du CRUD des sources de flux — `/api/v1/feeds` (RF-04, T2.2)."""
+"""Tests d'intégration du CRUD des sources de flux : `/api/v1/feeds` (RF-04, T2.2)."""
 
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
@@ -219,7 +219,7 @@ async def test_modification_partielle(client: AsyncClient, auth_as: HeadersFacto
 
 
 async def test_fiabilite_de_la_source(client: AsyncClient, auth_as: HeadersFactory) -> None:
-    """ADR-017 : cote A–F, « C » par défaut, modifiable par l'administrateur seulement."""
+    """ADR-017 : cote A-F, « C » par défaut, modifiable par l'administrateur seulement."""
     admin = await auth_as(UserRole.ADMIN)
     analyst = await auth_as(UserRole.ANALYST)
     feed = await _create(client, admin)

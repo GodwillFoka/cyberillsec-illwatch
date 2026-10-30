@@ -1,4 +1,4 @@
-"""`illwatch enrich` — enrichissement hors ligne des IP (M8, ADR-017, incrément 2).
+"""`illwatch enrich` : enrichissement hors ligne des IP (M8, ADR-017, incrément 2).
 
 - `update` : télécharge et importe les bases DB-IP Lite du mois (pays, système autonome) ;
 - `import` : importe un fichier déjà téléchargé (poste sans accès à Internet) ;

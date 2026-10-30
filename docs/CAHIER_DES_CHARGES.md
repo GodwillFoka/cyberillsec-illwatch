@@ -1,631 +1,323 @@
-# ILLWATCH — Cahier des charges & dossier d'ingénierie logicielle
+# ILLWATCH : Cahier des charges
 
-> **Conversion Markdown versionnable** du document maître
-> `CYBERILL-ILLWATCH — Cahier des Charges & Dossier d'Ingénierie v1.0.0`.
-> Le PDF d'origine est conservé dans [`pdf/SENTRY_Cahier_des_Charges.pdf`](pdf/SENTRY_Cahier_des_Charges.pdf).
-> En cas de divergence, **ce fichier Markdown fait foi** : il est celui que la CI, les revues de
-> code et les merge requests référencent.
+<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Cahier_des_charges_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
 
 | | |
 |---|---|
-| **Projet** | ILLWATCH — Security Monitoring & Threat Intelligence Platform |
-| **Initiative** | CyberillSec — A CYBERILL Initiative |
-| **Auteur & architecte** | Godwill FOKA, Lead Architect & Security Engineer |
-| **Destinataire** | Équipe d'ingénierie logicielle / développeurs en onboarding |
-| **Version** | v1.0.0 (Master Engineering Baseline) |
-| **Baseline** | Juillet – Septembre 2026 |
-| **Dépôt** | `gitlab.com/GodwillFoka/cyberillsec-illwatch` (voir [ADR-002](adr/ADR-002-hebergement-gitlab.md)) |
-| **Classification** | Interne CYBERILL — document fondateur de référence |
-| **Statut** | Approuvé pour développement |
+| **Projet** | ILLWATCH : plateforme de surveillance de sécurité et de renseignement sur les menaces |
+| **Initiative** | CyberillSec, une initiative CYBERILL |
+| **Auteur et architecte** | Godwill FOKA, Lead Architect et Security Engineer, Berlin |
+| **Version** | **v2.0 du 30/10/2026** (remplace la v1.0.0 « Master Engineering Baseline » de juillet 2026) |
+| **Dépôt** | `gitlab.com/GodwillFoka/cyberillsec-illwatch` (référence), GitHub (miroir) |
+| **Statut** | Approuvé pour développement ; fait foi pour l'implémentation |
 
----
+> **Hiérarchie des sources.** En cas de contradiction : un ADR accepté (`docs/adr/`) tranche,
+> puis ce cahier des charges, puis la vision produit. Un écart non tranché fait l'objet d'un ADR,
+> jamais d'une décision silencieuse dans le code. La v1.0.0 d'origine est conservée en PDF
+> (`docs/pdf/`) pour l'historique.
+
+## Historique des versions
+
+| Version | Date | Changements |
+|---|---|---|
+| v1.0.0 | 07/2026 | Baseline : six modules, exigences RF-01 à RF-28, 44 tâches sur 9 semaines |
+| v1.x | 09/2026 à 10/2026 | Écarts tranchés par ADR-001 à ADR-028 (score, hébergement, renommage, interface web…) |
+| **v2.0** | **30/10/2026** | Refonte : nom ILLWATCH (anciennement SENTRY), statut de chaque exigence, exigences M7 à M11 (RF-29 à RF-52), exigences non fonctionnelles mesurées, modèle de données et API à jour |
 
 ## Sommaire
 
-1. [Cadre métier et vulgarisation](#1-cadre-métier-et-vulgarisation)
-2. [Phase d'avant-projet et analyse préalable](#2-phase-davant-projet-et-analyse-préalable)
-3. [Cahier des charges fonctionnel](#3-cahier-des-charges-fonctionnel-cdcf)
-4. [Cahier des charges technique et exigences non fonctionnelles](#4-cahier-des-charges-technique-cdct)
-5. [Planning opérationnel et découpage des 44 tâches](#5-planning-opérationnel)
-6. [Guide d'onboarding développeur](#6-guide-donboarding-développeur)
+1. [Contexte et mission](#1-contexte-et-mission)
+2. [Besoins et acteurs](#2-besoins-et-acteurs)
+3. [Exigences fonctionnelles](#3-exigences-fonctionnelles)
+4. [Exigences non fonctionnelles](#4-exigences-non-fonctionnelles)
+5. [Architecture et choix techniques](#5-architecture-et-choix-techniques)
+6. [Modèle de données](#6-modele-de-donnees)
+7. [Interfaces](#7-interfaces)
+8. [Critères d'acceptation](#8-criteres-dacceptation)
+9. [Risques](#9-risques)
+10. [Glossaire](#10-glossaire)
 
 ---
 
-## 1. Cadre métier et vulgarisation
+## 1. Contexte et mission
 
-### 1.1 CYBERILL et l'écosystème CyberillSec
+### 1.1 CYBERILL et CyberillSec
 
 CYBERILL est une initiative d'ingénierie et de résilience numérique fondée à Berlin par Godwill
-FOKA, articulée autour de six piliers :
+FOKA, organisée en six branches : CyberillSec (renseignement sur les menaces), Cyberill Labs
+(recherche), Cyberill Academy (formation), Cyberill Consulting (conseil), Cyberill CERT (réponse
+à incident) et Cyberill Cloud (plateformes hébergées). **ILLWATCH** est le moteur logiciel de
+CyberillSec. Il s'appelait SENTRY jusqu'au 08/10/2026 (nom déjà pris) ; seules les références
+historiques gardent l'ancien nom.
 
-| Branche | Domaine | Périmètre |
-|---|---|---|
-| **CyberillSec / ILLWATCH** | Threat Intelligence | Plateforme de veille CTI |
-| Cyberill Labs | Recherche | Analyse de malware, offensif, pentest |
-| Cyberill Academy | Formation | Certifications, workshops, sensibilisation |
-| Cyberill Consulting | Conseil | GRC, audit, advisory |
-| Cyberill CERT | Réponse à incident | DFIR, gestion de crise |
-| Cyberill Cloud | Cloud | Plateformes SaaS sécurisées |
+### 1.2 Le problème
 
-CyberillSec est le bras armé de veille stratégique : collecter, analyser, corréler et vulgariser les
-données relatives aux cyberattaques mondiales.
+1. **Exploitation accélérée** : les attaquants exploitent une vulnérabilité publiée en moins de
+   48 heures ; la correction mensuelle ne suffit plus.
+2. **Obligations européennes** : NIS 2 et DORA imposent une veille active et la notification des
+   incidents majeurs sous 24 à 72 heures.
+3. **Coût** : les plateformes commerciales de renseignement coûtent de 40 000 à 150 000 € par an,
+   hors de portée des PME, des ETI et des collectivités.
+4. **Lourdeur** : les plateformes open source complètes exigent un cluster et 16 Go de mémoire au
+   minimum.
+5. **Bruit** : un analyste passe 60 à 70 % de son temps à recopier des indicateurs et à trier des
+   alertes en double.
 
-### 1.2 Mission d'ILLWATCH
+### 1.3 La mission
 
-ILLWATCH est le moteur logiciel qui propulse CyberillSec. Dans l'industrie, un analyste sécurité passe
-60 à 70 % de son temps à copier-coller des indicateurs entre une dizaine d'outils, lire des bulletins
-illisibles et trier des alertes en double.
+Donner à une équipe de 1 à 10 personnes ce dont elle a besoin le lundi matin : **quoi corriger
+d'abord, quoi bloquer, ce qui a changé, et la preuve de ce qui a été fait**, avec une plateforme
+open source (licence MIT), hébergeable en Europe, qui tient dans moins de 256 Mo de mémoire.
 
-ILLWATCH crée un cerveau centralisé qui :
-
-1. collecte automatiquement le renseignement sur les menaces (flux publics, bases gouvernementales,
-   flux communautaires) ;
-2. normalise ces données dans un format unique ;
-3. calcule un score de risque objectif pour chaque vulnérabilité ;
-4. expose une interface unifiée (API REST, CLI, dashboard SOC) permettant de décider d'une
-   remédiation en quelques secondes plutôt qu'en plusieurs heures.
-
-### 1.3 Lexique du développeur cyber
-
-| Terme | Définition |
-|---|---|
-| **CTI** | *Cyber Threat Intelligence* — renseignement sur les attaquants, leurs motivations, capacités et méthodes. |
-| **IOC** | *Indicator of Compromise* — empreinte numérique laissée par un attaquant : IP malveillante, domaine frauduleux, URL de phishing, hash d'un binaire. |
-| **CVE** | *Common Vulnerabilities and Exposures* — identifiant universel d'une faille (ex. `CVE-2026-16812`). |
-| **CVSS** | Note technique de 0.0 à 10.0 mesurant la sévérité intrinsèque d'une faille (9.8 = critique, exploitable à distance sans authentification). |
-| **EPSS** | *Exploit Prediction Scoring System* — score probabiliste de 0.0 à 1.0 calculé quotidiennement par FIRST, prédisant la probabilité d'exploitation réelle sous 30 jours. Au-delà de 0.7, l'attaque est très probablement imminente. |
-| **CISA KEV** | *Known Exploited Vulnerabilities* — catalogue gouvernemental américain des failles dont l'exploitation active a été formellement prouvée. Une CVE au KEV est une urgence absolue. |
-| **TTP / MITRE ATT&CK** | Cartographie des comportements d'attaquants : les tactiques disent le *pourquoi* (« Accès initial »), les techniques le *comment* (« T1566 — Phishing »). |
-| **Threat Hunting** | Démarche proactive de recherche, dans son propre réseau, de traces d'attaques ayant contourné les défenses classiques. |
-| **Sigma** | Règles génériques en YAML pour détecter des comportements suspects dans les journaux d'événements. |
-| **YARA** | Signatures textuelles ou binaires identifiant des familles de malwares dans des fichiers. |
-
-### 1.4 La journée type de l'analyste SOC
-
-**Sans ILLWATCH** — Alex ouvre quinze onglets (CISA, NVD, AlienVault, réseaux sociaux, presse
-spécialisée), lit quarante articles, repère une faille Fortinet, cherche manuellement son CVSS,
-vérifie l'existence d'un exploit public, croise les IP attaquantes, ouvre un ticket. Il est 11 h 30
-et rien n'est encore bloqué.
-
-**Avec ILLWATCH** — les tâches asynchrones ont tourné toute la nuit. À 08 h 01, `illwatch dashboard show`
-affiche les trois CVE critiques de la nuit (score > 80 parce que KEV = oui et EPSS > 0.85), les
-quarante nouveaux IOC dédupliqués et rattachés à la campagne en cours, et l'incident créé
-automatiquement avec sa chronologie pré-remplie. En cinq minutes, le blocage firewall est lancé et
-le RSSI notifié.
+![De la source à la décision](assets/schemas/pipeline.svg)
 
 ---
 
-## 2. Phase d'avant-projet et analyse préalable
+## 2. Besoins et acteurs
 
-### 2.1 Contexte et état de l'art en 2026
+### 2.1 Besoins utilisateurs
 
-1. **Industrialisation des ransomwares (RaaS)** — les attaquants exploitent les vulnérabilités moins
-   de 48 heures après divulgation publique. Le patching mensuel type « Patch Tuesday » est obsolète.
-2. **Inflation normative européenne (NIS 2, DORA)** — obligation légale de veille active sur les
-   vulnérabilités et de notification des incidents majeurs sous 24 à 72 heures.
-3. **Coût prohibitif du CTI propriétaire** — Recorded Future, Mandiant Advantage, CrowdStrike Falcon
-   Intelligence facturent 40 000 € à 150 000 € par an, excluant de fait les PME, ETI et
-   organisations publiques régionales.
-4. **Lourdeur des outils open source actuels** — OpenCTI et ses pairs exigent des clusters
-   (Elasticsearch, Redis, MinIO, RabbitMQ) et 16 Go de RAM minimum au démarrage, ce qui les rend
-   inutilisables en environnement contraint.
-
-### 2.2 Problématique d'ingénierie
-
-> Comment concevoir une plateforme de renseignement cyber robuste, légère et modulaire, capable
-> d'ingérer de multiples flux hétérogènes en continu, de calculer un score de risque composite
-> déterministe et d'orchestrer la réponse à incident, tout en s'exécutant avec une empreinte mémoire
-> inférieure à 512 Mo et un déploiement clé en main ?
-
-### 2.3 Besoins utilisateurs
-
-| Réf. | Profil | Besoin |
-|---|---|---|
-| **BU-01** | Analyste SOC N1/N2 | Une source unique de vérité où chaque alerte est pré-enrichie de son contexte technique et de sa sévérité réelle. |
-| **BU-02** | Threat Hunter / analyste CTI | Filtrer rapidement des dizaines de milliers d'indicateurs par famille d'attaque et exporter des listes de blocage (JSON / CSV / STIX). |
-| **BU-03** | RSSI | Des métriques de pilotage consolidées (MTTR, MTTD) pour mesurer la vitesse de traitement et prioriser les budgets de remédiation. |
-| **BU-04** | Ingénieur système / DevOps | Une image légère pilotable intégralement par API REST et CLI, intégrable en CI/CD. |
-
-### 2.4 Étude de faisabilité
-
-| Axe | Constat | Verdict |
-|---|---|---|
-| **Technique** | NVD REST 2.0, CISA KEV JSON, FIRST EPSS API et AlienVault OTX REST sont publiquement documentés et stables. L'écosystème Python offre `httpx` pour l'asynchrone non bloquant, `pydantic` pour la validation et `asyncpg`/SQLAlchemy pour la persistance. | ✅ Validé |
-| **Opérationnelle** | 9 semaines, 6 phases modulaires, ~50 heures d'ingénierie nette, tâches découpées en unités de 20 à 45 minutes garantissant une progression mesurable. | ✅ Validé |
-| **Économique** | Toutes les briques sont sous licence libre (MIT, BSD, Apache 2.0). Développement local sous Docker à coût nul ; production dimensionnable sur un VPS modeste. | ✅ Validé |
-
-### 2.5 Matrice des risques pré-projet
-
-| ID | Risque | Prob. | Impact | Gravité | Atténuation |
-|---|---|---|---|---|---|
-| **RSK-01** | Rate limiting sévère des API tierces (NVD) | Élevée | Élevé | **Critique** | Cache Redis local, clés API optionnelles, backoff exponentiel (`tenacity`), espacement des requêtes. |
-| **RSK-02** | Indisponibilité d'un flux externe | Élevée | Moyen | Majeur | Isoler chaque collecteur dans un worker indépendant : l'échec d'un flux ne doit jamais faire tomber les autres ni l'API. |
-| **RSK-03** | Explosion de la volumétrie des IOC | Moyenne | Élevé | Majeur | Cycle de vie strict des indicateurs (aging / TTL), indexation B-Tree et contrainte d'unicité pour déduplication immédiate. |
-| **RSK-04** | Dérive du périmètre (scope creep) | Moyenne | Élevé | Majeur | Périmètre v1.0 gelé sur les 44 tâches planifiées. Toute idée nouvelle part au backlog v2.0. |
-| **RSK-05** | Régression de code lors des itérations | Moyenne | Moyen | Modéré | Suite `pytest` bloquant tout merge via GitLab CI si le taux de succès n'est pas de 100 %. |
-
-### 2.6 Analyse SWOAT
-
-**Forces** — architecture légère, asynchrone, modulaire ; scoring composite exclusif à quatre
-dimensions ; double interface native API + CLI ; indépendance vis-à-vis des solutions propriétaires
-fermées.
-
-**Faiblesses** — projet jeune ; dépendance à la connectivité et à la stabilité des API publiques
-externes ; absence d'IHM lourde en phase 1 (choix assumé au profit de l'API et de la CLI).
-
-**Opportunités** — NIS 2 impose la surveillance CTI ; forte demande pour des briques CTI autonomes
-et transparentes déployables on-premise ; possibilité de fédérer une communauté internationale.
-
-**Aspirations** — positionner ILLWATCH comme le standard open source européen de surveillance des
-menaces d'ici 2030 ; démontrer une excellence technique au niveau des plus grands centres de R&D.
-
-**Menaces** — évolution ou fermeture des points d'accès API gratuits ; concurrence d'outils massifs
-mieux financés.
-
----
-
-## 3. Cahier des charges fonctionnel (CdCF)
-
-### 3.1 Les six modules métier
-
-| Module | Périmètre |
-|---|---|
-| **MOD-01 Foundation** | Configuration, base SQL, authentification, CLI, migrations Alembic |
-| **MOD-02 Threat Feeds** | Collecte multi-sources, normalisation, moteur IOC, déduplication, aging |
-| **MOD-03 CVE Tracker** | API NVD 2.0, CISA KEV, EPSS, algorithme de risk score, moteur d'alerting |
-| **MOD-04 Incidents** | Modélisation du cycle de vie, workflow à 6 états, timeline, liens IOC/CVE |
-| **MOD-05 SOC Dashboard** | Synthèse des métriques, timeline d'activités, export JSON/CSV |
-| **MOD-06 Threat Hunting** | Moteur de pattern-matching, règles Sigma/KQL, sessions de chasse |
-
-### 3.2 Matrice des exigences fonctionnelles
-
-| Réf. | Module | Exigence | Priorité |
+| Réf. | Profil | Besoin | Réponse d'ILLWATCH |
 |---|---|---|---|
-| RF-01 | MOD-01 | Charger la configuration de manière immuable depuis l'environnement ou un `.env` typé. | P0 |
-| RF-02 | MOD-01 | Initialiser la structure relationnelle via des migrations de schéma automatisées. | P0 |
-| RF-03 | MOD-01 | Fournir une CLI d'initialisation, de peuplement (seed) et de diagnostic. | P1 |
-| RF-04 | MOD-02 | CRUD complet sur les sources de flux de menaces. | P0 |
-| RF-05 | MOD-02 | Collecter les flux distants de façon asynchrone sans bloquer la boucle d'événements. | P0 |
-| RF-06 | MOD-02 | Parser les formats JSON, CSV et STIX 2.1. | P0 |
-| RF-07 | MOD-02 | Extraire et stocker les IOC : IP v4/v6, domaines, URL, hashs MD5/SHA1/SHA256. | P0 |
-| RF-08 | MOD-02 | Dédupliquer automatiquement : une valeur revue met à jour `last_seen` sans dupliquer la ligne. | P0 |
-| RF-09 | MOD-02 | Exécuter un worker périodique configurable rafraîchissant les flux actifs. | P1 |
-| RF-10 | MOD-02 | Intégrer nativement le connecteur AlienVault OTX via clé API. | P1 |
-| RF-11 | MOD-03 | Se synchroniser avec l'API NIST NVD 2.0 (pagination, rate limit). | P0 |
-| RF-12 | MOD-03 | Importer le catalogue CISA KEV et marquer les CVE activement exploitées. | P0 |
-| RF-13 | MOD-03 | Importer les scores EPSS quotidiens de FIRST. | P0 |
-| RF-14 | MOD-03 | Calculer un score de risque composite déterministe entre 0 et 100. | P0 |
-| RF-15 | MOD-03 | Offrir une recherche et un filtrage multicritères sur les CVE. | P1 |
-| RF-16 | MOD-03 | Générer une alerte dès qu'une vulnérabilité dépasse un seuil de risque prédéfini. | P1 |
-| RF-17 | MOD-04 | Modéliser les incidents et leur assigner une sévérité. | P0 |
-| RF-18 | MOD-04 | Implémenter une machine d'état stricte à 6 étapes. | P0 |
-| RF-19 | MOD-04 | Enregistrer une chronologie immuable rattachée à chaque incident. | P0 |
-| RF-20 | MOD-04 | Associer des IOC et des CVE spécifiques à un incident. | P1 |
-| RF-21 | MOD-05 | Exposer `/api/v1/dashboard/summary` compilant les indicateurs clés en temps réel. | P0 |
-| RF-22 | MOD-05 | Retourner la liste consolidée des menaces et vulnérabilités des dernières 24 heures. | P1 |
-| RF-23 | MOD-05 | Fournir `illwatch dashboard show` affichant une vue console riche de l'état du SOC. | P1 |
-| RF-24 | MOD-05 | Exporter les données du dashboard aux formats JSON et CSV. | P1 |
-| RF-25 | MOD-06 | Intégrer un moteur d'évaluation de règles par comparaison de motifs. | P1 |
-| RF-26 | MOD-06 | Embarquer un catalogue initial de 5 règles de hunting opérationnelles. | P1 |
-| RF-27 | MOD-06 | Permettre l'exécution manuelle ou planifiée d'une session de hunting. | P1 |
-| RF-28 | MOD-06 | Enregistrer les résultats et correspondances d'une session de chasse. | P1 |
+| **BU-01** | Analyste SOC (L1, L2) | une source unique où chaque alerte arrive enrichie et priorisée | triage, score décomposé, corrélation |
+| **BU-02** | Analyste CTI, chasseur de menaces | filtrer des centaines de milliers d'IOC, chasser, exporter | indicateurs, chasse, exports CSV, JSON, STIX, TAXII |
+| **BU-03** | RSSI | des métriques de pilotage et la preuve des actions | pilotage (MTTA, MTTR, délais cibles), audit immuable |
+| **BU-04** | Administrateur système, DevOps | une installation légère, pilotable par API et CLI | Docker Compose, CLI complète, API REST, sondes |
+| **BU-05** | Responsable du parc | déclarer l'inventaire sans double saisie | import Excel ou CSV, export réimportable |
+| **BU-06** | Partenaire (SIEM, CERT) | recevoir le renseignement sans accès à l'interface | serveur TAXII 2.1 en lecture seule |
 
-### 3.3 Spécification des modules
+### 2.2 Acteurs
 
-#### MOD-01 — Foundation & Configuration
+| Acteur | Rôle | Droits |
+|---|---|---|
+| Administrateur | ADMIN | tout, dont comptes, sources, paramètres, suppressions, audit |
+| Analyste | ANALYST | triage, incidents, chasse, inventaire, faux positifs, campagnes |
+| Lecteur | VIEWER | consultation ; partenaire TAXII |
+| Worker | automate | collecte, CVE, corrélation, chasse, entretien |
+| Sources externes | | NVD, KEV, EPSS, OTX, abuse.ch, IPsum, C2IntelFeeds, TAXII, ATT&CK, DB-IP |
+| Visiteur du site | public | demande de démonstration |
 
-Socle technique : configuration, pool de connexions PostgreSQL, migrations Alembic, CLI Click.
+La matrice détaillée des actions par rôle est dans le
+[Manuel fonctionnel](MANUEL_FONCTIONNEL.md#23-qui-peut-faire-quoi).
 
-Commandes clés : `illwatch db init`, `illwatch db upgrade`, `illwatch version`, `illwatch seed`.
+---
 
-> **Règle de gestion.** Aucune requête applicative ne s'exécute si la configuration n'est pas validée
-> au démarrage par Pydantic.
+## 3. Exigences fonctionnelles
 
-#### MOD-02 — Threat Feeds & moteur IOC
+**Statuts** : ✅ **constatée** sur données réelles ; 🟢 **livrée** (code, tests et CI verts),
+à constater sur le poste ou le serveur ; 🟡 **partielle** ; ⏳ **prévue**.
+**Priorités** : P0 indispensable, P1 importante, P2 souhaitable.
 
-Formats d'IOC supportés :
+### 3.1 Modules de la v1.0 (M1 à M6)
 
-| Type | Validation |
+| Réf. | Module | Exigence | Prio. | Statut |
+|---|---|---|---|---|
+| RF-01 | MOD-01 | Charger la configuration, typée et validée au démarrage, depuis l'environnement ou un `.env` | P0 | ✅ |
+| RF-02 | MOD-01 | Initialiser et faire évoluer le schéma par migrations automatisées | P0 | ✅ |
+| RF-03 | MOD-01 | Fournir une CLI d'initialisation, de peuplement (seed) et de diagnostic | P1 | ✅ |
+| RF-04 | MOD-02 | Gérer les sources de flux (création, lecture, modification, suppression) | P0 | ✅ |
+| RF-05 | MOD-02 | Collecter les flux de façon asynchrone, sans bloquer l'API | P0 | ✅ |
+| RF-06 | MOD-02 | Lire les formats JSON, CSV, STIX 2.1 et TAXII 2.1 | P0 | ✅ |
+| RF-07 | MOD-02 | Extraire et stocker les IOC : IPv4, IPv6, plages CIDR, domaines, URL, e-mails, empreintes MD5, SHA-1, SHA-256 | P0 | ✅ |
+| RF-08 | MOD-02 | Dédoublonner : une valeur revue met à jour l'IOC existant, sans nouvelle ligne | P0 | ✅ |
+| RF-09 | MOD-02 | Exécuter un worker périodique qui collecte les sources échues | P1 | ✅ |
+| RF-10 | MOD-02 | Intégrer le connecteur AlienVault OTX | P1 | ✅ |
+| RF-11 | MOD-03 | Synchroniser les CVE avec l'API NVD 2.0 (pagination, débit limité) | P0 | ✅ |
+| RF-12 | MOD-03 | Importer le catalogue CISA KEV | P0 | ✅ |
+| RF-13 | MOD-03 | Importer les scores EPSS de FIRST | P0 | ✅ |
+| RF-14 | MOD-03 | Calculer un score de risque composite déterministe entre 0 et 100 (ADR-001, ADR-014) | P0 | ✅ |
+| RF-15 | MOD-03 | Rechercher et filtrer les CVE sur plusieurs critères | P1 | ✅ |
+| RF-16 | MOD-03 | Émettre une alerte quand une CVE franchit le seuil de risque | P1 | ✅ |
+| RF-17 | MOD-04 | Modéliser les incidents avec une sévérité | P0 | ✅ |
+| RF-18 | MOD-04 | Appliquer une machine d'état stricte à 6 étapes (NIST SP 800-61) | P0 | ✅ |
+| RF-19 | MOD-04 | Tenir une chronologie immuable par incident | P0 | ✅ |
+| RF-20 | MOD-04 | Associer des IOC et des CVE à un incident | P1 | ✅ |
+| RF-21 | MOD-05 | Exposer la synthèse des indicateurs clés en temps réel | P0 | ✅ |
+| RF-22 | MOD-05 | Restituer l'activité récente (menaces et vulnérabilités) | P1 | ✅ |
+| RF-23 | MOD-05 | Afficher une vue console de l'état du SOC | P1 | ✅ |
+| RF-24 | MOD-05 | Exporter les données en JSON et CSV | P1 | ✅ |
+| RF-25 | MOD-06 | Évaluer des règles de chasse par comparaison de motifs | P1 | ✅ |
+| RF-26 | MOD-06 | Embarquer un catalogue de règles opérationnelles (6 règles livrées pour 5 demandées) | P1 | ✅ |
+| RF-27 | MOD-06 | Lancer une chasse manuelle, planifiée ou depuis un incident | P1 | ✅ |
+| RF-28 | MOD-06 | Enregistrer les sessions de chasse et leurs correspondances | P1 | ✅ |
+
+### 3.2 Durcissement et interface (M7)
+
+| Réf. | Exigence | Prio. | Statut |
+|---|---|---|---|
+| RF-29 | Journal d'audit en ajout seul : connexions, refus d'accès, administration, exports, chasses | P0 | 🟢 |
+| RF-30 | Rôles PostgreSQL séparés : migrations par le propriétaire, application sans droit de structure | P0 | 🟢 |
+| RF-31 | Sessions révocables : jeton d'accès de 15 minutes, jeton de rafraîchissement rotatif, rejeu détecté | P0 | 🟢 |
+| RF-32 | Limitation des tentatives de connexion par couple compte et adresse, par compte, par adresse | P0 | 🟢 |
+| RF-33 | Sondes de vivacité (`/health`) et de disponibilité (`/ready`) | P1 | 🟢 |
+| RF-34 | Sauvegarde vérifiée et restauration testée | P0 | 🟢 |
+| RF-35 | Déploiement HTTPS par reverse proxy, migrations dans un conteneur éphémère | P0 | 🟡 constaté en local, serveur européen à louer |
+| RF-36 | Interface web temps réel (ADR-016) : vue d'ensemble, triage, incidents, indicateurs, CVE, chasse, sources, corrélations, inventaire, campagnes, pilotage, administration | P0 | 🟢 |
+| RF-37 | Interface et textes du serveur en cinq langues (français, anglais, allemand, espagnol, chinois), langue choisie selon le pays (ADR-027) | P1 | 🟢 |
+
+### 3.3 Détection et corrélation (M8)
+
+| Réf. | Exigence | Prio. | Statut |
+|---|---|---|---|
+| RF-38 | Score de confiance de chaque IOC (sources pondérées par leur fiabilité, fraîcheur, récurrence) (ADR-017) | P0 | ✅ |
+| RF-39 | Enrichissement hors ligne des adresses IP : pays, système autonome (ADR-019) | P1 | ✅ |
+| RF-40 | Inventaire d'actifs : produit, éditeur, version, plateforme, criticité, adresses, domaines (ADR-020) | P0 | ✅ |
+| RF-41 | **Import et export de l'inventaire en Excel ou CSV, avec aperçu et import tout ou rien (ADR-028)** | P0 | 🟢 |
+| RF-42 | Corrélation inventaire × CVE × IOC (CORR-01 à CORR-03), score justifié, comparaison des versions (ADR-020, ADR-021) | P0 | ✅ |
+| RF-43 | Plancher KEV : une CVE exploitée n'est jamais sous P1 ; EPSS manquant remplacé par la dernière valeur (ADR-014) | P0 | ✅ |
+
+### 3.4 Opérations SOC (M9)
+
+| Réf. | Exigence | Prio. | Statut |
+|---|---|---|---|
+| RF-44 | Niveaux SOC L1, L2, L3 et escalade motivée, consignée dans la chronologie (ADR-022) | P0 | 🟢 |
+| RF-45 | Faux positifs : liste d'exclusion des IOC ; évènement corrélé écarté jamais rouvert | P0 | 🟢 |
+| RF-46 | Chasse depuis l'incident ; recommandations de réponse par phase NIST | P1 | 🟢 |
+| RF-47 | Pilotage : MTTA, MTTR, délais cibles par sévérité, dépassements, charge par analyste | P1 | 🟢 |
+
+### 3.5 Renseignement contextuel (M10)
+
+| Réf. | Exigence | Prio. | Statut |
+|---|---|---|---|
+| RF-48 | Référentiel MITRE ATT&CK : technique de chaque détection, acteur cité (ADR-023) | P1 | 🟢 |
+| RF-49 | Campagnes : infrastructure rattachée, acteur, attribution par l'infrastructure (ADR-024) | P1 | 🟢 |
+| RF-50 | Partage : export STIX 2.1 et serveur TAXII 2.1 en lecture seule (ADR-025) | P1 | 🟢 |
+
+### 3.6 Observabilité et déploiement (M11)
+
+| Réf. | Exigence | Prio. | Statut |
+|---|---|---|---|
+| RF-51 | Métriques Prometheus (`/metrics`), tableaux Grafana, 10 alertes (ADR-026) | P1 | 🟢 |
+| RF-52 | Environnements développement, préproduction, production ; acceptation en CI sur jeu figé ; 7 jours de préproduction sans intervention | P0 | 🟡 serveur à louer |
+
+### 3.7 Exigences prévues après la v0.2.0
+
+| Réf. | Exigence | Prio. |
+|---|---|---|
+| RF-53 | Assistant d'analyse (modèle de langage et recherche augmentée) sur bulletins et incidents | P2 |
+| RF-54 | Multi-organisation (multi-tenant) et authentification unique (OIDC) | P1 |
+| RF-55 | Connecteurs de gestion de parc (GLPI, CMDB) pour l'inventaire | P2 |
+| RF-56 | Import de règles Sigma depuis les collections TAXII | P2 |
+| RF-57 | Facteur CWE dans le score, avec rééquilibrage des poids (ADR à rédiger) | P2 |
+
+---
+
+## 4. Exigences non fonctionnelles
+
+| Réf. | Catégorie | Exigence | Mesure constatée |
+|---|---|---|---|
+| RNF-SEC-01 | Sécurité | TLS en production, aucun secret dans le code ni en base | Caddy TLS 1.3 constaté en local ; gitleaks 0 vrai secret ; clés en gabarits |
+| RNF-SEC-02 | Sécurité | Entrées validées et typées, aucune requête SQL concaténée | Pydantic `extra="forbid"` ; SAST Semgrep 0 constat ; bandit vert |
+| RNF-SEC-03 | Sécurité | Protection SSRF des collectes | liste blanche d'adresses publiques, DNS vérifié, redirections revalidées |
+| RNF-SEC-04 | Sécurité | Image sans vulnérabilité critique | 0 Critical (Container Scanning, 07/10/2026) |
+| RNF-SEC-05 | Sécurité | Fichiers importés bornés (taille, lignes, archive) | inventaire : 2 Mo, 5 000 lignes, 40 Mo décompressés |
+| RNF-PERF-01 | Performance | P95 des listes de CVE inférieur à 250 ms | 8 ms (filtres), 108 ms (recherche) sur 30 000 CVE |
+| RNF-PERF-02 | Performance | 1 000 IOC ingérés en moins de 5 s | vérifié par test à chaque pipeline |
+| RNF-PERF-03 | Performance | Tableau de bord en moins de 1 s, export de 500 000 IOC en moins de 15 s | 0,63 s et 12,0 s (528 453 IOC, 08/10/2026) |
+| RNF-MEM-01 | Ressources | Application en moins de 256 Mo | pic de 120 Mo à l'ingestion de 37 000 IOC |
+| RNF-DISP-01 | Disponibilité | 99,5 % hors maintenance | à mesurer pendant les 7 jours de préproduction |
+| RNF-MAIN-01 | Maintenabilité | ruff et mypy strict sans erreur, couverture d'au moins 80 % | environ 94 % ; plus de 670 tests |
+| RNF-MAIN-02 | Maintenabilité | Chaque décision structurante tracée par un ADR | 28 ADR |
+| RNF-ACC-01 | Accessibilité | Site de présentation conforme WCAG 2.2 AA | axe-core en CI |
+| RNF-EDIT-01 | Rédaction | Ni tiret long ni tiret moyen dans le dépôt | test `test_ponctuation.py` |
+
+---
+
+## 5. Architecture et choix techniques
+
+![Architecture d'ILLWATCH](assets/schemas/architecture.svg)
+
+**Monolithe modulaire en couches** : la dépendance est strictement descendante ; les contrôleurs
+(API, CLI) ne contiennent aucune logique métier ; le score et la machine d'état des incidents sont
+des fonctions pures, testées à 100 %. Le détail est dans [Architecture](ARCHITECTURE.md).
+
+| Couche | Choix | Raison |
+|---|---|---|
+| Langage | Python 3.12 et 3.14 | langue de l'écosystème CTI (STIX, TAXII, YARA, Sigma) |
+| API | FastAPI, Pydantic v2 | validation stricte, OpenAPI automatique |
+| Données | SQLAlchemy 2.0 asynchrone, asyncpg, PostgreSQL 16, Alembic | contraintes et déclencheurs portés par la base |
+| Cache et temps réel | Redis 7 | verrous du worker, limiteur, bus d'évènements |
+| Interface | React 19, TypeScript, Vite | types générés depuis l'OpenAPI |
+| Fichiers bureautiques | openpyxl | lecture et écriture Excel en Python pur (ADR-028) |
+| Déploiement | Docker Compose, Caddy | HTTPS automatique, un seul service exposé |
+| Observabilité | Prometheus, Grafana | métriques sans dépendance côté application |
+
+**Délibérément écartés** : microservices (le monolithe tient 100 000 évènements par jour),
+Elasticsearch (PostgreSQL indexé suffit), moteur Sigma complet (six règles déterministes
+suffisent sur des observables).
+
+![Topologies de déploiement](assets/schemas/deploiement.svg)
+
+---
+
+## 6. Modèle de données
+
+28 tables, créées par 21 migrations Alembic vérifiées à chaque pipeline (montée, contrôle,
+descente, remontée). Les contraintes métier sont portées par la base : clés étrangères, unicité,
+contrôles sur chaque énumération, déclencheurs d'immuabilité.
+
+| Domaine | Tables |
 |---|---|
-| `IPV4` | Regex stricte, exclusion optionnelle des plages privées RFC 1918 |
-| `IPV6` | Conforme RFC 4291 |
-| `DOMAIN` | FQDN pleinement qualifié |
-| `URL` | URI complète incluant le schéma HTTP/HTTPS |
-| `HASH_MD5` | Hexadécimal 32 caractères |
-| `HASH_SHA1` | Hexadécimal 40 caractères |
-| `HASH_SHA256` | Hexadécimal 64 caractères |
+| Comptes et sécurité | `users`, `refresh_tokens`, `audit_events` (ajout seul) |
+| Renseignement | `threat_feeds`, `collection_runs`, `collector_state`, `indicators`, `indicator_sources`, `exclusions` |
+| Enrichissement | `enrichment_datasets`, `ip_ranges` |
+| Vulnérabilités | `cves`, `cve_priority_history`, `cve_alerts` |
+| Incidents | `incidents`, `incident_events` (ajout seul), `incident_indicators`, `incident_cves` |
+| Chasse | `hunting_sessions`, `hunting_matches` |
+| Corrélation | `assets`, `correlated_events` |
+| Contexte adverse | `attack_techniques`, `attack_actors`, `attack_uses`, `campaigns`, `campaign_indicators` |
+| Site | `demo_requests` |
 
-**Algorithme de déduplication.** À l'ingestion d'un indicateur *I = (type, value)* :
+Index critiques : unicité `(type, valeur)` des IOC, dernière observation (expiration), score et
+priorité des CVE, chronologie des incidents.
 
-- si *I* existe déjà → `UPDATE last_seen = now(), hit_count = hit_count + 1` ;
-- sinon → `INSERT first_seen = now(), last_seen = now(), hit_count = 1`.
+---
 
-La contrainte `UNIQUE (type, value)` est la garantie structurelle de cette règle : la déduplication
-n'est pas laissée à la discipline du code applicatif.
+## 7. Interfaces
 
-#### MOD-03 — CVE Tracker & Vulnerability Intelligence
-
-**Score de risque composite** — pour chaque CVE, *R* ∈ [0, 100] :
-
-```
-R = min(100, CVSS × 3.0 + EPSS × 100 × 0.25 + K × 25 + E × 10 + A × 10)
-```
-
-| Symbole | Signification | Domaine | Contribution max |
-|---|---|---|---|
-| CVSS | Sévérité technique brute | [0.0, 10.0] | 30 |
-| EPSS | Probabilité d'exploitation réelle | [0.0, 1.0] | 25 |
-| K | Présence au catalogue CISA KEV | {0, 1} | 25 |
-| E | Exploit public documenté (Exploit-DB / PoC) | {0, 1} | 10 |
-| A | Attaque ou campagne ransomware confirmée | {0, 1} | 10 |
-
-**Grille de décision SOC :**
-
-| Score | Priorité | Action |
-|---|---|---|
-| R ≥ 80 | **P0 — Critique** | Alerte immédiate, patch sous 24 heures |
-| 60 ≤ R < 80 | **P1 — Élevé** | Alerte de quart, patch sous 7 jours |
-| 40 ≤ R < 60 | **P2 — Moyen** | Revue hebdomadaire, patch sous 30 jours |
-| R < 40 | **P3 — Faible** | Maintenance standard |
-
-> **Écart documenté.** Le *Product Vision Document* v1.0 décrit une pondération différente
-> (CVSS 30 % + EPSS 25 % + KEV 25 % + Exploit 10 % + Ransomware 5 % + CWE 5 %) et des seuils
-> différents (70/40/20). Le présent cahier des charges fait foi pour la v1.0. Voir
-> [`adr/ADR-001-scoring-composite.md`](adr/ADR-001-scoring-composite.md).
-
-Implémentation : [`illwatch/modules/cve_tracker/scoring.py`](../illwatch/modules/cve_tracker/scoring.py).
-
-#### MOD-04 — Incident Management (NIST SP 800-61 Rev. 2)
-
-```
-NOUVEAU → ANALYSE → CONFINEMENT → ERADICATION → RECUPERATION → CLOTURE
-```
-
-**Règles de transition :**
-
-- un incident ne peut être clôturé sans note de post-mortem ou résumé de clôture renseigné ;
-- chaque transition génère automatiquement un événement immuable dans `incident_events` ;
-- un retour en `ANALYSE` est autorisé depuis `CONFINEMENT`, `ERADICATION` et `RECUPERATION` : une
-  investigation qui rouvre des questions ne doit pas obliger à créer un nouvel incident ;
-- `CLOTURE` est un état terminal.
-
-Implémentation : [`illwatch/modules/incidents/state_machine.py`](../illwatch/modules/incidents/state_machine.py).
-
-#### MOD-05 — SOC Dashboard & Analytics
-
-Métriques temps réel : nombre total d'IOC actifs, ratio de sévérité des CVE, incidents ouverts par
-criticité, santé des collecteurs. Export sérialisé en JSON conforme RFC 8259 ou CSV conforme
-RFC 4180.
-
-#### MOD-06 — Threat Hunting Engine
-
-| Règle | Détection |
+| Interface | Contenu |
 |---|---|
-| **RULE-01** Tor Exit Node | Connexions ou IOC correspondant à des relais de sortie Tor connus |
-| **RULE-02** Suspicious Dynamic DNS | Domaines résolus chez des fournisseurs DNS dynamique gratuits (`duckdns.org`, `no-ip.com`) |
-| **RULE-03** High-Entropy Domains (DGA) | Noms de domaine générés algorithmiquement, à entropie de Shannon élevée |
-| **RULE-04** Known Ransomware Extortion IP | IP associées aux infrastructures de fuite de données (DLS) |
-| **RULE-05** Critical CVE + Exploit Match | Corrélation entre un actif exposé et une vulnérabilité à exploit public vérifié |
-
-### 3.4 Cas d'usage UC-01 — Ingestion automatisée d'un flux
-
-**Acteur primaire :** worker périodique (background scheduler)
-**Préconditions :** un `ThreatFeed` est configuré avec `is_active = True`
-**Déclencheur :** l'intervalle `polling_interval` est écoulé
-
-**Scénario nominal**
-
-1. Le worker sélectionne les flux éligibles dans `threat_feeds`.
-2. Le connecteur asynchrone émet un `GET` vers l'URL du flux avec un timeout de 15 s.
-3. Le serveur distant répond `200 OK` avec un payload JSON ou STIX.
-4. Le parseur valide le format et extrait la liste des indicateurs bruts.
-5. Le sous-système de déduplication vérifie l'existence de chaque indicateur.
-6. Les nouveaux sont insérés ; les existants voient `last_seen` et `hit_count` mis à jour.
-7. Le flux passe à `last_successful_run = now()`, `status = HEALTHY`.
-8. Un log structuré est émis avec le nombre d'indicateurs traités.
-
-**Scénarios alternatifs**
-
-- *2a — erreur réseau ou timeout :* jusqu'à 3 tentatives avec backoff exponentiel ; en cas d'échec
-  persistant, `status = DEGRADED` et erreur tracée.
-- *3a — réponse HTTP 429 :* extraction de l'en-tête `Retry-After`, ou temporisation par défaut de
-  60 s ; la collecte est reportée au cycle suivant.
+| **Application web** | 12 écrans, temps réel, 5 langues |
+| **API REST** `/api/v1` | 77 routes ; documentation interactive `/docs` hors production |
+| **CLI** `illwatch` | 71 commandes : `db`, `users`, `feeds`, `cves`, `assets`, `correlate`, `incidents`, `hunt`, `soc`, `campaigns`, `attack`, `enrich`, `stix`, `taxii`, `audit`, `dashboard`, `status`… |
+| **TAXII 2.1** `/taxii2/` | collections « indicateurs » et « campagnes », lecture seule |
+| **Métriques** `/metrics` | format Prometheus, protégé par jeton ou réseau interne |
+| **Webhook** | une notification par alerte CVE |
+| **Fichiers** | inventaire Excel ou CSV ; exports CSV, JSON, STIX 2.1 ; sauvegardes PostgreSQL |
 
 ---
 
-## 4. Cahier des charges technique (CdCT)
+## 8. Critères d'acceptation
 
-### 4.1 Exigences non fonctionnelles
-
-| Identifiant | Catégorie | Spécification et métrique d'acceptation |
+| Critère | Mesure | État |
 |---|---|---|
-| **RNF-SEC-01** | Sécurité | Communications externes et API chiffrées en TLS 1.3 (ou TLS 1.2 strict). Aucun secret en clair dans le code. |
-| **RNF-SEC-02** | Sécurité | Entrées et paramètres strictement typés et sanitizés via Pydantic, éliminant les risques d'injection SQL et XSS. |
-| **RNF-PERF-01** | Performance | Latence P95 des lectures API (`/api/v1/cves`, `/api/v1/feeds`) < 250 ms. |
-| **RNF-PERF-02** | Performance | Ingestion d'un lot de 1 000 IOC en moins de 5 secondes via insertion groupée (`bulk_insert` / `upsert`). |
-| **RNF-DISP-01** | Disponibilité | Taux de disponibilité minimal de 99.5 % hors maintenance programmée. |
-| **RNF-MAIN-01** | Maintenabilité | Conformité 100 % au linter `ruff` et couverture `pytest` ≥ 80 %. |
-| **RNF-MEM-01** | Ressources | Empreinte mémoire de l'application FastAPI en régime nominal ≤ 256 Mo. |
+| Scénario SOC de bout en bout | 48 contrôles (`scripts/scenario_soc.py`), sur données réelles et en CI | ✅ 48/48 |
+| Jalons M1 à M6 | `illwatch status` sur données réelles | ✅ |
+| Corrélation sur jeu figé | 100 % des cas attendus détectés, taux de faux positifs publié | ✅ 100 % / 0 % |
+| Parcours L1 → L2 → L3 sans quitter ILLWATCH, MTTR mesuré | scénario d'acceptation | 🟢 constaté en CI |
+| Technique ATT&CK et acteur affichés sur une alerte | scénario d'acceptation | 🟢 constaté en CI |
+| Déploiement HTTPS sur serveur européen, note SSL Labs A | workflow « Clôture M7 » | ⏳ |
+| 7 jours de préproduction sans intervention, restauration testée | workflow et journal du serveur | ⏳ |
+| Import d'un inventaire de 1 000 lignes depuis Excel, sans erreur ni perte | tests `test_inventory_file.py` et capture CI | 🟢 |
 
-### 4.2 Stack technologique
+---
 
-| Couche | Choix | Version |
-|---|---|---|
-| Langage | Python (asyncio natif, typage strict) | 3.12+ |
-| Framework API | FastAPI (ASGI, OpenAPI auto) | 0.115+ |
-| ORM | SQLAlchemy async | 2.0 |
-| Base de données | PostgreSQL | 16 |
-| Pilote | asyncpg | 0.29+ |
-| Migrations | Alembic | 1.13+ |
-| Cache / broker | Redis | 7.2+ |
-| Validation | Pydantic (cœur Rust) | 2.7+ |
-| Client HTTP | httpx (HTTP/2, SOCKS) | 0.27+ |
-| CLI | Click + Rich | 8.1+ / 13.7+ |
-| Tests | Pytest, pytest-asyncio, pytest-cov | 8.0+ |
-| Conteneurisation | Docker & Docker Compose | 26+ / v2 |
+## 9. Risques
 
-**Pourquoi Python plutôt que Node.js ou Go ?**
-
-1. *L'écosystème CTI.* L'intégralité des standards mondiaux — STIX, TAXII, bindings YARA, parsers
-   Sigma — est développée prioritairement en Python.
-2. *FastAPI et Pydantic v2.* Le cœur de validation réécrit en Rust rapproche les débits de ceux de
-   Go tout en conservant l'expressivité de Python.
-3. *SQLAlchemy 2.0 async.* Abstraction relationnelle complète sans blocage de threads sur les accès
-   disque ou réseau.
-
-### 4.3 Architecture logicielle
-
-```
-  [CLIENTS]           CLI (Click)                 API REST (FastAPI)
-                           │                              │
-  [CONTROLLERS]      illwatch/cli/                   illwatch/app/api/
-                           └──────────────┬──────────────┘
-                                          ▼
-  [SERVICES]                      illwatch/modules/
-                       (logique métier pure, calculateurs,
-                         collecteurs, moteur de scoring)
-                                          ▼
-  [DATA ACCESS]          illwatch/app/database.py · illwatch/app/models/
-                          (modèles SQLAlchemy, sessions async)
-                                          ▼
-  [PERSISTENCE]                PostgreSQL 16 · Redis
-```
-
-> **Règle d'or.** Un contrôleur d'API ne fait jamais de calcul métier ni de requête SQL complexe
-> directe. Il valide les paramètres d'entrée, appelle la couche `modules/`, et retourne le schéma
-> Pydantic de réponse.
-
-### 4.4 Modèle relationnel
-
-```sql
--- 1. Utilisateurs et analystes
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    hashed_password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL DEFAULT 'ANALYST',   -- ADMIN, ANALYST, VIEWER
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- 2. Flux de renseignement
-CREATE TABLE threat_feeds (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) UNIQUE NOT NULL,
-    url VARCHAR(500) NOT NULL,
-    feed_type VARCHAR(20) NOT NULL,                -- STIX, JSON, CSV
-    polling_interval INTEGER NOT NULL DEFAULT 3600,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    last_successful_run TIMESTAMP WITH TIME ZONE,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- PENDING, HEALTHY, DEGRADED
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- 3. Indicateurs de compromission
-CREATE TABLE indicators (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    feed_id UUID REFERENCES threat_feeds(id) ON DELETE SET NULL,
-    type VARCHAR(20) NOT NULL,                     -- IPV4, DOMAIN, URL, HASH_SHA256, …
-    value TEXT NOT NULL,
-    severity VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
-    description TEXT,
-    hit_count INTEGER NOT NULL DEFAULT 1,
-    first_seen TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_seen TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_indicator_type_value UNIQUE (type, value)
-);
-CREATE INDEX idx_indicators_type_val  ON indicators (type, value);
-CREATE INDEX idx_indicators_last_seen ON indicators (last_seen DESC);
-
--- 4. Vulnérabilités
-CREATE TABLE cves (
-    id VARCHAR(30) PRIMARY KEY,                    -- ex. CVE-2026-16812
-    description TEXT NOT NULL,
-    cvss_score NUMERIC(3, 1),
-    epss_score NUMERIC(5, 4),
-    is_kev BOOLEAN NOT NULL DEFAULT FALSE,
-    has_public_exploit BOOLEAN NOT NULL DEFAULT FALSE,
-    composite_risk_score NUMERIC(5, 2) NOT NULL DEFAULT 0.0,
-    published_date TIMESTAMP WITH TIME ZONE NOT NULL,
-    last_modified_date TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX idx_cves_risk_score ON cves (composite_risk_score DESC);
-
--- 5. Incidents de sécurité
-CREATE TABLE incidents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(200) NOT NULL,
-    description TEXT NOT NULL,
-    severity VARCHAR(20) NOT NULL,
-    status VARCHAR(30) NOT NULL DEFAULT 'NOUVEAU',
-    assigned_to UUID REFERENCES users(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    closed_at TIMESTAMP WITH TIME ZONE
-);
-
--- 6. Chronologie des incidents
-CREATE TABLE incident_events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    incident_id UUID NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
-    author_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    event_type VARCHAR(50) NOT NULL,               -- STATUS_CHANGE, COMMENT, IOC_ATTACHED, …
-    message TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX idx_incident_events_timeline ON incident_events (incident_id, created_at ASC);
-```
-
-L'implémentation SQLAlchemy vit dans [`illwatch/app/models/`](../illwatch/app/models/) et ajoute trois
-colonnes non prévues au DDL d'origine — `cves.cvss_vector`, `cves.has_ransomware_campaign` (requise
-par le facteur *A* de la formule de scoring) et `incidents.closure_summary` (requise par la règle de
-clôture). Ces ajouts sont tracés dans le CHANGELOG.
-
-### 4.5 Contrats d'interface REST
-
-Tous les endpoints sont préfixés par `/api/v1` et échangent exclusivement du `application/json`.
-
-| Méthode | Route | Description | Succès |
+| Réf. | Risque | Gravité | Mesure |
 |---|---|---|---|
-| `GET` | `/health` | Diagnostic de vivacité et connexion DB | 200 |
-| `GET` | `/api/v1/feeds` | Liste paginée des flux configurés | 200 |
-| `POST` | `/api/v1/feeds` | Enregistrement d'un nouveau flux | 201 |
-| `POST` | `/api/v1/feeds/{id}/fetch` | Déclenchement manuel d'une collecte | 202 |
-| `GET` | `/api/v1/indicators` | Recherche filtrée sur les IOC | 200 |
-| `GET` | `/api/v1/cves` | Consultation des CVE triées par score de risque | 200 |
-| `GET` | `/api/v1/cves/critical` | Extraction directe des CVE prioritaires (R ≥ 75) | 200 |
-| `GET` | `/api/v1/incidents` | Liste des incidents actifs | 200 |
-| `POST` | `/api/v1/incidents` | Déclaration d'un nouvel incident | 201 |
-| `PATCH` | `/api/v1/incidents/{id}/status` | Transition vers un nouvel état | 200 |
-| `GET` | `/api/v1/dashboard/summary` | Indicateurs consolidés du tableau de bord SOC | 200 |
-| `POST` | `/api/v1/hunt/run` | Exécution d'une session de hunting | 200 |
+| RSK-01 | Limites de débit des API (NVD) | élevée | clés gratuites, backoff, reprise |
+| RSK-02 | Source externe indisponible | moyenne | collecteurs isolés, retrait progressif |
+| RSK-03 | Volumétrie des IOC | élevée | expiration par type, index, pagination par clé |
+| RSK-04 | Dérive du périmètre | moyenne | jalons à critères de sortie constatés ; idées au backlog |
+| RSK-05 | Régression | moyenne | deux pipelines CI, validation réelle hebdomadaire |
+| RSK-06 | Panne d'EPSS | moyenne | plancher KEV et dernière valeur connue (ADR-014) |
+| RSK-07 | Inventaire mal nommé | moyenne | aide à la saisie, comparaison des versions, mesure sur jeu figé |
+| RSK-08 | Fichier importé hostile | moyenne | plafonds, archive contrôlée, refus listés |
+| RSK-09 | Porteur unique | élevée | documentation, ADR, tests ; ouverture aux contributeurs |
 
 ---
 
-## 5. Planning opérationnel
+## 10. Glossaire
 
-### 5.1 Macro-planning
-
-Période globale : **30 juillet 2026 → 30 septembre 2026** (63 jours, 9 semaines).
-
-| Phase | Jours | Fenêtre | Charge |
-|---|---|---|---|
-| **P1** Foundation & squelette applicatif | J01–J07 | 30/07 – 06/08 | 8 h |
-| **P2** Threat Feeds & moteur IOC | J08–J21 | 06/08 – 20/08 | 12 h |
-| **P3** CVE Tracker & surveillance vulnérabilités | J22–J35 | 20/08 – 03/09 | 10 h |
-| **P4** Incident Management & workflow | J36–J49 | 03/09 – 17/09 | 10 h |
-| **P5** SOC Dashboard & analytics | J50–J56 | 17/09 – 24/09 | 6 h |
-| **P6** Threat Hunting & clôture v1.0 | J57–J63 | 24/09 – 01/10 | 5 h |
-
-### 5.2 Jalons d'acceptation
-
-| Jalon | Date | Critères de validation |
-|---|---|---|
-| **M1** Squelette opérationnel | 05/08/2026 | FastAPI démarre sous Docker ; PostgreSQL migre via Alembic sans erreur ; `/health` retourne 200 avec DB connectée ; suite de tests à 100 %. |
-| **M2** Ingestion opérationnelle | 19/08/2026 | Collecteur OTX et flux STIX connectés ; déduplication fonctionnelle ; ≥ 500 indicateurs réels en base. |
-| **M3** Moteur CVE & alerting | 02/09/2026 | NVD 2.0 synchronisée ; EPSS intégrés ; risk score vérifié par tests unitaires ; alerte déclenchée sur CVE critique. |
-| **M4** Gestion des incidents | 16/09/2026 | Workflow testé sur les 6 états ; timeline persistée ; liaison bidirectionnelle incidents ↔ IOC/CVE validée. |
-| **M5** Dashboard & reporting | 23/09/2026 | `/dashboard/summary` avec métriques exactes ; `illwatch dashboard show` opérationnel ; exports JSON/CSV conformes. |
-| **v1.0** 🚀 | 30/09/2026 | 6 modules intégrés ; couverture ≥ 80 % ; documentation à jour ; tag Git `v1.0.0` poussé. |
-
-### 5.3 Découpage des 44 tâches
-
-#### Phase 1 — Foundation (J1–J7)
-
-| Tâche | Date | Contenu |
-|---|---|---|
-| T1.1 | 30/07 | Arborescence standard, `pyproject.toml`, dépendances, squelette FastAPI |
-| T1.2 | 30/07 | Module `database.py`, modèle `User`, migration Alembic initiale |
-| T1.3 | 31/07 | CLI Click racine (`illwatch`) avec `db init`, `db upgrade`, `version` |
-| T1.4 | 31/07 | `docker-compose.yml` : PostgreSQL 16 et Redis 7 avec volumes persistants |
-| T1.5–1.7 | 01/08 | Isolation des répertoires modules (`threat_feeds`, `cve_tracker`, `incidents`) |
-| T1.8 | 01/08 | Framework `pytest`, fixtures asynchrones, premier test sur `/health` |
-
-#### Phase 2 — Threat Feeds (J8–J21)
-
-| Tâche | Date | Contenu |
-|---|---|---|
-| T2.1 | 06/08 | Modèle `ThreatFeed` et migration |
-| T2.2 | 06/08 | Contrôleurs CRUD `/api/v1/feeds` avec schémas Pydantic |
-| — | 07/08 | *Activité externe :* création du compte AlienVault OTX et récupération de la clé API |
-| T2.3 | 07/08 | Client HTTP asynchrone générique, parseurs JSON / CSV / STIX |
-| T2.4 | 08/08 | Modèle `Indicator` et migration |
-| T2.5 | 08/08 | Insertion optimisée et déduplication automatique (upsert) |
-| T2.6 | 09/08 | Background task worker ordonnançant les collectes |
-| T2.7 | 10/08 | CLI `illwatch feeds list / add / fetch / fetch-all` |
-| T2.8 | 10/08 | Tests unitaires et mocks réseau du module `threat_feeds` |
-| T2.9 | 15/08 | Connecteur AlienVault OTX, extraction des pulses récents |
-| T2.10 | 16/08 | Parseur STIX/TAXII |
-
-#### Phase 3 — CVE Tracker (J22–J35)
-
-| Tâche | Date | Contenu |
-|---|---|---|
-| T3.1 | 20/08 | Table `cves`, migration, injection du token NVD |
-| T3.2 | 21/08 | Collecteur NVD REST 2.0 avec gestion fine du débit |
-| T3.3 | 22/08 | Pipeline de normalisation (descriptions, vecteurs CVSS, métriques) |
-| T3.4 | 23/08 | Moteur de recherche et filtrage multicritères |
-| T3.5 | 24/08 | Endpoints `/api/v1/cves` et `/api/v1/cves/{cve_id}` |
-| T3.6 | 25/08 | Fonction de risk score composite et moteur d'alertes |
-| T3.7 | 26/08 | CLI `illwatch cves list / search / alert` |
-| T3.8 | 27/08 | Tests de précision du scoring et de tolérance aux pannes réseau |
-
-#### Phase 4 — Incident Management (J36–J49)
-
-| Tâche | Date | Contenu |
-|---|---|---|
-| T4.1 | 03/09 | Modèle `Incident` et migration |
-| T4.2 | 04/09 | Table `incident_events` matérialisant la timeline |
-| T4.3 | 05/09 | Machine d'état à 6 étapes avec garde-fous |
-| T4.4 | 06/09 | Contrôleurs REST `/api/v1/incidents` |
-| T4.5 | 07/09 | Endpoint d'enrichissement et lecture de la timeline |
-| T4.6 | 08/09 | Tables de liaison incidents ↔ IOC / CVE |
-| T4.7 | 09/09 | CLI `illwatch incidents list / create / close` |
-| T4.8 | 10/09 | Tests d'intégrité de la machine d'état et des transitions interdites |
-
-#### Phase 5 — SOC Dashboard (J50–J56)
-
-| Tâche | Date | Contenu |
-|---|---|---|
-| T5.1 | 17/09 | Service d'agrégation et endpoint `/api/v1/dashboard/summary` |
-| T5.2 | 18/09 | Contrôleur d'extraction des menaces des dernières 24 heures |
-| T5.3 | 19/09 | Endpoint d'historique consolidé sur 7 jours glissants |
-| T5.4 | 20/09 | Tableau de bord console `rich` (`illwatch dashboard show`) |
-| T5.5 | 21/09 | Moteur de sérialisation et d'export JSON / CSV |
-| T5.6 | 22/09 | Tests d'intégration des métriques et formats d'export |
-
-#### Phase 6 — Threat Hunting (J57–J63)
-
-| Tâche | Date | Contenu |
-|---|---|---|
-| T6.1 | 24/09 | Moteur d'évaluation de règles par pattern matching |
-| T6.2 | 25/09 | Intégration des 5 règles opérationnelles |
-| T6.3 | 26/09 | Routes `/api/v1/hunt/rules` et `/api/v1/hunt/run` |
-| T6.4 | 27/09 | CLI `illwatch hunt run / list-rules / results` |
-| T6.5 | 28/09 | Tests finaux de détection et de précision des correspondances |
-
-### 5.4 Bilan hebdomadaire du jeudi
-
-Chaque jeudi soir, sans exception, l'avancement est compilé dans `Rapport/NN_date.md` et poussé sur
-le dépôt. Le gabarit normé est fourni dans [`../Rapport/TEMPLATE.md`](../Rapport/TEMPLATE.md).
-
----
-
-## 6. Guide d'onboarding développeur
-
-Le guide pratique complet — prérequis, installation pas à pas, structure du dépôt expliquée dossier
-par dossier, standards d'ingénierie, GitFlow et première tâche — vit dans un fichier dédié :
-[`ONBOARDING.md`](ONBOARDING.md).
-
----
-
-<div align="center">
-
-**FIN DU CAHIER DES CHARGES ILLWATCH**
-
-*« Engineering Cyber Resilience. Empowering Digital Trust. »*
-
-</div>
+Voir le [Manuel fonctionnel, section 14](MANUEL_FONCTIONNEL.md#14-glossaire).

@@ -369,7 +369,7 @@
     "s2_text": "Indicadores normalizados y deduplicados; cada uno conserva todas sus fuentes.",
     "s3_text": "País y sistema autónomo sin conexión, confianza calculada según la fiabilidad de las fuentes.",
     "s4_text": "Indicadores, CVE y sus activos cruzados versión por versión.",
-    "s5_text": "Puntuación P0–P3 determinista y explicada, alerta por encima de su umbral.",
+    "s5_text": "Puntuación P0-P3 determinista y explicada, alerta por encima de su umbral.",
     "s6_text": "Incidente abierto con un clic, escalado, investigado, cerrado: todo queda trazado.",
     "feeds_b1": "Nueve fuentes de referencia preconfiguradas, más en pocos clics",
     "feeds_b2": "Estado de cada fuente e historial de cada recopilación",

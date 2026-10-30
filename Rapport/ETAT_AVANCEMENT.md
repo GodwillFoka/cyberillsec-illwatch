@@ -1,26 +1,34 @@
-# ILLWATCH — État d'avancement des travaux
+# ILLWATCH : État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **15/10/2026, 03 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **30/10/2026, 01 h 30**.
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
 
-> **15/10 — M10 livré, M11 livré.** M10 : campagnes et attribution par l'infrastructure
+> **30/10, documentation v2.0 et inventaire par Excel** (PR #61). Import et export de
+> l'inventaire en Excel ou CSV depuis l'écran Inventaire, avec modèle téléchargeable, aperçu ligne
+> par ligne et import tout ou rien (ADR-028) ; mêmes fonctions en ligne de commande
+> (`illwatch assets template`, `assets import --dry-run`, `assets export`). Plus aucun tiret long
+> ni tiret moyen dans le dépôt, avec un test qui empêche leur retour. Documentation refondue en
+> version 2.0, en Markdown et en PDF : guide d'installation et d'exploitation, manuel fonctionnel
+> (acteurs, fonctionnalités, actions), cahier des charges, vision produit et feuille de route.
+
+> **15/10, M10 livré, M11 livré.** M10 : campagnes et attribution par l'infrastructure
 > (ADR-024, PR #49), partage STIX 2.1 / serveur TAXII 2.1 en lecture seule (ADR-025, PR #50).
 > M11 : `/metrics` Prometheus, Prometheus + Grafana (10 alertes, 2 tableaux), scénario
 > d'acceptation en CI sur jeu figé, restauration testée en CI et chaque mois sur le VPS,
 > environnements dev → staging → production (ADR-026, PR #51). **M7 et la clôture de M11
 > attendent le VPS** (7 jours de staging) ; M9 et M10 restent à constater sur Kali.
 
-> **11-12/10 — Identité ILLWATCH v2** (brand book, ADR-018) : nom affiché « ILLWATCH » (identifiants
+> **11-12/10, Identité ILLWATCH v2** (brand book, ADR-018) : nom affiché « ILLWATCH » (identifiants
 > techniques inchangés), logo écu-radar, palette Nuit et Signal, Inter et JetBrains Mono, voix de la
 > marque ; appliquée à l'interface et à la documentation, vérifiée écran par écran (PR #33).
 
-> **08/10 — SENTRY devient ILLWATCH** (nom « Sentry » déjà pris). Bascule terminée : code
+> **08/10 : SENTRY devient ILLWATCH** (nom « Sentry » déjà pris). Bascule terminée : code
 > renommé (`4c1e220`), dépôts GitHub et GitLab renommés, poste Kali migré sans perte (13 tables, comptages
 > identiques) dans le dossier `cyberillsec-illwatch` ; scénario SOC **48/48** sous ILLWATCH.
 
-ILLWATCH est dans le jalon **M7 — Production Hardening**, premier des cinq jalons menant à la
+ILLWATCH est dans le jalon **M7 : Production Hardening**, premier des cinq jalons menant à la
 v0.2.0 (M7 → M8 → M9 → M10 → M11). Les lots 1 à 3 de M7 sont codés et fusionnés. Décision du
 08/10 (ADR-016) : l'interface web passe avant l'hébergement. Le lot 1 de l'interface est **codé et
 fusionné** (vue d'ensemble, triage, incidents, IOC, CVE, chasse) : il reste à le constater sur
@@ -58,13 +66,14 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | Analyse d'image (Container Scanning GitLab) | `a2fb367` | ✅ constaté sur `56ab581` : 0 Critical ; High 52 → 44, total 240 → 165 (−31 %) ; 44 High Debian sans correctif acceptées |
 | Analyse de code (SAST Semgrep GitLab) | `56ab581` | ✅ constaté : **0 constat** ; concorde avec bandit (CI GitHub) |
 | Détection de secrets (historique Git) | `56ab581` | ✅ fusionné : 17 constats gitleaks, tous faux positifs ; gitleaks à chaque push (CI GitHub) |
-| Rattrapage de l'historique OTX (Kali) | — | ✅ historique entièrement lu le 07/10 ; collecte incrémentale ensuite |
+| Rattrapage de l'historique OTX (Kali) | - | ✅ historique entièrement lu le 07/10 ; collecte incrémentale ensuite |
 | ADR-014 (score sans EPSS, plancher KEV) | `ad69dc6` | ✅ accepté (A + B + C), fusionné, appliqué sur Kali : 612 CVE reclassées, P1 627 → 1 239, **0 CVE KEV en P2/P3** |
 
 ## 4. Journal des livraisons
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 30/10 | PR #61 | **Inventaire Excel ou CSV** (ADR-028) : modèle, aperçu, import tout ou rien, export réimportable, interface et CLI ; ponctuation sans tiret long dans tout le dépôt (test `test_ponctuation.py`) ; **documentation v2.0** (guide, manuel fonctionnel, cahier des charges, vision, feuille de route) en Markdown et PDF, 13 schémas, captures en français |
 | 15/10 | PR #51 | **M11 Observability & Deployment** (ADR-026) : `/metrics` (HTTP par modèle de route, IOC, sources, collectes, synchronisations, incidents, refus d'authentification), Prometheus + Grafana (10 alertes, 2 tableaux générés), acceptation SOC en CI sur jeu figé, `scripts/restore-test.sh` mensuel, `docs/ENVIRONNEMENTS.md` |
 | 15/10 | PR #50 | **M10, incrément 3** (ADR-025) : serveur TAXII 2.1 en lecture seule `/taxii2/` (indicateurs, campagnes ; Bearer ou Basic), export STIX 2.1 (`/api/v1/stix/bundle`, `illwatch stix export`) ; infrastructure des campagnes repliée au-delà de 20 IOC |
 | 15/10 | PR #49 | **M10, incrément 2** (ADR-024) : campagnes, infrastructure (IOC rattachés par valeur ou description), attribution par l'infrastructure dans chasses, corrélations et incidents ; écran Campagnes |
@@ -78,17 +87,17 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | 12/10 | PR #35 | Enrichissement : volumes réels mesurés sur Kali (710 834 plages pays, 477 362 AS) |
 | 12/10 | PR #34 | **M8 incrément 2** : enrichissement hors ligne des IP (pays, système autonome) depuis DB-IP Lite importée localement, `illwatch enrich`, ADR-019 ; écrans chargés à la demande (fin de l'avertissement de taille au build) ; captures de la fiche IP et des paramètres |
 | 12/10 | PR #33 | **Identité ILLWATCH v2** (ADR-018) : logos et favicon du kit, symbole écu-radar, jetons Nuit, Signal, Inter + JetBrains Mono, menu et voix de la marque, DESIGN_SYSTEM v8, site de documentation ; reprise complète A-B-C-D : CI, préproduction et captures vertes, revue indépendante (4 points corrigés), « à l'instant », typographie française (unités insécables, virgule décimale, libellés français de la chronologie et de la chasse) |
-| 11/10 | PR #32 | **B** écrans Sources CTI et Administration (API comptes et paramètres) ; **D** M8 démarré : fiabilité des sources (A–F), confiance des IOC ; seconde revue indépendante : 11 points corrigés |
+| 11/10 | PR #32 | **B** écrans Sources CTI et Administration (API comptes et paramètres) ; **D** M8 démarré : fiabilité des sources (A-F), confiance des IOC ; seconde revue indépendante : 11 points corrigés |
 | 11/10 | PR #31 | Design v7 « Veille de nuit » : logo œil-radar, IBM Plex, icônes, palette recalibrée, mobile ; vérifié sur captures |
 | 11/10 | PR #30 | **C** React 19.3 + Vite 7.3 : `npm audit` 0 vulnérabilité, outils compris (audit complet bloquant) |
 | 11/10 | PR #29 | **A** préproduction locale (Caddy HTTPS, contrôles, captures en CI) ; `illwatch demo load` ; VPS reporté |
 | 11/10 | PR #28 | Re-vérification complète des écrans IOC, CVE, chasse : CI relancée sur `main`, validation réelle, seconde revue indépendante (verdict OK) ; 4 points mineurs corrigés (chemins d'API encodés partout, garde-fou du formulaire de chasse, docs). Interface construite sur Kali avec `scripts/build-web.sh` |
-| 10/10 | PR #26 | Écran Chasse : sessions, périmètre, correspondances paginées et filtrées (liens IOC/CVE), nouvelle chasse ; API `GET /hunting/sessions/{id}/matches` — **lot 1 de l'interface complet** ; revue indépendante des 3 écrans : 5 constats moyens corrigés (dont un sécurité : identifiants d'adresse validés) |
+| 10/10 | PR #26 | Écran Chasse : sessions, périmètre, correspondances paginées et filtrées (liens IOC/CVE), nouvelle chasse ; API `GET /hunting/sessions/{id}/matches` : **lot 1 de l'interface complet** ; revue indépendante des 3 écrans : 5 constats moyens corrigés (dont un sécurité : identifiants d'adresse validés) |
 | 10/10 | PR #25 | Écran CVE et priorités : liste par risque, recherche, filtres priorité/KEV, fiche (signaux, score décomposé, historique, alertes, incidents), association ou ouverture d'incident ; jokers SQL échappés dans la recherche |
 | 10/10 | PR #24 | Écran Indicateurs (IOC) : recherche normalisée, filtres, fiche (provenance, incidents associés, association), soumission d'un lot, export CSV audité ; API incidents filtrés par IOC/CVE |
 | 10/10 | `8f6599b` | Vérification : `ci-local.sh` en une commande (réseau, outils, interface web, image en option, journal) ; workflow « Branches » : les 12 branches fusionnées supprimées, seules `main` et `release/v0.1.1` restent |
 | 10/10 | `12fbe41` | Dépendances : politique Dependabot (mineures regroupées, majeures planifiées), TypeScript 5.9 et 4 autres mises à jour mineures ; React 19 / Vite 8 à planifier |
-| 10/10 | PR #10 | **Audit global** (revue indépendante) : 1 élevé, 6 moyens corrigés — test daté, bus Redis auto-réparant, onglets coordonnés, double collecte, CSP de l'infobulle, SSE derrière Caddy ; jobs GitLab interface ; docs ([rapport](AUDIT_GLOBAL_2026-10-10.md)) |
+| 10/10 | PR #10 | **Audit global** (revue indépendante) : 1 élevé, 6 moyens corrigés, test daté, bus Redis auto-réparant, onglets coordonnés, double collecte, CSP de l'infobulle, SSE derrière Caddy ; jobs GitLab interface ; docs ([rapport](AUDIT_GLOBAL_2026-10-10.md)) |
 | 10/10 | PR #9 | Écran Incidents : liste, ouverture, page d'investigation (cycle NIST, chronologie, transitions, notes, assignation, éléments liés) |
 | 10/10 | PR #8 | Écran Triage : file priorisée, panneau 5 sections (score décomposé, historique), acquitter, ouvrir l'incident selon le rôle |
 | 10/10 | `26d9bdb` | Sécurité interface (PR #5) : React Router retiré (XSS, redirections ouvertes), ECharts 6.1.0 ; `npm audit` bloquant en CI |
@@ -132,7 +141,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | Tableau de bord | 2,0 à 3,9 s | **0,63 s** (max 1,06 s) ✔ | < 1 s |
 | Chasse sur la base complète | 5,7 s | 7,4 s (334 311 IOC actifs, 345 corresp.) | < 10 s ✔ |
 | Export des CVE | 4,4 s | **1,5 s** (max 1,6 s) ✔ | < 5 s |
-| Autres appels | < 0,6 s | — | ✔ |
+| Autres appels | < 0,6 s | - | ✔ |
 
 ## 7. Risques et points ouverts
 
@@ -151,7 +160,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | Pipeline GitLab non consultable depuis la session (connecteur en erreur, gitlab.com filtré) | jobs GitLab non constatés | contournement : workflow GitHub « Statut GitLab » qui lit l'API GitLab et publie le résultat en annotations ; secret `GITLAB_TOKEN` (read_api) posé le 13/10 ; **constaté : pipeline #2944320344 (`5ff53e4`) vert, 12/12 jobs** (dont `openapi`, `interface`, SAST, secrets, image) | ✅ |
 | Source RedEye (osint.digitalside.it) en délai dépassé côté serveur ; IPsum à 50 % de réussite | collectes en échec, bruit dans la santé des sources | suspendre RedEye depuis l'écran Sources tant que le serveur ne répond pas | ⏳ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
-| Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | — |
+| Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | - |
 
 ## 8. Prochaines étapes
 

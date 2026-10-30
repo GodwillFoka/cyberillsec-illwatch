@@ -2,7 +2,7 @@
  * Jetons de l'identité ILLWATCH v2, thème Nuit (brand book, docs/DESIGN_SYSTEM.md, ADR-018).
  * Une couleur porte une information : l'indigo dit « vous êtes ici / sélectionné », le Signal
  * dit « la veille » (liens, focus, courbes), l'orange dit « agir » (une action principale par
- * vue), l'échelle P0–P3 dit « gravité ». Rien d'autre n'est coloré.
+ * vue), l'échelle P0-P3 dit « gravité ». Rien d'autre n'est coloré.
  * Les valeurs marquées « brand book » viennent telles quelles de tokens.json ; les autres sont
  * des dérivés techniques (survol, graphiques) et ne portent jamais de texte courant.
  */
@@ -28,7 +28,7 @@
   --faint: #8089a0;
 
   /* Marque (brand book). */
-  --indigo: #20155c; /* maison CYBERILL : actif, sélection — toujours avec on-indigo */
+  --indigo: #20155c; /* maison CYBERILL : actif, sélection, toujours avec on-indigo */
   --on-indigo: #ffffff;
   --signal: #22d3ee; /* la veille : liens, focus, courbes, radar */
   --orange: #e6681b; /* action principale, point de menace, repère de sélection */
@@ -42,7 +42,7 @@
   --ok-bg: #12301f;
   --ok-fg: #8fe0b8;
 
-  /* Gravité P0–P3 : badge (fond, texte — brand book) et marque pleine des graphiques (dérivé). */
+  /* Gravité P0-P3 : badge (fond, texte, brand book) et marque pleine des graphiques (dérivé). */
   --p0-bg: #3b1518;
   --p0-fg: #ff9b9e;
   --p0-mark: #e5484d;

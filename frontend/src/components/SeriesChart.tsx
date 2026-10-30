@@ -1,4 +1,4 @@
-// Barres empilées par niveau (P0–P3) d'une série temporelle. ECharts est importé module par
+// Barres empilées par niveau (P0-P3) d'une série temporelle. ECharts est importé module par
 // module : seul le nécessaire entre dans le paquet.
 import { BarChart } from "echarts/charts";
 import { GridComponent, LegendComponent, TooltipComponent } from "echarts/components";

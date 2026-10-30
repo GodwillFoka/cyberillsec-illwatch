@@ -1,4 +1,4 @@
-"""CLI ILLWATCH — RF-03. Point d'entrée `illwatch` (Click + Rich)."""
+"""CLI ILLWATCH : RF-03. Point d'entrée `illwatch` (Click + Rich)."""
 
 import asyncio
 
@@ -18,7 +18,7 @@ console = Console()
 @click.group()
 @click.version_option(package_name="illwatch", prog_name="illwatch")
 def cli() -> None:
-    """ILLWATCH — Security Monitoring & Threat Intelligence Platform (CyberillSec)."""
+    """ILLWATCH: Security Monitoring & Threat Intelligence Platform (CyberillSec)."""
 
 
 @cli.command()

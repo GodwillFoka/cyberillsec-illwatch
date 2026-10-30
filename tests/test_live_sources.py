@@ -1,4 +1,4 @@
-"""Tests réseau réels (T9) — désactivés par défaut ; lancés chaque semaine par la validation réelle.
+"""Tests réseau réels (T9) : désactivés par défaut ; lancés chaque semaine par la validation réelle.
 
 À lancer sur le poste (Kali) pour valider la chaîne complète contre les vraies sources :
 

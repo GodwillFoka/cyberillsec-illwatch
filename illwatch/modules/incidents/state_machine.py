@@ -1,4 +1,4 @@
-"""Machine d'état des incidents — RF-18 (NIST SP 800-61 Rev. 2).
+"""Machine d'état des incidents : RF-18 (NIST SP 800-61 Rev. 2).
 
 Transitions autorisées :
 

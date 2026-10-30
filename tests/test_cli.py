@@ -1,4 +1,4 @@
-"""Tests de l'interface en ligne de commande `illwatch` — RF-03."""
+"""Tests de l'interface en ligne de commande `illwatch` : RF-03."""
 
 from click.testing import CliRunner
 
@@ -76,4 +76,4 @@ def test_correlate_list_etat_et_version() -> None:
     assert event_state(ouvert) == "ouvert"
     assert event_version(acquitte) == "18.6 · vulnérable"
     assert event_version(clos) == "? · non vérifiée"
-    assert event_version(ouvert) == "—"
+    assert event_version(ouvert) == "-"

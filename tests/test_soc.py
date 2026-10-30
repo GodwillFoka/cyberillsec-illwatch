@@ -1,5 +1,5 @@
 """M9 SOC Operations (ADR-022) : niveaux, faux positifs, chasse depuis l'incident,
-recommandations, pilotage — et le critère de sortie : un incident traverse L1 → L2 → L3 sans
+recommandations, pilotage, et le critère de sortie : un incident traverse L1 → L2 → L3 sans
 quitter ILLWATCH, MTTR mesuré."""
 
 from datetime import UTC, date, datetime, timedelta
@@ -331,7 +331,7 @@ async def test_parcours_l1_l2_l3_de_bout_en_bout(
     )
     assert up.status_code == 200 and up.json()["tier"] == "L2"
 
-    # L2 : investigation — chasse depuis l'incident, faux positif écarté.
+    # L2 : investigation, chasse depuis l'incident, faux positif écarté.
     hunt = await client.post(
         f"/api/v1/incidents/{iid}/hunt", json={"observables": ["185.220.101.1"]}, headers=l2
     )

@@ -1,4 +1,4 @@
-"""Routes d'authentification — `/api/v1/auth` et `/api/v1/users/me` (MOD-01, M7 lot 2).
+"""Routes d'authentification : `/api/v1/auth` et `/api/v1/users/me` (MOD-01, M7 lot 2).
 
 - `POST /auth/token` : identifiant + mot de passe → jeton d'accès (15 min) + jeton de
   rafraîchissement opaque (7 j), révocable ;
@@ -75,8 +75,8 @@ async def login(
 ) -> TokenResponse:
     """Échange identifiant + mot de passe contre un jeton Bearer (flux OAuth2 password).
 
-    Pendant `LOGIN_WINDOW_SECONDS`, les tentatives sont refusées en 429 — avant même la
-    vérification du mot de passe — après `LOGIN_MAX_FAILURES` échecs d'une adresse sur un
+    Pendant `LOGIN_WINDOW_SECONDS`, les tentatives sont refusées en 429 : avant même la
+    vérification du mot de passe : après `LOGIN_MAX_FAILURES` échecs d'une adresse sur un
     compte, 10 fois plus sur un compte toutes adresses confondues, ou 4 fois plus d'une adresse
     tous comptes confondus (`illwatch.app.throttle`).
 

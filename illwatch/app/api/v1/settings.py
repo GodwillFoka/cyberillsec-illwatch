@@ -1,4 +1,4 @@
-"""Paramètres en vigueur — `GET /api/v1/settings` (ADMIN), écran Administration.
+"""Paramètres en vigueur : `GET /api/v1/settings` (ADMIN), écran Administration.
 
 Lecture seule : la configuration se change dans `.env` (12-factor) puis au redémarrage. Aucun
 secret n'est renvoyé, seulement sa **présence** (clé NVD configurée : oui/non).

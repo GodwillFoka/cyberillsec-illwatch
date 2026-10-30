@@ -1,4 +1,4 @@
-"""Version installée contre versions vulnérables (configurations CPE de la NVD) — ADR-021.
+"""Version installée contre versions vulnérables (configurations CPE de la NVD) : ADR-021.
 
 La correspondance par nom de produit (ADR-020) est complétée par ce que la NVD publie pour
 chaque CVE : produits touchés et plages de versions (« de 5.8 incluse à 5.10.102 exclue »).

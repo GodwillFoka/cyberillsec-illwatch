@@ -1,4 +1,4 @@
-"""Investigation (L2) et réponse (L3) depuis un incident — M9 (ADR-022).
+"""Investigation (L2) et réponse (L3) depuis un incident : M9 (ADR-022).
 
 - `hunt_from_incident` : chasse lancée sur les IOC associés à l'incident (et, au besoin,
   d'autres observables relevés pendant l'investigation), avec l'inventaire d'actifs pour

@@ -1,4 +1,4 @@
-"""Routes du tableau de bord SOC — `/api/v1/dashboard` (MOD-05, RF-21, RF-22, RF-24).
+"""Routes du tableau de bord SOC : `/api/v1/dashboard` (MOD-05, RF-21, RF-22, RF-24).
 
 Lecture pour tout utilisateur authentifié. Les exports sont diffusés en flux : un export de
 100 000 IOC ne charge jamais tout en mémoire.
