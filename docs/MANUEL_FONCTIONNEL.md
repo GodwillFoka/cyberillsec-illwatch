@@ -518,10 +518,31 @@ serveur).
 dépassements, incidents par niveau et escalades, charge par analyste, ouverts et clos par jour,
 faux positifs écartés.
 
+**Qualité des alertes (ADR-029).** Une règle peut détecter juste sur un jeu de test et pourtant
+noyer l'équipe sous le bruit. Le même écran répond donc à une autre question : sur la période,
+que sont devenus les signaux de chaque règle ? Pour chaque déclencheur d'alerte CVE, règle de
+corrélation et règle de chasse, il compte les signaux **confirmés** (un incident a été ouvert),
+les **faux positifs** (qualifiés par un analyste ou mis en liste d'exclusion), les **ignorés**
+(acquittés sans suite), ceux **clos par le moteur** et ceux **en attente**. Il en déduit la
+**précision** (confirmés sur confirmés et faux positifs), la part de **bruit** et le **délai
+de traitement** médian. Par source, il montre combien d'IOC ont déclenché une corrélation ou une
+chasse, combien ont été confirmés dans un incident et combien ont été exclus : de quoi ajuster
+la fiabilité d'une source sur des faits.
+
+| Indicateur | Calcul |
+|---|---|
+| Précision | confirmés / (confirmés + faux positifs) ; absente tant que rien n'est qualifié |
+| Bruit | (faux positifs + ignorés) / signaux traités par un analyste |
+| Délai de traitement | de l'apparition du signal au geste de l'analyste (acquittement, faux positif, incident) |
+
+Les chasses quotidiennes retrouvent chaque jour les mêmes valeurs : elles sont donc comptées
+par observable distinct. Rien n'est stocké en plus : chaque chiffre se recalcule à partir des
+évènements, alertes, incidents et exclusions existants.
+
 ![Pilotage SOC](assets/captures/12-pilotage-fr.webp)
 
-`illwatch soc metrics --days 30` et `illwatch dashboard show` donnent les mêmes chiffres en
-console.
+`illwatch soc metrics --days 30`, `illwatch soc quality --days 30` et `illwatch dashboard show`
+donnent les mêmes chiffres en console.
 
 ---
 

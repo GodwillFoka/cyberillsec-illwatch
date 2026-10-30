@@ -10,6 +10,14 @@ respecte [Semantic Versioning](https://semver.org/lang/fr/).
 
 ## [Non publié]
 
+### Ajouté : Qualité des alertes en situation réelle (ADR-029, 30/10)
+- Écran Pilotage : pour chaque déclencheur d'alerte CVE, règle de corrélation et règle de
+  chasse, signaux de la période et leur issue (confirmés, faux positifs, ignorés, clos par le
+  moteur, en attente), précision, part de bruit et délai de traitement médian ; par source,
+  IOC déclencheurs, confirmés dans un incident et exclus.
+- API : `GET /api/v1/dashboard/quality?days=7|30|90`. CLI : `illwatch soc quality`.
+- Calcul à la demande sur les tables existantes : aucune migration.
+
 ### Modifié : Documentation réécrite dans un style plus humain (30/10)
 - Site de documentation : accueil, vision, cahier des charges, feuille de route, guide
   d'installation, manuel fonctionnel, architecture, prise en main, exploitation,

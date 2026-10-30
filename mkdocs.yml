@@ -113,6 +113,7 @@ nav:
           - ADR-026 Observabilité: adr/ADR-026-observabilite.md
           - ADR-027 Site de présentation: adr/ADR-027-site-de-presentation.md
           - ADR-028 Inventaire en fichier: adr/ADR-028-inventaire-en-fichier.md
+          - ADR-029 Qualité des alertes: adr/ADR-029-qualite-des-alertes.md
   - Rapports: rapport/
   - Changelog: changelog.md
   - Contribuer:

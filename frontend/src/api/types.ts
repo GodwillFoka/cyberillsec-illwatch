@@ -51,6 +51,8 @@ export type CorrelationRun = Schemas["CorrelationRunRead"];
 
 export type Exclusion = Schemas["ExclusionRead"];
 export type SocMetrics = Schemas["SocMetricsRead"];
+export type AlertQuality = Schemas["AlertQualityRead"];
+export type QualityRow = Schemas["QualityRowRead"];
 export type Recommendation = Schemas["RecommendationRead"];
 export type IncidentHunt = Schemas["IncidentHuntRead"];
 export type SocTier = Incident["tier"];

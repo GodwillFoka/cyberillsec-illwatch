@@ -25,6 +25,7 @@ from illwatch.modules.dashboard.service import (
 )
 from illwatch.modules.dashboard.timeseries import Metric, Window, time_series
 from illwatch.modules.soc.metrics import soc_metrics
+from illwatch.modules.soc.quality import alert_quality
 
 router = APIRouter(prefix="/dashboard", tags=["tableau de bord SOC"])
 
@@ -264,3 +265,64 @@ async def soc(
     except ValueError as exc:
         raise HTTPException(422, detail=str(exc)) from None
     return SocMetricsRead.model_validate(asdict(metrics))
+
+
+# --- Qualité des alertes en situation réelle (ADR-029) ---------------------------------------
+
+
+class QualityRowRead(BaseModel):
+    family: Literal["cve_alert", "correlation", "hunt", "total"]
+    key: str = Field(description="Déclencheur (kev, epss, nvd) ou règle (CORR-01, RULE-04…).")
+    label: str
+    signals: int
+    confirmed: int = Field(description="Incident ouvert, ou IOC associé à un incident.")
+    false_positive: int = Field(description="Qualifié faux positif, ou valeur exclue.")
+    ignored: int = Field(description="Acquitté sans suite par un analyste.")
+    auto_closed: int = Field(description="Clos par le moteur : ne correspondait plus.")
+    pending: int = Field(description="Pas encore qualifié.")
+    precision: float | None = Field(description="Confirmés / (confirmés + faux positifs).")
+    noise: float | None = Field(description="(Faux positifs + ignorés) / traités.")
+    handling_hours_mean: float | None
+    handling_hours_median: float | None
+
+
+class SourceQualityRead(BaseModel):
+    feed_id: UUID
+    name: str
+    reliability: str | None
+    triggered: int = Field(description="IOC distincts à l'origine d'une corrélation ou chasse.")
+    confirmed: int = Field(description="IOC distincts associés à un incident.")
+    false_positive: int = Field(description="IOC distincts mis en liste d'exclusion.")
+    precision: float | None
+
+
+class AlertQualityRead(BaseModel):
+    window_days: int
+    generated_at: datetime
+    since: datetime
+    rules: list[QualityRowRead]
+    sources: list[SourceQualityRead]
+    total: QualityRowRead
+
+
+@router.get(
+    "/quality",
+    response_model=AlertQualityRead,
+    summary="Qualité des alertes en situation réelle, par règle et par source (ADR-029)",
+    description=(
+        "Pour chaque déclencheur d'alerte CVE, règle de corrélation et règle de chasse : "
+        "signaux de la fenêtre et leur issue (confirmé, faux positif, ignoré, clos par le "
+        "moteur, en attente), précision, part de bruit et délai de traitement. Par source : "
+        "IOC déclencheurs, confirmés et exclus. Calculé à la demande, rien n'est stocké."
+    ),
+)
+async def quality(
+    session: DbSession,
+    user: CurrentUser,
+    days: Annotated[int, Query(description="Fenêtre : 7, 30 ou 90 jours.")] = 30,
+) -> AlertQualityRead:
+    try:
+        report = await alert_quality(session, days=days)
+    except ValueError as exc:
+        raise HTTPException(422, detail=str(exc)) from None
+    return AlertQualityRead.model_validate(report.public())

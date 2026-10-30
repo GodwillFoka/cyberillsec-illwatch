@@ -711,7 +711,13 @@ prise en charge (MTTA) et de résolution (MTTR), les délais cibles par sévéri
 dépassements, les incidents par niveau L1, L2 et L3, la charge de chaque analyste, les incidents
 ouverts et clos par jour, et les faux positifs écartés.
 
-**En ligne de commande** : `illwatch soc metrics --days 30` et `illwatch dashboard show`.
+Juste en dessous, **Qualité des alertes** montre, pour chaque règle et chaque source, ce que
+sont devenus ses signaux : confirmés, faux positifs, ignorés ou en attente, avec leur précision.
+Une règle dont la précision reste basse mérite d'être réglée ; une source dont les IOC sont
+souvent exclus mérite une fiabilité plus basse (section 4.2).
+
+**En ligne de commande** : `illwatch soc metrics --days 30`, `illwatch soc quality --days 30`
+et `illwatch dashboard show`.
 
 ### 7.10 Exporter et partager
 
