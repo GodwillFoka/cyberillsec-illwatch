@@ -38,7 +38,23 @@ les incidents jusqu'au bout. Les décisions restent les vôtres.
 <div><strong>0 €</strong><span>de licence : code ouvert (MIT), installé chez vous</span></div>
 </div>
 
-<p class="iw-note">Chiffres mesurés sur des données réelles, sur notre poste de test Kali Linux, les 7 et 8 octobre 2026.</p>
+<details class="note" markdown>
+<summary>D'où viennent ces chiffres : date et méthode de chaque mesure</summary>
+
+Chaque chiffre est une mesure, pas une estimation. Elles ont été prises sur des données réelles,
+sur notre poste de test Kali Linux, et se rejouent avec les commandes indiquées.
+
+| Chiffre | Mesuré le | Méthode |
+|---|---|---|
+| 528 453 indicateurs | 8 octobre 2026 | IOC en base après collecte des neuf sources de référence, historique OTX compris ; 334 311 étaient actifs ce jour-là (`illwatch status`) |
+| 26 416 failles | 7 octobre 2026 | CVE en base après `illwatch cves sync` : les 30 derniers jours de la NVD et toutes les CVE du catalogue KEV, notées avec EPSS |
+| 93 % / 6,7 % | 7 octobre 2026 | répartition des 26 416 CVE par priorité : P3 24 646 (93,3 %) ; P0 495, P1 1 239 et P2 36, soit 1 770 failles à traiter sous 30 jours au plus (6,7 %) |
+| moins de 256 Mo | 29 septembre 2026 | pic de mémoire du processus pendant l'ingestion de 36 995 URL réelles : 120 Mo, pour une exigence de 256 Mo (RNF-MEM-01) |
+| 0 € | | licence MIT du dépôt |
+
+Ces chiffres datent de la mesure : la base grossit chaque jour. L'[état d'avancement](rapport/ETAT_AVANCEMENT.md) donne les dernières valeurs relevées.
+
+</details>
 
 ## Ce que fait ILLWATCH
 
