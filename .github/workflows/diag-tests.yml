@@ -45,18 +45,18 @@ jobs:
       - name: Fichier par fichier
         shell: bash
         run: |
+          set +e
+          ALL=""
           for f in tests/test_*.py; do
             START=$(date +%s)
             timeout -s KILL 150 bash -c "ulimit -v 6000000; pytest -q -p no:cacheprovider --no-cov $f" > out.txt 2>&1
             RC=$?
             DUR=$(( $(date +%s) - START ))
-            SUMMARY=$(grep -E "passed|failed|error" out.txt | tail -1)
-            echo "::notice title=$f::rc=$RC en ${DUR}s · ${SUMMARY:0:300}"
+            ALL="$ALL ${f#tests/test_}:$RC:${DUR}s"
             if [ "$RC" -ne 0 ]; then
-              LAST=$(grep -E "::" out.txt | grep -vE "^(PASSED|FAILED)" | tail -1)
-              echo "::error title=$f rc=$RC::dernier : ${LAST:0:300}"
-              grep -E "MemoryError|Error|error|Timeout|FAILED" out.txt | tail -8 | while read -r line; do
-                echo "::warning title=$f::${line:0:500}"
-              done || true
+              LAST=$(grep -E "::" out.txt | tail -1)
+              ERR=$(grep -E "MemoryError|Error|FAILED|Killed" out.txt | tail -3 | tr '\n' ' ')
+              echo "::error title=$f rc=$RC ${DUR}s::dernier : ${LAST:0:300} // ${ERR:0:600}"
             fi
           done
+          echo "::notice title=Bilan (fichier:code:durée)::${ALL}"
