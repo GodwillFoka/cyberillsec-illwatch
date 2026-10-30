@@ -147,7 +147,7 @@ def explain(
         Factor(
             "rule",
             tr("Règle", "Rule"),
-            f"{rule.value} : {rule_text}",
+            tr(f"{rule.value} : {rule_text}", f"{rule.value}: {rule_text}"),
             "raises",
             _num(breakdown.get("base")),
         )
@@ -269,7 +269,9 @@ def explain(
                 Factor(
                     "version",
                     tr("Version", "Version"),
-                    f"{asset.version} : {version_label}" if asset.version else version_label,
+                    tr(f"{asset.version} : {version_label}", f"{asset.version}: {version_label}")
+                    if asset.version
+                    else version_label,
                     "raises",
                 )
             )
