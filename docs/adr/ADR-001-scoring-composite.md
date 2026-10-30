@@ -50,7 +50,7 @@ Le facteur CWE n'est pas implémenté en v1.0 et part au backlog v2.0.
    une spécification opposable.
 2. **Le facteur CWE n'est pas alimentable en v1.0.** Aucun des collecteurs prévus aux phases 2 et 3
    (NVD, KEV, EPSS, OTX) ne fournit de pondération de dangerosité par CWE exploitable directement.
-   L'implémenter en v1.0 reviendrait à inventer un barème arbitraire : ce qui contredirait le
+   L'implémenter en v1.0 reviendrait à inventer un barème arbitraire, ce qui contredirait le
    caractère *déterministe* exigé par RF-14.
 3. **Somme normalisée.** Les contributions maximales du CdC somment exactement à 100
    (30 + 25 + 25 + 10 + 10), ce qui rend la borne `min(100, …)` défensive plutôt qu'écrêtante. La

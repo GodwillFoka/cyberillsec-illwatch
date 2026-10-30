@@ -34,11 +34,11 @@ Dépôt de référence : `gitlab.com/GodwillFoka/cyberillsec-illwatch`.
 1. **Cohérence du discours produit.** L'argument de souveraineté est le principal différenciateur de
    ILLWATCH face à CrowdStrike et Recorded Future. Un différenciateur que le projet ne s'applique pas
    à lui-même est un différenciateur qui ne tient pas en réunion commerciale.
-2. **GitLab est de droit européen sur l'offre SaaS UE**, et l'édition Community est auto-hébergeable
-   : ce qui laisse ouverte la migration vers une instance CYBERILL sans changer d'outillage.
+2. **GitLab est de droit européen sur l'offre SaaS UE**, et l'édition Community est auto-hébergeable,
+   ce qui laisse ouverte la migration vers une instance CYBERILL sans changer d'outillage.
 3. **La CI est native et intégrée.** `.gitlab-ci.yml` couvre en un fichier ce que GitHub Actions
    faisait en un workflow plus Dependabot, et GitLab fournit nativement le SAST, la détection de
-   secrets et le scan de dépendances : pertinent pour un projet de sécurité qui doit pouvoir montrer
+   secrets et le scan de dépendances. C'est précieux pour un projet de sécurité qui doit pouvoir montrer
    qu'il s'applique ses propres contrôles.
 4. **Un seul dépôt plutôt qu'un dépôt et son miroir.** Un miroir se désynchronise, personne ne sait
    lequel fait foi, et les issues se dispersent sur deux plateformes. Le coût de maintenance d'un
@@ -52,7 +52,7 @@ Dépôt de référence : `gitlab.com/GodwillFoka/cyberillsec-illwatch`.
 - Une seule source de vérité : un dépôt, un pipeline, un tracker d'issues.
 - Analyses de sécurité (SAST, secrets, dépendances) acquises sans outillage tiers.
 
-**Négatives : et elles sont réelles**
+**Négatives, et elles sont réelles**
 
 - **Découvrabilité.** L'écrasante majorité des contributeurs open source est sur GitHub. La vision
   2035 vise « 5 000+ contributeurs » ; ce choix rend cet objectif nettement plus difficile. C'est le
