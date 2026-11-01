@@ -1,4 +1,4 @@
-FROM python:3.12-slim AS base
+FROM python:3.15-slim AS base
 
 LABEL org.opencontainers.image.title="ILLWATCH" \
       org.opencontainers.image.description="Security Monitoring & Cyber Threat Intelligence Platform (CyberillSec)" \
