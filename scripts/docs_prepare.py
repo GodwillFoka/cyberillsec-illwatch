@@ -113,6 +113,12 @@ CATALOGUE = {
         "Clone neuf sur Kali : quatre défauts corrigés, "
         "clés externes configurées, M2 atteint pour la première fois (67 495 IOC).",
     ),
+    "PRESENTATION_GLOBALE_10-11-2026.md": (
+        "avancement",
+        "M7 à M11",
+        "Revue de pilotage : ce qui est fait, ce qui reste jusqu'à la v0.2.0, risques, chiffres "
+        "clés, trois décisions, et les incohérences corrigées dans la documentation.",
+    ),
     "RAPPORT_GLOBAL.md": (
         "avancement",
         "M1 à M6",

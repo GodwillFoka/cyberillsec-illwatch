@@ -1,10 +1,10 @@
 # ILLWATCH : Vision produit
 
-<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Vision_produit_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
+<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.1](pdf/ILLWATCH_Vision_produit_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
 
 | | |
 |---|---|
-| **Version** | v2.0 du 30 octobre 2026. Elle remplace la v1.0 de juillet 2026, conservée en PDF. |
+| **Version** | v2.1 du 10 novembre 2026 (tableau des fonctionnalités complété), sur la base de la v2.0 du 30 octobre 2026. Elle remplace la v1.0 de juillet 2026, conservée en PDF. |
 | **Auteur** | Godwill FOKA, ingénieur en cybersécurité, à l'origine de CYBERILL, Berlin |
 | **Ce que couvre ce document** | la vision et la stratégie. Les exigences précises, celles qui font foi, sont dans le [cahier des charges](CAHIER_DES_CHARGES.md). |
 
@@ -128,7 +128,9 @@ Tout ce qui suit fonctionne déjà, dans le code publié :
 | Détection | inventaire importé depuis Excel, corrélation par version, recherche de traces avec six règles, contexte MITRE ATT&CK, campagnes d'attaquants |
 | Réponse | incidents selon le NIST, trois niveaux d'analystes, recommandations, gestion des faux positifs, écran de pilotage |
 | Partage | exports CSV, JSON et STIX 2.1, serveur TAXII 2.1 |
+| Confiance | source, fraîcheur et note de confiance visibles sur chaque donnée, données périmées signalées (ADR-031) ; priorité de chaque évènement expliquée (ADR-030) ; qualité des alertes mesurée par règle et par source (ADR-029) |
 | Exploitation | interface web en temps réel, ligne de commande, API, sauvegardes, Prometheus et Grafana, HTTPS |
+| Présentation | site public en cinq langues avec demande de démonstration (ADR-027) |
 
 Chaque fonctionnalité est expliquée en détail dans le [manuel fonctionnel](MANUEL_FONCTIONNEL.md).
 
@@ -238,6 +240,7 @@ Plusieurs avenirs sont possibles, et nous les regardons en face :
 | Calcul de la note | CVSS 30 %, EPSS 25 %, KEV 25 %, exploit 10 %, rançongiciel 5 %, CWE 5 % ; seuils 70, 40, 20 | **la formule du cahier des charges** : rançongiciel 10 points, sans CWE ; seuils 80, 60, 40 ; plancher pour les failles exploitées (ADR-001, ADR-014) |
 | Interface | API et ligne de commande d'abord | **interface web en temps réel, douze écrans, cinq langues** |
 | Inventaire | absent | **import Excel ou CSV**, comparé version par version |
+| Confiance dans les alertes | non prévue | **source, fraîcheur et confiance affichées, priorité expliquée, qualité mesurée** (ADR-029 à ADR-031) |
 | Hébergement du code | GitHub | GitLab comme référence, GitHub comme miroir (ADR-002, ADR-015) |
 | Écriture | | français soigné, sans tiret long |
 

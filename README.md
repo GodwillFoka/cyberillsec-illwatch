@@ -15,7 +15,7 @@
 [![Release](https://img.shields.io/github/v/release/GodwillFoka/cyberillsec-illwatch?color=0891B2&label=release)](https://github.com/GodwillFoka/cyberillsec-illwatch/releases)
 [![Image Docker](https://img.shields.io/badge/ghcr.io-cyberillsec--illwatch-0A1628?logo=docker&logoColor=white)](https://github.com/GodwillFoka/cyberillsec-illwatch/pkgs/container/cyberillsec-illwatch)
 <br>
-[![Couverture ≥ 80 %](https://img.shields.io/badge/couverture-94%25-22D3EE.svg)](pyproject.toml)
+[![Couverture ≥ 80 %](https://img.shields.io/badge/couverture-90%25-22D3EE.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B.svg)](LICENSE)
 [![Python 3.12 | 3.14](https://img.shields.io/badge/Python-3.12%20%7C%203.14-0A1628.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![mypy strict](https://img.shields.io/badge/mypy-strict-0A1628.svg)](pyproject.toml)
@@ -61,7 +61,7 @@ que les décisions :
 |---|---|
 | **Version** | `0.2.0.dev0` sur `main` · dernière release : [`v0.1.1`](https://github.com/GodwillFoka/cyberillsec-illwatch/releases) (baseline M1-M6) |
 | **Intégré dans `main`** | M1 à M11 : six modules, durcissement de production, interface web temps réel (12 écrans, 5 langues), corrélation, opérations SOC, contexte ATT&CK, partage STIX/TAXII, observabilité ; import d'inventaire Excel ou CSV |
-| **Vérifié en continu** | CI à chaque push (qualité, plus de 670 tests sur PostgreSQL réel, interface web, migrations, image, sécurité) ; préproduction et captures à chaque modification ; **validation sur données réelles** chaque lundi |
+| **Vérifié en continu** | CI à chaque push (qualité, plus de 680 tests sur PostgreSQL réel, interface web, migrations, image, sécurité) ; préproduction et captures à chaque modification ; **validation sur données réelles** chaque lundi |
 | **Jalons constatés** | M1 à M6 et M8 sur données réelles ; M9 et M10 constatés en CI ; M7 et M11 attendent le serveur européen |
 | **Prochaine étape** | serveur européen (clôture de M7), 7 jours de préproduction (clôture de M11), puis `v0.2.0` |
 | **Documentation** | [Guide d'installation](docs/GUIDE_INSTALLATION.md) · [Manuel fonctionnel](docs/MANUEL_FONCTIONNEL.md) · [Feuille de route](docs/ROADMAP.md) |
@@ -156,7 +156,7 @@ flowchart LR
 
 Clean Architecture en couches strictes : les contrôleurs (API FastAPI, CLI Click) ne contiennent
 aucune logique métier ; tout passe par `illwatch/modules/`, testable sans HTTP ni base. Détail :
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) et les [28 décisions d'architecture](docs/adr/README.md).
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) et les [31 décisions d'architecture](docs/adr/README.md).
 
 ## Sécurité par conception
 
@@ -185,7 +185,7 @@ protéger.
 | Indicateur | Valeur |
 |---|---|
 | Tests automatisés | **plus de 670** (+ 4 tests réseau hebdomadaires) et tests de l'interface, sur PostgreSQL 16 réel, Python 3.12 **et** 3.14 |
-| Couverture | **≈ 94 %** (seuil bloquant : 80 %) |
+| Couverture | **≈ 90 %** (seuil bloquant : 80 %), mesuré par la CI le 30/10/2026 |
 | Typage | `mypy --strict`, 0 erreur sur 78 modules |
 | Lint / format | `ruff`, 0 erreur |
 | Migrations | 21, vérifiées montée, `alembic check`, descente, remontée à chaque pipeline |
@@ -317,13 +317,13 @@ rassemble toute la documentation, régénérée à chaque fusion sur `main` :
 |---|---|---|
 | [Guide d'installation et d'exploitation](docs/GUIDE_INSTALLATION.md) | Tous | Installation de A à Z, inventaire par Excel, travail quotidien (application et ligne de commande) |
 | [Manuel fonctionnel](docs/MANUEL_FONCTIONNEL.md) | Utilisateurs, décideurs | Acteurs, droits, chaque fonctionnalité expliquée, parcours types |
-| [Cahier des charges](docs/CAHIER_DES_CHARGES.md) | Tous | **Spécification opposable** v2.0 : exigences et leur statut |
+| [Cahier des charges](docs/CAHIER_DES_CHARGES.md) | Tous | **Spécification opposable** v2.1 : exigences et leur statut |
 | [Vision produit](docs/PRODUCT_VISION.md) | Décideurs | Marché, concurrence, modèle, trajectoire jusqu'en 2035 |
 | [Feuille de route](docs/ROADMAP.md) | Tous | Jalons M1 à M11, critères de sortie, tâches restantes |
 | [Architecture](docs/ARCHITECTURE.md) | Développeurs | Couches, flux de données, sécurité |
 | [Prise en main](docs/ONBOARDING.md) | Contributeurs | Standards, première tâche |
 | [Exploitation](docs/OPERATIONS.md) | Opérateurs | Sondes, journaux, audit, sauvegarde, TLS, mise à jour |
-| [Décisions (ADR)](docs/adr/README.md) | Développeurs | 28 décisions tracées avec leurs coûts |
+| [Décisions (ADR)](docs/adr/README.md) | Développeurs | 31 décisions tracées avec leurs coûts |
 | [Rapports](Rapport/) | Pilotage | Bilans d'étape, audits, rapports d'avancement |
 | [Changelog](CHANGELOG.md) | Tous | Évolutions par version |
 
@@ -340,16 +340,17 @@ cyberillsec-illwatch/
 ├── docker-compose.yml      # Développement : PostgreSQL 16, Redis 7, API, worker
 ├── docker-compose.prod.yml # Production : Caddy, migrations isolées, secrets obligatoires
 ├── frontend/               # Interface web React + TypeScript (Vite), servie par l'API (ADR-016)
-├── docs/                   # Cahier des charges, vision, architecture, exploitation, 16 ADR, design system
+├── docs/                   # Cahier des charges, vision, architecture, exploitation, 31 ADR, design system
 ├── mkdocs.yml              # Site de documentation
 ├── Rapport/                # Rapports d'avancement, bilans d'étape, audits
 ├── scripts/                # ci-local, scénario SOC, sauvegarde/restauration
 ├── illwatch/
 │   ├── app/                # API FastAPI, modèles, configuration, sécurité, middleware
 │   ├── cli/                # Commandes Click
-│   ├── modules/            # foundation, threat_feeds, cve_tracker, incidents, dashboard, threat_hunting, events
+│   ├── modules/            # foundation, threat_feeds, cve_tracker, incidents, dashboard, threat_hunting, correlation,
+│   │                       # enrichment, soc, attack, stix, observability, events, sales
 │   └── shared/             # Énumérations, journal JSON
-└── tests/                  # plus de 510 tests, fixtures tirées de sources réelles
+└── tests/                  # plus de 680 tests, fixtures tirées de sources réelles
 ```
 
 ## Feuille de route
@@ -380,7 +381,7 @@ hébergée en UE).
   heuristiques de détection (DGA, DNS dynamique, Tor), conformité NIS 2 / DORA.
 - **Données** : modèle relationnel contraint (CHECK, déclencheurs), upserts groupés, migrations
   réversibles, performances mesurées.
-- **DevSecOps** : typage strict, ≈ 94 % de couverture, deux pipelines multi-versions, analyses de
+- **DevSecOps** : typage strict, ≈ 90 % de couverture, deux pipelines multi-versions, analyses de
   sécurité, validation hebdomadaire sur données réelles, image versionnée publiée sur GHCR.
 - **Conduite de projet** : cahier des charges, plan directeur, bilans d'étape, mesure de
   l'avancement sur les données plutôt que sur les déclarations.

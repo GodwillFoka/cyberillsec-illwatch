@@ -116,7 +116,7 @@ nav:
           - ADR-029 Qualité des alertes: adr/ADR-029-qualite-des-alertes.md
           - ADR-030 Priorisation expliquée: adr/ADR-030-priorisation-expliquee.md
           - ADR-031 Transparence du renseignement: adr/ADR-031-transparence-du-renseignement.md
-  - Rapports: rapport/
+  - Rapports: rapport/index.md
   - Changelog: changelog.md
   - Contribuer:
       - Guide de contribution: contributing.md

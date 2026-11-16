@@ -1,9 +1,23 @@
 # ILLWATCH : État d'avancement des travaux
 
-**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **30/10/2026, 01 h 30**.
+**Document vivant**, mis à jour à chaque étape. Dernière mise à jour : **10/11/2026, 23 h 45** (scan de cohérence de la documentation).
 Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci donne l'état courant.
 
 ## 1. Position
+
+> **10/11, point de situation.** Aucune livraison depuis le 30/10 : `main` est au commit
+> `84fda7a`. La validation sur données réelles du lundi 09/11 est verte (scénario SOC 55 sur 55,
+> M2 et M3 atteints, 1 769 CVE exploitées au catalogue KEV, 507 CVE en P0). Le workflow
+> « Clôture M7 » du 09/11 confirme que le serveur européen n'est **pas encore déployé**.
+> **Le pipeline GitLab de `main` est en échec** depuis le 30/10 (pipeline #3010260207) : ses
+> treize jobs ont échoué sans produire de journal, ce qui désigne l'exécution (minutes de calcul
+> ou exécuteurs) et non le code, puisque la CI GitHub du même commit est entièrement verte
+> (681 tests, couverture de 90 %). Trois mises à jour Dependabot attendent (PR #71 à #73).
+
+> **30/10, revue d'amélioration** (PR #63 à #70). Qualité des alertes mesurée par règle et par
+> source (ADR-029), priorisation expliquée des évènements corrélés (ADR-030), source, fraîcheur
+> et confiance visibles sur chaque donnée (ADR-031) ; documentation réécrite en deux vagues ;
+> chiffres clés de l'accueil datés avec leur méthode.
 
 > **30/10, documentation v2.0 et inventaire par Excel** (PR #61). Import et export de
 > l'inventaire en Excel ou CSV depuis l'écran Inventaire, avec modèle téléchargeable, aperçu ligne
@@ -73,6 +87,13 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 30/10 | PR #70 | Test de ponctuation : caches de la CI GitLab ignorés |
+| 30/10 | PR #69 | Lisibilité des tableaux de qualité des alertes ; feuille de route (ADR-029 à 031, suite : pilote, accessibilité) |
+| 30/10 | PR #68 | Accueil de la documentation : date et méthode de chaque chiffre clé |
+| 30/10 | PR #67 | **Transparence du renseignement** (ADR-031) : source, fraîcheur et confiance visibles partout, données périmées signalées |
+| 30/10 | PR #66 | **Priorisation expliquée** des évènements corrélés (ADR-030) : criticité, exposition, exploitation, version, échéance |
+| 30/10 | PR #65 | **Qualité des alertes** en situation réelle, par règle et par source (ADR-029), écran Pilotage |
+| 30/10 | PR #63, #64 | Documentation réécrite en deux vagues (accueil, vision, cahier des charges, feuille de route, guide, manuel, documents techniques, index des ADR) |
 | 30/10 | PR #61 | **Inventaire Excel ou CSV** (ADR-028) : modèle, aperçu, import tout ou rien, export réimportable, interface et CLI ; ponctuation sans tiret long dans tout le dépôt (test `test_ponctuation.py`) ; **documentation v2.0** (guide, manuel fonctionnel, cahier des charges, vision, feuille de route) en Markdown et PDF, 13 schémas, captures en français |
 | 15/10 | PR #51 | **M11 Observability & Deployment** (ADR-026) : `/metrics` (HTTP par modèle de route, IOC, sources, collectes, synchronisations, incidents, refus d'authentification), Prometheus + Grafana (10 alertes, 2 tableaux générés), acceptation SOC en CI sur jeu figé, `scripts/restore-test.sh` mensuel, `docs/ENVIRONNEMENTS.md` |
 | 15/10 | PR #50 | **M10, incrément 3** (ADR-025) : serveur TAXII 2.1 en lecture seule `/taxii2/` (indicateurs, campagnes ; Bearer ou Basic), export STIX 2.1 (`/api/v1/stix/bundle`, `illwatch stix export`) ; infrastructure des campagnes repliée au-delà de 20 IOC |
@@ -126,10 +147,14 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 | Indicateur | Valeur | Date |
 |---|---|---|
-| Tests (CI) | 463 / 463, Python 3.12 et 3.14 | 08/10 (`4c1e220`) |
-| Couverture | 93-94 % (seuil 80 %) | 07/10 |
-| Scénario SOC | 48 / 48 sous ILLWATCH, local (gros volume) et CI | 08/10 |
-| Sources saines | 7 / 9 (DigitalSide hors ligne depuis le 29/09) | 06/10 |
+| Tests (CI GitHub) | 681 réussis, 4 ignorés, Python 3.12 et 3.14 | 30/10 (`84fda7a`) |
+| Couverture | 90 % (seuil bloquant 80 %) | 30/10 (`84fda7a`) |
+| Pipeline GitLab | en échec, jobs non exécutés (aucun journal) | 30/10 (#3010260207) |
+| Scénario SOC | 55 / 55 (validation réelle en CI) ; 48 / 48 sur Kali | 09/11 ; 08/10 |
+| Migrations | 20, tête `b6e2f4a8c1d3` | 30/10 |
+| Décisions d'architecture | 31 (ADR-001 à ADR-031) | 30/10 |
+| Sources saines | 6 / 9 en CI (DigitalSide hors ligne, RedEye sans réponse) | 09/11 |
+| CVE (validation réelle, base neuve) | 13 930 : P0 507 · P1 1 264 · P2 40 · P3 12 119 ; KEV 1 769 | 09/11 |
 | IOC en base (Kali) | 528 453, dont 334 311 actifs ; 787 confirmés par ≥ 2 sources | 08/10 |
 | CVE en base (Kali) | 26 416 : P0 495 · P1 1 239 · P2 36 · P3 24 646 ; KEV 1 734, toutes ≥ P1 | 07/10 |
 
@@ -147,9 +172,11 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 | Point | Impact | Action | État |
 |---|---|---|---|
+| Pipeline GitLab de `main` en échec depuis le 30/10, jobs non exécutés | GitLab est le dépôt de référence : plus aucun constat GitLab (SAST, image, secrets) | vérifier les minutes de calcul et les exécuteurs (Paramètres, Quotas d'utilisation), puis relancer le pipeline | ⏳ |
+| Dependabot propose `python:3.15-slim` (PR #71) | changement de version majeure de l'image | ne fusionner qu'après une CI verte et la publication officielle de Python 3.15 ; tests 3.12 et 3.14 inchangés | ⏳ |
 | Export des IOC proche de la cible (12,0 s pour 528 453 IOC) | croît avec la base | sérialisation à optimiser en M8 si besoin | 🟡 à surveiller |
 | 612 CVE exploitées (KEV) en P2/P3 | non conforme à la BOD 22-01 | ADR-014 appliqué : 0 CVE KEV sous P1 | ✅ |
-| Plages CIDR rejetées (1 640 chez RedEye) | information perdue | type « réseau » au backlog M8 | ⏳ |
+| Plages CIDR rejetées (1 640 chez RedEye) | information perdue | type « réseau » (`NETWORK`) livré le 14/10 (PR #45) | ✅ |
 | Image : 44 High Debian sans correctif (165 au total, 0 Critical) | non exposées, processus non privilégié | acceptées et documentées (OPERATIONS § 7 quinquies) ; revue à chaque analyse | ✅ accepté |
 | Secrets dans l'historique Git | fuite de clés | gitleaks : 0 vrai secret sur 79 commits ; contrôle ajouté à chaque push | ✅ |
 | Analyse de code | vulnérabilités applicatives | SAST Semgrep GitLab : 0 constat (`56ab581`) ; bandit vert | ✅ |
@@ -158,14 +185,14 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | Dépôt GitLab à renommer | liens de la documentation | renommé, `main` synchronisé (`955e2a1`) | ✅ |
 | Vérification depuis la session de travail : npm et PyPI bloqués (politique réseau), journaux CI illisibles, suppression de branches refusée | contrôle local impossible côté session | CI GitHub fait foi (erreurs remontées en annotations) ; `ci-local.sh` sur Kali ; workflow « Branches » | ✅ contourné proprement |
 | Pipeline GitLab non consultable depuis la session (connecteur en erreur, gitlab.com filtré) | jobs GitLab non constatés | contournement : workflow GitHub « Statut GitLab » qui lit l'API GitLab et publie le résultat en annotations ; secret `GITLAB_TOKEN` (read_api) posé le 13/10 ; **constaté : pipeline #2944320344 (`5ff53e4`) vert, 12/12 jobs** (dont `openapi`, `interface`, SAST, secrets, image) | ✅ |
-| Source RedEye (osint.digitalside.it) en délai dépassé côté serveur ; IPsum à 50 % de réussite | collectes en échec, bruit dans la santé des sources | suspendre RedEye depuis l'écran Sources tant que le serveur ne répond pas | ⏳ |
+| Source RedEye (`feeds.redeyesecurity.com`) en délai dépassé côté serveur, DigitalSide (`osint.digitalside.it`) hors ligne ; IPsum à 50 % de réussite | collectes en échec, bruit dans la santé des sources | suspendre RedEye depuis l'écran Sources tant que le serveur ne répond pas | ⏳ |
 | Horloge de la VM Kali décalée de 6 h | journaux trompeurs | régler le fuseau de la VM | ⏳ |
 | Limites de débit GitLab au 19/10 | sans effet au rythme actuel | à surveiller | - |
 
 ## 8. Prochaines étapes
 
 1. **Sur Kali** (dans l'ordre) : `git pull`, `pip install -e .`, `illwatch db upgrade`
-   (migrations jusqu'à `e2c7a5b9d184`), `./scripts/build-web.sh`, `illwatch attack import`,
+   (migrations jusqu'à `b6e2f4a8c1d3`), `./scripts/build-web.sh`, `illwatch attack import`,
    redémarrer uvicorn et le worker, `git push gitlab main`. Puis constater : M9 (escalade
    L1 → L3, écran Pilotage), M10 (section ATT&CK, campagne, `curl /taxii2/`), M11
    (`curl -s http://127.0.0.1:8000/metrics | grep illwatch_`).
@@ -175,4 +202,5 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
    (Prometheus et Grafana compris), inscrire le domaine dans `deploy/vps-domaine.txt` →
    workflow « Clôture M7 » ; puis 7 jours de staging sans intervention → clôture de M11.
 4. Suspendre RedEye tant que son serveur ne répond pas ; régler le fuseau de la VM Kali.
-5. Après M11 : tag `v0.2.0`.
+5. Rétablir le pipeline GitLab (quota ou exécuteurs), puis traiter les PR Dependabot #71 à #73.
+6. Après M11 : tag `v0.2.0`.
