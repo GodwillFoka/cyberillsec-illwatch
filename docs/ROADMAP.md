@@ -32,13 +32,13 @@ En résumé : la plateforme fonctionne et a été vérifiée sur des données r�
 jalons sont livrés dans le code ; il manque surtout un serveur en Europe pour les valider en
 conditions de production.
 
-| | Au 30 octobre 2026 |
+| | Au 10 novembre 2026 |
 |---|---|
-| **Vérifié sur données réelles** | les jalons M1 à M6 et M8 ; le scénario complet d'un SOC passe ses 48 contrôles ; 528 453 indicateurs et 26 416 failles sur le poste de test |
+| **Vérifié sur données réelles** | les jalons M1 à M6 et M8 ; le scénario complet d'un SOC passe ses 48 contrôles sur le poste et ses 55 contrôles dans la vérification du lundi 9 novembre ; 528 453 indicateurs et 26 416 failles sur le poste de test |
 | **Livré, à vérifier sur le poste de test** | M9 (opérations SOC), M10 (contexte des attaquants) et l'import de l'inventaire depuis Excel (ADR-028) |
 | **Livré, en attente du serveur européen** | M7 (HTTPS sur un domaine public, note SSL Labs) et M11 (sept jours de préproduction) |
-| **Qualité** | deux chaînes d'intégration continue (GitLab et GitHub), plus de 670 tests, environ 94 % du code couvert, une vérification sur données réelles chaque lundi, une préproduction et des captures d'écran refaites à chaque modification |
-| **Documentation** | guide d'installation, manuel fonctionnel, cahier des charges, vision et feuille de route en version 2.0 ; 28 décisions d'architecture |
+| **Qualité** | deux chaînes d'intégration continue (GitHub verte ; GitLab en échec d'exécution depuis le 30 octobre, voir l'étape 5), plus de 680 tests, environ 90 % du code couvert, une vérification sur données réelles chaque lundi, une préproduction et des captures d'écran refaites à chaque modification |
+| **Documentation** | guide d'installation, manuel fonctionnel, cahier des charges, vision et feuille de route en version 2.0 ; 31 décisions d'architecture |
 
 ![Croissance de la base d'IOC](assets/schemas/chiffres-ioc.svg)
 
@@ -139,13 +139,14 @@ serveur prévu pour M7.
 | 2 | Déclarer l'inventaire réel avec le modèle Excel, puis lancer `illwatch cves refresh-affected` et `illwatch correlate run` | porteur du projet | 1 | 1 à 2 h |
 | 3 | Vérifier M9 (escalade du niveau 1 au niveau 3, écran Pilotage) et M10 (ATT&CK, campagne, `curl /taxii2/`) sur le poste, puis écrire les bilans | porteur du projet | 1 | 2 h |
 | 4 | Suspendre la source RedEye tant que son serveur ne répond pas ; régler le fuseau horaire de la machine virtuelle | porteur du projet | | 15 min |
-| 5 | Louer un serveur européen (2 cœurs, 4 Go, 40 Go) et un nom de domaine, lancer `deploy-vps.sh install`, inscrire le domaine dans `deploy/vps-domaine.txt` | porteur du projet | | 2 h |
-| 6 | Laisser le workflow « Clôture M7 » mesurer la note TLS : **M7 terminé** | intégration continue | 5 | automatique |
-| 7 | Sept jours de préproduction sans intervention et la restauration du mois : **M11 terminé** | serveur | 5 | 7 jours |
-| 8 | Étiqueter `v0.2.0`, publier la version et son image | porteur du projet | 6 et 7 | 1 h |
+| 5 | Rétablir le pipeline GitLab en échec depuis le 30 octobre (vérifier les minutes de calcul et les exécuteurs dans les quotas d'utilisation), le relancer, puis traiter les mises à jour Dependabot | porteur du projet | | 30 min |
+| 6 | Louer un serveur européen (2 cœurs, 4 Go, 40 Go) et un nom de domaine, lancer `deploy-vps.sh install`, inscrire le domaine dans `deploy/vps-domaine.txt` | porteur du projet | | 2 h |
+| 7 | Laisser le workflow « Clôture M7 » mesurer la note TLS : **M7 terminé** | intégration continue | 6 | automatique |
+| 8 | Sept jours de préproduction sans intervention et la restauration du mois : **M11 terminé** | serveur | 6 | 7 jours |
+| 9 | Étiqueter `v0.2.0`, publier la version et son image | porteur du projet | 7 et 8 | 1 h |
 
-La demande de fusion « inventaire Excel, ponctuation, documentation v2 » a été fusionnée le
-30 octobre 2026.
+Les demandes de fusion du 30 octobre 2026 (inventaire Excel, documentation v2, qualité des
+alertes, priorisation expliquée, transparence du renseignement) sont toutes fusionnées.
 
 ---
 

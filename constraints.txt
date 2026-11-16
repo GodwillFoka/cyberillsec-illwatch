@@ -79,7 +79,7 @@ mypy==2.4.0
     # via illwatch (pyproject.toml)
 mypy-extensions==1.1.0
     # via mypy
-opentelemetry-api==1.45.1
+opentelemetry-api==1.45.2
     # via fastapi
 openpyxl==3.1.5
     # via illwatch (pyproject.toml)

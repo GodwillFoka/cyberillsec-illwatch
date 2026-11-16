@@ -164,7 +164,7 @@ Ces chiffres datent de la mesure : la base grossit chaque jour. L'[état d'avanc
 
     ---
 
-    Comment le code est organisé, comment préparer votre poste, et les 28 décisions
+    Comment le code est organisé, comment préparer votre poste, et les 31 décisions
     d'architecture qui expliquent les choix faits jusqu'ici.
 
     [:octicons-arrow-right-24: Prise en main](ONBOARDING.md) · [Architecture](ARCHITECTURE.md)
@@ -178,7 +178,7 @@ Ces chiffres datent de la mesure : la base grossit chaque jour. L'[état d'avanc
 Le projet avance par jalons. Un jalon n'est considéré comme terminé que lorsque son résultat a
 été vérifié sur des données réelles, pas simplement quand le code est écrit.
 
-| Étape | Où nous en sommes au 30/10/2026 |
+| Étape | Où nous en sommes au 10/11/2026 |
 |---|---|
 | **M1 à M6** : socle, flux de menaces, failles, incidents, tableau de bord, chasse | :material-check-circle:{ .iw-ok } vérifiés sur données réelles, version `v0.1.1` publiée |
 | **M8** : détection et corrélation | :material-check-circle:{ .iw-ok } terminé le 14/10 : 100 % des cas attendus détectés sur le jeu de test |
@@ -248,7 +248,7 @@ mis en page.
 
     ---
 
-    Toutes les exigences, numérotées de RF-01 à RF-57, avec leur état réel, les exigences de
+    Toutes les exigences, numérotées de RF-01 à RF-61, avec leur état réel, les exigences de
     performance et de sécurité mesurées, le modèle de données et les risques.
 
     [:octicons-download-16: PDF](pdf/ILLWATCH_Cahier_des_charges_v2.pdf) ·
@@ -294,7 +294,7 @@ mis en page.
 | [Exploitation](OPERATIONS.md) | administrateurs | surveiller, sauvegarder, sécuriser, mettre à jour, et toutes les commandes utiles |
 | [Environnements](ENVIRONNEMENTS.md) | administrateurs | développement, préproduction, production, et comment passer de l'un à l'autre |
 | [Prise en main](ONBOARDING.md) | contributeurs | préparer votre poste, les règles du code, votre première contribution |
-| [Décisions d'architecture](adr/README.md) | tout le monde | les 28 décisions importantes, avec leur contexte et leurs conséquences |
+| [Décisions d'architecture](adr/README.md) | tout le monde | les 31 décisions importantes, avec leur contexte et leurs conséquences |
 | [Journal des versions](changelog.md) | tout le monde | ce qui a changé, version après version |
 
 !!! info "Si deux documents se contredisent"

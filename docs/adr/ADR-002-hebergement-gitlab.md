@@ -79,4 +79,4 @@ de suivi, pas d'une dérive silencieuse.
 
 - [Cahier des charges : en-tête et §5.2](../CAHIER_DES_CHARGES.md)
 - [Product Vision Document : Tomes 1, 2 et 10](../PRODUCT_VISION.md)
-- Pipeline : [`.gitlab-ci.yml`](../../.gitlab-ci.yml)
+- Pipeline : [`.gitlab-ci.yml`](https://gitlab.com/GodwillFoka/cyberillsec-illwatch/-/blob/main/.gitlab-ci.yml)

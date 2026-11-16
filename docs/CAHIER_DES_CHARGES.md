@@ -1,13 +1,13 @@
 # ILLWATCH : Cahier des charges
 
-<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.0](pdf/ILLWATCH_Cahier_des_charges_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
+<div class="iw-pdf" markdown>[:octicons-download-16: Télécharger le PDF v2.1](pdf/ILLWATCH_Cahier_des_charges_v2.pdf){ .md-button } [:material-home: Toute la documentation](README.md){ .md-button }</div>
 
 | | |
 |---|---|
 | **Projet** | ILLWATCH, plateforme de surveillance de la sécurité et de renseignement sur les menaces |
 | **Porté par** | CyberillSec, une initiative CYBERILL |
 | **Auteur et architecte** | Godwill FOKA, architecte principal et ingénieur sécurité, Berlin |
-| **Version** | v2.0 du 30 octobre 2026. Elle remplace la v1.0.0 de juillet 2026. |
+| **Version** | v2.1 du 10 novembre 2026, qui complète la v2.0 du 30 octobre 2026. Elle remplace la v1.0.0 de juillet 2026. |
 | **Dépôt** | `gitlab.com/GodwillFoka/cyberillsec-illwatch` (référence), avec un miroir sur GitHub |
 | **Statut** | approuvé pour le développement : c'est ce document qui fait foi |
 
@@ -24,7 +24,8 @@
 |---|---|---|
 | v1.0.0 | juillet 2026 | Première version : six modules, exigences RF-01 à RF-28, 44 tâches réparties sur neuf semaines |
 | v1.x | septembre et octobre 2026 | Ajustements décidés au fil de l'eau, chacun dans un ADR (ADR-001 à ADR-028) : calcul de la note, hébergement, changement de nom, interface web… |
-| **v2.0** | **30 octobre 2026** | Refonte complète : nouveau nom ILLWATCH (anciennement SENTRY), état réel de chaque exigence, nouvelles exigences des jalons M7 à M11 (RF-29 à RF-52), exigences de performance et de sécurité mesurées, modèle de données et API à jour |
+| v2.0 | 30 octobre 2026 | Refonte complète : nouveau nom ILLWATCH (anciennement SENTRY), état réel de chaque exigence, nouvelles exigences des jalons M7 à M11 (RF-29 à RF-52), exigences de performance et de sécurité mesurées, modèle de données et API à jour |
+| **v2.1** | **10 novembre 2026** | Exigences RF-58 à RF-61 (qualité des alertes, priorisation expliquée, transparence du renseignement, site de présentation), chiffres de qualité mis à jour (plus de 680 tests, couverture d'environ 90 %, 31 décisions) |
 
 ## Sommaire
 
@@ -215,7 +216,19 @@ infrastructure.
 | RF-51 | Publier ses métriques pour Prometheus (`/metrics`), avec des tableaux Grafana et dix alertes (ADR-026) | P1 | 🟢 |
 | RF-52 | Disposer de trois environnements (développement, préproduction, production), d'un test d'acceptation automatique et de sept jours de préproduction sans intervention | P0 | 🟡 le serveur reste à louer |
 
-### 3.7 Exigences prévues après la v0.2.0
+### 3.7 Qualité, transparence et présentation (après M11)
+
+Ces exigences viennent de la revue d'amélioration du 30/10/2026 et du site de présentation du
+22/10/2026. Elles ne changent pas les critères de sortie des jalons.
+
+| Réf. | Ce que la plateforme doit faire | Prio. | État |
+|---|---|---|---|
+| RF-58 | Mesurer la qualité des alertes en situation réelle : pour chaque règle et chaque source, part des évènements confirmés, écartés comme faux positifs ou encore ouverts (ADR-029) | P1 | 🟢 |
+| RF-59 | Expliquer la priorité de chaque évènement corrélé : criticité de l'actif, exposition, exploitation connue, version, échéance (ADR-030) | P1 | 🟢 |
+| RF-60 | Montrer pour chaque donnée sa source, sa fraîcheur et sa confiance, et signaler une donnée périmée (ADR-031) | P1 | 🟢 |
+| RF-61 | Présenter la solution sur un site public en cinq langues, avec un formulaire de demande de démonstration (ADR-027) | P2 | 🟢 |
+
+### 3.8 Exigences prévues après la v0.2.0
 
 | Réf. | Ce que nous prévoyons | Prio. |
 |---|---|---|
@@ -244,8 +257,8 @@ chacune, nous indiquons ce que nous avons réellement mesuré.
 | RNF-PERF-03 | Rapidité | Tableau de bord en moins de 1 s, export de 500 000 indicateurs en moins de 15 s | 0,63 s et 12,0 s avec 528 453 indicateurs (8 octobre 2026) |
 | RNF-MEM-01 | Sobriété | L'application tient dans moins de 256 Mo | 120 Mo au plus fort, en ingérant 37 000 indicateurs |
 | RNF-DISP-01 | Disponibilité | 99,5 % du temps, hors maintenance | à mesurer pendant les sept jours de préproduction |
-| RNF-MAIN-01 | Maintenabilité | Aucune erreur de style ni de typage, au moins 80 % du code couvert par les tests | environ 94 % ; plus de 670 tests |
-| RNF-MAIN-02 | Maintenabilité | Chaque choix important expliqué dans une décision écrite (ADR) | 28 décisions |
+| RNF-MAIN-01 | Maintenabilité | Aucune erreur de style ni de typage, au moins 80 % du code couvert par les tests | environ 90 % ; plus de 680 tests (CI du 30/10/2026) |
+| RNF-MAIN-02 | Maintenabilité | Chaque choix important expliqué dans une décision écrite (ADR) | 31 décisions |
 | RNF-ACC-01 | Accessibilité | Site de présentation conforme au niveau AA des WCAG 2.2 | vérifié par axe-core à chaque modification |
 | RNF-EDIT-01 | Écriture | Ni tiret long ni tiret moyen dans le dépôt | vérifié par le test `test_ponctuation.py` |
 

@@ -88,5 +88,5 @@ Le facteur CWE n'est pas implémenté en v1.0 et part au backlog v2.0.
 
 - [Cahier des charges, RF-14](../CAHIER_DES_CHARGES.md#31-modules-de-la-v10-m1-a-m6) et [Manuel fonctionnel, score](../MANUEL_FONCTIONNEL.md#42-comment-le-score-se-calcule)
 - [Vision produit](../PRODUCT_VISION.md)
-- Implémentation : [`illwatch/modules/cve_tracker/scoring.py`](../../illwatch/modules/cve_tracker/scoring.py)
-- Tests : [`tests/test_scoring.py`](../../tests/test_scoring.py)
+- Implémentation : [`illwatch/modules/cve_tracker/scoring.py`](https://github.com/GodwillFoka/cyberillsec-illwatch/blob/main/illwatch/modules/cve_tracker/scoring.py)
+- Tests : [`tests/test_scoring.py`](https://github.com/GodwillFoka/cyberillsec-illwatch/blob/main/tests/test_scoring.py)
