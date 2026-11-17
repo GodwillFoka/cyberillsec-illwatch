@@ -16,7 +16,16 @@ from illwatch.shared.enums import AuditOutcome, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{get_settings().api_v1_prefix}/auth/token")
 
-DbSession = Annotated[AsyncSession, Depends(get_db)]
+# Portée « function » : la transaction est validée AVANT l'envoi de la réponse. Avec la portée
+# par défaut (« request »), FastAPI valide après l'envoi : le client pouvait recevoir 200 puis
+# envoyer la requête suivante avant que la base ait la modification (validation réelle du
+# 16/11/2026 : transition → ANALYSE acceptée, puis → CONFINEMENT refusée en 409), et un échec
+# du commit restait invisible pour lui.
+DbSession = Annotated[AsyncSession, Depends(get_db, scope="function")]
+
+# Session de lecture qui vit jusqu'à la fin d'une réponse en flux (`StreamingResponse`) : à
+# réserver aux lectures faites pendant l'envoi, jamais aux écritures.
+StreamingDbSession = Annotated[AsyncSession, Depends(get_db, scope="request")]
 
 _CREDENTIALS_ERROR = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
