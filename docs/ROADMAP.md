@@ -37,8 +37,8 @@ conditions de production.
 | **Vérifié sur données réelles** | les jalons M1 à M6 et M8 ; le scénario complet d'un SOC passe ses 48 contrôles sur le poste et ses 55 contrôles dans la vérification du lundi 9 novembre ; 528 453 indicateurs et 26 416 failles sur le poste de test |
 | **Livré, à vérifier sur le poste de test** | M9 (opérations SOC), M10 (contexte des attaquants) et l'import de l'inventaire depuis Excel (ADR-028) |
 | **Livré, en attente du serveur européen** | M7 (HTTPS sur un domaine public, note SSL Labs) et M11 (sept jours de préproduction) |
-| **Qualité** | deux chaînes d'intégration continue, vertes toutes les deux sur le même commit `f022e3b` depuis le 16 novembre (GitLab : 13 jobs sur 13), plus de 680 tests, environ 90 % du code couvert, une vérification sur données réelles chaque lundi, une préproduction et des captures d'écran refaites à chaque modification |
-| **Point ouvert** | la vérification sur données réelles du lundi 16 novembre a échoué (scénario SOC 50 sur 55 : transitions d'incident refusées, MTTR non mesuré) sur le même commit que celle, verte, du 9 novembre ; à analyser avant les constats sur le poste |
+| **Qualité** | deux chaînes d'intégration continue, vertes toutes les deux sur le même commit `f022e3b` le 16 novembre (GitLab : 13 jobs sur 13), plus de 680 tests, environ 90 % du code couvert, une vérification sur données réelles chaque lundi, une préproduction et des captures d'écran refaites à chaque modification |
+| **Vérification du lundi** | celle du 16 novembre a échoué (scénario SOC 50 sur 55 : transitions d'incident refusées) parce que l'API validait la base après avoir répondu ; corrigé le 17 novembre (PR #77), de nouveau 55 sur 55 |
 | **Documentation** | guide d'installation, manuel fonctionnel, cahier des charges, vision et feuille de route en version 2.0 ; 31 décisions d'architecture |
 
 ![Croissance de la base d'IOC](assets/schemas/chiffres-ioc.svg)
@@ -150,7 +150,7 @@ Ces tâches suivent les quatre phases de la *Feuille de route vers 100 %* du 17 
 
 | Phase | Tâches | Période | Fin de phase |
 |---|---|---|---|
-| 1. Remettre la chaîne au vert | 4, 5, analyse de la vérification du 16 novembre | du 17 au 23 novembre | CI GitHub et GitLab vertes sur le même commit, au moins 6 sources saines sur 7 actives |
+| 1. Remettre la chaîne au vert | 4, 5, correction de la vérification du 16 novembre (faite le 17) | du 17 au 23 novembre | CI GitHub et GitLab vertes sur le même commit, au moins 6 sources saines sur 7 actives |
 | 2. Vérifier M9 et M10 sur le poste | 1, 2, 3 | du 24 au 30 novembre | M9 et M10 passés de « livré » à « vérifié », bilans écrits |
 | 3. Terminer M7 et M11, puis la v0.2.0 | 6, 7, 8, 9 | du 1er au 15 décembre | serveur loué au plus tard le 1er décembre, `v0.2.0` vers le 12 décembre |
 | 4. Prêt à commercialiser | section 5 | de décembre 2026 à mars 2027 | `v0.3.0` le 31 mars 2027 |
@@ -201,6 +201,7 @@ Restent, dans cet ordre, avec les thèmes du tableau suivant :
 | du 22 au 24 octobre 2026 | site de présentation en cinq langues, demandes de démonstration |
 | 30 octobre 2026 | inventaire en fichier, nouvelle ponctuation, documentation v2.0 |
 | 16 novembre 2026 | pipeline GitLab de nouveau vert, mises à jour Dependabot traitées |
+| 17 novembre 2026 | transaction validée avant la réponse de l'API (PR #77) : vérification sur données réelles de nouveau à 55 sur 55 |
 | du 17 au 30 novembre 2026 (prévu) | chaîne au vert, M9 et M10 vérifiés sur le poste |
 | 1er décembre 2026 (date butoir) | location du serveur européen et du nom de domaine |
 | vers le 12 décembre 2026 (prévu) | M7 et M11 terminés, version `v0.2.0` |

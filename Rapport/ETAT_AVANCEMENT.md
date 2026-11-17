@@ -5,17 +5,21 @@ Les rapports datés (`NN_JJ-MM-AAAA.md`) figent l'état d'une semaine ; celui-ci
 
 ## 1. Position
 
-> **17/11, point de situation.** `main` est au commit `f022e3b`, identique sur GitLab et GitHub.
+> **17/11, point de situation.** `main` est au commit `60551e7` (PR #77) sur GitHub ; GitLab
+> est resté à `f022e3b` et doit être resynchronisé.
 > **Le pipeline GitLab est de nouveau vert** depuis le 16/11 (pipeline #3075334555, 13 jobs sur
 > 13, dont SAST, détection de secrets et analyse d'image), comme la CI GitHub du même commit.
 > Mises à jour Dependabot traitées : PR #72 (`download-artifact` 8) et #75 (interface, qui
 > remplace la #73) fusionnées, PR #76 (`opentelemetry-api` 1.45.2, CVE-2026-126360) fusionnée ;
 > PR #71 (`python:3.15-slim`) fermée sans fusion, à reprendre après la publication de Python 3.15.
-> **La validation sur données réelles du lundi 16/11 a échoué** : scénario SOC 50 sur 55, les
-> transitions d'incident vers CONFINEMENT, ERADICATION, RECUPERATION et la clôture répondent 409,
-> et le MTTR n'est donc pas mesuré (M2 et M3 restent atteints). Elle portait sur le commit
-> `84fda7a`, celui de la validation verte du 09/11 : la cause est à chercher du côté des données
-> ou de la date, pas d'une modification du code. Une *Feuille de route vers 100 %* fixe la suite
+> **La validation sur données réelles du lundi 16/11 a échoué, cause trouvée et corrigée le
+> 17/11** : scénario SOC 50 sur 55, les transitions d'incident vers CONFINEMENT, ERADICATION,
+> RECUPERATION et la clôture répondaient 409, sur le même commit (`84fda7a`) que la validation
+> verte du 09/11. Cause : la session de base de données était validée **après** l'envoi de la
+> réponse (portée par défaut de FastAPI) ; le scénario recevait 200 pour ANALYSE et envoyait
+> CONFINEMENT avant que la base ait la modification. Correctif (PR #77, `60551e7`) : validation
+> avant la réponse, session de lecture à part pour l'export en flux, test de non-régression.
+> **Deux validations réelles lancées à la main sur `main` : 55 sur 55.** Une *Feuille de route vers 100 %* fixe la suite
 > en quatre phases : `v0.2.0` vers le 12/12 si le VPS est loué au plus tard le 1er décembre,
 > `v0.3.0` (100 %) le 31/03/2027.
 
@@ -101,6 +105,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 
 | Date | Commit | Contenu |
 |---|---|---|
+| 17/11 | PR #77 | **Transaction validée avant la réponse** : la session `get_db` passe en portée « function », session de lecture à part pour l'export en flux ; test de non-régression ; validation réelle de nouveau à 55 / 55 |
 | 16/11 | PR #76 | `opentelemetry-api` 1.45.2 (CVE-2026-126360) |
 | 16/11 | PR #72, #75 | Dependabot : `actions/download-artifact` 8 ; groupe interface (remplace la PR #73) |
 | 16/11 | PR #74 | Scan de cohérence de la documentation du 10/11 et présentation globale du projet |
@@ -167,7 +172,7 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | Tests (CI GitHub) | 681 réussis, 4 ignorés, Python 3.12 et 3.14 | 30/10 (`84fda7a`) |
 | Couverture | 90 % (seuil bloquant 80 %) | 30/10 (`84fda7a`) |
 | Pipeline GitLab | vert, 13 jobs sur 13 | 16/11 (#3075334555, `f022e3b`) |
-| Scénario SOC | **50 / 55** (validation réelle en CI, transitions d'incident en 409) ; 55 / 55 le 09/11 ; 48 / 48 sur Kali | 16/11 ; 09/11 ; 08/10 |
+| Scénario SOC | **55 / 55** (validation réelle en CI, `60551e7`) ; 50 / 55 le 16/11 (corrigé par la PR #77) ; 48 / 48 sur Kali | 17/11 ; 16/11 ; 08/10 |
 | Migrations | 20, tête `b6e2f4a8c1d3` | 30/10 |
 | Décisions d'architecture | 31 (ADR-001 à ADR-031) | 30/10 |
 | Sources saines | 6 / 9 en CI (DigitalSide hors ligne, RedEye sans réponse) | 09/11 |
@@ -190,7 +195,8 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
 | Point | Impact | Action | État |
 |---|---|---|---|
 | Pipeline GitLab de `main` en échec du 30/10 au 16/11, jobs non exécutés | GitLab est le dépôt de référence : plus aucun constat GitLab (SAST, image, secrets) | pipeline relancé : vert, 13 jobs sur 13 (#3075334555) | ✅ 16/11 |
-| Validation réelle du 16/11 en échec : scénario SOC 50 / 55, transitions d'incident en 409 | M9 (MTTR) non mesuré, constats sur données réelles faussés | analyser le scénario et l'état de l'incident créé ; relancer la validation à la main une fois corrigé | ⏳ |
+| Validation réelle du 16/11 en échec : scénario SOC 50 / 55, transitions d'incident en 409 | M9 (MTTR) non mesuré, constats sur données réelles faussés | transaction validée avant la réponse (PR #77) ; deux validations réelles à 55 / 55 | ✅ 17/11 |
+| `main` de GitLab en retard sur GitHub (`f022e3b` contre `60551e7`) | GitLab est le dépôt de référence | `git pull` depuis GitHub puis `git push origin main` | ⏳ |
 | Dependabot proposait `python:3.15-slim` (PR #71, fermée le 16/11) | changement de version majeure de l'image | reprendre après la publication officielle de Python 3.15 et une CI verte en 3.12, 3.14 et 3.15 | ⏳ |
 | Export des IOC proche de la cible (12,0 s pour 528 453 IOC) | croît avec la base | sérialisation à optimiser en M8 si besoin | 🟡 à surveiller |
 | 612 CVE exploitées (KEV) en P2/P3 | non conforme à la BOD 22-01 | ADR-014 appliqué : 0 CVE KEV sous P1 | ✅ |
@@ -221,6 +227,6 @@ sur jeu figé (100 % détectés, 0 % de faux positifs). **Première passe réell
    workflow « Clôture M7 » ; puis 7 jours de staging sans intervention → clôture de M11.
 4. Suspendre RedEye tant que son serveur ne répond pas ; régler le fuseau de la VM Kali.
 5. ~~Rétablir le pipeline GitLab, puis traiter les PR Dependabot~~ : fait le 16/11.
-6. Analyser l'échec de la validation réelle du 16/11 (transitions d'incident en 409) avant les
-   constats sur Kali.
+6. ~~Analyser l'échec de la validation réelle du 16/11~~ : corrigé le 17/11 (PR #77), 55 sur 55.
+   Resynchroniser `main` de GitLab avec GitHub.
 7. Après M11 : tag `v0.2.0` (visé vers le 12/12, VPS loué au plus tard le 1er décembre).
