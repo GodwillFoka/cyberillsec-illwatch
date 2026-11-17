@@ -101,7 +101,9 @@ if [[ $WITH_UI == 1 ]]; then
   (
     cd frontend
     npm ci --no-audit --no-fund
-    npm audit --audit-level=high
+    npm audit --omit=dev --audit-level=high
+    node --test scripts/audit-dev.test.mjs
+    node scripts/audit-dev.mjs
     npm run gen:api
     npx tsc --noEmit --pretty false
     npm test

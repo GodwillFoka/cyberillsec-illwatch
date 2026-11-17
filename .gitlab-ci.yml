@@ -158,7 +158,9 @@ interface:
   script:
     - cd frontend
     - npm ci --no-audit --no-fund --cache .npm
-    - npm audit --audit-level=high   # outils de développement compris (0 depuis React 19 / Vite 7)
+    - npm audit --omit=dev --audit-level=high   # ce qui part au navigateur : aucune exception
+    - node --test scripts/audit-dev.test.mjs
+    - node scripts/audit-dev.mjs   # outils de développement : exceptions datées (OPERATIONS § 14.7)
     - npm run gen:api
     - npx tsc --noEmit --pretty false
     - npm test

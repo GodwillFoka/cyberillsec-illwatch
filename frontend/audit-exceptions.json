@@ -1,0 +1,9 @@
+{
+  "GHSA-fc5q-39xc-vjpf": {
+    "paquet": "picomatch",
+    "cve": "CVE-2026-112366",
+    "jusqu_au": "2026-12-15",
+    "decision": "17/11/2026",
+    "motif": "ReDoS dans picomatch <= 4.0.7, sans version corrigée publiée. Apporté par vite (fdir, tinyglobby) : outil de construction seulement, absent de l'image et du navigateur, appliqué à des motifs de fichiers écrits par le projet. Le remède de npm (vite 6.2.7) casserait l'interface. À retirer dès qu'une version corrigée sort."
+  }
+}
