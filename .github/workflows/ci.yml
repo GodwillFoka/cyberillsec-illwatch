@@ -215,18 +215,11 @@ jobs:
             exit 1; }
       - name: Audit des outils de développement
         working-directory: frontend
-        # Depuis React 19 / Vite 7 (11/10/2026) : 0 vulnérabilité, outils compris. Une alerte
-        # élevée sur un outil de développement bloque désormais aussi.
+        # Une alerte élevée sur un outil de développement bloque aussi, sauf exception datée
+        # (`audit-exceptions.json`, OPERATIONS § 14.7) : une exception expirée bloque de nouveau.
         run: |
-          npm audit --audit-level=high > audit-dev.txt 2>&1 || {
-            cat audit-dev.txt
-            npm audit --json 2>/dev/null | node -e '
-              const r = JSON.parse(require("fs").readFileSync(0, "utf8"));
-              for (const [name, v] of Object.entries(r.vulnerabilities || {})) {
-                const via = (v.via || []).map((x) => (typeof x === "string" ? x : x.title + " " + (x.url || ""))).join(" | ");
-                console.log("::error title=npm audit (dév.) " + v.severity + "::" + name + " " + v.range + " : " + via.slice(0, 600));
-              }'
-            exit 1; }
+          node --test scripts/audit-dev.test.mjs
+          node scripts/audit-dev.mjs
       - name: Types TypeScript générés depuis l'API
         working-directory: frontend
         run: npm run gen:api

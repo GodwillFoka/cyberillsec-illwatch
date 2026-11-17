@@ -554,3 +554,21 @@ renomme le dossier et recrée son venv, qui contient des chemins absolus.
   reconnectez-vous.
 - Kali active parfois des services réseau d'audit : vérifiez qu'aucun autre service n'écoute sur
   5433, 6379 ou 8000 (`ss -ltnp`).
+
+### 14.7 Audit npm : exceptions datées sur les outils de développement
+
+Deux audits npm tournent à chaque pipeline (GitHub, GitLab, `scripts/ci-local.sh`) :
+
+| Audit | Portée | Exceptions |
+|---|---|---|
+| Dépendances livrées au navigateur | `npm audit --omit=dev` | **aucune** : une alerte élevée bloque toujours |
+| Outils de développement (Vite et ses dépendances) | `frontend/scripts/audit-dev.mjs` | listées dans `frontend/audit-exceptions.json`, chacune avec une date limite |
+
+Une exception n'est accordée que si aucune version corrigée n'existe et que le paquet ne quitte
+pas la construction (ni image, ni navigateur). À sa date limite, elle bloque de nouveau le
+pipeline : on la prolonge par une décision écrite ou on la retire. Une exception qui ne
+correspond plus à aucune alerte est signalée pour être retirée.
+
+| Alerte | Paquet | Décision | Jusqu'au | Justification |
+|---|---|---|---|---|
+| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (CVE-2026-112366, ReDoS) | `picomatch` ≤ 4.0.7, apporté par `vite` (`fdir`, `tinyglobby`) | acceptée le 17/11/2026 | 15/12/2026 | aucune version corrigée publiée ; outil de construction appliqué à des motifs écrits par le projet ; le remède proposé par npm (`vite` 6.2.7) casserait l'interface |
